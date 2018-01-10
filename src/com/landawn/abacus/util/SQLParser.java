@@ -33,54 +33,54 @@ public final class SQLParser {
     static {
         seperators.put(TAB, TAB);
         seperators.put(ENTER, ENTER);
-        seperators.put(D._SPACE, D._SPACE);
-        seperators.put(D._COMMA, D._COMMA);
-        seperators.put(D._SEMICOLON, D._SEMICOLON);
-        seperators.put(D._PARENTHESES_L, D._PARENTHESES_L);
-        seperators.put(D._PARENTHESES_R, D._PARENTHESES_R);
-        seperators.put(D._EQUAL, D._EQUAL);
-        seperators.put(D.NOT_EQUAL, D.NOT_EQUAL);
-        seperators.put(D.NOT_EQUAL2, D.NOT_EQUAL2);
-        seperators.put(D._GREATER_THAN, D._GREATER_THAN);
-        seperators.put(D.GREATER_EQUAL, D.GREATER_EQUAL);
-        seperators.put(D._LESS_THAN, D._LESS_THAN);
-        seperators.put(D.LESS_EQUAL, D.LESS_EQUAL);
-        seperators.put(D._PLUS, D._PLUS);
-        seperators.put(D._MINUS, D._MINUS);
-        seperators.put(D._PERCENT, D._PERCENT);
-        seperators.put(D._SLASH, D._SLASH);
-        seperators.put(D._ASTERISK, D._ASTERISK);
-        seperators.put(D._AMPERSAND, D._AMPERSAND);
-        seperators.put(D._VERTICALBAR, D._VERTICALBAR);
-        seperators.put(D._CIRCUMFLEX, D._CIRCUMFLEX);
-        seperators.put(D._UNARYBIT, D._UNARYBIT);
-        seperators.put(D._EXCLAMATION, D._EXCLAMATION);
+        seperators.put(WD._SPACE, WD._SPACE);
+        seperators.put(WD._COMMA, WD._COMMA);
+        seperators.put(WD._SEMICOLON, WD._SEMICOLON);
+        seperators.put(WD._PARENTHESES_L, WD._PARENTHESES_L);
+        seperators.put(WD._PARENTHESES_R, WD._PARENTHESES_R);
+        seperators.put(WD._EQUAL, WD._EQUAL);
+        seperators.put(WD.NOT_EQUAL, WD.NOT_EQUAL);
+        seperators.put(WD.NOT_EQUAL2, WD.NOT_EQUAL2);
+        seperators.put(WD._GREATER_THAN, WD._GREATER_THAN);
+        seperators.put(WD.GREATER_EQUAL, WD.GREATER_EQUAL);
+        seperators.put(WD._LESS_THAN, WD._LESS_THAN);
+        seperators.put(WD.LESS_EQUAL, WD.LESS_EQUAL);
+        seperators.put(WD._PLUS, WD._PLUS);
+        seperators.put(WD._MINUS, WD._MINUS);
+        seperators.put(WD._PERCENT, WD._PERCENT);
+        seperators.put(WD._SLASH, WD._SLASH);
+        seperators.put(WD._ASTERISK, WD._ASTERISK);
+        seperators.put(WD._AMPERSAND, WD._AMPERSAND);
+        seperators.put(WD._VERTICALBAR, WD._VERTICALBAR);
+        seperators.put(WD._CIRCUMFLEX, WD._CIRCUMFLEX);
+        seperators.put(WD._UNARYBIT, WD._UNARYBIT);
+        seperators.put(WD._EXCLAMATION, WD._EXCLAMATION);
     }
 
     private static final Map<String, String[]> compositeWords = new ObjectPool<String, String[]>(64);
 
     static {
-        compositeWords.put(D.LEFT_JOIN, new String[] { "LEFT", "JOIN" });
-        compositeWords.put(D.RIGHT_JOIN, new String[] { "RIGHT", "JOIN" });
-        compositeWords.put(D.FULL_JOIN, new String[] { "FULL", "JOIN" });
-        compositeWords.put(D.CROSS_JOIN, new String[] { "CROSS", "JOIN" });
-        compositeWords.put(D.INNER_JOIN, new String[] { "INNER", "JOIN" });
-        compositeWords.put(D.NATURAL_JOIN, new String[] { "NATURAL", "JOIN" });
-        compositeWords.put(D.INNER_JOIN, new String[] { "INNER", "JOIN" });
-        compositeWords.put(D.GROUP_BY, new String[] { "GROUP", "BY" });
-        compositeWords.put(D.ORDER_BY, new String[] { "ORDER", "BY" });
-        compositeWords.put(D.FOR_UPDATE, new String[] { "FOR", "UPDATE" });
-        compositeWords.put(D.FETCH_FIRST, new String[] { "FETCH", "FIRST" });
-        compositeWords.put(D.FETCH_NEXT, new String[] { "FETCH", "NEXT" });
-        compositeWords.put(D.ROWS_ONLY, new String[] { "ROWS", "ONLY" });
-        compositeWords.put(D.UNION_ALL, new String[] { "UNION", "ALL" });
-        compositeWords.put(D.IS_NOT, new String[] { "IS", "NOT" });
-        compositeWords.put(D.IS_NULL, new String[] { "IS", "NULL" });
-        compositeWords.put(D.IS_NOT_NULL, new String[] { "IS", "NOT", "NULL" });
-        compositeWords.put(D.IS_EMPTY, new String[] { "IS", "EMPTY" });
-        compositeWords.put(D.IS_NOT_EMPTY, new String[] { "IS", "NOT", "EMPTY" });
-        compositeWords.put(D.IS_BLANK, new String[] { "IS", "BLANK" });
-        compositeWords.put(D.IS_NOT_BLANK, new String[] { "IS", "NOT", "BLANK" });
+        compositeWords.put(WD.LEFT_JOIN, new String[] { "LEFT", "JOIN" });
+        compositeWords.put(WD.RIGHT_JOIN, new String[] { "RIGHT", "JOIN" });
+        compositeWords.put(WD.FULL_JOIN, new String[] { "FULL", "JOIN" });
+        compositeWords.put(WD.CROSS_JOIN, new String[] { "CROSS", "JOIN" });
+        compositeWords.put(WD.INNER_JOIN, new String[] { "INNER", "JOIN" });
+        compositeWords.put(WD.NATURAL_JOIN, new String[] { "NATURAL", "JOIN" });
+        compositeWords.put(WD.INNER_JOIN, new String[] { "INNER", "JOIN" });
+        compositeWords.put(WD.GROUP_BY, new String[] { "GROUP", "BY" });
+        compositeWords.put(WD.ORDER_BY, new String[] { "ORDER", "BY" });
+        compositeWords.put(WD.FOR_UPDATE, new String[] { "FOR", "UPDATE" });
+        compositeWords.put(WD.FETCH_FIRST, new String[] { "FETCH", "FIRST" });
+        compositeWords.put(WD.FETCH_NEXT, new String[] { "FETCH", "NEXT" });
+        compositeWords.put(WD.ROWS_ONLY, new String[] { "ROWS", "ONLY" });
+        compositeWords.put(WD.UNION_ALL, new String[] { "UNION", "ALL" });
+        compositeWords.put(WD.IS_NOT, new String[] { "IS", "NOT" });
+        compositeWords.put(WD.IS_NULL, new String[] { "IS", "NULL" });
+        compositeWords.put(WD.IS_NOT_NULL, new String[] { "IS", "NOT", "NULL" });
+        compositeWords.put(WD.IS_EMPTY, new String[] { "IS", "EMPTY" });
+        compositeWords.put(WD.IS_NOT_EMPTY, new String[] { "IS", "NOT", "EMPTY" });
+        compositeWords.put(WD.IS_BLANK, new String[] { "IS", "BLANK" });
+        compositeWords.put(WD.IS_NOT_BLANK, new String[] { "IS", "NOT", "BLANK" });
 
         List<String> list = new ArrayList<>(compositeWords.keySet());
 
@@ -88,13 +88,13 @@ public final class SQLParser {
             e = e.toLowerCase();
 
             if (!compositeWords.containsKey(e)) {
-                compositeWords.put(e, Splitter.with(D.SPACE).trim(true).splitToArray(e));
+                compositeWords.put(e, Splitter.with(WD.SPACE).trim(true).splitToArray(e));
             }
 
             e = e.toUpperCase();
 
             if (!compositeWords.containsKey(e)) {
-                compositeWords.put(e, Splitter.with(D.SPACE).trim(true).splitToArray(e));
+                compositeWords.put(e, Splitter.with(WD.SPACE).trim(true).splitToArray(e));
             }
         }
     }
@@ -115,7 +115,7 @@ public final class SQLParser {
             // char c = sqlCharArray[charIndex];
             char c = sql.charAt(index);
 
-            if ((D._BACKSLASH == c) && (index < (sqlLength - 1))) {
+            if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
                 sb.append(c);
                 sb.charAt(++index);
 
@@ -147,18 +147,18 @@ public final class SQLParser {
                             words.add(temp);
                             index++;
                         } else {
-                            if ((c == D._SPACE) || (c == TAB) || (c == ENTER)) {
-                                if ((words.size() > 0) && !words.get(words.size() - 1).equals(D.SPACE)) {
-                                    words.add(D.SPACE);
+                            if ((c == WD._SPACE) || (c == TAB) || (c == ENTER)) {
+                                if ((words.size() > 0) && !words.get(words.size() - 1).equals(WD.SPACE)) {
+                                    words.add(WD.SPACE);
                                 }
                             } else {
                                 words.add(String.valueOf(c));
                             }
                         }
                     } else {
-                        if ((c == D._SPACE) || (c == TAB) || (c == ENTER)) {
-                            if ((words.size() > 0) && !words.get(words.size() - 1).equals(D.SPACE)) {
-                                words.add(D.SPACE);
+                        if ((c == WD._SPACE) || (c == TAB) || (c == ENTER)) {
+                            if ((words.size() > 0) && !words.get(words.size() - 1).equals(WD.SPACE)) {
+                                words.add(WD.SPACE);
                             }
                         } else {
                             words.add(String.valueOf(c));
@@ -167,7 +167,7 @@ public final class SQLParser {
                 } else {
                     sb.append(c);
 
-                    if ((c == D._QUOTATION_S) || (c == D._QUOTATION_D)) {
+                    if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
                         quoteChar = c;
                     }
                 }
@@ -189,7 +189,7 @@ public final class SQLParser {
         String[] subWords = compositeWords.get(word);
 
         if (subWords == null) {
-            subWords = Splitter.with(D.SPACE).trim(true).splitToArray(word);
+            subWords = Splitter.with(WD.SPACE).trim(true).splitToArray(word);
             compositeWords.put(word, subWords);
         }
 
@@ -201,7 +201,7 @@ public final class SQLParser {
             for (int index = fromIndex; index < sqlLength; index++) {
                 char c = sql.charAt(index);
 
-                if ((D._BACKSLASH == c) && (index < (sqlLength - 1))) {
+                if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
                     sb.append(c);
                     sb.charAt(++index);
 
@@ -227,7 +227,7 @@ public final class SQLParser {
                     }
                 } else {
                     if (seperators.containsKey(c)) {
-                        if ((sb.length() == 0) && (c != D._SPACE) && (c != TAB) && (c != ENTER)) {
+                        if ((sb.length() == 0) && (c != WD._SPACE) && (c != TAB) && (c != ENTER)) {
                             if ((index < (sqlLength - 1))) {
                                 String temp = sql.substring(index, index + 2);
 
@@ -256,7 +256,7 @@ public final class SQLParser {
                     } else {
                         sb.append(c);
 
-                        if ((c == D._QUOTATION_S) || (c == D._QUOTATION_D)) {
+                        if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
                             quoteChar = c;
                         }
                     }
@@ -307,7 +307,7 @@ public final class SQLParser {
         for (int index = fromIndex; index < sqlLength; index++) {
             char c = sql.charAt(index);
 
-            if ((D._BACKSLASH == c) && (index < (sqlLength - 1))) {
+            if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
                 sb.append(c);
                 sb.charAt(++index);
 
@@ -324,7 +324,7 @@ public final class SQLParser {
                 }
             } else {
                 if (seperators.containsKey(c)) {
-                    if ((sb.length() == 0) && (c != D._SPACE) && (c != TAB) && (c != ENTER)) {
+                    if ((sb.length() == 0) && (c != WD._SPACE) && (c != TAB) && (c != ENTER)) {
                         if ((index < (sqlLength - 1))) {
                             String temp = sql.substring(index, index + 2);
 
@@ -344,7 +344,7 @@ public final class SQLParser {
                 } else {
                     sb.append(c);
 
-                    if ((c == D._QUOTATION_S) || (c == D._QUOTATION_D)) {
+                    if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
                         quoteChar = c;
                     }
                 }

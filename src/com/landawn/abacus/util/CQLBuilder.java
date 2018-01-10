@@ -16,9 +16,9 @@
 
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.D._PARENTHESES_L;
-import static com.landawn.abacus.util.D._PARENTHESES_R;
-import static com.landawn.abacus.util.D._SPACE;
+import static com.landawn.abacus.util.WD._PARENTHESES_L;
+import static com.landawn.abacus.util.WD._PARENTHESES_R;
+import static com.landawn.abacus.util.WD._SPACE;
 import static com.landawn.abacus.util.SQLBuilder._COMMA_SPACE;
 import static com.landawn.abacus.util.SQLBuilder._DELETE;
 import static com.landawn.abacus.util.SQLBuilder._INSERT;
@@ -79,7 +79,7 @@ import com.landawn.abacus.logging.LoggerFactory;
 public abstract class CQLBuilder {
     private static final Logger logger = LoggerFactory.getLogger(CQLBuilder.class);
 
-    public static final String DISTINCT = D.DISTINCT;
+    public static final String DISTINCT = WD.DISTINCT;
     public static final String COUNT_ALL = "count(*)";
 
     private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<>(1024);
@@ -246,13 +246,13 @@ public abstract class CQLBuilder {
 
         sb.append(formalizeName(tableName));
 
-        sb.append(D._SPACE);
-        sb.append(D._PARENTHESES_L);
+        sb.append(WD._SPACE);
+        sb.append(WD._PARENTHESES_L);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            if (columnNames.length == 1 && columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames.length == 1 && columnNames[0].indexOf(WD._SPACE) > 0) {
                 sb.append(columnNames[0]);
             } else {
                 for (int i = 0, len = columnNames.length; i < len; i++) {
@@ -285,11 +285,11 @@ public abstract class CQLBuilder {
             }
         }
 
-        sb.append(D._PARENTHESES_R);
+        sb.append(WD._PARENTHESES_R);
 
         sb.append(_SPACE_VALUES_SPACE);
 
-        sb.append(D._PARENTHESES_L);
+        sb.append(WD._PARENTHESES_L);
 
         if (N.notNullOrEmpty(columnNames)) {
             switch (cqlPolicy) {
@@ -300,7 +300,7 @@ public abstract class CQLBuilder {
                             sb.append(_COMMA_SPACE);
                         }
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -345,7 +345,7 @@ public abstract class CQLBuilder {
                             sb.append(_COMMA_SPACE);
                         }
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -389,16 +389,16 @@ public abstract class CQLBuilder {
             int i = 0;
             for (Map<String, Object> props : propsList) {
                 if (i++ > 0) {
-                    sb.append(D._PARENTHESES_R);
+                    sb.append(WD._PARENTHESES_R);
                     sb.append(_COMMA_SPACE);
-                    sb.append(D._PARENTHESES_L);
+                    sb.append(WD._PARENTHESES_L);
                 }
 
                 appendInsertProps(props);
             }
         }
 
-        sb.append(D._PARENTHESES_R);
+        sb.append(WD._PARENTHESES_R);
 
         return this;
     }
@@ -409,10 +409,10 @@ public abstract class CQLBuilder {
 
     public CQLBuilder from(String expr) {
         expr = expr.trim();
-        String tableName = expr.indexOf(D._COMMA) > 0 ? N.split(expr, D._COMMA, true)[0] : expr;
+        String tableName = expr.indexOf(WD._COMMA) > 0 ? N.split(expr, WD._COMMA, true)[0] : expr;
 
-        if (tableName.indexOf(D.SPACE) > 0) {
-            tableName = N.split(tableName, D._SPACE, true)[0];
+        if (tableName.indexOf(WD.SPACE) > 0) {
+            tableName = N.split(tableName, WD._SPACE, true)[0];
         }
 
         return from(tableName, expr);
@@ -425,29 +425,29 @@ public abstract class CQLBuilder {
         } else {
             String tableName = tableNames[0].trim();
 
-            if (tableName.indexOf(D.SPACE) > 0) {
-                tableName = N.split(tableName, D._SPACE, true)[0];
+            if (tableName.indexOf(WD.SPACE) > 0) {
+                tableName = N.split(tableName, WD._SPACE, true)[0];
             }
 
-            return from(tableName, N.join(tableNames, D.COMMA_SPACE));
+            return from(tableName, N.join(tableNames, WD.COMMA_SPACE));
         }
     }
 
     public CQLBuilder from(final Collection<String> tableNames) {
         String tableName = tableNames.iterator().next().trim();
 
-        if (tableName.indexOf(D.SPACE) > 0) {
-            tableName = N.split(tableName, D._SPACE, true)[0];
+        if (tableName.indexOf(WD.SPACE) > 0) {
+            tableName = N.split(tableName, WD._SPACE, true)[0];
         }
 
-        return from(tableName, N.join(tableNames, D.SPACE));
+        return from(tableName, N.join(tableNames, WD.SPACE));
     }
 
     public CQLBuilder from(final Map<String, String> tableAliases) {
         String tableName = tableAliases.keySet().iterator().next().trim();
 
-        if (tableName.indexOf(D.SPACE) > 0) {
-            tableName = N.split(tableName, D._SPACE, true)[0];
+        if (tableName.indexOf(WD.SPACE) > 0) {
+            tableName = N.split(tableName, WD._SPACE, true)[0];
         }
 
         String expr = "";
@@ -455,7 +455,7 @@ public abstract class CQLBuilder {
         int i = 0;
         for (Map.Entry<String, String> entry : tableAliases.entrySet()) {
             if (i++ > 0) {
-                expr += D.COMMA_SPACE;
+                expr += WD.COMMA_SPACE;
             }
 
             expr += (entry.getKey() + " " + entry.getValue());
@@ -476,17 +476,17 @@ public abstract class CQLBuilder {
         this.tableName = tableName;
 
         sb.append(op == OperationType.QUERY ? _SELECT : _DELETE);
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
 
         if (N.notNullOrEmpty(predicates)) {
             sb.append(predicates);
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
         }
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            if (columnNames.length == 1 && columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames.length == 1 && columnNames[0].indexOf(WD._SPACE) > 0) {
                 sb.append(columnNames[0]);
             } else {
                 int idx = -1;
@@ -504,22 +504,22 @@ public abstract class CQLBuilder {
                     if (idx < 0) {
                         sb.append(formalizeName(propColumnNameMap, columnNames[i]));
 
-                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
                             sb.append(_SPACE_AS_SPACE);
 
-                            sb.append(D._QUOTATION_D);
+                            sb.append(WD._QUOTATION_D);
                             sb.append(columnNames[i]);
-                            sb.append(D._QUOTATION_D);
+                            sb.append(WD._QUOTATION_D);
                         }
                     } else {
                         sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
 
-                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
                             sb.append(_SPACE_AS_SPACE);
 
-                            sb.append(D._QUOTATION_D);
+                            sb.append(WD._QUOTATION_D);
                             sb.append(columnNames[i].substring(idx + 4).trim());
-                            sb.append(D._QUOTATION_D);
+                            sb.append(WD._QUOTATION_D);
                         }
                     }
                 }
@@ -533,12 +533,12 @@ public abstract class CQLBuilder {
 
                 sb.append(formalizeName(propColumnNameMap, columnName));
 
-                if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
+                if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(columnName);
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
         } else {
@@ -553,9 +553,9 @@ public abstract class CQLBuilder {
                 if (N.notNullOrEmpty(entry.getValue())) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(entry.getValue());
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
         }
@@ -606,7 +606,7 @@ public abstract class CQLBuilder {
 
             if (!N.isAsciiAlpha(word.charAt(0))) {
                 sb.append(word);
-            } else if (i < len - 1 && words.get(i + 1).charAt(0) == D._PARENTHESES_L) {
+            } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
                 sb.append(word);
             } else {
                 sb.append(formalizeName(propColumnNameMap, word));
@@ -617,7 +617,7 @@ public abstract class CQLBuilder {
     public CQLBuilder orderBy(final String expr) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
-        if (expr.indexOf(D._SPACE) > 0) {
+        if (expr.indexOf(WD._SPACE) > 0) {
             // sb.append(columnNames[0]);
             appendStringExpr(expr);
         } else {
@@ -632,7 +632,7 @@ public abstract class CQLBuilder {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
-            if (columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames[0].indexOf(WD._SPACE) > 0) {
                 // sb.append(columnNames[0]);
                 appendStringExpr(columnNames[0]);
             } else {
@@ -656,7 +656,7 @@ public abstract class CQLBuilder {
     public CQLBuilder orderBy(final String columnName, final SortDirection direction) {
         orderBy(columnName);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -681,7 +681,7 @@ public abstract class CQLBuilder {
     public CQLBuilder orderBy(final Collection<String> columnNames, final SortDirection direction) {
         orderBy(columnNames);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -699,7 +699,7 @@ public abstract class CQLBuilder {
 
             sb.append(formalizeName(propColumnNameMap, entry.getKey()));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(entry.getValue().toString());
         }
 
@@ -724,7 +724,7 @@ public abstract class CQLBuilder {
 
         sb.append(_SPACE_SET_SPACE);
 
-        if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(D.EQUAL)) {
+        if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(WD.EQUAL)) {
             sb.append(columnNames[0]);
         } else {
             final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -741,7 +741,7 @@ public abstract class CQLBuilder {
 
                         sb.append(_SPACE_EQUAL_SPACE);
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -812,7 +812,7 @@ public abstract class CQLBuilder {
 
                     sb.append(_SPACE_EQUAL_SPACE);
 
-                    sb.append(D._QUESTION_MARK);
+                    sb.append(WD._QUESTION_MARK);
                 }
 
                 break;
@@ -1342,7 +1342,7 @@ public abstract class CQLBuilder {
         if (op == OperationType.UPDATE) {
             sb.append(_UPDATE);
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(formalizeName(tableName));
 
             if (setForUpdate && N.notNullOrEmpty(columnNameList)) {
@@ -1354,7 +1354,7 @@ public abstract class CQLBuilder {
             char[] deleteFromTableChars = tableDeleteFrom.get(newTableName);
 
             if (deleteFromTableChars == null) {
-                deleteFromTableChars = (D.DELETE + D.SPACE + D.FROM + D.SPACE + newTableName).toCharArray();
+                deleteFromTableChars = (WD.DELETE + WD.SPACE + WD.FROM + WD.SPACE + newTableName).toCharArray();
                 tableDeleteFrom.put(newTableName, deleteFromTableChars);
             }
 
@@ -1364,7 +1364,7 @@ public abstract class CQLBuilder {
 
     private void setParameterForCQL(final Object propValue) {
         if (L.QME.equals(propValue)) {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
         } else {
@@ -1374,11 +1374,11 @@ public abstract class CQLBuilder {
 
     private void setParameterForRawCQL(final Object propValue) {
         if (L.QME.equals(propValue)) {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
         } else {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
 
             parameters.add(propValue);
         }
@@ -1523,9 +1523,9 @@ public abstract class CQLBuilder {
 
             sb.append(formalizeName(tableName, propName));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(binary.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             Object propValue = binary.getPropValue();
             setParameter(propName, propValue);
@@ -1535,9 +1535,9 @@ public abstract class CQLBuilder {
 
             sb.append(formalizeName(tableName, propName));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(bt.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             Object minValue = bt.getMinValue();
             if (cqlPolicy == CQLPolicy.NAMED_CQL || cqlPolicy == CQLPolicy.IBATIS_CQL) {
@@ -1546,9 +1546,9 @@ public abstract class CQLBuilder {
                 setParameter(propName, minValue);
             }
 
-            sb.append(D._SPACE);
-            sb.append(D.AND);
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
+            sb.append(WD.AND);
+            sb.append(WD._SPACE);
 
             Object maxValue = bt.getMaxValue();
             if (cqlPolicy == CQLPolicy.NAMED_CQL || cqlPolicy == CQLPolicy.IBATIS_CQL) {
@@ -1559,9 +1559,9 @@ public abstract class CQLBuilder {
         } else if (cond instanceof Cell) {
             final Cell cell = (Cell) cond;
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(cell.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             sb.append(_PARENTHESES_L);
             appendCondition(cell.getCondition());

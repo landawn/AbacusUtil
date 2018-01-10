@@ -417,7 +417,7 @@ public final class CassandraExecutor implements Closeable {
                 propSetMethod = ClassUtil.getPropSetMethod(targetClass, propName);
 
                 if (propSetMethod == null) {
-                    if (propName.indexOf(D._PERIOD) > 0) {
+                    if (propName.indexOf(WD._PERIOD) > 0) {
                         ClassUtil.setPropValue(entity, propName, row.getObject(i), true);
                     }
 
@@ -918,15 +918,15 @@ public final class CassandraExecutor implements Closeable {
         return stream(targetClass, pair.cql, pair.parameters.toArray());
     }
 
-    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Condition whereCause) {
-        return streamm(targetClass, null, whereCause);
-    }
-
-    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
-        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause);
-
-        return stream(pair.cql, pair.parameters.toArray());
-    }
+    //    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Condition whereCause) {
+    //        return streamm(targetClass, null, whereCause);
+    //    }
+    //
+    //    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+    //        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause);
+    //
+    //        return stream(pair.cql, pair.parameters.toArray());
+    //    }
 
     /**
      * Always remember to set "<code>LIMIT 1</code>" in the cql statement for better performance.
@@ -1479,24 +1479,24 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
-            @Override
-            public Stream<Object[]> call() throws Exception {
-                return streamm(targetClass, whereCause);
-            }
-        });
-    }
-
-    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Collection<String> selectPropName,
-            final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
-            @Override
-            public Stream<Object[]> call() throws Exception {
-                return streamm(targetClass, selectPropName, whereCause);
-            }
-        });
-    }
+    //    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Condition whereCause) {
+    //        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
+    //            @Override
+    //            public Stream<Object[]> call() throws Exception {
+    //                return streamm(targetClass, whereCause);
+    //            }
+    //        });
+    //    }
+    //
+    //    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Collection<String> selectPropName,
+    //            final Condition whereCause) {
+    //        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
+    //            @Override
+    //            public Stream<Object[]> call() throws Exception {
+    //                return streamm(targetClass, selectPropName, whereCause);
+    //            }
+    //        });
+    //    }
 
     /**
      * Always remember to set "<code>LIMIT 1</code>" in the cql statement for better performance.

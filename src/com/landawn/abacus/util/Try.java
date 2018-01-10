@@ -425,7 +425,6 @@ public final class Try<T extends AutoCloseable> {
         boolean test(A a, B b, C c) throws E;
     }
 
-    @SuppressWarnings("hiding")
     public static interface QuadPredicate<A, B, C, D, E extends Exception> {
         boolean test(A a, B b, C c, D d) throws E;
     }
@@ -499,7 +498,6 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    @SuppressWarnings("hiding")
     public static interface QuadFunction<A, B, C, D, R, E extends Exception> {
         R apply(A a, B b, C c, D d) throws E;
     }
@@ -567,7 +565,6 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    @SuppressWarnings("hiding")
     public static interface QuadConsumer<A, B, C, D, E extends Exception> {
         void accept(A a, B b, C c, D d) throws E;
     }

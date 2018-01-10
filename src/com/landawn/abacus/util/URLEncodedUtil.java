@@ -328,7 +328,7 @@ public final class URLEncodedUtil {
 
         try {
             sb.append(url);
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
             encode(sb, parameters, charset);
 
             return sb.toString();

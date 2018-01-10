@@ -73,10 +73,10 @@ public final class CQLMapper {
      * @param filePath it could be multiple file paths separated by ',' or ';'
      */
     public void loadFrom(String filePath) {
-        String[] filePaths = Splitter.with(D.COMMA).trim(true).splitToArray(filePath);
+        String[] filePaths = Splitter.with(WD.COMMA).trim(true).splitToArray(filePath);
 
         if (filePaths.length == 1) {
-            filePaths = Splitter.with(D.SEMICOLON).trim(true).splitToArray(filePath);
+            filePaths = Splitter.with(WD.SEMICOLON).trim(true).splitToArray(filePath);
         }
 
         for (String subFilePath : filePaths) {

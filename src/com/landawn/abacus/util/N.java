@@ -15,9 +15,9 @@
  */
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.D._BACKSLASH;
-import static com.landawn.abacus.util.D._QUOTATION_D;
-import static com.landawn.abacus.util.D._QUOTATION_S;
+import static com.landawn.abacus.util.WD._BACKSLASH;
+import static com.landawn.abacus.util.WD._QUOTATION_D;
+import static com.landawn.abacus.util.WD._QUOTATION_S;
 
 import java.io.File;
 import java.io.IOException;
@@ -302,7 +302,7 @@ public final class N {
     static final char[] FALSE_CHAR_ARRAY = FALSE.toCharArray();
 
     // ...
-    static final char CHAR_0 = D.CHAR_0;
+    static final char CHAR_0 = WD.CHAR_0;
 
     /**
      *
@@ -311,7 +311,7 @@ public final class N {
      *      Escape Sequences for Character and String Literals</a>
      * @since 2.2
      */
-    static final char CHAR_LF = D.CHAR_LF;
+    static final char CHAR_LF = WD.CHAR_LF;
 
     /**
      *
@@ -320,7 +320,7 @@ public final class N {
      *      Escape Sequences for Character and String Literals</a>
      * @since 2.2
      */
-    static final char CHAR_CR = D.CHAR_CR;
+    static final char CHAR_CR = WD.CHAR_CR;
 
     // ...
     /**
@@ -4737,7 +4737,7 @@ public final class N {
     }
 
     public static String padStart(final String str, final int minLength) {
-        return padStart(str, minLength, D._SPACE);
+        return padStart(str, minLength, WD._SPACE);
     }
 
     /**
@@ -4802,7 +4802,7 @@ public final class N {
     }
 
     public static String padEnd(final String str, final int minLength) {
-        return padEnd(str, minLength, D._SPACE);
+        return padEnd(str, minLength, WD._SPACE);
     }
 
     /**
@@ -5033,7 +5033,7 @@ public final class N {
 
                 if (Character.isUpperCase(ch)) {
                     if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        sb.append(D._UNDERSCORE);
+                        sb.append(WD._UNDERSCORE);
                     }
 
                     sb.append(Character.toLowerCase(ch));
@@ -5134,7 +5134,7 @@ public final class N {
 
                 if (Character.isUpperCase(ch)) {
                     if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        sb.append(D._UNDERSCORE);
+                        sb.append(WD._UNDERSCORE);
                     }
 
                     sb.append(ch);
@@ -5376,7 +5376,7 @@ public final class N {
             return str;
         }
 
-        return WHITESPACE_PATTERN.matcher(str.trim()).replaceAll(D.SPACE);
+        return WHITESPACE_PATTERN.matcher(str.trim()).replaceAll(WD.SPACE);
     }
 
     /**
@@ -9674,7 +9674,7 @@ public final class N {
 
     private static boolean isErrorMsg(final String msg) {
         // shortest message: "it is null"
-        return msg.length() > 9 && msg.indexOf(D._SPACE) > 0;
+        return msg.length() > 9 && msg.indexOf(WD._SPACE) > 0;
     }
 
     /**
@@ -11366,17 +11366,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final boolean[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11417,17 +11417,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final char[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11468,17 +11468,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final byte[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11519,17 +11519,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final short[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11570,17 +11570,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final int[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11621,17 +11621,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final long[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11672,17 +11672,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final float[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11723,17 +11723,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final double[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(a[i]);
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11774,17 +11774,17 @@ public final class N {
     }
 
     static void toString(final StringBuilder sb, final Object[] a, final int from, final int to) {
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         for (int i = from; i < to; i++) {
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             sb.append(toString(a[i]));
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
     }
 
     /**
@@ -11823,7 +11823,7 @@ public final class N {
     static void deepToString(final StringBuilder sb, final Object[] a, final int from, final int to, final Set<Object[]> processedElements) {
         processedElements.add(a);
 
-        sb.append(D._BRACKET_L);
+        sb.append(WD._BRACKET_L);
 
         Object element = null;
         Class<?> eClass = null;
@@ -11831,7 +11831,7 @@ public final class N {
             element = a[i];
 
             if (i > from) {
-                sb.append(D.COMMA_SPACE);
+                sb.append(WD.COMMA_SPACE);
             }
 
             if (element == null) {
@@ -11892,7 +11892,7 @@ public final class N {
             }
         }
 
-        sb.append(D._BRACKET_R);
+        sb.append(WD._BRACKET_R);
 
         processedElements.remove(a);
     }

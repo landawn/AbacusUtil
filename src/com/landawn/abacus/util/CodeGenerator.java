@@ -18,7 +18,7 @@ import static com.landawn.abacus.util.CodeGenerator.EntityMode.EXTEND_ACTIVE_REC
 import static com.landawn.abacus.util.CodeGenerator.EntityMode.EXTEND_DIRTY_MARKER;
 import static com.landawn.abacus.util.CodeGenerator.EntityMode.IMPL_ACTIVE_RECORD;
 import static com.landawn.abacus.util.CodeGenerator.EntityMode.IMPL_DIRTY_MARKER;
-import static com.landawn.abacus.util.D._PERIOD;
+import static com.landawn.abacus.util.WD._PERIOD;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -705,7 +705,7 @@ public final class CodeGenerator {
 
     protected static String getSimplePropNameTableClassName(final String className) {
         String simpleClassName = className;
-        int index = className.lastIndexOf(D._PERIOD);
+        int index = className.lastIndexOf(WD._PERIOD);
 
         if (index > -1) {
             simpleClassName = className.substring(index + 1);
@@ -3064,7 +3064,7 @@ public final class CodeGenerator {
                 isAllUpperCase = false;
             }
 
-            if (c == D._UNDERSCORE) {
+            if (c == WD._UNDERSCORE) {
                 hasUnderScore = true;
             }
         }
@@ -3074,7 +3074,7 @@ public final class CodeGenerator {
                 for (int i = 0; i < st.length(); i++) {
                     c = st.charAt(i);
 
-                    if (c == D._UNDERSCORE) {
+                    if (c == WD._UNDERSCORE) {
                         i++;
 
                         if (i < st.length()) {
@@ -3089,7 +3089,7 @@ public final class CodeGenerator {
                 for (int i = 0; i < st.length(); i++) {
                     c = st.charAt(i);
 
-                    if (c == D._UNDERSCORE) {
+                    if (c == WD._UNDERSCORE) {
                         i++;
 
                         if (i < st.length()) {
@@ -3437,9 +3437,9 @@ public final class CodeGenerator {
             }
 
             if (sb.indexOf(" implements ") > 0) {
-                sb.append(", " + simplePropNameTableClass + D._PERIOD + entityDef.getName() + POSTFIX_OF_PROP_NAME_LIST);
+                sb.append(", " + simplePropNameTableClass + WD._PERIOD + entityDef.getName() + POSTFIX_OF_PROP_NAME_LIST);
             } else {
-                sb.append(" implements " + simplePropNameTableClass + D._PERIOD + entityDef.getName() + POSTFIX_OF_PROP_NAME_LIST);
+                sb.append(" implements " + simplePropNameTableClass + WD._PERIOD + entityDef.getName() + POSTFIX_OF_PROP_NAME_LIST);
             }
         }
 

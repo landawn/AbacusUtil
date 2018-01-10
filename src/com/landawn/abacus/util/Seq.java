@@ -2081,14 +2081,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, E extends Exception> Map<K, D> toMap(Try.Function<? super T, ? extends K, E> classifier, Collector<? super T, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.Function<? super T, ? extends K, E> classifier,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
@@ -2125,7 +2123,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    @SuppressWarnings("hiding")
     public <K, U, A, D, E extends Exception, E2 extends Exception> Map<K, D> toMap(Try.Function<? super T, ? extends K, E> classifier,
             Try.Function<? super T, ? extends U, E2> valueMapper, Collector<? super U, A, D> downstream) throws E, E2 {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
@@ -2133,7 +2130,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return toMap(classifier, valueMapper, downstream, mapFactory);
     }
 
-    @SuppressWarnings("hiding")
     public <K, U, A, D, M extends Map<K, D>, E extends Exception, E2 extends Exception> M toMap(final Try.Function<? super T, ? extends K, E> classifier,
             Try.Function<? super T, ? extends U, E2> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) throws E, E2 {
         final M result = mapFactory.get();

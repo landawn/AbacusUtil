@@ -16,9 +16,9 @@
 
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.D._PARENTHESES_L;
-import static com.landawn.abacus.util.D._PARENTHESES_R;
-import static com.landawn.abacus.util.D._SPACE;
+import static com.landawn.abacus.util.WD._PARENTHESES_L;
+import static com.landawn.abacus.util.WD._PARENTHESES_R;
+import static com.landawn.abacus.util.WD._SPACE;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -62,96 +62,96 @@ import com.landawn.abacus.logging.LoggerFactory;
 public abstract class SQLBuilder {
     private static final Logger logger = LoggerFactory.getLogger(SQLBuilder.class);
 
-    public static final String ALL = D.ALL;
-    public static final String TOP = D.TOP;
-    public static final String UNIQUE = D.UNIQUE;
-    public static final String DISTINCT = D.DISTINCT;
-    public static final String DISTINCTROW = D.DISTINCTROW;
+    public static final String ALL = WD.ALL;
+    public static final String TOP = WD.TOP;
+    public static final String UNIQUE = WD.UNIQUE;
+    public static final String DISTINCT = WD.DISTINCT;
+    public static final String DISTINCTROW = WD.DISTINCTROW;
 
-    public static final String ASTERISK = D.ASTERISK;
+    public static final String ASTERISK = WD.ASTERISK;
     public static final String COUNT_ALL = "count(*)";
 
     public static final String _1 = "1";
     public static final List<String> _1_list = N.asList(_1);
 
-    static final char[] _INSERT = D.INSERT.toCharArray();
-    static final char[] _SPACE_INSERT_SPACE = (D.SPACE + D.INSERT + D.SPACE).toCharArray();
-    static final char[] _INTO = D.INTO.toCharArray();
-    static final char[] _SPACE_INTO_SPACE = (D.SPACE + D.INTO + D.SPACE).toCharArray();
-    static final char[] _VALUES = D.VALUES.toCharArray();
-    static final char[] _SPACE_VALUES_SPACE = (D.SPACE + D.VALUES + D.SPACE).toCharArray();
+    static final char[] _INSERT = WD.INSERT.toCharArray();
+    static final char[] _SPACE_INSERT_SPACE = (WD.SPACE + WD.INSERT + WD.SPACE).toCharArray();
+    static final char[] _INTO = WD.INTO.toCharArray();
+    static final char[] _SPACE_INTO_SPACE = (WD.SPACE + WD.INTO + WD.SPACE).toCharArray();
+    static final char[] _VALUES = WD.VALUES.toCharArray();
+    static final char[] _SPACE_VALUES_SPACE = (WD.SPACE + WD.VALUES + WD.SPACE).toCharArray();
 
-    static final char[] _SELECT = D.SELECT.toCharArray();
-    static final char[] _SPACE_SELECT_SPACE = (D.SPACE + D.SELECT + D.SPACE).toCharArray();
-    static final char[] _FROM = D.FROM.toCharArray();
-    static final char[] _SPACE_FROM_SPACE = (D.SPACE + D.FROM + D.SPACE).toCharArray();
+    static final char[] _SELECT = WD.SELECT.toCharArray();
+    static final char[] _SPACE_SELECT_SPACE = (WD.SPACE + WD.SELECT + WD.SPACE).toCharArray();
+    static final char[] _FROM = WD.FROM.toCharArray();
+    static final char[] _SPACE_FROM_SPACE = (WD.SPACE + WD.FROM + WD.SPACE).toCharArray();
 
-    static final char[] _UPDATE = D.UPDATE.toCharArray();
-    static final char[] _SPACE_UPDATE_SPACE = (D.SPACE + D.UPDATE + D.SPACE).toCharArray();
-    static final char[] _SET = D.SET.toCharArray();
-    static final char[] _SPACE_SET_SPACE = (D.SPACE + D.SET + D.SPACE).toCharArray();
+    static final char[] _UPDATE = WD.UPDATE.toCharArray();
+    static final char[] _SPACE_UPDATE_SPACE = (WD.SPACE + WD.UPDATE + WD.SPACE).toCharArray();
+    static final char[] _SET = WD.SET.toCharArray();
+    static final char[] _SPACE_SET_SPACE = (WD.SPACE + WD.SET + WD.SPACE).toCharArray();
 
-    static final char[] _DELETE = D.DELETE.toCharArray();
-    static final char[] _SPACE_DELETE_SPACE = (D.SPACE + D.DELETE + D.SPACE).toCharArray();
+    static final char[] _DELETE = WD.DELETE.toCharArray();
+    static final char[] _SPACE_DELETE_SPACE = (WD.SPACE + WD.DELETE + WD.SPACE).toCharArray();
 
-    static final char[] _JOIN = D.JOIN.toCharArray();
-    static final char[] _SPACE_JOIN_SPACE = (D.SPACE + D.JOIN + D.SPACE).toCharArray();
-    static final char[] _LEFT_JOIN = D.LEFT_JOIN.toCharArray();
-    static final char[] _SPACE_LEFT_JOIN_SPACE = (D.SPACE + D.LEFT_JOIN + D.SPACE).toCharArray();
-    static final char[] _RIGHT_JOIN = D.RIGHT_JOIN.toCharArray();
-    static final char[] _SPACE_RIGHT_JOIN_SPACE = (D.SPACE + D.RIGHT_JOIN + D.SPACE).toCharArray();
-    static final char[] _FULL_JOIN = D.FULL_JOIN.toCharArray();
-    static final char[] _SPACE_FULL_JOIN_SPACE = (D.SPACE + D.FULL_JOIN + D.SPACE).toCharArray();
-    static final char[] _CROSS_JOIN = D.CROSS_JOIN.toCharArray();
-    static final char[] _SPACE_CROSS_JOIN_SPACE = (D.SPACE + D.CROSS_JOIN + D.SPACE).toCharArray();
-    static final char[] _INNER_JOIN = D.INNER_JOIN.toCharArray();
-    static final char[] _SPACE_INNER_JOIN_SPACE = (D.SPACE + D.INNER_JOIN + D.SPACE).toCharArray();
-    static final char[] _NATURAL_JOIN = D.NATURAL_JOIN.toCharArray();
-    static final char[] _SPACE_NATURAL_JOIN_SPACE = (D.SPACE + D.NATURAL_JOIN + D.SPACE).toCharArray();
+    static final char[] _JOIN = WD.JOIN.toCharArray();
+    static final char[] _SPACE_JOIN_SPACE = (WD.SPACE + WD.JOIN + WD.SPACE).toCharArray();
+    static final char[] _LEFT_JOIN = WD.LEFT_JOIN.toCharArray();
+    static final char[] _SPACE_LEFT_JOIN_SPACE = (WD.SPACE + WD.LEFT_JOIN + WD.SPACE).toCharArray();
+    static final char[] _RIGHT_JOIN = WD.RIGHT_JOIN.toCharArray();
+    static final char[] _SPACE_RIGHT_JOIN_SPACE = (WD.SPACE + WD.RIGHT_JOIN + WD.SPACE).toCharArray();
+    static final char[] _FULL_JOIN = WD.FULL_JOIN.toCharArray();
+    static final char[] _SPACE_FULL_JOIN_SPACE = (WD.SPACE + WD.FULL_JOIN + WD.SPACE).toCharArray();
+    static final char[] _CROSS_JOIN = WD.CROSS_JOIN.toCharArray();
+    static final char[] _SPACE_CROSS_JOIN_SPACE = (WD.SPACE + WD.CROSS_JOIN + WD.SPACE).toCharArray();
+    static final char[] _INNER_JOIN = WD.INNER_JOIN.toCharArray();
+    static final char[] _SPACE_INNER_JOIN_SPACE = (WD.SPACE + WD.INNER_JOIN + WD.SPACE).toCharArray();
+    static final char[] _NATURAL_JOIN = WD.NATURAL_JOIN.toCharArray();
+    static final char[] _SPACE_NATURAL_JOIN_SPACE = (WD.SPACE + WD.NATURAL_JOIN + WD.SPACE).toCharArray();
 
-    static final char[] _ON = D.ON.toCharArray();
-    static final char[] _SPACE_ON_SPACE = (D.SPACE + D.ON + D.SPACE).toCharArray();
-    static final char[] _USING = D.USING.toCharArray();
-    static final char[] _SPACE_USING_SPACE = (D.SPACE + D.USING + D.SPACE).toCharArray();
+    static final char[] _ON = WD.ON.toCharArray();
+    static final char[] _SPACE_ON_SPACE = (WD.SPACE + WD.ON + WD.SPACE).toCharArray();
+    static final char[] _USING = WD.USING.toCharArray();
+    static final char[] _SPACE_USING_SPACE = (WD.SPACE + WD.USING + WD.SPACE).toCharArray();
 
-    static final char[] _WHERE = D.WHERE.toCharArray();
-    static final char[] _SPACE_WHERE_SPACE = (D.SPACE + D.WHERE + D.SPACE).toCharArray();
-    static final char[] _GROUP_BY = D.GROUP_BY.toCharArray();
-    static final char[] _SPACE_GROUP_BY_SPACE = (D.SPACE + D.GROUP_BY + D.SPACE).toCharArray();
-    static final char[] _HAVING = D.HAVING.toCharArray();
-    static final char[] _SPACE_HAVING_SPACE = (D.SPACE + D.HAVING + D.SPACE).toCharArray();
-    static final char[] _ORDER_BY = D.ORDER_BY.toCharArray();
-    static final char[] _SPACE_ORDER_BY_SPACE = (D.SPACE + D.ORDER_BY + D.SPACE).toCharArray();
-    static final char[] _LIMIT = (D.SPACE + D.LIMIT + D.SPACE).toCharArray();
-    static final char[] _SPACE_LIMIT_SPACE = (D.SPACE + D.LIMIT + D.SPACE).toCharArray();
-    static final char[] _OFFSET = D.OFFSET.toCharArray();
-    static final char[] _SPACE_OFFSET_SPACE = (D.SPACE + D.OFFSET + D.SPACE).toCharArray();
-    static final char[] _AND = D.AND.toCharArray();
-    static final char[] _SPACE_AND_SPACE = (D.SPACE + D.AND + D.SPACE).toCharArray();
-    static final char[] _OR = D.OR.toCharArray();
-    static final char[] _SPACE_OR_SPACE = (D.SPACE + D.OR + D.SPACE).toCharArray();
+    static final char[] _WHERE = WD.WHERE.toCharArray();
+    static final char[] _SPACE_WHERE_SPACE = (WD.SPACE + WD.WHERE + WD.SPACE).toCharArray();
+    static final char[] _GROUP_BY = WD.GROUP_BY.toCharArray();
+    static final char[] _SPACE_GROUP_BY_SPACE = (WD.SPACE + WD.GROUP_BY + WD.SPACE).toCharArray();
+    static final char[] _HAVING = WD.HAVING.toCharArray();
+    static final char[] _SPACE_HAVING_SPACE = (WD.SPACE + WD.HAVING + WD.SPACE).toCharArray();
+    static final char[] _ORDER_BY = WD.ORDER_BY.toCharArray();
+    static final char[] _SPACE_ORDER_BY_SPACE = (WD.SPACE + WD.ORDER_BY + WD.SPACE).toCharArray();
+    static final char[] _LIMIT = (WD.SPACE + WD.LIMIT + WD.SPACE).toCharArray();
+    static final char[] _SPACE_LIMIT_SPACE = (WD.SPACE + WD.LIMIT + WD.SPACE).toCharArray();
+    static final char[] _OFFSET = WD.OFFSET.toCharArray();
+    static final char[] _SPACE_OFFSET_SPACE = (WD.SPACE + WD.OFFSET + WD.SPACE).toCharArray();
+    static final char[] _AND = WD.AND.toCharArray();
+    static final char[] _SPACE_AND_SPACE = (WD.SPACE + WD.AND + WD.SPACE).toCharArray();
+    static final char[] _OR = WD.OR.toCharArray();
+    static final char[] _SPACE_OR_SPACE = (WD.SPACE + WD.OR + WD.SPACE).toCharArray();
 
-    static final char[] _UNION = D.UNION.toCharArray();
-    static final char[] _SPACE_UNION_SPACE = (D.SPACE + D.UNION + D.SPACE).toCharArray();
-    static final char[] _UNION_ALL = D.UNION_ALL.toCharArray();
-    static final char[] _SPACE_UNION_ALL_SPACE = (D.SPACE + D.UNION_ALL + D.SPACE).toCharArray();
-    static final char[] _INTERSECT = D.INTERSECT.toCharArray();
-    static final char[] _SPACE_INTERSECT_SPACE = (D.SPACE + D.INTERSECT + D.SPACE).toCharArray();
-    static final char[] _EXCEPT = D.EXCEPT.toCharArray();
-    static final char[] _SPACE_EXCEPT_SPACE = (D.SPACE + D.EXCEPT + D.SPACE).toCharArray();
-    static final char[] _EXCEPT2 = D.EXCEPT2.toCharArray();
-    static final char[] _SPACE_EXCEPT2_SPACE = (D.SPACE + D.EXCEPT2 + D.SPACE).toCharArray();
+    static final char[] _UNION = WD.UNION.toCharArray();
+    static final char[] _SPACE_UNION_SPACE = (WD.SPACE + WD.UNION + WD.SPACE).toCharArray();
+    static final char[] _UNION_ALL = WD.UNION_ALL.toCharArray();
+    static final char[] _SPACE_UNION_ALL_SPACE = (WD.SPACE + WD.UNION_ALL + WD.SPACE).toCharArray();
+    static final char[] _INTERSECT = WD.INTERSECT.toCharArray();
+    static final char[] _SPACE_INTERSECT_SPACE = (WD.SPACE + WD.INTERSECT + WD.SPACE).toCharArray();
+    static final char[] _EXCEPT = WD.EXCEPT.toCharArray();
+    static final char[] _SPACE_EXCEPT_SPACE = (WD.SPACE + WD.EXCEPT + WD.SPACE).toCharArray();
+    static final char[] _EXCEPT2 = WD.EXCEPT2.toCharArray();
+    static final char[] _SPACE_EXCEPT2_SPACE = (WD.SPACE + WD.EXCEPT2 + WD.SPACE).toCharArray();
 
-    static final char[] _AS = D.AS.toCharArray();
-    static final char[] _SPACE_AS_SPACE = (D.SPACE + D.AS + D.SPACE).toCharArray();
+    static final char[] _AS = WD.AS.toCharArray();
+    static final char[] _SPACE_AS_SPACE = (WD.SPACE + WD.AS + WD.SPACE).toCharArray();
 
-    static final char[] _SPACE_EQUAL_SPACE = (D.SPACE + D.EQUAL + D.SPACE).toCharArray();
+    static final char[] _SPACE_EQUAL_SPACE = (WD.SPACE + WD.EQUAL + WD.SPACE).toCharArray();
 
-    static final char[] _SPACE_FOR_UPDATE = (D.SPACE + D.FOR_UPDATE).toCharArray();
+    static final char[] _SPACE_FOR_UPDATE = (WD.SPACE + WD.FOR_UPDATE).toCharArray();
 
-    static final char[] _COMMA_SPACE = D.COMMA_SPACE.toCharArray();
+    static final char[] _COMMA_SPACE = WD.COMMA_SPACE.toCharArray();
 
-    static final String SPACE_AS_SPACE = D.SPACE + D.AS + D.SPACE;
+    static final String SPACE_AS_SPACE = WD.SPACE + WD.AS + WD.SPACE;
 
     private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<>(1024);
     private static final Map<Class<?>, Set<String>> subEntityPropNamesPool = new ObjectPool<>(1024);
@@ -243,7 +243,7 @@ public abstract class SQLBuilder {
 
                         for (String pn : getPropNamesByClass(subEntityClass, false, null)) {
                             entityPropNames
-                                    .add(N.concat(ClassUtil.getSimpleClassName(subEntityClass), D.PERIOD, pn, SPACE_AS_SPACE, subEntityPropName, D.PERIOD, pn));
+                                    .add(N.concat(ClassUtil.getSimpleClassName(subEntityClass), WD.PERIOD, pn, SPACE_AS_SPACE, subEntityPropName, WD.PERIOD, pn));
                         }
                     }
                 }
@@ -448,13 +448,13 @@ public abstract class SQLBuilder {
 
         sb.append(formalizeName(tableName));
 
-        sb.append(D._SPACE);
-        sb.append(D._PARENTHESES_L);
+        sb.append(WD._SPACE);
+        sb.append(WD._PARENTHESES_L);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            if (columnNames.length == 1 && columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames.length == 1 && columnNames[0].indexOf(WD._SPACE) > 0) {
                 sb.append(columnNames[0]);
             } else {
                 for (int i = 0, len = columnNames.length; i < len; i++) {
@@ -487,11 +487,11 @@ public abstract class SQLBuilder {
             }
         }
 
-        sb.append(D._PARENTHESES_R);
+        sb.append(WD._PARENTHESES_R);
 
         sb.append(_SPACE_VALUES_SPACE);
 
-        sb.append(D._PARENTHESES_L);
+        sb.append(WD._PARENTHESES_L);
 
         if (N.notNullOrEmpty(columnNames)) {
             switch (sqlPolicy) {
@@ -502,7 +502,7 @@ public abstract class SQLBuilder {
                             sb.append(_COMMA_SPACE);
                         }
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -547,7 +547,7 @@ public abstract class SQLBuilder {
                             sb.append(_COMMA_SPACE);
                         }
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -591,16 +591,16 @@ public abstract class SQLBuilder {
             int i = 0;
             for (Map<String, Object> props : propsList) {
                 if (i++ > 0) {
-                    sb.append(D._PARENTHESES_R);
+                    sb.append(WD._PARENTHESES_R);
                     sb.append(_COMMA_SPACE);
-                    sb.append(D._PARENTHESES_L);
+                    sb.append(WD._PARENTHESES_L);
                 }
 
                 appendInsertProps(props);
             }
         }
 
-        sb.append(D._PARENTHESES_R);
+        sb.append(WD._PARENTHESES_R);
 
         return this;
     }
@@ -611,13 +611,13 @@ public abstract class SQLBuilder {
 
     public SQLBuilder from(String expr) {
         expr = expr.trim();
-        String tableName = expr.indexOf(D._COMMA) > 0 ? N.substring(expr, 0, D._COMMA).get() : expr;
+        String tableName = expr.indexOf(WD._COMMA) > 0 ? N.substring(expr, 0, WD._COMMA).get() : expr;
 
-        if (tableName.indexOf(D._SPACE) > 0) {
-            tableName = N.substring(tableName, 0, D._SPACE).get();
+        if (tableName.indexOf(WD._SPACE) > 0) {
+            tableName = N.substring(tableName, 0, WD._SPACE).get();
         }
 
-        return from(tableName, tableName.indexOf(D._SPACE) > 0 ? expr : formalizeName(expr));
+        return from(tableName, tableName.indexOf(WD._SPACE) > 0 ? expr : formalizeName(expr));
     }
 
     @SafeVarargs
@@ -655,7 +655,7 @@ public abstract class SQLBuilder {
         try {
             for (String tableName : tableNames) {
                 if (sb.length() > 0) {
-                    sb.append(D.COMMA_SPACE);
+                    sb.append(WD.COMMA_SPACE);
                 }
 
                 sb.append(formalizeName(tableName));
@@ -680,7 +680,7 @@ public abstract class SQLBuilder {
         try {
             for (Map.Entry<String, String> entry : tableAliases.entrySet()) {
                 if (sb.length() > 0) {
-                    sb.append(D.COMMA_SPACE);
+                    sb.append(WD.COMMA_SPACE);
                 }
 
                 sb.append(formalizeName(entry.getKey()));
@@ -708,11 +708,11 @@ public abstract class SQLBuilder {
         this.tableName = tableName;
 
         sb.append(_SELECT);
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
 
         if (N.notNullOrEmpty(predicates)) {
             sb.append(predicates);
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
         }
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -733,22 +733,22 @@ public abstract class SQLBuilder {
                 if (idx < 0) {
                     sb.append(formalizeName(propColumnNameMap, columnNames[i]));
 
-                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(D._QUOTATION_D);
+                        sb.append(WD._QUOTATION_D);
                         sb.append(columnNames[i]);
-                        sb.append(D._QUOTATION_D);
+                        sb.append(WD._QUOTATION_D);
                     }
                 } else {
                     sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
 
-                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(D._QUOTATION_D);
+                        sb.append(WD._QUOTATION_D);
                         sb.append(columnNames[i].substring(idx + 4).trim());
-                        sb.append(D._QUOTATION_D);
+                        sb.append(WD._QUOTATION_D);
                     }
                 }
             }
@@ -761,12 +761,12 @@ public abstract class SQLBuilder {
 
                 sb.append(formalizeName(propColumnNameMap, columnName));
 
-                if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
+                if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(columnName);
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
         } else {
@@ -781,9 +781,9 @@ public abstract class SQLBuilder {
                 if (N.notNullOrEmpty(entry.getValue())) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(entry.getValue());
-                    sb.append(D._QUOTATION_D);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
         }
@@ -934,7 +934,7 @@ public abstract class SQLBuilder {
 
             if (!N.isAsciiAlpha(word.charAt(0))) {
                 sb.append(word);
-            } else if (i < len - 1 && words.get(i + 1).charAt(0) == D._PARENTHESES_L) {
+            } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
                 sb.append(word);
             } else {
                 sb.append(formalizeName(propColumnNameMap, word));
@@ -960,7 +960,7 @@ public abstract class SQLBuilder {
     public SQLBuilder groupBy(final String expr) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
-        if (expr.indexOf(D._SPACE) > 0) {
+        if (expr.indexOf(WD._SPACE) > 0) {
             // sb.append(columnNames[0]);
             appendStringExpr(expr);
         } else {
@@ -975,7 +975,7 @@ public abstract class SQLBuilder {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         if (columnNames.length == 1) {
-            if (columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames[0].indexOf(WD._SPACE) > 0) {
                 // sb.append(columnNames[0]);
                 appendStringExpr(columnNames[0]);
             } else {
@@ -999,7 +999,7 @@ public abstract class SQLBuilder {
     public SQLBuilder groupBy(final String columnName, final SortDirection direction) {
         groupBy(columnName);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -1024,7 +1024,7 @@ public abstract class SQLBuilder {
     public SQLBuilder groupBy(final Collection<String> columnNames, final SortDirection direction) {
         groupBy(columnNames);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -1042,7 +1042,7 @@ public abstract class SQLBuilder {
 
             sb.append(formalizeName(propColumnNameMap, entry.getKey()));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(entry.getValue().toString());
         }
 
@@ -1073,7 +1073,7 @@ public abstract class SQLBuilder {
     public SQLBuilder orderBy(final String expr) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
-        if (expr.indexOf(D._SPACE) > 0) {
+        if (expr.indexOf(WD._SPACE) > 0) {
             // sb.append(columnNames[0]);
             appendStringExpr(expr);
         } else {
@@ -1088,7 +1088,7 @@ public abstract class SQLBuilder {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
-            if (columnNames[0].indexOf(D._SPACE) > 0) {
+            if (columnNames[0].indexOf(WD._SPACE) > 0) {
                 // sb.append(columnNames[0]);
                 appendStringExpr(columnNames[0]);
             } else {
@@ -1112,7 +1112,7 @@ public abstract class SQLBuilder {
     public SQLBuilder orderBy(final String columnName, final SortDirection direction) {
         orderBy(columnName);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -1137,7 +1137,7 @@ public abstract class SQLBuilder {
     public SQLBuilder orderBy(final Collection<String> columnNames, final SortDirection direction) {
         orderBy(columnNames);
 
-        sb.append(D._SPACE);
+        sb.append(WD._SPACE);
         sb.append(direction.toString());
 
         return this;
@@ -1155,7 +1155,7 @@ public abstract class SQLBuilder {
 
             sb.append(formalizeName(propColumnNameMap, entry.getKey()));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(entry.getValue().toString());
         }
 
@@ -1444,7 +1444,7 @@ public abstract class SQLBuilder {
     public final SQLBuilder set(final String... columnNames) {
         init(false);
 
-        if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(D.EQUAL)) {
+        if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(WD.EQUAL)) {
             sb.append(columnNames[0]);
         } else {
             final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -1461,7 +1461,7 @@ public abstract class SQLBuilder {
 
                         sb.append(_SPACE_EQUAL_SPACE);
 
-                        sb.append(D._QUESTION_MARK);
+                        sb.append(WD._QUESTION_MARK);
                     }
 
                     break;
@@ -1530,7 +1530,7 @@ public abstract class SQLBuilder {
 
                     sb.append(_SPACE_EQUAL_SPACE);
 
-                    sb.append(D._QUESTION_MARK);
+                    sb.append(WD._QUESTION_MARK);
                 }
 
                 break;
@@ -1947,7 +1947,7 @@ public abstract class SQLBuilder {
         if (op == OperationType.UPDATE) {
             sb.append(_UPDATE);
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(formalizeName(tableName));
 
             sb.append(_SPACE_SET_SPACE);
@@ -1961,7 +1961,7 @@ public abstract class SQLBuilder {
             char[] deleteFromTableChars = tableDeleteFrom.get(newTableName);
 
             if (deleteFromTableChars == null) {
-                deleteFromTableChars = (D.DELETE + D.SPACE + D.FROM + D.SPACE + newTableName).toCharArray();
+                deleteFromTableChars = (WD.DELETE + WD.SPACE + WD.FROM + WD.SPACE + newTableName).toCharArray();
                 tableDeleteFrom.put(newTableName, deleteFromTableChars);
             }
 
@@ -1971,7 +1971,7 @@ public abstract class SQLBuilder {
 
     private void setParameterForSQL(final Object propValue) {
         if (L.QME.equals(propValue)) {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
         } else {
@@ -1981,11 +1981,11 @@ public abstract class SQLBuilder {
 
     private void setParameterForRawSQL(final Object propValue) {
         if (L.QME.equals(propValue)) {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
         } else {
-            sb.append(D._QUESTION_MARK);
+            sb.append(WD._QUESTION_MARK);
 
             parameters.add(propValue);
         }
@@ -2130,9 +2130,9 @@ public abstract class SQLBuilder {
 
             sb.append(formalizeName(tableName, propName));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(binary.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             Object propValue = binary.getPropValue();
             setParameter(propName, propValue);
@@ -2142,9 +2142,9 @@ public abstract class SQLBuilder {
 
             sb.append(formalizeName(tableName, propName));
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(bt.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             Object minValue = bt.getMinValue();
             if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
@@ -2153,9 +2153,9 @@ public abstract class SQLBuilder {
                 setParameter(propName, minValue);
             }
 
-            sb.append(D._SPACE);
-            sb.append(D.AND);
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
+            sb.append(WD.AND);
+            sb.append(WD._SPACE);
 
             Object maxValue = bt.getMaxValue();
             if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
@@ -2166,9 +2166,9 @@ public abstract class SQLBuilder {
         } else if (cond instanceof Cell) {
             final Cell cell = (Cell) cond;
 
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
             sb.append(cell.getOperator().toString());
-            sb.append(D._SPACE);
+            sb.append(WD._SPACE);
 
             sb.append(_PARENTHESES_L);
             appendCondition(cell.getCondition());
@@ -2287,10 +2287,10 @@ public abstract class SQLBuilder {
 
     private boolean isSubQuery(final String... columnNames) {
         if (columnNames.length == 1) {
-            int index = SQLParser.indexWord(columnNames[0], D.SELECT, 0, false);
+            int index = SQLParser.indexWord(columnNames[0], WD.SELECT, 0, false);
 
             if (index >= 0) {
-                index = SQLParser.indexWord(columnNames[0], D.FROM, index, false);
+                index = SQLParser.indexWord(columnNames[0], WD.FROM, index, false);
 
                 return index >= 1;
             }

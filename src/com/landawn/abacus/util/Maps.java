@@ -2071,13 +2071,13 @@ public final class Maps {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
-                                        resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                        resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                     }
                                 } else {
                                     if (isNullParentPropName) {
                                         entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                     } else {
-                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                     }
                                 }
                             }
@@ -2105,13 +2105,13 @@ public final class Maps {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
-                                        resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                        resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                     }
                                 } else {
                                     if (isNullParentPropName) {
                                         entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                     } else {
-                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                     }
                                 }
                             }
@@ -2139,13 +2139,13 @@ public final class Maps {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
-                                        resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                        resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                     }
                                 } else {
                                     if (isNullParentPropName) {
                                         entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                     } else {
-                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                        entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                     }
                                 }
                             }
@@ -2186,13 +2186,13 @@ public final class Maps {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {
-                                    resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                    resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                 }
                             } else {
                                 if (isNullParentPropName) {
                                     entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                 } else {
-                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                 }
                             }
                         }
@@ -2219,13 +2219,13 @@ public final class Maps {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {
-                                    resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                    resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                 }
                             } else {
                                 if (isNullParentPropName) {
                                     entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                 } else {
-                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                 }
                             }
                         }
@@ -2252,13 +2252,13 @@ public final class Maps {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {
-                                    resultMap.put(parentPropName + D.PERIOD + propName, propValue);
+                                    resultMap.put(parentPropName + WD.PERIOD + propName, propValue);
                                 }
                             } else {
                                 if (isNullParentPropName) {
                                     entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, propName);
                                 } else {
-                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + D.PERIOD + propName);
+                                    entity2FlatMap(resultMap, propValue, ignoreNullProperty, null, keyNamingPolicy, parentPropName + WD.PERIOD + propName);
                                 }
                             }
                         }
@@ -2330,7 +2330,7 @@ public final class Maps {
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, D._EQUAL, trim);
+        return join(m, fromIndex, toIndex, entryDelimiter, WD._EQUAL, trim);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
@@ -2338,7 +2338,7 @@ public final class Maps {
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, D.EQUAL, trim);
+        return join(m, fromIndex, toIndex, entryDelimiter, WD.EQUAL, trim);
     }
 
     public static String join(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {

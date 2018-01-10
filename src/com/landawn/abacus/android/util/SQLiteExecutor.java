@@ -14,11 +14,11 @@
 
 package com.landawn.abacus.android.util;
 
-import static com.landawn.abacus.util.D.COMMA_SPACE;
-import static com.landawn.abacus.util.D._BRACE_L;
-import static com.landawn.abacus.util.D._BRACE_R;
-import static com.landawn.abacus.util.D._EQUAL;
-import static com.landawn.abacus.util.D._SPACE;
+import static com.landawn.abacus.util.WD.COMMA_SPACE;
+import static com.landawn.abacus.util.WD._BRACE_L;
+import static com.landawn.abacus.util.WD._BRACE_R;
+import static com.landawn.abacus.util.WD._EQUAL;
+import static com.landawn.abacus.util.WD._SPACE;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -50,7 +50,7 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.ClassUtil;
-import com.landawn.abacus.util.D;
+import com.landawn.abacus.util.WD;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
@@ -2034,7 +2034,7 @@ public final class SQLiteExecutor {
 
                 if (!N.isAsciiAlpha(word.charAt(0))) {
                     sb.append(word);
-                } else if (i < len - 1 && words.get(i + 1).charAt(0) == D._PARENTHESES_L) {
+                } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
                     sb.append(word);
                 } else {
                     sb.append(formatName(word));
@@ -2121,7 +2121,7 @@ public final class SQLiteExecutor {
     private Command interpretBinary(Binary binary) {
         final Command cmd = new Command();
 
-        cmd.setSql(formatName(binary.getPropName()) + D.SPACE + binary.getOperator() + " ?");
+        cmd.setSql(formatName(binary.getPropName()) + WD.SPACE + binary.getOperator() + " ?");
         cmd.setArgs(N.asArray(N.stringOf(binary.getPropValue())));
 
         return cmd;
@@ -2130,7 +2130,7 @@ public final class SQLiteExecutor {
     private Command interpretBetween(Between bt) {
         final Command cmd = new Command();
 
-        cmd.setSql(formatName(bt.getPropName()) + D.SPACE + bt.getOperator() + " (?, ?)");
+        cmd.setSql(formatName(bt.getPropName()) + WD.SPACE + bt.getOperator() + " (?, ?)");
         cmd.setArgs(N.asArray(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
 
         return cmd;
@@ -2152,12 +2152,12 @@ public final class SQLiteExecutor {
             try {
                 for (int i = 0; i < conditionList.size(); i++) {
                     if (i > 0) {
-                        sb.append(D._SPACE);
+                        sb.append(WD._SPACE);
                         sb.append(junction.getOperator().toString());
-                        sb.append(D._SPACE);
+                        sb.append(WD._SPACE);
                     }
 
-                    sb.append(D._PARENTHESES_L);
+                    sb.append(WD._PARENTHESES_L);
 
                     Command cmd = interpretCondition(conditionList.get(i));
                     sb.append(cmd.getSql());
@@ -2168,7 +2168,7 @@ public final class SQLiteExecutor {
                         }
                     }
 
-                    sb.append(D._PARENTHESES_R);
+                    sb.append(WD._PARENTHESES_R);
                 }
 
                 Command cmd = new Command();

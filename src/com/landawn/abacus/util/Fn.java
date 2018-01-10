@@ -532,7 +532,7 @@ public final class Fn {
         return (TriFunction) TUPLE_3;
     }
 
-    @SuppressWarnings({ "rawtypes", "hiding" })
+    @SuppressWarnings({ "rawtypes" })
     public static <A, B, C, D> QuadFunction<A, B, C, D, Tuple4<A, B, C, D>> tuple4() {
         return (QuadFunction) TUPLE_4;
     }
@@ -1450,7 +1450,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream) {
         return Collectors.toMap(classifier, downstream);
@@ -1464,7 +1463,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
         return Collectors.toMap(classifier, downstream, mapFactory);
@@ -1478,7 +1476,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, U, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream) {
         return Collectors.toMap(classifier, valueMapper, downstream);
@@ -1493,7 +1490,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, U, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
         return Collectors.toMap(classifier, valueMapper, downstream, mapFactory);
@@ -1572,7 +1568,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream) {
         return Collectors.groupingBy(classifier, downstream);
@@ -1586,7 +1581,6 @@ public final class Fn {
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    @SuppressWarnings("hiding")
     public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
         return Collectors.groupingBy(classifier, downstream, mapFactory);

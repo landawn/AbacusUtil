@@ -948,8 +948,8 @@ public final class CSVUtil {
         config.setDateTimeFormat(DateTimeFormat.ISO_8601_TIMESTAMP);
 
         if (quoted) {
-            config.setCharQuotation(D._QUOTATION_D);
-            config.setStringQuotation(D._QUOTATION_D);
+            config.setCharQuotation(WD._QUOTATION_D);
+            config.setStringQuotation(WD._QUOTATION_D);
         } else {
             config.setCharQuotation((char) 0);
             config.setStringQuotation((char) 0);

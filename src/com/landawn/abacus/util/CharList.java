@@ -1417,14 +1417,12 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         return result;
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, E extends Exception> Map<K, D> toMap(Try.CharFunction<? extends K, E> classifier, Collector<Character, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.CharFunction<? extends K, E> classifier,
             final Collector<Character, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();

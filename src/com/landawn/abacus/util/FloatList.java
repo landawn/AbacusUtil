@@ -1389,14 +1389,12 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         return result;
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, E extends Exception> Map<K, D> toMap(Try.FloatFunction<? extends K, E> classifier, Collector<Float, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
-    @SuppressWarnings("hiding")
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.FloatFunction<? extends K, E> classifier,
             final Collector<Float, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
