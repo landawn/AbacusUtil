@@ -1068,7 +1068,7 @@ public abstract class CQLBuilder {
         return this;
     }
 
-    public CQLBuilder iF(final String expr) {
+    public CQLBuilder iff(final String expr) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);
@@ -1083,7 +1083,7 @@ public abstract class CQLBuilder {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public CQLBuilder iF(final Condition cond) {
+    public CQLBuilder iff(final Condition cond) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);

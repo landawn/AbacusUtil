@@ -1107,6 +1107,10 @@ public final class CassandraExecutor implements Closeable {
         return session.execute(prepareStatement(query, parameters));
     }
 
+    public ResultSet execute(final Statement statement) {
+        return session.execute(statement);
+    }
+
     @SafeVarargs
     public final <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final Object... ids) {
         return asyncExecutor.execute(new Callable<T>() {
@@ -1623,6 +1627,15 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public ResultSet call() throws Exception {
                 return execute(query, parameters);
+            }
+        });
+    }
+
+    public final CompletableFuture<ResultSet> asyncExecute(final Statement statement) {
+        return asyncExecutor.execute(new Callable<ResultSet>() {
+            @Override
+            public ResultSet call() throws Exception {
+                return execute(statement);
             }
         });
     }

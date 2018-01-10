@@ -167,45 +167,37 @@ public final class Profiler {
     static MultiLoopsStatistics run(final Object instance, final String methodName, final Method method, final List<?> args, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
             final int loopNum, final long loopDelay, final int roundNum) {
-
         if ((threadNum <= 0) || (loopNum <= 0) || (threadDelay < 0) || (loopDelay < 0)) {
             throw new IllegalArgumentException("threadNum=" + threadNum + ", loopNum=" + loopNum + ", threadDelay=" + threadDelay + ", loopDelay=" + loopDelay);
         }
-
         if (N.notNullOrEmpty(args) && (args.size() > 1) && (args.size() != threadNum)) {
             throw new IllegalArgumentException(
                     "The input args must be null or size = 1 or size = threadNum. It's the input parameter for the every loop in each thread ");
         }
-
         // It takes about 250MB memory to save 1 million test result.
         if (threadNum * loopNum > IOUtil.MAX_MEMORY_IN_MB * 1000) {
             if (IOUtil.MAX_MEMORY_IN_MB < 1024) {
                 logger.warn(
                         "Saving big number loop result in small memory may slow down the performance of target method. Conside increasing the maximium JVM memory size.");
-
             } else {
                 logger.warn(
                         "Saving big number loop result may slow down the performance of target method. Conside adding for-loop to outter of the target method and reducing the loop number ("
                                 + loopNum + ") to a smaller number");
             }
         }
-
         if (roundNum == 1) {
             return run(instance, methodName, method, args, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, threadNum, threadDelay, loopNum,
                     loopDelay);
         } else {
             MultiLoopsStatistics result = null;
-
             for (int i = 0; i < roundNum; i++) {
                 if (result != null) {
                     result.printResult();
                     result = null;
                 }
-
                 result = run(instance, methodName, method, args, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, threadNum, threadDelay,
                         loopNum, loopDelay);
             }
-
             return result;
         }
     }
@@ -213,29 +205,21 @@ public final class Profiler {
     private static MultiLoopsStatistics run(final Object instance, final String methodName, final Method method, final List<?> args,
             final Method setUpForMethod, final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum,
             final long threadDelay, final int loopNum, final long loopDelay) {
-
         if (!method.isAccessible()) {
             method.setAccessible(true);
         }
-
         gc();
-
         N.sleep(1000);
-
         final ExecutorService asyncExecutor = Executors.newFixedThreadPool(threadNum);
         final AtomicInteger threadCounter = new AtomicInteger();
-
         // MXBean mxBean = new MXBean();
         final List<LoopStatistics> loopStatisticsList = Collections.synchronizedList(new ArrayList<LoopStatistics>());
         final PrintStream ps = System.out;
-
         final long startTimeInMillis = System.currentTimeMillis();
         final long startTimeInNano = System.nanoTime();
-
         for (int threadIndex = 0; threadIndex < threadNum; threadIndex++) {
             final Object arg = (N.isNullOrEmpty(args)) ? null : ((args.size() == 1) ? args.get(0) : args.get(threadIndex));
             threadCounter.incrementAndGet();
-
             asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -247,24 +231,19 @@ public final class Profiler {
                     }
                 }
             });
-
             N.sleep(threadDelay);
         }
-
         while (threadCounter.get() > 0) {
             N.sleep(1);
         }
-
         final long endTimeInNano = System.nanoTime();
         final long endTimeInMillis = System.currentTimeMillis();
-
         return new MultiLoopsStatistics(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano, threadNum, loopStatisticsList);
     }
 
     private static void runLoops(final Object instance, final String methodName, final Method method, final Object arg, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final long loopDelay,
             final List<LoopStatistics> loopStatisticsList, final PrintStream ps) {
-
         for (int loopIndex = 0; loopIndex < loopNum; loopIndex++) {
             if (setUpForLoop != null) {
                 try {
@@ -275,15 +254,11 @@ public final class Profiler {
                     logger.warn(AbacusException.getErrorMsg(e));
                 }
             }
-
             final long startTimeInMillis = System.currentTimeMillis();
             final long startTimeInNano = System.nanoTime();
-
             List<MethodStatistics> methodStatisticsList = runLoop(instance, methodName, method, arg, setUpForMethod, tearDownForMethod, ps);
-
             final long endTimeInNano = System.nanoTime();
             final long endTimeInMillis = System.currentTimeMillis();
-
             if (tearDownForLoop != null) {
                 try {
                     tearDownForLoop.invoke(instance);
@@ -293,21 +268,16 @@ public final class Profiler {
                     logger.warn(AbacusException.getErrorMsg(e));
                 }
             }
-
             final SingleLoopStatistics loopStatistics = new SingleLoopStatistics(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano,
                     methodStatisticsList);
-
             loopStatisticsList.add(loopStatistics);
-
             N.sleep(loopDelay);
         }
     }
 
     private static List<MethodStatistics> runLoop(final Object instance, final String methodName, final Method method, final Object arg,
             final Method setUpForMethod, final Method tearDownForMethod, final PrintStream ps) {
-
         final List<MethodStatistics> methodStatisticsList = new ArrayList<>();
-
         if (setUpForMethod != null) {
             try {
                 setUpForMethod.invoke(instance);
@@ -317,11 +287,9 @@ public final class Profiler {
                 logger.warn(AbacusException.getErrorMsg(e));
             }
         }
-
         final long startTimeInMillis = System.currentTimeMillis();
         final long startTimeInNano = System.nanoTime();
         Object result = null;
-
         try {
             if (method.getParameterTypes().length == 0) {
                 method.invoke(instance);
@@ -337,10 +305,8 @@ public final class Profiler {
             logger.warn(AbacusException.getErrorMsg(e));
             result = e;
         }
-
         final long endTimeInNano = System.nanoTime();
         final long endTimeInMillis = System.currentTimeMillis();
-
         if (tearDownForMethod != null) {
             try {
                 tearDownForMethod.invoke(instance);
@@ -350,16 +316,13 @@ public final class Profiler {
                 logger.warn(AbacusException.getErrorMsg(e));
             }
         }
-
         MethodStatistics methodStatistics = new MethodStatistics(methodName, startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano, result);
         methodStatisticsList.add(methodStatistics);
-
         return methodStatisticsList;
     }
 
     private static Method getMethod(final Object instance, final String methodName) {
         Method method = ClassUtil.getDeclaredMethod(instance.getClass(), methodName);
-
         if (method == null) {
             throw new IllegalArgumentException("No method found by name: " + methodName);
         } else if (!method.isAccessible()) {
@@ -406,7 +369,6 @@ public final class Profiler {
      * @version $Revision: 0.8 $
      */
     static interface LoopStatistics extends Statistics {
-
         List<String> getMethodNameList();
 
         MethodStatistics getMinElapsedTimeMethod();
@@ -562,12 +524,11 @@ public final class Profiler {
         public String toString() {
             if (isFailed()) {
                 Exception e = (Exception) result;
-
                 return "method=" + methodName + ", startTime=" + time2String(getStartTimeInMillis()) + ", endTime=" + time2String(getEndTimeInMillis())
-                        + ", result=" + e + ": " + N.toString(e.getStackTrace()) + ". ";
+                        + ", result=" + ClassUtil.getSimpleClassName(e.getClass()) + ": " + e.getMessage() + ".";
             } else {
                 return "method=" + methodName + ", startTime=" + time2String(getStartTimeInMillis()) + ", endTime=" + time2String(getEndTimeInMillis())
-                        + ", result=" + result + ". ";
+                        + ", result=" + result + ".";
             }
         }
     }
@@ -586,14 +547,12 @@ public final class Profiler {
         public SingleLoopStatistics(final long startTimeInMillis, final long endTimeInMillis, final long startTimeInNano, final long endTimeInNano,
                 final List<MethodStatistics> methodStatisticsList) {
             super(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano);
-
             this.methodStatisticsList = methodStatisticsList;
         }
 
         @Override
         public List<String> getMethodNameList() {
             List<String> result = new ArrayList<>();
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (!result.contains(methodStatistics.getMethodName())) {
@@ -601,7 +560,6 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
@@ -609,7 +567,6 @@ public final class Profiler {
             if (methodStatisticsList == null) {
                 methodStatisticsList = new ArrayList<>();
             }
-
             return methodStatisticsList;
         }
 
@@ -624,7 +581,6 @@ public final class Profiler {
         @Override
         public MethodStatistics getMaxElapsedTimeMethod() {
             MethodStatistics result = null;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() > result.getElapsedTimeInMillis())) {
@@ -632,14 +588,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public MethodStatistics getMinElapsedTimeMethod() {
             MethodStatistics result = null;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() < result.getElapsedTimeInMillis())) {
@@ -647,14 +601,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodTotalElapsedTimeInMillis(final String methodName) {
             double result = 0;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -662,14 +614,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodMaxElapsedTimeInMillis(final String methodName) {
             double result = 0;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -679,14 +629,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodMinElapsedTimeInMillis(final String methodName) {
             double result = Integer.MAX_VALUE;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -696,7 +644,6 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
@@ -704,7 +651,6 @@ public final class Profiler {
         public double getMethodAverageElapsedTimeInMillis(final String methodName) {
             double totalTime = 0;
             int methodNum = 0;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -713,27 +659,23 @@ public final class Profiler {
                     }
                 }
             }
-
             return (methodNum > 0) ? (totalTime / methodNum) : totalTime;
         }
 
         @Override
         public double getTotalElapsedTimeInMillis() {
             double result = 0;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     result += methodStatistics.getElapsedTimeInMillis();
                 }
             }
-
             return result;
         }
 
         @Override
         public int getMethodSize(final String methodName) {
             int methodSize = 0;
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -741,14 +683,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return methodSize;
         }
 
         @Override
         public List<MethodStatistics> getMethodStatisticsList(final String methodName) {
             List<MethodStatistics> result = new ArrayList<>(getMethodSize(methodName));
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.getMethodName().equals(methodName)) {
@@ -756,14 +696,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public List<MethodStatistics> getFailedMethodStatisticsList(final String methodName) {
             List<MethodStatistics> result = new ArrayList<>();
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.isFailed() && methodStatistics.getMethodName().equals(methodName)) {
@@ -771,14 +709,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public List<MethodStatistics> getAllFailedMethodStatisticsList() {
             List<MethodStatistics> result = new ArrayList<>();
-
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
                     if (methodStatistics.isFailed()) {
@@ -786,14 +722,12 @@ public final class Profiler {
                     }
                 }
             }
-
             return result;
         }
     }
 
     public static class MultiLoopsStatistics extends AbstractStatistics implements LoopStatistics {
         private static final String SEPARATOR_LINE = "========================================================================================================================";
-
         private final int threadNum;
         private List<LoopStatistics> loopStatisticsList;
 
@@ -816,13 +750,11 @@ public final class Profiler {
         @Override
         public List<String> getMethodNameList() {
             List<String> result = null;
-
             if (loopStatisticsList == null) {
                 result = new ArrayList<>();
             } else {
                 result = (loopStatisticsList.get(0)).getMethodNameList();
             }
-
             return result;
         }
 
@@ -830,7 +762,6 @@ public final class Profiler {
             if (loopStatisticsList == null) {
                 loopStatisticsList = new ArrayList<>();
             }
-
             return loopStatisticsList;
         }
 
@@ -845,81 +776,67 @@ public final class Profiler {
         @Override
         public MethodStatistics getMaxElapsedTimeMethod() {
             MethodStatistics result = null;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     MethodStatistics methodStatistics = loopStatistics.getMaxElapsedTimeMethod();
-
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() > result.getElapsedTimeInMillis())) {
                         result = methodStatistics;
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public MethodStatistics getMinElapsedTimeMethod() {
             MethodStatistics result = null;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     MethodStatistics methodStatistics = loopStatistics.getMinElapsedTimeMethod();
-
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() < result.getElapsedTimeInMillis())) {
                         result = methodStatistics;
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodTotalElapsedTimeInMillis(final String methodName) {
             double result = 0;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     result += loopStatistics.getMethodTotalElapsedTimeInMillis(methodName);
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodMaxElapsedTimeInMillis(final String methodName) {
             double result = 0;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     double loopMethodMaxTime = loopStatistics.getMethodMaxElapsedTimeInMillis(methodName);
-
                     if (loopMethodMaxTime > result) {
                         result = loopMethodMaxTime;
                     }
                 }
             }
-
             return result;
         }
 
         @Override
         public double getMethodMinElapsedTimeInMillis(final String methodName) {
             double result = Integer.MAX_VALUE;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     double loopMethodMinTime = loopStatistics.getMethodMinElapsedTimeInMillis(methodName);
-
                     if (loopMethodMinTime < result) {
                         result = loopMethodMinTime;
                     }
                 }
             }
-
             return result;
         }
 
@@ -927,7 +844,6 @@ public final class Profiler {
         public double getMethodAverageElapsedTimeInMillis(final String methodName) {
             double totalTime = 0;
             int methodNum = 0;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     double loopMethodTotalTime = loopStatistics.getMethodTotalElapsedTimeInMillis(methodName);
@@ -936,74 +852,73 @@ public final class Profiler {
                     methodNum += loopMethodSize;
                 }
             }
-
             return (methodNum > 0) ? (totalTime / methodNum) : totalTime;
         }
 
         @Override
         public double getTotalElapsedTimeInMillis() {
             double result = 0;
-
             if (loopStatisticsList != null) {
                 for (int index = 0; index < loopStatisticsList.size(); index++) {
                     LoopStatistics loopStatistics = loopStatisticsList.get(index);
                     result += loopStatistics.getTotalElapsedTimeInMillis();
                 }
             }
-
             return result;
         }
 
         @Override
         public int getMethodSize(final String methodName) {
             int result = 0;
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     result += loopStatistics.getMethodSize(methodName);
                 }
             }
-
             return result;
         }
 
         @Override
         public List<MethodStatistics> getMethodStatisticsList(final String methodName) {
             List<MethodStatistics> methodStatisticsList = new ArrayList<>(getMethodSize(methodName));
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     methodStatisticsList.addAll(loopStatistics.getMethodStatisticsList(methodName));
                 }
             }
-
             return methodStatisticsList;
         }
 
         @Override
         public List<MethodStatistics> getFailedMethodStatisticsList(final String methodName) {
             List<MethodStatistics> result = new ArrayList<>();
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     result.addAll(loopStatistics.getFailedMethodStatisticsList(methodName));
                 }
             }
-
             return result;
         }
 
         @Override
         public List<MethodStatistics> getAllFailedMethodStatisticsList() {
             List<MethodStatistics> result = new ArrayList<>();
-
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
                     result.addAll(loopStatistics.getAllFailedMethodStatisticsList());
                 }
             }
-
             return result;
+        }
+
+        private int getTotalCall() {
+            int res = 0;
+            if (loopStatisticsList != null) {
+                for (LoopStatistics loopStatistics : loopStatisticsList) {
+                    res += loopStatistics.getMethodNameList().size();
+                }
+            }
+            return res;
         }
 
         public void printResult() {
@@ -1027,7 +942,6 @@ public final class Profiler {
             writer.println("endTime:   " + time2String(getEndTimeInMillis()));
             writer.println("totalElapsedTime: " + elapsedTimeFormat.format(getElapsedTimeInMillis()));
             writer.println();
-
             //            MethodStatistics methodStatistics = getMaxElapsedTimeInMillisMethod();
             //
             //            if (methodStatistics != null) {
@@ -1039,11 +953,9 @@ public final class Profiler {
             //            if (methodStatistics != null) {
             //                writer.println("minMethodTime(" + methodStatistics.getMethodName() + "): " + elapsedTimeInMillisFormat.format(methodStatistics.getElapsedTimeInMillis()));
             //            }
-
             String methodNameTitil = "<method name>";
             List<String> methodNameList = getMethodNameList();
             int maxMethodNameLength = methodNameTitil.length();
-
             if (methodNameList.size() > 0) {
                 for (String methodName : methodNameList) {
                     if (methodName.length() > maxMethodNameLength) {
@@ -1051,12 +963,10 @@ public final class Profiler {
                     }
                 }
             }
-
             writer.println();
             maxMethodNameLength += 3;
             writer.println(N.padEnd(methodNameTitil + ",  ", maxMethodNameLength)
                     + "|avg time|, |min time|, |max time|, |0.01% >=|, |0.1% >=|,  |1% >=|,    |10% >=|,   |20% >=|,   |50% >=|,   |80% >=|,   |90% >=|,   |99% >=|,   |99.9% >=|, |99.99% >=|");
-
             for (String methodName : methodNameList) {
                 List<MethodStatistics> methodStatisticsList = getMethodStatisticsList(methodName);
                 int size = methodStatisticsList.size();
@@ -1067,12 +977,9 @@ public final class Profiler {
                                 : ((o1.getElapsedTimeInMillis() > o2.getElapsedTimeInMillis()) ? (-1) : 1);
                     }
                 });
-
                 double avgTime = getMethodAverageElapsedTimeInMillis(methodName);
-
                 double maxTime = methodStatisticsList.get(0).getElapsedTimeInMillis();
                 double minTime = methodStatisticsList.get(size - 1).getElapsedTimeInMillis();
-
                 final int minLen = 12;
                 writer.println(
                         N.padEnd(
@@ -1117,29 +1024,22 @@ public final class Profiler {
                                 + N.padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.999)).getElapsedTimeInMillis()) + ",  ", minLen)
                                 + N.padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.9999)).getElapsedTimeInMillis()) + ",  ", minLen));
             }
-
             writer.println();
-
             writeError(writer);
-
             writer.println(SEPARATOR_LINE);
-
             writer.flush();
         }
 
         private void writeError(final PrintWriter writer) {
             MethodStatistics methodStatistics;
             List<?> failedMethodList = getAllFailedMethodStatisticsList();
-
             if (failedMethodList.size() > 0) {
                 writer.println();
-                writer.println("Errors:");
-
+                writer.println("Errors:" + failedMethodList.size() + " (" + (failedMethodList.size() * 100D) / getTotalCall() + "%)");
                 for (int index = 0; index < failedMethodList.size(); index++) {
-                    writer.println("<<---------------------------------------------------------");
+                    writer.println("--------------------------------------------------------------------------------");
                     methodStatistics = (MethodStatistics) failedMethodList.get(index);
                     writer.println(methodStatistics.toString());
-                    writer.println("--------------------------------------------------------->>");
                 }
             }
         }
@@ -1160,7 +1060,6 @@ public final class Profiler {
             writer.println("<br/>" + "endTime:   " + time2String(getEndTimeInMillis()) + "");
             writer.println("<br/>" + "totalElapsedTime: " + elapsedTimeFormat.format(getElapsedTimeInMillis()) + "");
             writer.println("<br/>");
-
             //            MethodStatistics methodStatistics = getMaxElapsedTimeInMillisMethod();
             //
             //            if (methodStatistics != null) {
@@ -1174,7 +1073,6 @@ public final class Profiler {
             //                writer.println(
             //                        "<br/>" + "minMethodTime(" + methodStatistics.getMethodName() + "): " + elapsedTimeInMillisFormat.format(methodStatistics.getElapsedTimeInMillis()));
             //            }
-
             writer.println("<br/>");
             writer.println("<table width=\"1200\" border=\"1\">");
             writer.println("<tr>");
@@ -1194,9 +1092,7 @@ public final class Profiler {
             writer.println("<th>99.9% &gt;=</th>");
             writer.println("<th>99.99% &gt;=</th>");
             writer.println("</tr>");
-
             List<String> methodNameList = getMethodNameList();
-
             for (String methodName : methodNameList) {
                 List<MethodStatistics> methodStatisticsList = getMethodStatisticsList(methodName);
                 int size = methodStatisticsList.size();
@@ -1207,12 +1103,9 @@ public final class Profiler {
                                 : ((o1.getElapsedTimeInMillis() > o2.getElapsedTimeInMillis()) ? (-1) : 1);
                     }
                 });
-
                 double avgTime = getMethodAverageElapsedTimeInMillis(methodName);
-
                 double minTime = methodStatisticsList.get(size - 1).getElapsedTimeInMillis();
                 double maxTime = methodStatisticsList.get(0).getElapsedTimeInMillis();
-
                 writer.println("<tr>");
                 writer.println("<td>" + methodName + "</td>");
                 writer.println("<td>" + elapsedTimeFormat.format(avgTime) + "</td>");
@@ -1231,30 +1124,21 @@ public final class Profiler {
                 writer.println("<td>" + elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.9999)).getElapsedTimeInMillis()) + "</td>");
                 writer.println("</tr>");
             }
-
             writer.println("</table>");
-
             writeHtmlError(writer);
-
             writer.println(SEPARATOR_LINE);
-
             writer.flush();
         }
 
         private void writeHtmlError(final PrintWriter writer) {
             MethodStatistics methodStatistics;
             List<?> failedMethodList = getAllFailedMethodStatisticsList();
-
             if (failedMethodList.size() > 0) {
-                writer.println("<h5>Errors:</h5>");
-
+                writer.println("<h4>Errors:" + failedMethodList.size() + " (" + (failedMethodList.size() * 100D) / getTotalCall() + "%)</h4>");
                 for (int index = 0; index < failedMethodList.size(); index++) {
-                    writer.println("<br/>" + "<<---------------------------------------------------------");
+                    writer.println("<br/>" + "--------------------------------------------------------------------------------");
                     methodStatistics = (MethodStatistics) failedMethodList.get(index);
-
-                    Exception e = (Exception) methodStatistics.getResult();
-                    writer.println("<br/>" + (e.getClass().getSimpleName() + ": " + e.getMessage()));
-                    writer.println("<br/>" + "--------------------------------------------------------->>");
+                    writer.println("<br/>" + methodStatistics.toString());
                 }
             }
         }
@@ -1269,7 +1153,6 @@ public final class Profiler {
 
         private void writeXmlResult(final PrintWriter writer) {
             writer.println("<result>");
-
             writer.println("<unit>milliseconds</unit>");
             writer.println("<threadNum>" + threadNum + "</threadNum>");
             writer.println("<loops>" + (loopStatisticsList.size() / threadNum) + "</loops>");
@@ -1277,7 +1160,6 @@ public final class Profiler {
             writer.println("<endTime>" + time2String(getEndTimeInMillis()) + "</endTime>");
             writer.println("<totalElapsedTime>" + elapsedTimeFormat.format(getElapsedTimeInMillis()) + "</totalElapsedTime>");
             writer.println();
-
             //            MethodStatistics methodStatistics = getMinElapsedTimeInMillisMethod();
             //
             //            if (methodStatistics != null) {
@@ -1289,9 +1171,7 @@ public final class Profiler {
             //            if (methodStatistics != null) {
             //                writer.println("<maxMethodTime>" + elapsedTimeInMillisFormat.format(methodStatistics.getElapsedTimeInMillis()) + "</maxMethodTime>");
             //            }
-
             List<String> methodNameList = getMethodNameList();
-
             for (String methodName : methodNameList) {
                 List<MethodStatistics> methodStatisticsList = getMethodStatisticsList(methodName);
                 int size = methodStatisticsList.size();
@@ -1302,12 +1182,9 @@ public final class Profiler {
                                 : ((o1.getElapsedTimeInMillis() > o2.getElapsedTimeInMillis()) ? (-1) : 1);
                     }
                 });
-
                 double avgTime = getMethodAverageElapsedTimeInMillis(methodName);
-
                 double minTime = methodStatisticsList.get(size - 1).getElapsedTimeInMillis();
                 double maxTime = methodStatisticsList.get(0).getElapsedTimeInMillis();
-
                 writer.println("<method name=\"" + methodName + "\">");
                 writer.println("<avgTime>" + elapsedTimeFormat.format(avgTime) + "</avgTime>");
                 writer.println("<minTime>" + elapsedTimeFormat.format(minTime) + "</minTime>");
@@ -1324,22 +1201,14 @@ public final class Profiler {
                 writer.println("<_0.9999>" + elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.9999)).getElapsedTimeInMillis()) + "</_0.9999>");
                 writer.println("</method>");
             }
-
             List<MethodStatistics> failedMethodList = getAllFailedMethodStatisticsList();
-
             if (failedMethodList.size() > 0) {
-                List<String> failedMethodNameList = new ArrayList<>();
-
-                for (MethodStatistics ms : failedMethodList) {
-                    failedMethodNameList.add(ms.getMethodName());
+                writer.println("<errors>" + failedMethodList.size() + " (" + (failedMethodList.size() * 100D) / getTotalCall() + "%)</errors>");
+                for (MethodStatistics methodStatistics : failedMethodList) {
+                    writer.println("<error>" + methodStatistics.toString() + "</error>");
                 }
-
-                writer.println(
-                        "<errorMethods>" + failedMethodNameList.toString().substring(1, failedMethodNameList.toString().length() - 1) + "</errorMethods>");
             }
-
             writer.println("</result>");
-
             writer.flush();
         }
     }
