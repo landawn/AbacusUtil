@@ -37,7 +37,7 @@ public final class If {
         this.b = b;
     }
 
-    public static If of(final boolean b) {
+    public static If is(final boolean b) {
         return b ? TRUE : FALSE;
     }
 
@@ -56,143 +56,143 @@ public final class If {
     }
 
     public static If isNullOrEmpty(final CharSequence s) {
-        return of(N.isNullOrEmpty(s));
+        return is(N.isNullOrEmpty(s));
     }
 
     public static If isNullOrEmpty(final boolean[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final char[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final byte[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final short[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final int[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final long[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final float[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final double[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final Object[] a) {
-        return of(N.isNullOrEmpty(a));
+        return is(N.isNullOrEmpty(a));
     }
 
     public static If isNullOrEmpty(final Collection<?> c) {
-        return of(N.isNullOrEmpty(c));
+        return is(N.isNullOrEmpty(c));
     }
 
     public static If isNullOrEmpty(final Map<?, ?> m) {
-        return of(N.isNullOrEmpty(m));
+        return is(N.isNullOrEmpty(m));
     }
 
     @SuppressWarnings("rawtypes")
     public static If isNullOrEmpty(final PrimitiveList list) {
-        return of(N.isNullOrEmpty(list));
+        return is(N.isNullOrEmpty(list));
     }
 
     public static If isNullOrEmpty(final Multiset<?> s) {
-        return of(N.isNullOrEmpty(s));
+        return is(N.isNullOrEmpty(s));
     }
 
     public static If isNullOrEmpty(final LongMultiset<?> s) {
-        return of(N.isNullOrEmpty(s));
+        return is(N.isNullOrEmpty(s));
     }
 
     public static If isNullOrEmpty(final Multimap<?, ?, ?> m) {
-        return of(N.isNullOrEmpty(m));
+        return is(N.isNullOrEmpty(m));
     }
 
     // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
     public static If isNullOrEmptyOrBlank(final CharSequence s) {
-        return of(N.isNullOrEmptyOrBlank(s));
+        return is(N.isNullOrEmptyOrBlank(s));
     }
 
     public static If notNullOrEmpty(final CharSequence s) {
-        return of(N.notNullOrEmpty(s));
+        return is(N.notNullOrEmpty(s));
     }
 
     public static If notNullOrEmpty(final boolean[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final char[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final byte[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final short[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final int[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final long[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final float[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final double[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final Object[] a) {
-        return of(N.notNullOrEmpty(a));
+        return is(N.notNullOrEmpty(a));
     }
 
     public static If notNullOrEmpty(final Collection<?> c) {
-        return of(N.notNullOrEmpty(c));
+        return is(N.notNullOrEmpty(c));
     }
 
     public static If notNullOrEmpty(final Map<?, ?> m) {
-        return of(N.notNullOrEmpty(m));
+        return is(N.notNullOrEmpty(m));
     }
 
     @SuppressWarnings("rawtypes")
     public static If notNullOrEmpty(final PrimitiveList list) {
-        return of(N.notNullOrEmpty(list));
+        return is(N.notNullOrEmpty(list));
     }
 
     public static If notNullOrEmpty(final Multiset<?> s) {
-        return of(N.notNullOrEmpty(s));
+        return is(N.notNullOrEmpty(s));
     }
 
     public static If notNullOrEmpty(final LongMultiset<?> s) {
-        return of(N.notNullOrEmpty(s));
+        return is(N.notNullOrEmpty(s));
     }
 
     public static If notNullOrEmpty(final Multimap<?, ?, ?> m) {
-        return of(N.notNullOrEmpty(m));
+        return is(N.notNullOrEmpty(m));
     }
 
     // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
     public static If notNullOrEmptyOrBlank(final CharSequence s) {
-        return of(N.notNullOrEmptyOrBlank(s));
+        return is(N.notNullOrEmptyOrBlank(s));
     }
 
     //    public <E extends Exception> void thenRun(final Try.Runnable<E> cmd) throws E {
@@ -321,7 +321,7 @@ public final class If {
             this.b = b;
         }
 
-        public static IF of(final boolean b) {
+        public static IF is(final boolean b) {
             return b ? TRUE : FALSE;
         }
 
@@ -340,143 +340,143 @@ public final class If {
         }
 
         public static IF isNullOrEmpty(final CharSequence s) {
-            return of(N.isNullOrEmpty(s));
+            return is(N.isNullOrEmpty(s));
         }
 
         public static IF isNullOrEmpty(final boolean[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final char[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final byte[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final short[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final int[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final long[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final float[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final double[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final Object[] a) {
-            return of(N.isNullOrEmpty(a));
+            return is(N.isNullOrEmpty(a));
         }
 
         public static IF isNullOrEmpty(final Collection<?> c) {
-            return of(N.isNullOrEmpty(c));
+            return is(N.isNullOrEmpty(c));
         }
 
         public static IF isNullOrEmpty(final Map<?, ?> m) {
-            return of(N.isNullOrEmpty(m));
+            return is(N.isNullOrEmpty(m));
         }
 
         @SuppressWarnings("rawtypes")
         public static IF isNullOrEmpty(final PrimitiveList list) {
-            return of(N.isNullOrEmpty(list));
+            return is(N.isNullOrEmpty(list));
         }
 
         public static IF isNullOrEmpty(final Multiset<?> s) {
-            return of(N.isNullOrEmpty(s));
+            return is(N.isNullOrEmpty(s));
         }
 
         public static IF isNullOrEmpty(final LongMultiset<?> s) {
-            return of(N.isNullOrEmpty(s));
+            return is(N.isNullOrEmpty(s));
         }
 
         public static IF isNullOrEmpty(final Multimap<?, ?, ?> m) {
-            return of(N.isNullOrEmpty(m));
+            return is(N.isNullOrEmpty(m));
         }
 
         // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
         public static IF isNullOrEmptyOrBlank(final CharSequence s) {
-            return of(N.isNullOrEmptyOrBlank(s));
+            return is(N.isNullOrEmptyOrBlank(s));
         }
 
         public static IF notNullOrEmpty(final CharSequence s) {
-            return of(N.notNullOrEmpty(s));
+            return is(N.notNullOrEmpty(s));
         }
 
         public static IF notNullOrEmpty(final boolean[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final char[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final byte[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final short[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final int[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final long[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final float[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final double[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final Object[] a) {
-            return of(N.notNullOrEmpty(a));
+            return is(N.notNullOrEmpty(a));
         }
 
         public static IF notNullOrEmpty(final Collection<?> c) {
-            return of(N.notNullOrEmpty(c));
+            return is(N.notNullOrEmpty(c));
         }
 
         public static IF notNullOrEmpty(final Map<?, ?> m) {
-            return of(N.notNullOrEmpty(m));
+            return is(N.notNullOrEmpty(m));
         }
 
         @SuppressWarnings("rawtypes")
         public static IF notNullOrEmpty(final PrimitiveList list) {
-            return of(N.notNullOrEmpty(list));
+            return is(N.notNullOrEmpty(list));
         }
 
         public static IF notNullOrEmpty(final Multiset<?> s) {
-            return of(N.notNullOrEmpty(s));
+            return is(N.notNullOrEmpty(s));
         }
 
         public static IF notNullOrEmpty(final LongMultiset<?> s) {
-            return of(N.notNullOrEmpty(s));
+            return is(N.notNullOrEmpty(s));
         }
 
         public static IF notNullOrEmpty(final Multimap<?, ?, ?> m) {
-            return of(N.notNullOrEmpty(m));
+            return is(N.notNullOrEmpty(m));
         }
 
         // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
         public static IF notNullOrEmptyOrBlank(final CharSequence s) {
-            return of(N.notNullOrEmptyOrBlank(s));
+            return is(N.notNullOrEmptyOrBlank(s));
         }
 
         public <T, E extends Exception> Nullable<T> thenGet(Try.Supplier<T, E> supplier) throws E {

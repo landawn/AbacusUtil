@@ -146,7 +146,7 @@ public final class Retry<T> {
         return result;
     }
 
-    public <E> Iterator<E> iterator(final Iterator<E> iter) {
+    public <E> Iterator<E> iterate(final Iterator<E> iter) {
         return new Iterator<E>() {
             @Override
             public boolean hasNext() {
