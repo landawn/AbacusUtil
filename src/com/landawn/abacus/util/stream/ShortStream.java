@@ -164,7 +164,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract ShortStream flatMap(ShortFunction<? extends ShortStream> mapper);
 
-    public abstract ShortStream flatArray(ShortFunction<short[]> mapper);
+    public abstract ShortStream flatMapp(ShortFunction<short[]> mapper);
 
     public abstract IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper);
 

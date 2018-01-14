@@ -204,7 +204,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream flatMap(IntFunction<? extends IntStream> mapper);
 
-    public abstract IntStream flatArray(IntFunction<int[]> mapper);
+    public abstract IntStream flatMapp(IntFunction<int[]> mapper);
 
     public abstract CharStream flatMapToChar(IntFunction<? extends CharStream> mapper);
 

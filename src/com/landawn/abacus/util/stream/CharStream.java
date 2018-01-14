@@ -163,7 +163,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
 
-    public abstract CharStream flatArray(CharFunction<char[]> mapper);
+    public abstract CharStream flatMapp(CharFunction<char[]> mapper);
 
     public abstract IntStream flatMapToInt(CharFunction<? extends IntStream> mapper);
 

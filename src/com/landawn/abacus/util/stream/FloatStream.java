@@ -194,7 +194,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract FloatStream flatMap(FloatFunction<? extends FloatStream> mapper);
 
-    public abstract FloatStream flatArray(FloatFunction<float[]> mapper);
+    public abstract FloatStream flatMapp(FloatFunction<float[]> mapper);
 
     public abstract IntStream flatMapToInt(FloatFunction<? extends IntStream> mapper);
 

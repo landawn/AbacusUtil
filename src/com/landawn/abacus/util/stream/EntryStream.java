@@ -320,14 +320,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
     //            }
     //        };
     //
-    //        return flatCollection(mapper2);
+    //        return flattMap(mapper2);
     //    }
 
     public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper) {
         return of(s.flatMap(mapper));
     }
 
-    public <KK, VV> EntryStream<KK, VV> flatCollection(final Function<? super Map.Entry<K, V>, Collection<Map.Entry<KK, VV>>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, Collection<Map.Entry<KK, VV>>> mapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>>() {
             @Override
             public Stream<Entry<KK, VV>> apply(Entry<K, V> t) {
@@ -354,7 +354,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <KK> EntryStream<KK, V> flatCollectionKey(final Function<? super K, Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKey(final Function<? super K, Collection<KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -386,7 +386,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <VV> EntryStream<K, VV> flatCollectionValue(final Function<? super V, Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValue(final Function<? super V, Collection<VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {

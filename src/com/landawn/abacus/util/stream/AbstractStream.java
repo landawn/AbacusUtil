@@ -398,7 +398,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatCollection(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+    public <R> Stream<R> flattMap(final Function<? super T, ? extends Collection<? extends R>> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
             public Stream<? extends R> apply(T t) {
@@ -408,7 +408,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flatCollection(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
+    public <U, R> Stream<R> flattMap(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
             public Stream<? extends R> apply(T t) {
@@ -418,7 +418,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatArray(final Function<? super T, R[]> mapper) {
+    public <R> Stream<R> flatMapp(final Function<? super T, R[]> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
             public Stream<? extends R> apply(T t) {
@@ -428,7 +428,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flatArray(final U seed, final BiFunction<? super T, ? super U, R[]> mapper) {
+    public <U, R> Stream<R> flatMapp(final U seed, final BiFunction<? super T, ? super U, R[]> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
             public Stream<? extends R> apply(T t) {

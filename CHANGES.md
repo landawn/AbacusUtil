@@ -1,3 +1,8 @@
+### 1.2.0
+
+* Rename `flatCollection/flatArray` to `flattMap/flatMapp`.
+
+
 ### 1.1.9
 
 * Rename `Mapper.WriteOnly/registerWriteOnlyProps` to `Mapper.NonUpdatable/registerNonUpdatableProps`.

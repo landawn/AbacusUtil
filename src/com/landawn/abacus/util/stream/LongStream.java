@@ -197,7 +197,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract LongStream flatMap(LongFunction<? extends LongStream> mapper);
 
-    public abstract LongStream flatArray(LongFunction<long[]> mapper);
+    public abstract LongStream flatMapp(LongFunction<long[]> mapper);
 
     public abstract IntStream flatMapToInt(LongFunction<? extends IntStream> mapper);
 

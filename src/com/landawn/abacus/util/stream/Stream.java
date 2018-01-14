@@ -525,13 +525,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <U, R> Stream<R> flatMap(U seed, BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatCollection(Function<? super T, ? extends Collection<? extends R>> mapper);
+    public abstract <R> Stream<R> flattMap(Function<? super T, ? extends Collection<? extends R>> mapper);
 
-    public abstract <U, R> Stream<R> flatCollection(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
+    public abstract <U, R> Stream<R> flattMap(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatArray(Function<? super T, R[]> mapper);
+    public abstract <R> Stream<R> flatMapp(Function<? super T, R[]> mapper);
 
-    public abstract <U, R> Stream<R> flatArray(U seed, BiFunction<? super T, ? super U, R[]> mapper);
+    public abstract <U, R> Stream<R> flatMapp(U seed, BiFunction<? super T, ? super U, R[]> mapper);
 
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 

@@ -69,7 +69,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream flatArray(final ByteFunction<byte[]> mapper) {
+    public ByteStream flatMapp(final ByteFunction<byte[]> mapper) {
         return flatMap(new ByteFunction<ByteStream>() {
             @Override
             public ByteStream apply(byte t) {

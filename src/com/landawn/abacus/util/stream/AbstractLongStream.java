@@ -68,7 +68,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream flatArray(final LongFunction<long[]> mapper) {
+    public LongStream flatMapp(final LongFunction<long[]> mapper) {
         return flatMap(new LongFunction<LongStream>() {
             @Override
             public LongStream apply(long t) {
