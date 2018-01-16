@@ -69,7 +69,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream flatMapp(final CharFunction<char[]> mapper) {
+    public CharStream flattMap(final CharFunction<char[]> mapper) {
         return flatMap(new CharFunction<CharStream>() {
             @Override
             public CharStream apply(char t) {

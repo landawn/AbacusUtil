@@ -69,7 +69,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream flatMapp(final IntFunction<int[]> mapper) {
+    public IntStream flattMap(final IntFunction<int[]> mapper) {
         return flatMap(new IntFunction<IntStream>() {
             @Override
             public IntStream apply(int t) {

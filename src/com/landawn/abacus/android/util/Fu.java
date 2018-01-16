@@ -978,6 +978,13 @@ public class Fu {
         }
     }
 
+    public static final class Utils extends Fu {
+
+        private Utils() {
+            // singleton.
+        }
+    }
+
     public static final class O extends Fu {
 
         private O() {

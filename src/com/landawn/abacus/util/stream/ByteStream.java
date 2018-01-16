@@ -163,7 +163,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract ByteStream flatMap(ByteFunction<? extends ByteStream> mapper);
 
-    public abstract ByteStream flatMapp(ByteFunction<byte[]> mapper);
+    public abstract ByteStream flattMap(ByteFunction<byte[]> mapper);
 
     public abstract IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper);
 

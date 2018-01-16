@@ -70,7 +70,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream flatMapp(final FloatFunction<float[]> mapper) {
+    public FloatStream flattMap(final FloatFunction<float[]> mapper) {
         return flatMap(new FloatFunction<FloatStream>() {
             @Override
             public FloatStream apply(float t) {

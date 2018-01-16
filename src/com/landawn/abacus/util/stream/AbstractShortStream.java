@@ -69,7 +69,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream flatMapp(final ShortFunction<short[]> mapper) {
+    public ShortStream flattMap(final ShortFunction<short[]> mapper) {
         return flatMap(new ShortFunction<ShortStream>() {
             @Override
             public ShortStream apply(short t) {

@@ -69,7 +69,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream flatMapp(final DoubleFunction<double[]> mapper) {
+    public DoubleStream flattMap(final DoubleFunction<double[]> mapper) {
         return flatMap(new DoubleFunction<DoubleStream>() {
             @Override
             public DoubleStream apply(double t) {

@@ -195,7 +195,7 @@ public abstract class DoubleStream
      */
     public abstract DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper);
 
-    public abstract DoubleStream flatMapp(DoubleFunction<double[]> mapper);
+    public abstract DoubleStream flattMap(DoubleFunction<double[]> mapper);
 
     public abstract IntStream flatMapToInt(DoubleFunction<? extends IntStream> mapper);
 
