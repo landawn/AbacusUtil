@@ -149,6 +149,14 @@ public final class IOUtil {
 
     public static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
+    public static final long ONE_KB = 1024;
+    public static final long ONE_MB = 1024 * ONE_KB;
+    public static final long ONE_GB = 1024 * ONE_MB;
+    public static final long ONE_TB = 1024 * ONE_GB;
+    public static final long ONE_PB = 1024 * ONE_TB;
+    public static final long ONE_EB = 1024 * ONE_PB;
+    public static final long ONE_ZB = 1024 * ONE_EB;
+
     public static final int MAX_MEMORY_IN_MB = (int) (Runtime.getRuntime().maxMemory() / (1024 * 1024));
 
     // ...

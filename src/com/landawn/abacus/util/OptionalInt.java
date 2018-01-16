@@ -172,6 +172,10 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
     }
 
+    public int orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

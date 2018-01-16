@@ -16,9 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.WD._PARENTHESES_L;
-import static com.landawn.abacus.util.WD._PARENTHESES_R;
-import static com.landawn.abacus.util.WD._SPACE;
 import static com.landawn.abacus.util.SQLBuilder._COMMA_SPACE;
 import static com.landawn.abacus.util.SQLBuilder._DELETE;
 import static com.landawn.abacus.util.SQLBuilder._INSERT;
@@ -35,6 +32,9 @@ import static com.landawn.abacus.util.SQLBuilder._SPACE_USING_SPACE;
 import static com.landawn.abacus.util.SQLBuilder._SPACE_VALUES_SPACE;
 import static com.landawn.abacus.util.SQLBuilder._SPACE_WHERE_SPACE;
 import static com.landawn.abacus.util.SQLBuilder._UPDATE;
+import static com.landawn.abacus.util.WD._PARENTHESES_L;
+import static com.landawn.abacus.util.WD._PARENTHESES_R;
+import static com.landawn.abacus.util.WD._SPACE;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -486,8 +486,36 @@ public abstract class CQLBuilder {
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            if (columnNames.length == 1 && columnNames[0].indexOf(WD._SPACE) > 0) {
-                sb.append(columnNames[0]);
+            if (columnNames.length == 1) {
+                final String columnName = columnNames[0];
+                int idx = -1;
+                idx = columnName.indexOf(" AS ");
+
+                if (idx < 0) {
+                    idx = columnName.indexOf(" as ");
+                }
+
+                if (idx < 0) {
+                    idx = columnName.indexOf(' ');
+                }
+
+                if (idx < 0) {
+                    idx = columnName.indexOf(',');
+                }
+
+                if (idx < 0) {
+                    sb.append(formalizeName(propColumnNameMap, columnName));
+
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
+                        sb.append(_SPACE_AS_SPACE);
+
+                        sb.append(WD._QUOTATION_D);
+                        sb.append(columnName);
+                        sb.append(WD._QUOTATION_D);
+                    }
+                } else {
+                    sb.append(columnName);
+                }
             } else {
                 int idx = -1;
                 for (int i = 0, len = columnNames.length; i < len; i++) {

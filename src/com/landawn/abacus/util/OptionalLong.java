@@ -172,6 +172,10 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         }
     }
 
+    public long orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

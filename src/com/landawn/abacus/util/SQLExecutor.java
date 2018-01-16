@@ -3522,6 +3522,10 @@ public final class SQLExecutor implements Closeable {
             return res.isPresent() ? OptionalDouble.of(res.orIfNull(0D)) : OptionalDouble.empty();
         }
 
+        public Nullable<String> queryForString(final String propName, final Condition whereCause) {
+            return queryForSingleResult(String.class, propName, whereCause);
+        }
+
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
             return queryForSingleResult(targetValueClass, propName, L.eq(idName, id));
         }
@@ -4644,6 +4648,15 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public OptionalDouble call() throws Exception {
                     return mapper.queryForDouble(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Nullable<String>> queryForString(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<String>>() {
+                @Override
+                public Nullable<String> call() throws Exception {
+                    return mapper.queryForString(propName, whereCause);
                 }
             });
         }

@@ -216,14 +216,6 @@ public class CompletableFuture<T> implements Future<T> {
         }
     }
 
-    public T getNow(T defaultValue) {
-        try {
-            return isDone() ? get() : defaultValue;
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        }
-    }
-
     public <U, E extends Exception> U get(final Try.Function<? super T, ? extends U, E> action) throws E {
         try {
             return action.apply(get());
@@ -248,6 +240,23 @@ public class CompletableFuture<T> implements Future<T> {
     public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
         final Pair<T, Exception> result = gett(timeout, unit);
         return action.apply(result.left, result.right);
+    }
+
+    public T getNow(T defaultValue) {
+        try {
+            return isDone() ? get() : defaultValue;
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public <E extends Exception> void getAndThen(final Try.Consumer<T, E> action) throws InterruptedException, ExecutionException, E {
+        action.accept(get());
+    }
+
+    public <E extends Exception> void getAndThen(final long timeout, final TimeUnit unit, final Try.Consumer<T, E> action)
+            throws InterruptedException, ExecutionException, TimeoutException, E {
+        action.accept(get(timeout, unit));
     }
 
     //    public void complete() throws InterruptedException, ExecutionException {

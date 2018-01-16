@@ -172,6 +172,10 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         }
     }
 
+    public float orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

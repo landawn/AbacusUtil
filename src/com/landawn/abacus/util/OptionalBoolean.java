@@ -172,6 +172,14 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         }
     }
 
+    public boolean orFalse() {
+        return isPresent() ? value : false;
+    }
+
+    public boolean orTrue() {
+        return isPresent() ? value : true;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

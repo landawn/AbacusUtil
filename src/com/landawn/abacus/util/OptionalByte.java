@@ -172,6 +172,10 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         }
     }
 
+    public byte orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

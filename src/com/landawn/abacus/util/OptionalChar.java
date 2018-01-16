@@ -172,6 +172,10 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         }
     }
 
+    public char orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

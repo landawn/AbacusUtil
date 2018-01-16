@@ -172,6 +172,10 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         }
     }
 
+    public short orZero() {
+        return isPresent() ? value : 0;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

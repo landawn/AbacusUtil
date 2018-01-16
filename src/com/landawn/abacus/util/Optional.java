@@ -360,6 +360,10 @@ public final class Optional<T> {
         return isPresent() ? this : N.requireNonNull(supplier.get());
     }
 
+    public T orNull() {
+        return isPresent() ? value : null;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *

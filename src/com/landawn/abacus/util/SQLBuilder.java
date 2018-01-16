@@ -242,8 +242,8 @@ public abstract class SQLBuilder {
                         subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
 
                         for (String pn : getPropNamesByClass(subEntityClass, false, null)) {
-                            entityPropNames
-                                    .add(N.concat(ClassUtil.getSimpleClassName(subEntityClass), WD.PERIOD, pn, SPACE_AS_SPACE, subEntityPropName, WD.PERIOD, pn));
+                            entityPropNames.add(
+                                    N.concat(ClassUtil.getSimpleClassName(subEntityClass), WD.PERIOD, pn, SPACE_AS_SPACE, subEntityPropName, WD.PERIOD, pn));
                         }
                     }
                 }
@@ -718,37 +718,69 @@ public abstract class SQLBuilder {
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            int idx = -1;
-            for (int i = 0, len = columnNames.length; i < len; i++) {
-                if (i > 0) {
-                    sb.append(_COMMA_SPACE);
-                }
-
-                idx = columnNames[i].indexOf(" AS ");
+            if (columnNames.length == 1) {
+                final String columnName = columnNames[0];
+                int idx = -1;
+                idx = columnName.indexOf(" AS ");
 
                 if (idx < 0) {
-                    idx = columnNames[i].indexOf(" as ");
+                    idx = columnName.indexOf(" as ");
                 }
 
                 if (idx < 0) {
-                    sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+                    idx = columnName.indexOf(' ');
+                }
 
-                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
+                if (idx < 0) {
+                    idx = columnName.indexOf(',');
+                }
+
+                if (idx < 0) {
+                    sb.append(formalizeName(propColumnNameMap, columnName));
+
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                         sb.append(_SPACE_AS_SPACE);
 
                         sb.append(WD._QUOTATION_D);
-                        sb.append(columnNames[i]);
+                        sb.append(columnName);
                         sb.append(WD._QUOTATION_D);
                     }
                 } else {
-                    sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
+                    sb.append(columnName);
+                }
+            } else {
+                int idx = -1;
+                for (int i = 0, len = columnNames.length; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(_COMMA_SPACE);
+                    }
 
-                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
-                        sb.append(_SPACE_AS_SPACE);
+                    idx = columnNames[i].indexOf(" AS ");
 
-                        sb.append(WD._QUOTATION_D);
-                        sb.append(columnNames[i].substring(idx + 4).trim());
-                        sb.append(WD._QUOTATION_D);
+                    if (idx < 0) {
+                        idx = columnNames[i].indexOf(" as ");
+                    }
+
+                    if (idx < 0) {
+                        sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+
+                        if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
+                            sb.append(_SPACE_AS_SPACE);
+
+                            sb.append(WD._QUOTATION_D);
+                            sb.append(columnNames[i]);
+                            sb.append(WD._QUOTATION_D);
+                        }
+                    } else {
+                        sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
+
+                        if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnNames[i])) {
+                            sb.append(_SPACE_AS_SPACE);
+
+                            sb.append(WD._QUOTATION_D);
+                            sb.append(columnNames[i].substring(idx + 4).trim());
+                            sb.append(WD._QUOTATION_D);
+                        }
                     }
                 }
             }

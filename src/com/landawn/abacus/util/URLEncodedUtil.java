@@ -357,7 +357,7 @@ public final class URLEncodedUtil {
                 encodeFormFields(output, N.stringOf(entry.getValue()), charset);
             }
         } else if (N.isEntity(parameters.getClass())) {
-            encode(output, Maps.entity2Map(parameters), charset);
+            encode(output, Maps.entity2Map(parameters, true), charset);
         } else if (parameters instanceof Object[]) {
             final Object[] a = (Object[]) parameters;
 

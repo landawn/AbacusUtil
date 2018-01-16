@@ -104,7 +104,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.core.EntityManagerUtil;
+import com.landawn.abacus.core.AbstractDirtyMarker;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
@@ -4159,7 +4159,7 @@ public final class N {
             dirtyMarkerTarget.dirtyPropNames().clear();
             dirtyMarkerTarget.dirtyPropNames().addAll(dirtyMarkerSource.dirtyPropNames());
 
-            EntityManagerUtil.setVersion(dirtyMarkerTarget, dirtyMarkerSource.version());
+            AbstractDirtyMarker.setVersion(dirtyMarkerTarget, dirtyMarkerSource.version());
         }
     }
 

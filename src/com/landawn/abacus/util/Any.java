@@ -285,6 +285,10 @@ public abstract class Any<T> {
      */
     public abstract <E extends Exception> Any<T> or(Try.Supplier<? extends Any<T>, E> supplier) throws E;
 
+    public T orNull() {
+        return isPresent() ? value : null;
+    }
+
     /**
      * Return the value if present, otherwise return {@code other}.
      *
