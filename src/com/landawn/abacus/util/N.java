@@ -104,7 +104,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.core.AbstractDirtyMarker;
+import com.landawn.abacus.core.EntityUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
@@ -4159,7 +4159,7 @@ public final class N {
             dirtyMarkerTarget.dirtyPropNames().clear();
             dirtyMarkerTarget.dirtyPropNames().addAll(dirtyMarkerSource.dirtyPropNames());
 
-            AbstractDirtyMarker.setVersion(dirtyMarkerTarget, dirtyMarkerSource.version());
+            EntityUtil.setVersion(dirtyMarkerTarget, dirtyMarkerSource.version());
         }
     }
 
@@ -6121,7 +6121,7 @@ public final class N {
      * @return the trimmed string, {@code null} if null String input
      */
     public static String trim(final String str) {
-        return N.isNullOrEmpty(str) ? str : str.trim();
+        return N.isNullOrEmpty(str) || (str.charAt(0) != ' ' && str.charAt(str.length() - 1) != ' ') ? str : str.trim();
     }
 
     public static String[] trim(final String[] strs) {

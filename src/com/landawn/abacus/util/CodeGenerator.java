@@ -14,9 +14,7 @@
 
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.CodeGenerator.EntityMode.EXTEND_ACTIVE_RECORD;
 import static com.landawn.abacus.util.CodeGenerator.EntityMode.EXTEND_DIRTY_MARKER;
-import static com.landawn.abacus.util.CodeGenerator.EntityMode.IMPL_ACTIVE_RECORD;
 import static com.landawn.abacus.util.CodeGenerator.EntityMode.IMPL_DIRTY_MARKER;
 import static com.landawn.abacus.util.WD._PERIOD;
 
@@ -60,17 +58,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.landawn.abacus.ActiveRecord;
-import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.EntityId;
-import com.landawn.abacus.LockMode;
-import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.core.AbstractActiveRecord;
 import com.landawn.abacus.core.AbstractDirtyMarker;
-import com.landawn.abacus.core.ActiveRecordImpl;
 import com.landawn.abacus.core.DirtyMarkerImpl;
-import com.landawn.abacus.core.Seid;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
@@ -190,11 +180,6 @@ public final class CodeGenerator {
      * The field name of <code>DirtyMarker</code> implementation in a generated entity class which implements the <code>DirtyMarker</code> interface. (value is ""dirtyMarkerImpl"")
      */
     private static final String DIRTY_MARKER_IMPL_FIELD_NAME = "dirtyMarkerImpl";
-
-    /**
-     * The field name of <code>ActiveRecord</code> implementation in a generated entity class which implements the <code>ActiveRecord</code> interface. (value is ""activeRecordImpl"")
-     */
-    private static final String ACTIVE_RECORD_IMPL_FIELD_NAME = "activeRecordImpl";
 
     /**
      * Field USUAL_TYPES.
@@ -803,13 +788,6 @@ public final class CodeGenerator {
             Method propName2VarName, Method propName2MethodName, final boolean fluentSetMethod, Map<String, Class<?>> entityExtendedClasses,
             Map<String, List<Class<?>>> entityImplementedInterfaces, final boolean generateHashEqualsMethod, final boolean generateToStringMethod,
             final boolean hashEqualsWithParentProperties, final boolean toStringWithParentProperties, final Class<?> utilClassForHashEqualsToString) {
-        if (entityMode == EntityMode.EXTEND_ACTIVE_RECORD || entityMode == EntityMode.IMPL_ACTIVE_RECORD) {
-            try {
-                ClassUtil.forClass("com.landawn.abacus.core.EntityManagerImpl");
-            } catch (Exception e) {
-                throw new AbacusException("Active Record model is not supported in this version");
-            }
-        }
 
         final EntityDefinitionFactory entityDefinitionFactory = SQLEntityDefinitionFactory.newInstance(domainName, entityDefinitionXml);
         final String pkgName = entityDefinitionFactory.getAttribute(EntityDefEle.PACKAGE);
@@ -999,23 +977,6 @@ public final class CodeGenerator {
         try {
             if (EntityMode.POJO == entityMode || EntityMode.POJO_WITH_PROP_NAME_TABLE == entityMode) {
                 // do something.
-            } else if (EntityMode.EXTEND_ACTIVE_RECORD == entityMode) {
-                if (extendedClass == null) {
-                    extendedClass = AbstractActiveRecord.class;
-                } else {
-                    if (!AbstractActiveRecord.class.isAssignableFrom(extendedClass)) {
-                        throw new AbacusException(
-                                "the class: " + extendedClass.getCanonicalName() + " must extend " + AbstractActiveRecord.class.getCanonicalName());
-                    }
-                }
-            } else if (EntityMode.IMPL_ACTIVE_RECORD == entityMode) {
-                if (extendedClass == null) {
-                    extendedClass = ActiveRecordImpl.class;
-                }
-
-                if (implementedInterfaces.size() == 0) {
-                    implementedInterfaces.add(ActiveRecord.class);
-                }
             } else if (EntityMode.EXTEND_DIRTY_MARKER == entityMode) {
                 if (extendedClass == null) {
                     extendedClass = AbstractDirtyMarker.class;
@@ -3131,15 +3092,6 @@ public final class CodeGenerator {
         if ((IMPL_DIRTY_MARKER == entityMode)) {
             writeClassImport(fileWrite, Collection.class, importedClasses);
             writeClassImport(fileWrite, Set.class, importedClasses);
-        } else if ((IMPL_ACTIVE_RECORD == entityMode)) {
-            writeClassImport(fileWrite, Collection.class, importedClasses);
-            writeClassImport(fileWrite, List.class, importedClasses);
-            writeClassImport(fileWrite, Set.class, importedClasses);
-            writeClassImport(fileWrite, Map.class, importedClasses);
-        } else if ((EXTEND_ACTIVE_RECORD == entityMode)) {
-            writeClassImport(fileWrite, Collection.class, importedClasses);
-            writeClassImport(fileWrite, List.class, importedClasses);
-            writeClassImport(fileWrite, Map.class, importedClasses);
         }
 
         for (Property prop : entityDef.getPropertyList()) {
@@ -3158,31 +3110,6 @@ public final class CodeGenerator {
 
         if ((IMPL_DIRTY_MARKER == entityMode)) {
             writeClassImport(fileWrite, DirtyMarkerImpl.class, importedClasses);
-        } else if ((IMPL_ACTIVE_RECORD == entityMode)) {
-            // writeClassImport(fileWrite, EntityManager.class, importedClasses);
-            writeClassImport(fileWrite, LockMode.class, importedClasses);
-            writeClassImport(fileWrite, DataSet.class, importedClasses);
-            writeClassImport(fileWrite, Condition.class, importedClasses);
-            writeClassImport(fileWrite, ActiveRecord.class, importedClasses);
-            writeClassImport(fileWrite, ActiveRecordImpl.class, importedClasses);
-
-            if (entityDef.getIdPropertyList().size() > 0) {
-                writeClassImport(fileWrite, EntityId.class, importedClasses);
-                writeClassImport(fileWrite, Seid.class, importedClasses);
-            }
-        } else if ((EXTEND_ACTIVE_RECORD == entityMode)) {
-            writeClassImport(fileWrite, DataSet.class, importedClasses);
-            writeClassImport(fileWrite, Condition.class, importedClasses);
-            writeClassImport(fileWrite, AbstractActiveRecord.class, importedClasses);
-
-            if (entityDef.getIdPropertyList().size() > 0) {
-                writeClassImport(fileWrite, Seid.class, importedClasses);
-                writeClassImport(fileWrite, EntityId.class, importedClasses);
-            }
-        }
-
-        if ((EXTEND_ACTIVE_RECORD == entityMode) || (IMPL_ACTIVE_RECORD == entityMode)) {
-            writeClassImport(fileWrite, Nullable.class, importedClasses);
         }
 
         if ((generateHashEqualsMethod || generateToStringMethod) && (hasHashEqualsProperty(entityDef) || hasToStringProperty(entityDef))) {
@@ -3217,13 +3144,9 @@ public final class CodeGenerator {
         if (propNameTableClass != null) {
             fileWrite.write(IOUtil.LINE_SEPARATOR + "import " + propNameTableClass + ";");
 
-            if ((EXTEND_ACTIVE_RECORD == entityMode) || (IMPL_ACTIVE_RECORD == entityMode)) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR + "import static " + propNameTableClass + "." + DOMAIN_NAME_VAR + ";");
-            }
         }
 
-        if ((IMPL_DIRTY_MARKER == entityMode) || (IMPL_ACTIVE_RECORD == entityMode)
-                || ((EXTEND_DIRTY_MARKER == entityMode) && (entityDef.getEntiyPropertyList().size() > 0))) {
+        if ((IMPL_DIRTY_MARKER == entityMode) || ((EXTEND_DIRTY_MARKER == entityMode) && (entityDef.getEntiyPropertyList().size() > 0))) {
             writeClassImport(fileWrite, XmlTransient.class, importedClasses);
         }
 
@@ -3284,9 +3207,7 @@ public final class CodeGenerator {
             final Map<String, Class<?>> importedClasses) throws IOException, IllegalAccessException, InvocationTargetException {
         writeClassHead(entityDef, propNameTableClass, extendedClass, implementedInterfaces, headSpace, fileWrite);
 
-        if (entityMode.equals(EntityMode.IMPL_ACTIVE_RECORD) && (extendedClass != null) && !ActiveRecordImpl.class.isAssignableFrom(extendedClass)) {
-            extendedClass = ActiveRecordImpl.class;
-        } else if (entityMode.equals(EntityMode.IMPL_DIRTY_MARKER) && (extendedClass != null) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass)) {
+        if (entityMode.equals(EntityMode.IMPL_DIRTY_MARKER) && (extendedClass != null) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass)) {
             extendedClass = DirtyMarkerImpl.class;
         }
 
@@ -3311,26 +3232,11 @@ public final class CodeGenerator {
         // write copy constructor.
         // writeCopyConstructor(entityDef, pkgName, headSpace, fileWrite);
 
-        // write static(load, find) methods
-        if ((IMPL_ACTIVE_RECORD == entityMode) || (EXTEND_ACTIVE_RECORD == entityMode)) {
-            writeStaticMethod(entityDef, pkgName, propName2VarName, entityMode, extendedClass, headSpace, fileWrite, importedClasses);
-        }
-
-        // write objectManager method.
-        writeActiveRecordMethod(entityMode, headSpace, fileWrite);
-
         writeDirtyMarkerMethod(entityDef, entityMode, headSpace, fileWrite);
 
         // write get/set methods
         writeGetSetMethod(entityDef, pkgName, extendedClass, entityMode, propName2VarName, propName2MethodName, fluentSetMethod, headSpace, fileWrite,
                 importedClasses);
-
-        // write copy method
-        // only write copy method for entity class.
-        if (entityMode == EntityMode.EXTEND_ACTIVE_RECORD || entityMode == EntityMode.IMPL_ACTIVE_RECORD
-                || Boolean.valueOf(entityDef.getAttribute("generateCopyMethod"))) {
-            writeCopyMethod(entityDef, headSpace, fileWrite);
-        }
 
         if (entityDef.getPropertyList().size() > 0) {
             if (generateHashEqualsMethod) {
@@ -3355,43 +3261,6 @@ public final class CodeGenerator {
 
         // =================================================================
         fileWrite.write(headSpace + "}");
-    }
-
-    private static void writeCopyMethod(final EntityDefinition entityDef, final String headSpace, final Writer fileWrite) throws IOException {
-        boolean isAbstract = N.asBoolean(entityDef.getAttribute("abstract"));
-        if (isAbstract) {
-            return;
-        }
-
-        fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " copy() {");
-        fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        final " + entityDef.getName() + " copy = new " + entityDef.getName() + "();"
-                + IOUtil.LINE_SEPARATOR);
-
-        int counter = 0;
-
-        for (Property prop : entityDef.getIdPropertyList()) {
-            fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        copy." + propName2FieldName(prop.getName()) + " = this."
-                    + propName2FieldName(prop.getName()) + ";");
-
-            counter++;
-        }
-
-        for (Property prop : entityDef.getPropertyList()) {
-            if (!prop.isId()) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        copy." + propName2FieldName(prop.getName()) + " = this."
-                        + propName2FieldName(prop.getName()) + ";");
-
-                counter++;
-            }
-        }
-
-        if (counter > 0) {
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-        }
-
-        fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        return copy;" + IOUtil.LINE_SEPARATOR);
-
-        fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
     }
 
     /**
@@ -3420,7 +3289,7 @@ public final class CodeGenerator {
             sb.append(headSpace + "public class " + entityDef.getName());
         }
 
-        if ((extendedClass != null) && !ActiveRecordImpl.class.isAssignableFrom(extendedClass) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass)) {
+        if ((extendedClass != null) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass)) {
             if (sb.indexOf(" extends ") > 0) {
                 sb.append(", " + ClassUtil.getSimpleClassName(extendedClass));
             } else {
@@ -3505,7 +3374,7 @@ public final class CodeGenerator {
             throws IOException {
         boolean isSerializable = isSerializable(extendedClass, implementedInterfaces);
 
-        if (isSerializable || ((entityMode == EntityMode.EXTEND_DIRTY_MARKER) || (entityMode == EntityMode.EXTEND_ACTIVE_RECORD))) {
+        if (isSerializable || entityMode == EntityMode.EXTEND_DIRTY_MARKER) {
             writeSerialVersionUID(entityDef, headSpace, fileWrite);
         }
 
@@ -3513,9 +3382,6 @@ public final class CodeGenerator {
         if (entityMode == IMPL_DIRTY_MARKER) {
             fileWrite.write(headSpace + "    private final " + ClassUtil.getSimpleClassName(extendedClass) + " " + DIRTY_MARKER_IMPL_FIELD_NAME + " = new "
                     + ClassUtil.getSimpleClassName(extendedClass) + "(" + ENTITY_NAME_VAR + ");" + IOUtil.LINE_SEPARATOR + IOUtil.LINE_SEPARATOR);
-        } else if (entityMode == IMPL_ACTIVE_RECORD) {
-            fileWrite.write(headSpace + "    private final " + ClassUtil.getSimpleClassName(extendedClass) + " " + ACTIVE_RECORD_IMPL_FIELD_NAME + " = new "
-                    + ClassUtil.getSimpleClassName(extendedClass) + "(this);" + IOUtil.LINE_SEPARATOR + IOUtil.LINE_SEPARATOR);
         }
 
         Collection<Property> propList = entityDef.getPropertyList();
@@ -3529,8 +3395,7 @@ public final class CodeGenerator {
     }
 
     private static boolean isSerializable(final Class<?> extendedClass, final List<Class<?>> implementedInterfaces) {
-        if ((extendedClass != null) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass) && !ActiveRecordImpl.class.isAssignableFrom(extendedClass)
-                && Serializable.class.isAssignableFrom(extendedClass)) {
+        if ((extendedClass != null) && !DirtyMarkerImpl.class.isAssignableFrom(extendedClass) && Serializable.class.isAssignableFrom(extendedClass)) {
             return true;
         }
 
@@ -3580,7 +3445,7 @@ public final class CodeGenerator {
          * " + inheritClass.getCanonicalName() + "();" + N.LINE_SEPARATOR); }
          */
 
-        if ((entityMode == EntityMode.EXTEND_DIRTY_MARKER || entityMode == EntityMode.EXTEND_ACTIVE_RECORD)) {
+        if (entityMode == EntityMode.EXTEND_DIRTY_MARKER) {
             fileWrite.write(headSpace + "        super(" + ENTITY_NAME_VAR + ");" + IOUtil.LINE_SEPARATOR);
         }
 
@@ -3814,8 +3679,7 @@ public final class CodeGenerator {
             }
 
             if (EntityMode.POJO != entityMode && EntityMode.POJO_WITH_PROP_NAME_TABLE != entityMode) {
-                String word = ((EXTEND_ACTIVE_RECORD == entityMode) || (EXTEND_DIRTY_MARKER == entityMode)) ? "super"
-                        : ((IMPL_ACTIVE_RECORD == entityMode) ? ACTIVE_RECORD_IMPL_FIELD_NAME : DIRTY_MARKER_IMPL_FIELD_NAME);
+                String word = EXTEND_DIRTY_MARKER == entityMode ? "super" : DIRTY_MARKER_IMPL_FIELD_NAME;
                 fileWrite.write(headSpace + "        " + word + ".setUpdatedPropName(" + propNameVar + ");" + IOUtil.LINE_SEPARATOR);
             }
 
@@ -3965,8 +3829,7 @@ public final class CodeGenerator {
                 }
 
                 if (EntityMode.POJO != entityMode && EntityMode.POJO_WITH_PROP_NAME_TABLE != entityMode) {
-                    String word = ((EXTEND_ACTIVE_RECORD == entityMode) || (EXTEND_DIRTY_MARKER == entityMode)) ? "super"
-                            : ((IMPL_ACTIVE_RECORD == entityMode) ? ACTIVE_RECORD_IMPL_FIELD_NAME : DIRTY_MARKER_IMPL_FIELD_NAME);
+                    String word = EXTEND_DIRTY_MARKER == entityMode ? "super" : DIRTY_MARKER_IMPL_FIELD_NAME;
                     fileWrite.write(headSpace + "        " + word + ".setUpdatedPropName(" + propNameVar + ");" + IOUtil.LINE_SEPARATOR);
                 }
 
@@ -4048,8 +3911,7 @@ public final class CodeGenerator {
                 }
 
                 if (EntityMode.POJO != entityMode && EntityMode.POJO_WITH_PROP_NAME_TABLE != entityMode) {
-                    String word = ((EXTEND_ACTIVE_RECORD == entityMode) || (EXTEND_DIRTY_MARKER == entityMode)) ? "super"
-                            : ((IMPL_ACTIVE_RECORD == entityMode) ? ACTIVE_RECORD_IMPL_FIELD_NAME : DIRTY_MARKER_IMPL_FIELD_NAME);
+                    String word = EXTEND_DIRTY_MARKER == entityMode ? "super" : DIRTY_MARKER_IMPL_FIELD_NAME;
                     fileWrite.write(headSpace + "        " + word + ".setUpdatedPropName(" + propNameVar + ");" + IOUtil.LINE_SEPARATOR);
                 }
 
@@ -4320,220 +4182,6 @@ public final class CodeGenerator {
         return false;
     }
 
-    private static void writeActiveRecordMethod(final EntityMode entityMode, final String headSpace, final Writer fileWrite)
-            throws IllegalAccessException, InvocationTargetException, IOException {
-        if (IMPL_ACTIVE_RECORD.equals(entityMode)) {
-            boolean hasOutObjectProp = true;
-            boolean hasOutObjectCollProp = true;
-
-            if (hasOutObjectProp) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void add(ActiveRecord entity, boolean isNew) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.add(entity, isNew);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void add(ActiveRecord entity, boolean isNew, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.add(entity, isNew, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            if (hasOutObjectCollProp) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void addAll(Collection<? extends ActiveRecord> entities, boolean isNew) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.addAll(entities, isNew);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void addAll(Collection<? extends ActiveRecord> entities, boolean isNew, Map<String, Object> options) {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.addAll(entities, isNew, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            if (hasOutObjectProp) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void remove(ActiveRecord entity, boolean isDelete) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.remove(entity, isDelete);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "    public void remove(ActiveRecord entity, boolean isDelete, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.remove(entity, isDelete, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            if (hasOutObjectCollProp) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "    public void removeAll(Collection<? extends ActiveRecord> entities, boolean isDelete) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.removeAll(entities, isDelete);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "    public void removeAll(Collection<? extends ActiveRecord> entities, boolean isDelete, Map<String, Object> options) {"
-                                + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        activeRecordImpl.removeAll(entities, isDelete, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void store() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.store();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void store(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.store(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public int update() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.update();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public int update(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.update(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean refresh() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.refresh();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean refresh(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.refresh(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public int delete() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.delete();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public int delete(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.delete(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            //
-            // fileWrite.write(D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "    public <T> Nullable<T> fetch(String propName) {" + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "        return activeRecordImpl.fetch(propName);" +
-            // D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + D.LINE_SEPARATOR);
-            //
-            //            fileWrite.write(N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "    public void modify(String propName, Object propValue) {" + N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "        activeRecordImpl.modify(propName, propValue);" + N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean lockRecord(LockMode lockMode) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.lockRecord(lockMode);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean lockRecord(LockMode lockMode, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.lockRecord(lockMode, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean unlockRecord() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.unlockRecord();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public boolean unlockRecord(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.unlockRecord(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    @XmlTransient" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public long getRecordVersion() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.getRecordVersion();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    @XmlTransient" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public long getRecordVersion(Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return activeRecordImpl.getRecordVersion(options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            //
-            // fileWrite.write(N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace
-            // +
-            // "    public boolean lockTable(LockMode lockMode, Map<String, Object> options) {"
-            // + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "        return activeRecordImpl.lockTable(lockMode, options);"
-            // + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-            //
-            // fileWrite.write(N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace
-            // +
-            // "    public boolean unlockTable(Map<String, Object> options) {"
-            // + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "        return activeRecordImpl.unlockTable(options);"
-            // + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-
-            /*
-             * fileWrite.write(N.LINE_SEPARATOR); fileWrite.write(headSpace + " public long getTableVersion(Map<String,
-             * Object> options) {" + N.LINE_SEPARATOR); fileWrite.write(headSpace + " return
-             * activeRecordImpl.getTableVersion(options);" + N.LINE_SEPARATOR); fileWrite.write(headSpace + " }" +
-             * N.LINE_SEPARATOR);
-             */
-
-            /*
-             * fileWrite.write(N.LINE_SEPARATOR); fileWrite.write(headSpace +
-             * "    public long version() {" + N.LINE_SEPARATOR); fileWrite.write(headSpace +
-             * "        return activeRecordImpl.version(this);" + N.LINE_SEPARATOR); fileWrite.write(headSpace + "    }"
-             * + N.LINE_SEPARATOR);
-             */
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void merge(Object sourceEntity) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.merge(sourceEntity);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            //            fileWrite.write(N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "    @SuppressWarnings(\"unchecked\")" + N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "    public " + entityDef.getName() + " copy() {" + N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "        return " + "(" + entityDef.getName() + ") activeRecordImpl.copy();" + N.LINE_SEPARATOR);
-            //            fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-
-            // fileWrite.write(N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "    @SuppressWarnings(\"unchecked\")" + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    public " + entityDef.getName() +
-            // " clone() {" + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "        return " + "(" +
-            // entityDef.getName()
-            // + ") activeRecordImpl.clone(this);" + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void erase(String... propNames) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.erase(propNames);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void erase(Collection<String> propNames) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.erase(propNames);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public void eraseAll() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        activeRecordImpl.eraseAll();" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-        }
-    }
-
     /*
      * static void writeHES(String headSpace, Writer fileWrite) throws IOException { fileWrite.write(N.LINE_SEPARATOR);
      * fileWrite.write(headSpace + "    public int hashCode() {" + N.LINE_SEPARATOR); fileWrite.write(headSpace +
@@ -4551,8 +4199,7 @@ public final class CodeGenerator {
     private static void writeDirtyMarkerMethod(final EntityDefinition entityDef, final EntityMode entityMode, final String headSpace, final Writer fileWrite)
             throws IOException {
         if (!(EntityMode.POJO.equals(entityMode) || EntityMode.POJO_WITH_PROP_NAME_TABLE.equals(entityMode))) {
-            String word = ((EXTEND_ACTIVE_RECORD == entityMode) || (EXTEND_DIRTY_MARKER == entityMode)) ? "super"
-                    : ((IMPL_ACTIVE_RECORD == entityMode) ? ACTIVE_RECORD_IMPL_FIELD_NAME : DIRTY_MARKER_IMPL_FIELD_NAME);
+            String word = EXTEND_DIRTY_MARKER == entityMode ? "super" : DIRTY_MARKER_IMPL_FIELD_NAME;
 
             if (entityMode == EntityMode.IMPL_DIRTY_MARKER) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
@@ -4588,7 +4235,7 @@ public final class CodeGenerator {
                 temp += (";" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(temp);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            } else if ((entityMode == IMPL_DIRTY_MARKER) || (entityMode == IMPL_ACTIVE_RECORD)) {
+            } else if (entityMode == IMPL_DIRTY_MARKER) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    @XmlTransient" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    public boolean isDirty() {" + IOUtil.LINE_SEPARATOR);
@@ -4596,7 +4243,7 @@ public final class CodeGenerator {
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
             }
 
-            if ((entityMode == IMPL_ACTIVE_RECORD) || (entityMode == IMPL_DIRTY_MARKER)) {
+            if (entityMode == IMPL_DIRTY_MARKER) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    @XmlTransient" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    public boolean isDirty(String propName) {" + IOUtil.LINE_SEPARATOR);
@@ -4630,14 +4277,14 @@ public final class CodeGenerator {
                 }
 
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            } else if ((entityMode == IMPL_DIRTY_MARKER) || (entityMode == IMPL_ACTIVE_RECORD)) {
+            } else if (entityMode == IMPL_DIRTY_MARKER) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    public void markDirty(boolean isDirty) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        " + word + ".markDirty(isDirty);" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
             }
 
-            if ((entityMode == IMPL_ACTIVE_RECORD) || (entityMode == IMPL_DIRTY_MARKER)) {
+            if (entityMode == IMPL_DIRTY_MARKER) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    public void markDirty(String propName, boolean isDirty) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        " + word + ".markDirty(propName, isDirty);" + IOUtil.LINE_SEPARATOR);
@@ -4916,378 +4563,6 @@ public final class CodeGenerator {
         return entityDef.getAttribute(EntityDefEle.PACKAGE);
     }
 
-    /**
-     *
-     * @param entityDef
-     * @param pkgName
-     * @param propName2VarName
-     * @param entityMode
-     * @param extendedClass
-     * @param headSpace
-     * @param fileWrite
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws IOException
-     */
-    private static void writeStaticMethod(final EntityDefinition entityDef, final String pkgName, final Method propName2VarName, final EntityMode entityMode,
-            Class<?> extendedClass, final String headSpace, final Writer fileWrite, final Map<String, Class<?>> importedClasses)
-            throws IllegalAccessException, InvocationTargetException, IOException {
-        if ((IMPL_ACTIVE_RECORD == entityMode) || (EXTEND_ACTIVE_RECORD == entityMode)) {
-            extendedClass = (extendedClass == null) ? ((IMPL_ACTIVE_RECORD == entityMode) ? AbstractActiveRecord.class : ActiveRecordImpl.class)
-                    : extendedClass;
-
-            List<Property> idPropList = entityDef.getIdPropertyList();
-            String idPropPair = null;
-            String idParaString = null;
-
-            if (idPropList.size() > 0) {
-                idPropPair = "";
-
-                int i = 0;
-
-                for (Property idProp : idPropList) {
-                    String fieldName = idProp.getName();
-                    String propVarName = ClassUtil.invokeMethod(propName2VarName, idProp.getName());
-
-                    if (i > 0) {
-                        idPropPair += ", ";
-                    }
-
-                    idPropPair += (propVarName + ", " + fieldName);
-                    i++;
-                }
-
-                idParaString = getIdParaString(pkgName, idPropList, importedClasses);
-            }
-
-            if (N.notNullOrEmpty(idParaString)) {
-                // load method
-                //        fileWrite.write(N.LINE_SEPARATOR);
-                //        fileWrite.write(
-                //                headSpace + "    public static " + entityDef.getName() + " load(" + idParaString + ", String... selectPropNames) {" + N.LINE_SEPARATOR);
-                //        fileWrite.write(headSpace + "        return (" + entityDef.getName() + ") " + N.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR
-                //                + ", " + N.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), selectPropNames);" + N.LINE_SEPARATOR);
-                //        fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(" + idParaString + ") {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return (" + entityDef.getName() + ") " + ClassUtil.getSimpleClassName(extendedClass) + ".load("
-                        + DOMAIN_NAME_VAR + ", " + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), null);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(" + idParaString + ", Collection<String> selectPropNames) {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "        return (" + entityDef.getName() + ") " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR
-                                + ", " + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), selectPropNames);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(" + idParaString
-                        + ", Collection<String> selectPropNames, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return (" + entityDef.getName() + ") " + ClassUtil.getSimpleClassName(extendedClass) + ".load("
-                        + DOMAIN_NAME_VAR + ", " + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), selectPropNames, options);"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR + ", entityId, null);"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(EntityId entityId, Collection<String> selectPropNames) {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR
-                        + ", entityId, selectPropNames);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // load method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static " + entityDef.getName()
-                        + " load(EntityId entityId, Collection<String> selectPropNames, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR
-                        + ", entityId, selectPropNames, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            // load method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static " + entityDef.getName() + " load(Collection<String> selectPropNames, Condition condition) {"
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // load method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static " + entityDef.getName()
-                    + " load(Collection<String> selectPropNames, Condition condition, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".load(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            if (N.notNullOrEmpty(idParaString)) {
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, " + idParaString + ") {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", propName, "
-                        + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "));" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, " + idParaString + ") {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
-                        + ", targetClass, propName, " + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "));" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace
-                        + "     * Fetch the value of the specified property from data store directly. {@code null} or default value for primitive type is returned if no result is found."
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, " + idParaString
-                        + ", Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", targetClass, propName, "
-                                + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
-                        + ", propName, entityId);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, EntityId entityId) {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
-                        + ", targetClass, propName, entityId);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // fetch method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace
-                        + "     * Fetch the value of the specified property from data store directly. {@code null} or default value for primitive type is returned if no result is found."
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace
-                        + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, EntityId entityId, Map<String, Object> options) {"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
-                        + ", targetClass, propName, entityId, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            // fetch method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, Condition condition) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", propName, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // fetch method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, Condition condition) {"
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", targetClass, propName, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace
-                    + "     * Fetch the value of the specified property from data store directly. {@code null} or default value for primitive type is returned if no result is found."
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace
-                    + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, Condition condition, Map<String, Object> options) {"
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", targetClass, propName, condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            if (!N.isNullOrEmpty(idPropPair)) {
-                // exists method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static boolean exists(" + idParaString + ") {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR + ", "
-                        + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "));" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // exists method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static boolean exists(" + idParaString + ", Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR + ", "
-                        + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "), options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // exists method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static boolean exists(EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR + ", entityId);"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-                // exists method
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static boolean exists(EntityId entityId, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR
-                        + ", entityId, options);" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            // exists method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static boolean exists(Condition cond) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", cond);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // exists method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static boolean exists(Condition cond, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".exists(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", cond, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // find method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     * Small result(size < 20~50), find it." + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static List<" + entityDef.getName() + "> find(Collection<String> selectPropNames, Condition condition) {"
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".find(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // find method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     * Small result(size < 20~50), find it." + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static List<" + entityDef.getName()
-                    + "> find(Collection<String> selectPropNames, Condition condition, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".find(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // query method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     * Big result(20~50 < size < 200~500), query  it." + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(
-                    headSpace + "    public static DataSet" + " query(Collection<String> selectPropNames, Condition condition) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".query(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // query method
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     * Big result(20~50 < size < 200~500), query  it." + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static DataSet"
-                    + " query(Collection<String> selectPropNames, Condition condition, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".query(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", selectPropNames, condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            // // list method
-            // fileWrite.write(D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    /**" + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace +
-            // "     * Huge result(size > 200~500), list it." +
-            // D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "     * TODO" + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "     */" + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    public static " +
-            // PaginatedResult.class.getName()
-            // +
-            // " list(Collection<String> selectPropNames, Condition condition, int pageSize, Map<String, Object> options) {"
-            // + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "        return " +
-            // N.getSimpleClassName(extendedClass) + ".list("
-            // + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR +
-            // ", selectPropNames, condition, pageSize, options);"
-            // + D.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + D.LINE_SEPARATOR);
-            //
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static int " + "update(Map<String, Object> props, Condition condition) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".update(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", props, condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static int " + "update(Map<String, Object> props, Condition condition, Map<String, Object> options) {"
-                    + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".update(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", props, condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static int " + "delete(Condition condition) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".delete(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", condition);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static int " + "delete(Condition condition, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".delete(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
-                    + ", condition, options);" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            //
-            // fileWrite.write(N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace
-            // +
-            // "    public static long getTableVersion(Map<String, Object> options) {"
-            // + N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "        return " +
-            // N.getSimpleClassName(extendedClass) + ".getTableVersion("
-            // + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR + ", options);" +
-            // N.LINE_SEPARATOR);
-            // fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
-            if (IMPL_ACTIVE_RECORD == entityMode) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    protected static <T> com.landawn.abacus.EntityManager<T> getEntityManager() {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".getEntityManager(" + DOMAIN_NAME_VAR + ");"
-                        + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            }
-
-            fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public String domainName() {" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "        return " + DOMAIN_NAME_VAR + ";" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-
-            if (entityMode == EntityMode.IMPL_ACTIVE_RECORD) {
-                fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public String entityName() {" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "        return " + ENTITY_NAME_VAR + ";" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
-            }
-        }
-    }
-
     private static String getIdParaString(final String pkgName, final List<Property> idPropList, final Map<String, Class<?>> importedClasses) {
         String idPropParaStr = "";
 
@@ -5373,7 +4648,7 @@ public final class CodeGenerator {
      * @version $Revision: 0.8 $
      */
     public enum EntityMode {
-        POJO, POJO_WITH_PROP_NAME_TABLE, IMPL_DIRTY_MARKER, EXTEND_DIRTY_MARKER, IMPL_ACTIVE_RECORD, EXTEND_ACTIVE_RECORD;
+        POJO, POJO_WITH_PROP_NAME_TABLE, IMPL_DIRTY_MARKER, EXTEND_DIRTY_MARKER;
     }
 
     public enum ParentPropertyMode {
