@@ -329,7 +329,7 @@ public final class N {
      * be used in comparisons with values returned by various method from
      * {@link java.util.List} .
      */
-    static final int INDEX_NOT_FOUND = -1;
+    public static final int INDEX_NOT_FOUND = -1;
 
     // ...
     public static final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone("UTC");
@@ -1140,6 +1140,30 @@ public final class N {
 
     public static <T> TreeSet<T> newTreeSet(SortedSet<T> c) {
         return N.isNullOrEmpty(c) ? new TreeSet<T>() : new TreeSet<>(c);
+    }
+
+    public static <T> ArrayDeque<T> newArrayDeque() {
+        return new ArrayDeque<>();
+    }
+
+    /**
+     * Constructs an empty array deque with an initial capacity sufficient to hold the specified number of elements.
+     * 
+     * @param numElements lower bound on initial capacity of the deque.
+     * @return
+     */
+    public static <T> ArrayDeque<T> newArrayDeque(int numElements) {
+        return new ArrayDeque<>(numElements);
+    }
+
+    /**
+     * Constructs a deque containing the elements of the specified collection, in the order they are returned by the collection's iterator.
+     * 
+     * @param c
+     * @return
+     */
+    public static <E> ArrayDeque<E> newArrayDeque(Collection<? extends E> c) {
+        return new ArrayDeque<>(c);
     }
 
     public static <K, V> HashMap<K, V> newHashMap() {
@@ -1990,17 +2014,7 @@ public final class N {
 
     @SafeVarargs
     public static <T> Queue<T> asQueue(final T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new ArrayDeque<>();
-        }
-
-        final Queue<T> queue = new ArrayDeque<>(a.length);
-
-        for (T e : a) {
-            queue.add(e);
-        }
-
-        return queue;
+        return asArrayDeque(a);
     }
 
     @SafeVarargs
@@ -2079,18 +2093,23 @@ public final class N {
     }
 
     @SafeVarargs
-    public static <T> Deque<T> asDeque(final T... a) {
+    static <T> ArrayDeque<T> asArrayDeque(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayDeque<>();
         }
 
-        final Deque<T> deque = new ArrayDeque<>(a.length);
+        final ArrayDeque<T> arrayDeque = new ArrayDeque<>(a.length);
 
         for (T e : a) {
-            deque.add(e);
+            arrayDeque.add(e);
         }
 
-        return deque;
+        return arrayDeque;
+    }
+
+    @SafeVarargs
+    public static <T> Deque<T> asDeque(final T... a) {
+        return asArrayDeque(a);
     }
 
     @SafeVarargs
@@ -6797,6 +6816,57 @@ public final class N {
         return res;
     }
 
+    /**
+     * 
+     * @param str
+     * @param suffix
+     * @return
+     */
+    public static String appendIfMissing(final String str, final String suffix) {
+        N.requireNonNull(suffix);
+
+        if (N.isNullOrEmpty(str)) {
+            return suffix;
+        } else if (str.endsWith(suffix)) {
+            return str;
+        } else {
+            return str + suffix;
+        }
+    }
+
+    public static String prependIfMissing(final String str, final String prefix) {
+        N.requireNonNull(prefix);
+
+        if (N.isNullOrEmpty(str)) {
+            return prefix;
+        } else if (str.startsWith(prefix)) {
+            return str;
+        } else {
+            return prefix + str;
+        }
+    }
+
+    public static String wrapIfMissing(final String str, final String prefixSuffix) {
+        N.requireNonNull(prefixSuffix);
+
+        return wrapIfMissing(str, prefixSuffix, prefixSuffix);
+    }
+
+    public static String wrapIfMissing(final String str, final String prefix, final String suffix) {
+        N.requireNonNull(prefix);
+        N.requireNonNull(suffix);
+
+        if (N.isNullOrEmpty(str)) {
+            return prefix + suffix;
+        } else if (str.startsWith(prefix)) {
+            return (str.length() >= prefix.length() + suffix.length() && str.endsWith(suffix)) ? str : str + suffix;
+        } else if (str.endsWith(suffix)) {
+            return prefix + str;
+        } else {
+            return prefix + str + suffix;
+        }
+    }
+
     public static boolean isLowerCase(final char ch) {
         return Character.isLowerCase(ch);
     }
@@ -6863,6 +6933,48 @@ public final class N {
         }
 
         return true;
+    }
+
+    /**
+     * Copied from Apache Commons Lang: StringUtils#isMixedCase.
+     * 
+     * @param cs
+     * @return
+     */
+    public static boolean isMixedCase(final CharSequence cs) {
+        if (N.isNullOrEmpty(cs) || cs.length() == 1) {
+            return false;
+        }
+
+        boolean containsUppercase = false;
+        boolean containsLowercase = false;
+        final int len = cs.length();
+
+        if (cs.getClass().equals(String.class)) {
+            final char[] chars = N.getCharsForReadOnly((String) cs);
+
+            for (int i = 0; i < len; i++) {
+                if (containsUppercase && containsLowercase) {
+                    return true;
+                } else if (Character.isUpperCase(chars[i])) {
+                    containsUppercase = true;
+                } else if (Character.isLowerCase(chars[i])) {
+                    containsLowercase = true;
+                }
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                if (containsUppercase && containsLowercase) {
+                    return true;
+                } else if (Character.isUpperCase(cs.charAt(i))) {
+                    containsUppercase = true;
+                } else if (Character.isLowerCase(cs.charAt(i))) {
+                    containsLowercase = true;
+                }
+            }
+        }
+
+        return containsUppercase && containsLowercase;
     }
 
     /**
@@ -11787,6 +11899,10 @@ public final class N {
         sb.append(WD._BRACKET_R);
     }
 
+    public static String toString(final Object a, final String defaultIfNull) {
+        return a == null ? defaultIfNull : toString(a);
+    }
+
     /**
      * @see Arrays#deepToString(Object[])
      * @param a
@@ -11895,6 +12011,10 @@ public final class N {
         sb.append(WD._BRACKET_R);
 
         processedElements.remove(a);
+    }
+
+    public static String deepToString(final Object[] a, final String defaultIfNull) {
+        return a == null ? defaultIfNull : deepToString(a);
     }
 
     /**
@@ -15677,7 +15797,7 @@ public final class N {
      * @param exclusiveEndIndex
      * @return
      */
-    public static Optional<String> between(String str, int exclusiveBeginIndex, int exclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, int exclusiveEndIndex) {
         if (exclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || exclusiveBeginIndex >= exclusiveEndIndex) {
             return Optional.<String> empty();
         }
@@ -15691,14 +15811,14 @@ public final class N {
      * @param exclusiveBeginIndex
      * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, int exclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
         if (exclusiveBeginIndex < 0) {
             return Optional.<String> empty();
         }
 
-        return between(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
+        return substringBetween(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
     }
 
     /**
@@ -15707,14 +15827,14 @@ public final class N {
      * @param exclusiveBeginIndex
      * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, int exclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
         if (exclusiveBeginIndex < 0) {
             return Optional.<String> empty();
         }
 
-        return between(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
+        return substringBetween(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
     }
 
     /**
@@ -15723,14 +15843,14 @@ public final class N {
      * @param exclusiveBeginIndex
      * @param funcOfExclusiveEndIndex {@code exclusiveEndIndex <- funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex) if inclusiveBeginIndex >= 0}
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, int exclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
         if (exclusiveBeginIndex < 0) {
             return Optional.<String> empty();
         }
 
-        return between(str, exclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(exclusiveBeginIndex));
+        return substringBetween(str, exclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(exclusiveBeginIndex));
     }
 
     /**
@@ -15739,14 +15859,14 @@ public final class N {
      * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
      * @param exclusiveEndIndex
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, char delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, char delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
         if (exclusiveEndIndex <= 0) {
             return Optional.<String> empty();
         }
 
-        return between(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+        return substringBetween(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
     }
 
     /**
@@ -15755,9 +15875,9 @@ public final class N {
      * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) + delimiterOfExclusiveBeginIndex.length() - 1 if exclusiveEndIndex > 0}
      * @param exclusiveEndIndex
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, String delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, String delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
         if (exclusiveEndIndex <= 0) {
             return Optional.<String> empty();
         }
@@ -15765,7 +15885,7 @@ public final class N {
         final int index = str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1);
         final int exclusiveBeginIndex = index >= 0 ? index + delimiterOfExclusiveBeginIndex.length() - 1 : index;
 
-        return between(str, exclusiveBeginIndex, exclusiveEndIndex);
+        return substringBetween(str, exclusiveBeginIndex, exclusiveEndIndex);
     }
 
     /**
@@ -15774,14 +15894,14 @@ public final class N {
      * @param funcOfExclusiveBeginIndex {@code exclusiveBeginIndex <- funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex)) if exclusiveEndIndex > 0}
      * @param exclusiveEndIndex
      * @return
-     * @see #between(String, int, int)
+     * @see #substringBetween(String, int, int)
      */
-    public static Optional<String> between(String str, IntUnaryOperator funcOfExclusiveBeginIndex, int exclusiveEndIndex) {
+    public static Optional<String> substringBetween(String str, IntUnaryOperator funcOfExclusiveBeginIndex, int exclusiveEndIndex) {
         if (exclusiveEndIndex <= 0) {
             return Optional.<String> empty();
         }
 
-        return between(str, funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
+        return substringBetween(str, funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
     }
 
     /**

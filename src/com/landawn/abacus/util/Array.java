@@ -150,6 +150,18 @@ public final class Array {
     }
 
     /**
+    * Returns a fixed-size list backed by the specified array if it's not null or empty, otherwise an immutable empty list is returned.
+    * 
+    * @param a
+    * @return
+    * @see Arrays#asList(Object...)
+    */
+    @SafeVarargs
+    public static <T> List<T> asList(T... a) {
+        return N.isNullOrEmpty(a) ? N.<T> emptyList() : Arrays.asList(a);
+    }
+
+    /**
      * Returns the input array
      *
      * @param a

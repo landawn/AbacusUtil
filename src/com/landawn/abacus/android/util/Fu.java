@@ -985,10 +985,10 @@ public class Fu {
         }
     }
 
-    public static final class O extends Fu {
-
-        private O() {
-            // singleton.
-        }
-    }
+    //    public static final class O extends Fu {
+    //
+    //        private O() {
+    //            // singleton.
+    //        }
+    //    }
 }

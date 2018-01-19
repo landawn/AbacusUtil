@@ -4252,7 +4252,7 @@ public final class SQLExecutor implements Closeable {
                 } else {
                     if (ids.size() >= batchSize) {
                         final String batchSQL = batchSize == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
+                                : (sql_delete_by_id + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
 
                         for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
                             result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
@@ -4262,7 +4262,7 @@ public final class SQLExecutor implements Closeable {
                     if (ids.size() % batchSize != 0) {
                         final int remaining = ids.size() % batchSize;
                         final String batchSQL = remaining == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
+                                : (sql_delete_by_id + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
 
                         result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
                     }

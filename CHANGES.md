@@ -2,6 +2,16 @@
 
 * Rename `flatCollection/flatArray` to `flattMap/flatMapp`.
 
+* Add `Array.asList`.
+
+* Add `N.newArrayDeque/isMixedCase/appendIfMissing/prependIfMissing/wrapIfMissing`.
+
+* Rename `N.between` to `N.substringBetween`.
+
+* Add `ConcurrentInitializer/AtomicSafeInitializer`, copied from Apache Commons Lang.
+
+* Improvements and bug fix.
+
 
 ### 1.1.9
 

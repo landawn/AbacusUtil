@@ -2112,7 +2112,7 @@ public final class CodeGenerator {
             while (i < size && lines.get(i).indexOf(tmp) < 0) {
                 String line = lines.get(i);
                 if (line.startsWith("import ") && line.endsWith(";") && line.indexOf(" static ") < 0) {
-                    String clsName = N.between(line, ' ', line.lastIndexOf(';')).get();
+                    String clsName = N.substringBetween(line, ' ', line.lastIndexOf(';')).get();
                     importedClasses.put(clsName, ClassUtil.forClass(clsName));
                 }
                 i++;
