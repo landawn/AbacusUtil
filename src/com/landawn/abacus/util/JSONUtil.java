@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.landawn.abacus.util;
 
 import java.lang.reflect.Array;
@@ -40,15 +39,23 @@ import com.landawn.abacus.type.Type;
 public final class JSONUtil {
 
     private JSONUtil() {
-        // singlton.
+        // singleton.
     }
 
     public static JSONObject wrap(final Map<String, Object> map) {
         return new JSONObject(map);
     }
 
+    /**
+     * wrap(entity) -> wrap(Maps.deepEntity2Map(entity, true))
+     * 
+     * @param entity
+     * @return
+     * @see Maps#deepEntity2Map(Object)
+     */
+    @SuppressWarnings("unchecked")
     public static JSONObject wrap(final Object entity) {
-        return new JSONObject(entity instanceof Map ? (Map<String, Object>) entity : Maps.entity2Map(entity));
+        return new JSONObject(entity instanceof Map ? (Map<String, Object>) entity : Maps.deepEntity2Map(entity, true));
     }
 
     public static JSONArray wrap(final boolean[] array) throws JSONException {
@@ -99,12 +106,17 @@ public final class JSONUtil {
         return unwrap(N.typeOf(cls), jsonObject);
     }
 
-    public static <T> T unwrap(final Type<?> type, final JSONObject jsonObject) throws JSONException {
+    @SuppressWarnings("unchecked")
+    public static <T> T unwrap(Type<?> type, final JSONObject jsonObject) throws JSONException {
+        type = type.clazz().equals(Object.class) ? N.typeOf("Map<String, Object>") : type;
         final Class<?> cls = type.clazz();
 
-        if (type.isMap()) {
+        if (type.clazz().isAssignableFrom(JSONObject.class)) {
+            return (T) jsonObject;
+        } else if (type.isMap()) {
             final Map<String, Object> map = (Map<String, Object>) N.newInstance(cls);
             final Iterator<String> iter = jsonObject.keys();
+            final Type<?> valueType = type.getParameterTypes()[1];
             String key = null;
             Object value = null;
 
@@ -116,11 +128,9 @@ public final class JSONUtil {
                     value = null;
                 } else if (value != null) {
                     if (value instanceof JSONObject) {
-                        value = Object.class.equals(type.getParameterTypes()[0].clazz()) ? unwrap((JSONObject) value)
-                                : unwrap(type.getParameterTypes()[0], (JSONObject) value);
+                        value = unwrap(valueType, (JSONObject) value);
                     } else if (value instanceof JSONArray) {
-                        value = Object.class.equals(type.getParameterTypes()[1].clazz()) ? unwrap((JSONArray) value)
-                                : unwrap(type.getParameterTypes()[1], (JSONArray) value);
+                        value = unwrap(valueType, (JSONArray) value);
                     }
                 }
 
@@ -147,7 +157,7 @@ public final class JSONUtil {
                     value = null;
                 } else if (value != null) {
                     if (value instanceof JSONObject) {
-                        value = unwrap(propInfo.type.clazz(), (JSONObject) value);
+                        value = unwrap(propInfo.type, (JSONObject) value);
                     } else if (value instanceof JSONArray) {
                         value = unwrap(propInfo.type, (JSONArray) value);
                     }
@@ -175,11 +185,16 @@ public final class JSONUtil {
         return unwrap(N.typeOf(cls), jsonArray);
     }
 
-    public static <T> T unwrap(final Type<?> type, final JSONArray jsonArray) throws JSONException {
+    @SuppressWarnings("unchecked")
+    public static <T> T unwrap(Type<?> type, final JSONArray jsonArray) throws JSONException {
+        type = type.clazz().equals(Object.class) ? N.typeOf("List<Object>") : type;
         final int len = jsonArray.length();
 
-        if (type.isCollection()) {
+        if (type.clazz().isAssignableFrom(JSONArray.class)) {
+            return (T) jsonArray;
+        } else if (type.isCollection()) {
             final Collection<Object> coll = (Collection<Object>) N.newInstance(type.clazz());
+            final Type<?> elementType = type.getElementType();
             Object element = null;
 
             for (int i = 0; i < len; i++) {
@@ -189,11 +204,9 @@ public final class JSONUtil {
                     element = null;
                 } else if (element != null) {
                     if (element instanceof JSONObject) {
-                        element = type.getElementType().isEntity() ? unwrap(type.getElementType().clazz(), (JSONObject) element)
-                                : unwrap((JSONObject) element);
+                        element = unwrap(elementType, (JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
-                                : unwrap((JSONArray) element);
+                        element = unwrap(elementType, (JSONArray) element);
                     }
                 }
 
@@ -222,6 +235,7 @@ public final class JSONUtil {
             return (T) array;
         } else if (type.isArray()) {
             final Object[] array = N.newArray(type.getElementType().clazz(), jsonArray.length());
+            final Type<?> elementType = type.getElementType();
             Object element = null;
 
             for (int i = 0; i < len; i++) {
@@ -231,11 +245,9 @@ public final class JSONUtil {
                     element = null;
                 } else if (element != null) {
                     if (element instanceof JSONObject) {
-                        element = type.getElementType().isEntity() ? unwrap(type.getElementType().clazz(), (JSONObject) element)
-                                : unwrap((JSONObject) element);
+                        element = unwrap(elementType, (JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
-                                : unwrap((JSONArray) element);
+                        element = unwrap(elementType, (JSONArray) element);
                     }
                 }
 

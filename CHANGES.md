@@ -8,7 +8,7 @@
 
 * Rename `N.between` to `N.substringBetween`.
 
-* Add `ConcurrentInitializer/AtomicSafeInitializer`, copied from Apache Commons Lang.
+* Add `SafeInitializer`, copied from Apache Commons Lang.
 
 * Improvements and bug fix.
 

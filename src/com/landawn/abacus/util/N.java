@@ -104,6 +104,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.annotation.NullSafe;
 import com.landawn.abacus.core.EntityUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
@@ -1919,6 +1920,7 @@ public final class N {
      * @return
      */
     @SafeVarargs
+    @NullSafe
     public static <T> List<T> asList(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -1938,6 +1940,7 @@ public final class N {
     }
 
     @SafeVarargs
+    @NullSafe
     public static <T> LinkedList<T> asLinkedList(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new LinkedList<>();
@@ -1953,6 +1956,7 @@ public final class N {
     }
 
     @SafeVarargs
+    @NullSafe
     public static <T> Set<T> asSet(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new HashSet<>();
@@ -6852,6 +6856,24 @@ public final class N {
         return wrapIfMissing(str, prefixSuffix, prefixSuffix);
     }
 
+    /**
+     * <pre>
+     * N.wrapIfMissing(null, "[", "]") -> "[]"
+     * N.wrapIfMissing("", "[", "]") -> "[]"
+     * N.wrapIfMissing("[", "[", "]") -> "[]"
+     * N.wrapIfMissing("]", "[", "]") -> "[]"
+     * N.wrapIfMissing("abc", "[", "]") -> "[abc]"
+     * N.wrapIfMissing("a", "aa", "aa") -> "aaaaa"
+     * N.wrapIfMissing("aa", "aa", "aa") -> "aaaa"
+     * N.wrapIfMissing("aaa", "aa", "aa") -> "aaaaa"
+     * N.wrapIfMissing("aaaa", "aa", "aa") -> "aaaa"
+     * </pre>
+     * 
+     * @param str
+     * @param prefix
+     * @param suffix
+     * @return
+     */
     public static String wrapIfMissing(final String str, final String prefix, final String suffix) {
         N.requireNonNull(prefix);
         N.requireNonNull(suffix);
@@ -6859,11 +6881,11 @@ public final class N {
         if (N.isNullOrEmpty(str)) {
             return prefix + suffix;
         } else if (str.startsWith(prefix)) {
-            return (str.length() >= prefix.length() + suffix.length() && str.endsWith(suffix)) ? str : str + suffix;
+            return (str.length() - prefix.length() >= suffix.length() && str.endsWith(suffix)) ? str : str + suffix;
         } else if (str.endsWith(suffix)) {
             return prefix + str;
         } else {
-            return prefix + str + suffix;
+            return N.concat(prefix, str, suffix);
         }
     }
 

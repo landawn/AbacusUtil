@@ -33,6 +33,8 @@ import java.util.RandomAccess;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.landawn.abacus.annotation.NullSafe;
+
 /**
  *
  * @since 0.8
@@ -157,6 +159,7 @@ public final class Array {
     * @see Arrays#asList(Object...)
     */
     @SafeVarargs
+    @NullSafe
     public static <T> List<T> asList(T... a) {
         return N.isNullOrEmpty(a) ? N.<T> emptyList() : Arrays.asList(a);
     }
