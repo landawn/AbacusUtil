@@ -1,3 +1,10 @@
+### 1.2.1
+
+* Add `N.flatMap/flattMap`.
+
+* Add `N.EMPTY_BOOLEAN/CHAR/BYTE/SHORT/INT/../DOUBLE_OBJ_ARRAY`.
+
+
 ### 1.2.0
 
 * Rename `flatCollection/flatArray` to `flattMap/flatMapp`.

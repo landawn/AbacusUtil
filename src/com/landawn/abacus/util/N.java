@@ -430,6 +430,39 @@ public final class N {
      */
     public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
     /**
+     * An empty immutable {@code Boolean} array.
+     */
+    public static final Boolean[] EMPTY_BOOLEAN_OBJ_ARRAY = new Boolean[0];
+    /**
+     * An empty immutable {@code Character} array.
+     */
+    public static final Character[] EMPTY_CHAR_OBJ_ARRAY = new Character[0];
+    /**
+     * An empty immutable {@code Byte} array.
+     */
+    public static final Byte[] EMPTY_BYTE_OBJ_ARRAY = new Byte[0];
+    /**
+     * An empty immutable {@code Short} array.
+     */
+    public static final Short[] EMPTY_SHORT_OBJ_ARRAY = new Short[0];
+
+    /**
+     * An empty immutable {@code Integer} array.
+     */
+    public static final Integer[] EMPTY_INT_OBJ_ARRAY = new Integer[0];
+    /**
+     * An empty immutable {@code Long} array.
+     */
+    public static final Long[] EMPTY_LONG_OBJ_ARRAY = new Long[0];
+    /**
+     * An empty immutable {@code Float} array.
+     */
+    public static final Float[] EMPTY_FLOAT_OBJ_ARRAY = new Float[0];
+    /**
+     * An empty immutable {@code Double} array.
+     */
+    public static final Double[] EMPTY_DOUBLE_OBJ_ARRAY = new Double[0];
+    /**
      * An empty immutable {@code String} array.
      */
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
@@ -20412,6 +20445,401 @@ public final class N {
                 }
 
                 result.add(func.apply(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        return flatMap(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+        Collection<? extends R> mr = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.notNullOrEmpty(mr = func.apply(a[i]))) {
+                result.addAll(mr);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        return flatMap(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+        Collection<? extends R> mr = null;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (N.notNullOrEmpty(mr = func.apply(list.get(i)))) {
+                    result.addAll(mr);
+                }
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+                if (N.notNullOrEmpty(mr = func.apply(e))) {
+                    result.addAll(mr);
+                }
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        return flatMap(a, 0, a.length, func, supplier);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param mr  x
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+        Collection<? extends R> mr = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.notNullOrEmpty(mr = func.apply(a[i]))) {
+                result.addAll(mr);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
+        return flatMap(c, 0, c.size(), func, supplier);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param mr  x
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+        Collection<? extends R> mr = null;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (N.notNullOrEmpty(mr = func.apply(list.get(i)))) {
+                    result.addAll(mr);
+                }
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                if (N.notNullOrEmpty(mr = func.apply(e))) {
+                    result.addAll(mr);
+                }
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        return flattMap(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R[], E> func) throws E {
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+        R[] mr = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.notNullOrEmpty(mr = func.apply(a[i]))) {
+                result.addAll(Arrays.asList(mr));
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final Try.Function<? super T, ? extends R[], E> func) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        return flattMap(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R[], E> func) throws E {
+        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+        R[] mr = null;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (N.notNullOrEmpty(mr = func.apply(list.get(i)))) {
+                    result.addAll(Arrays.asList(mr));
+                }
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+                if (N.notNullOrEmpty(mr = func.apply(e))) {
+                    result.addAll(Arrays.asList(mr));
+                }
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func,
+            final IntFunction<C> supplier) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        return flattMap(a, 0, a.length, func, supplier);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param mr  x
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+        R[] mr = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.notNullOrEmpty(mr = func.apply(a[i]))) {
+                result.addAll(Arrays.asList(mr));
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
+        return flattMap(c, 0, c.size(), func, supplier);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param mr  x
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+        R[] mr = null;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (N.notNullOrEmpty(mr = func.apply(list.get(i)))) {
+                    result.addAll(Arrays.asList(mr));
+                }
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                if (N.notNullOrEmpty(mr = func.apply(e))) {
+                    result.addAll(Arrays.asList(mr));
+                }
 
                 if (idx >= toIndex) {
                     break;
