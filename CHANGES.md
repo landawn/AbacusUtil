@@ -1,5 +1,7 @@
 ### 1.2.1
 
+* Remove `Mapper/AsyncMapper.stream(Connection...)`.
+
 * Add `N.flatMap/flattMap`.
 
 * Add `N.EMPTY_BOOLEAN/CHAR/BYTE/SHORT/INT/../DOUBLE_OBJ_ARRAY`.

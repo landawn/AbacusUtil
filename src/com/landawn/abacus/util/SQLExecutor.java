@@ -3585,12 +3585,11 @@ public final class SQLExecutor implements Closeable {
             return stream(null, selectPropNames, whereCause, jdbcSettings);
         }
 
-        public Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return stream(conn, selectPropNames, whereCause, null);
         }
 
-        public Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
+        Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.stream(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
@@ -4252,7 +4251,8 @@ public final class SQLExecutor implements Closeable {
                 } else {
                     if (ids.size() >= batchSize) {
                         final String batchSQL = batchSize == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
+                                : (sql_delete_by_id
+                                        + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
 
                         for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
                             result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
@@ -4262,7 +4262,8 @@ public final class SQLExecutor implements Closeable {
                     if (ids.size() % batchSize != 0) {
                         final int remaining = ids.size() % batchSize;
                         final String batchSQL = remaining == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
+                                : (sql_delete_by_id
+                                        + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
 
                         result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
                     }
@@ -4783,7 +4784,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -4792,7 +4793,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override

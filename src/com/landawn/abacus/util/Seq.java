@@ -1074,7 +1074,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.mapToDouble(coll, func);
     }
 
-    public <R, E extends Exception> List<R> flatMap(final Try.Function<? super T, ? extends Collection<R>, E> func) throws E {
+    public <R, E extends Exception> List<R> flatMap(final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
         final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
