@@ -3120,11 +3120,18 @@ public final class SQLExecutor implements Closeable {
         public static @interface Id {
         }
 
-        /** The properties will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
+        /** The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
         @Documented
         @Target(value = { FIELD, METHOD })
         @Retention(RUNTIME)
         public static @interface ReadOnly {
+        }
+
+        /** The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
+        @Documented
+        @Target(value = { FIELD, METHOD })
+        @Retention(RUNTIME)
+        public static @interface ReadOnlyId {
         }
 
         /** The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity. */
@@ -3161,11 +3168,11 @@ public final class SQLExecutor implements Closeable {
             final Field[] fields = targetClass.getDeclaredFields();
             if (N.notNullOrEmpty(fields)) {
                 for (Field field : fields) {
-                    if (field.isAnnotationPresent(Id.class)) {
+                    if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
                         idPropName = field.getName();
                     }
 
-                    if (field.isAnnotationPresent(ReadOnly.class)) {
+                    if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
                         readOnlyPropNames.add(field.getName());
                     }
 
@@ -3182,11 +3189,11 @@ public final class SQLExecutor implements Closeable {
             while (iter.hasNext()) {
                 entry = iter.next();
 
-                if (entry.getValue().isAnnotationPresent(Id.class)) {
+                if (entry.getValue().isAnnotationPresent(Id.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
                     idPropName = entry.getKey();
                 }
 
-                if (entry.getValue().isAnnotationPresent(ReadOnly.class)) {
+                if (entry.getValue().isAnnotationPresent(ReadOnly.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
                     readOnlyPropNames.add(entry.getKey());
                 }
 
@@ -3227,7 +3234,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         /**
-         * The properties will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
+         * The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
          * 
          * @param targetClass
          * @param readOnlyPropNames

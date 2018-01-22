@@ -34,6 +34,8 @@ public final class Try<T extends AutoCloseable> {
     private final T t;
 
     Try(final T t) {
+        N.requireNonNull(t);
+
         this.t = t;
     }
 
@@ -228,6 +230,10 @@ public final class Try<T extends AutoCloseable> {
 
     public T val() {
         return t;
+    }
+
+    public <U extends AutoCloseable, E extends Exception> Try<U> map(Try.Function<? super T, U, E> func) throws E {
+        return Try.of(func.apply(t));
     }
 
     public void run(final Try.Consumer<? super T, ? extends Exception> cmd) {
