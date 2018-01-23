@@ -2,9 +2,13 @@
 
 * Remove `Mapper/AsyncMapper.stream(Connection...)`.
 
+* Remove `Try.reader/writer/stream`.
+
 * Add `N.flatMap/flattMap`.
 
 * Add `N.EMPTY_BOOLEAN/CHAR/BYTE/SHORT/INT/../DOUBLE_OBJ_ARRAY`.
+
+* Improvements and bug fix.
 
 
 ### 1.2.0

@@ -13,16 +13,6 @@
  */
 package com.landawn.abacus.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-
-import com.landawn.abacus.util.stream.Stream;
-
 /**
  * Catch checked exception and convert it to <code>RuntimeException</code>.
  *
@@ -51,32 +41,40 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static Try<Reader> reader(final File file) {
-        try {
-            return of((Reader) new FileReader(file));
-        } catch (FileNotFoundException e) {
-            throw N.toRuntimeException(e);
-        }
-    }
-
-    public static Try<Writer> writer(final File file) {
-        try {
-            return of((Writer) new FileWriter(file));
-        } catch (IOException e) {
-            throw N.toRuntimeException(e);
-        }
-    }
-
-    public static Try<Stream<String>> stream(final File file) {
-        final Reader reader = IOUtil.newBufferedReader(file);
-
-        return new Try<>(Stream.of(reader).onClose(new java.lang.Runnable() {
-            @Override
-            public void run() {
-                IOUtil.close(reader);
-            }
-        }));
-    }
+    //    public static Try<Reader> reader(final File file) {
+    //        try {
+    //            return of((Reader) new FileReader(file));
+    //        } catch (FileNotFoundException e) {
+    //            throw N.toRuntimeException(e);
+    //        }
+    //    }
+    //
+    //    public static Try<java.io.BufferedReader> bufferedReader(final File file) {
+    //        return of(IOUtil.newBufferedReader(file));
+    //    }
+    //
+    //    public static Try<Writer> writer(final File file) {
+    //        try {
+    //            return of((Writer) new FileWriter(file));
+    //        } catch (IOException e) {
+    //            throw N.toRuntimeException(e);
+    //        }
+    //    }
+    //
+    //    public static Try<java.io.BufferedWriter> bufferedWriter(final File file) {
+    //        return of(IOUtil.newBufferedWriter(file));
+    //    }
+    //
+    //    public static Try<Stream<String>> lines(final File file) {
+    //        final Reader reader = IOUtil.newBufferedReader(file);
+    //
+    //        return new Try<>(Stream.of(reader).onClose(new java.lang.Runnable() {
+    //            @Override
+    //            public void run() {
+    //                IOUtil.close(reader);
+    //            }
+    //        }));
+    //    }
 
     //    public static java.lang.Runnable of(final Try.Runnable run) {
     //        return new java.lang.Runnable() {
