@@ -2,7 +2,7 @@
 
 * Remove `Mapper/AsyncMapper.stream(Connection...)`.
 
-* Remove `Try.reader/writer/stream`.
+* Remove `Try.reader/writer/stream/callable`.
 
 * Add `N.flatMap/flattMap`.
 
