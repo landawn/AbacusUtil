@@ -125,29 +125,29 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    /**
-     * 
-     * @param cmd
-     * @throws RuntimeException if some error happens
-     */
-    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd) {
-        try {
-            cmd.accept(seed);
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
-    }
-
-    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
-        N.requireNonNull(actionOnError);
-
-        try {
-            cmd.accept(seed);
-        } catch (Exception e) {
-            actionOnError.accept(e);
-        }
-    }
+    //    /**
+    //     * 
+    //     * @param cmd
+    //     * @throws RuntimeException if some error happens
+    //     */
+    //    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd) {
+    //        try {
+    //            cmd.accept(seed);
+    //        } catch (Exception e) {
+    //            throw N.toRuntimeException(e);
+    //        }
+    //    }
+    //
+    //    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd,
+    //            final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
+    //        N.requireNonNull(actionOnError);
+    //
+    //        try {
+    //            cmd.accept(seed);
+    //        } catch (Exception e) {
+    //            actionOnError.accept(e);
+    //        }
+    //    }
 
     /**
      * 
@@ -238,119 +238,119 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    /**
-     * @param seed
-     * @param cmd
-     * @return
-     * @throws RuntimeException if some error happens
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd) {
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
-    }
-
-    /**
-     * 
-     * @param seed
-     * @param cmd
-     * @param actionOnError
-     * @return
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
-        N.requireNonNull(actionOnError);
-
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            return actionOnError.apply(e);
-        }
-    }
-
-    /**
-     * 
-     * @param seed
-     * @param cmd
-     * @param supplier
-     * @return
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(supplier);
-
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            return supplier.get();
-        }
-    }
-
-    /**
-     * 
-     * @param seed
-     * @param cmd
-     * @param defaultValue
-     * @return
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd, final R defaultValue) {
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * 
-     * @param seed
-     * @param cmd
-     * @param predicate
-     * @param supplier
-     * @return the value returned <code>Supplier.get()</code> if some error happens and <code>predicate</code> return true.
-     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(supplier);
-
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            if (predicate.test(e)) {
-                return supplier.get();
-            } else {
-                throw N.toRuntimeException(e);
-            }
-        }
-    }
-
-    /**
-     * 
-     * @param seed
-     * @param cmd
-     * @param predicate
-     * @param defaultValue
-     * @return the <code>defaultValue()</code> if some error happens and <code>predicate</code> return true.
-     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
-     */
-    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final R defaultValue) {
-        N.requireNonNull(predicate);
-
-        try {
-            return cmd.apply(seed);
-        } catch (Exception e) {
-            if (predicate.test(e)) {
-                return defaultValue;
-            } else {
-                throw N.toRuntimeException(e);
-            }
-        }
-    }
+    //    /**
+    //     * @param seed
+    //     * @param cmd
+    //     * @return
+    //     * @throws RuntimeException if some error happens
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd) {
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            throw N.toRuntimeException(e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param seed
+    //     * @param cmd
+    //     * @param actionOnError
+    //     * @return
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
+    //        N.requireNonNull(actionOnError);
+    //
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            return actionOnError.apply(e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param seed
+    //     * @param cmd
+    //     * @param supplier
+    //     * @return
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //            final com.landawn.abacus.util.function.Supplier<R> supplier) {
+    //        N.requireNonNull(supplier);
+    //
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            return supplier.get();
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param seed
+    //     * @param cmd
+    //     * @param defaultValue
+    //     * @return
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd, final R defaultValue) {
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            return defaultValue;
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param seed
+    //     * @param cmd
+    //     * @param predicate
+    //     * @param supplier
+    //     * @return the value returned <code>Supplier.get()</code> if some error happens and <code>predicate</code> return true.
+    //     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final com.landawn.abacus.util.function.Supplier<R> supplier) {
+    //        N.requireNonNull(predicate);
+    //        N.requireNonNull(supplier);
+    //
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            if (predicate.test(e)) {
+    //                return supplier.get();
+    //            } else {
+    //                throw N.toRuntimeException(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param seed
+    //     * @param cmd
+    //     * @param predicate
+    //     * @param defaultValue
+    //     * @return the <code>defaultValue()</code> if some error happens and <code>predicate</code> return true.
+    //     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
+    //     */
+    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final R defaultValue) {
+    //        N.requireNonNull(predicate);
+    //
+    //        try {
+    //            return cmd.apply(seed);
+    //        } catch (Exception e) {
+    //            if (predicate.test(e)) {
+    //                return defaultValue;
+    //            } else {
+    //                throw N.toRuntimeException(e);
+    //            }
+    //        }
+    //    }
 
     //    public static <E extends Exception> Try.Callable<Void, E> callable(final Try.Runnable<E> cmd) {
     //        N.requireNonNull(cmd);
@@ -366,10 +366,6 @@ public final class Try<T extends AutoCloseable> {
 
     public T val() {
         return t;
-    }
-
-    public <U extends AutoCloseable, E extends Exception> Try<U> map(Try.Function<? super T, U, E> func) throws E {
-        return Try.of(func.apply(t));
     }
 
     public void run(final Try.Consumer<? super T, ? extends Exception> cmd) {

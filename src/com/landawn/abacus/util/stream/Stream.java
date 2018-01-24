@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2140,80 +2139,124 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     /**
+     * It's user's responsibility to close the input <code>rowIterator</code> after the stream is finished.
+     * 
+     * @param rowIterator
+     * @return
+     */
+    public static Stream<Object[]> of(final RowIterator rowIterator) {
+        N.requireNonNull(rowIterator);
+
+        return new IteratorStream<>(new ObjIteratorEx<Object[]>() {
+            @Override
+            public boolean hasNext() {
+                return rowIterator.hasNext();
+            }
+
+            @Override
+            public Object[] next() {
+                return rowIterator.next();
+            }
+
+            @Override
+            public void skip(long n) {
+                while (n-- > 0 && rowIterator.hasNext()) {
+                    rowIterator.moveToNext();
+                }
+            }
+        });
+    }
+
+    public static Try<Stream<Object[]>> of(final RowIterator rowIterator, final boolean closeRowIterator) {
+        return closeRowIterator ? of(rowIterator).onClose(newCloseHandle(rowIterator)).tried() : of(rowIterator).tried();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>rowIterator</code> after the stream is finished.
+     * 
+     * @param targetClass
+     * @param rowIterator
+     * @return
+     */
+    public static <T> Stream<T> of(final Class<T> targetClass, final RowIterator rowIterator) {
+        N.requireNonNull(targetClass);
+        N.requireNonNull(rowIterator);
+
+        final Type<?> type = N.typeOf(targetClass);
+
+        N.checkArgument(type.isMap() || type.isEntity(), "target class must be Map or entity with getter/setter methods");
+
+        final int columnCount = rowIterator.getColumnCount();
+        final String[] columnLabels = rowIterator.getColumnLabelList().toArray(new String[columnCount]);
+
+        final boolean isMap = type.isMap();
+        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+
+        return Stream.of(rowIterator).map(new Function<Object[], T>() {
+            @Override
+            public T apply(Object[] a) {
+                if (isMap) {
+                    final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        m.put(columnLabels[i], a[i]);
+                    }
+
+                    return (T) m;
+                } else {
+                    final Object entity = N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        if (columnLabels[i] == null) {
+                            continue;
+                        }
+
+                        if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            columnLabels[i] = null;
+                        }
+                    }
+
+                    if (isDirtyMarker) {
+                        ((DirtyMarker) entity).markDirty(false);
+                    }
+
+                    return (T) entity;
+                }
+            }
+        });
+    }
+
+    public static <T> Try<Stream<T>> of(final Class<T> targetClass, final RowIterator rowIterator, final boolean closeRowIterator) {
+        return closeRowIterator ? of(targetClass, rowIterator).onClose(newCloseHandle(rowIterator)).tried() : of(targetClass, rowIterator).tried();
+    }
+
+    /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
      * @param resultSet
      * @return
      */
     public static Stream<Object[]> of(final ResultSet resultSet) {
-        return of(resultSet, 0, Long.MAX_VALUE);
+        return of(new RowIterator(resultSet, false, false));
     }
 
+    public static Try<Stream<Object[]>> of(final ResultSet resultSet, final boolean closeResultSet) {
+        return closeResultSet ? of(resultSet).onClose(newCloseHandle(resultSet)).tried() : of(resultSet).tried();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param targetClass
+     * @param resultSet
+     * @return
+     */
     public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet) {
-        return of(targetClass, resultSet, 0, Long.MAX_VALUE);
+        return of(targetClass, new RowIterator(resultSet, false, false));
     }
 
-    static Stream<Object[]> of(final ResultSet resultSet, long startIndex, long endIndex) {
-        N.requireNonNull(resultSet);
-
-        return of(new RowIterator(resultSet, startIndex, endIndex, false, false));
-    }
-
-    static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet, long startIndex, long endIndex) {
-        N.requireNonNull(targetClass);
-        N.requireNonNull(resultSet);
-
-        final Type<?> type = N.typeOf(targetClass);
-
-        N.checkArgument(type.isMap() || type.isEntity(), "target class must be Map or entity with getter/setter methods");
-
-        try {
-            final ResultSetMetaData metaData = resultSet.getMetaData();
-            final int columnCount = metaData.getColumnCount();
-            final String[] columnLabels = new String[columnCount];
-
-            for (int i = 0; i < columnCount; i++) {
-                columnLabels[i] = metaData.getColumnLabel(i + 1);
-            }
-
-            final boolean isMap = type.isMap();
-            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-
-            return Stream.of(resultSet, startIndex, endIndex).map(new Function<Object[], T>() {
-                @Override
-                public T apply(Object[] a) {
-                    if (isMap) {
-                        final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            m.put(columnLabels[i], a[i]);
-                        }
-
-                        return (T) m;
-                    } else {
-                        final Object entity = N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            if (columnLabels[i] == null) {
-                                continue;
-                            }
-
-                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                                columnLabels[i] = null;
-                            }
-                        }
-
-                        if (isDirtyMarker) {
-                            ((DirtyMarker) entity).markDirty(false);
-                        }
-
-                        return (T) entity;
-                    }
-                }
-            });
-        } catch (SQLException e) {
-            throw N.toRuntimeException(e);
-        }
+    public static <T> Try<Stream<T>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
+        return closeResultSet ? of(targetClass, resultSet).onClose(newCloseHandle(resultSet)).tried() : of(targetClass, resultSet).tried();
     }
 
     public static Try<Stream<String>> of(final File file) {
@@ -2223,19 +2266,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static Try<Stream<String>> of(final File file, final Charset charset) {
         final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.DEFAULT : charset);
 
-        return of(reader).onClose(new Runnable() {
-            private boolean isClosed = false;
-
-            @Override
-            public void run() {
-                if (isClosed) {
-                    return;
-                }
-
-                isClosed = true;
-                IOUtil.closeQuietly(reader);
-            }
-        }).tried();
+        return of(reader).onClose(newCloseHandle(reader)).tried();
     }
 
     public static Try<Stream<String>> of(final Path path) {

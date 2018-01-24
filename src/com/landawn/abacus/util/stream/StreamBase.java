@@ -901,6 +901,22 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return DoubleIteratorEx.from(iter);
     }
 
+    static Runnable newCloseHandle(final AutoCloseable closeable) {
+        return new Runnable() {
+            private boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeQuietly(closeable);
+            }
+        };
+    }
+
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {
         return new Runnable() {
             @Override
