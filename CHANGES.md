@@ -2,7 +2,13 @@
 
 * Remove `Mapper/AsyncMapper.stream(Connection...)`.
 
+* Rename `Splitter.split(..., Function...)` to `Splitter.splitAndThen(..., Function...)`
+
 * Remove `Try.reader/writer/stream/callable`.
+
+* Remove `N.findAll(..., Function...)`.
+
+* Add `N.wrap/unwrap`.
 
 * Add `N.flatMap/flattMap`.
 

@@ -1010,13 +1010,13 @@ public class Builder<T> {
             return this;
         }
 
-        public MultimapBuilder<K, E, V, M> removeAll(K k) {
+        public MultimapBuilder<K, E, V, M> removeAll(Object k) {
             val.removeAll(k);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V, M> removeAll(K k, Collection<?> valuesToRemove) {
+        public MultimapBuilder<K, E, V, M> removeAll(Object k, Collection<?> valuesToRemove) {
             val.removeAll(k, valuesToRemove);
 
             return this;
@@ -1028,7 +1028,7 @@ public class Builder<T> {
             return this;
         }
 
-        public MultimapBuilder<K, E, V, M> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
+        public MultimapBuilder<K, E, V, M> removeAll(Multimap<?, ?, ?> m) {
             val.removeAll(m);
 
             return this;

@@ -162,10 +162,6 @@ public final class Splitter {
     //        return this.split(supplier.get(), typeName, source);
     //    }
 
-    public <T, E extends Exception> T split(CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
-        return converter.apply(this.splitToArray(source));
-    }
-
     public String[] splitToArray(CharSequence source) {
         if (N.isNullOrEmpty(source)) {
             return N.EMPTY_STRING_ARRAY;
@@ -203,6 +199,26 @@ public final class Splitter {
 
             return (T) a;
         }
+    }
+
+    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
+    //        return this.split(supplier.get(), source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
+    //        return this.split(supplier.get(), targetType, source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
+    //        return this.split(supplier.get(), type, source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
+    //        return this.split(supplier.get(), typeName, source);
+    //    }
+    
+    public <T, E extends Exception> T splitAndThen(CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
+        return converter.apply(this.splitToArray(source));
     }
 
     static String[] split(CharSequence source, String delimiter, String delimiterRegex, int max, boolean trim) {
@@ -470,7 +486,7 @@ public final class Splitter {
         //            return this.split(supplier.get(), keyTypeName, valueTypeName, source);
         //        }
 
-        public <T, E extends Exception> T split(CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
+        public <T, E extends Exception> T splitAndThen(CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
             return converter.apply(this.split(source));
         }
     }

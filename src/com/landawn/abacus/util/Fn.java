@@ -128,6 +128,20 @@ public final class Fn {
         }
     };
 
+    private static final Consumer<AutoCloseable> CLOSE = new Consumer<AutoCloseable>() {
+        @Override
+        public void accept(AutoCloseable value) {
+            IOUtil.close(value);
+        }
+    };
+
+    private static final Consumer<AutoCloseable> CLOSE_QUIETLY = new Consumer<AutoCloseable>() {
+        @Override
+        public void accept(AutoCloseable value) {
+            IOUtil.closeQuietly(value);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final BiConsumer PRINTLN_EQUAL = new BiConsumer() {
         @Override
@@ -409,12 +423,52 @@ public final class Fn {
         return Comparators.reversedComparingBy(keyExtractor);
     }
 
+    public static com.landawn.abacus.util.function.Runnable close(final AutoCloseable closeable) {
+        return new com.landawn.abacus.util.function.Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.close(closeable);
+            }
+        };
+    }
+
+    public static com.landawn.abacus.util.function.Runnable closeQuietly(final AutoCloseable closeable) {
+        return new com.landawn.abacus.util.function.Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeQuietly(closeable);
+            }
+        };
+    }
+
     public static com.landawn.abacus.util.function.Runnable emptyAction() {
         return EMPTY_ACTION;
     }
 
     public static <T> Consumer<T> doNothing() {
         return DO_NOTHING;
+    }
+
+    public static <T extends AutoCloseable> Consumer<T> close() {
+        return (Consumer<T>) CLOSE;
+    }
+
+    public static <T extends AutoCloseable> Consumer<T> closeQuietly() {
+        return (Consumer<T>) CLOSE_QUIETLY;
     }
 
     public static <T> Consumer<T> println() {

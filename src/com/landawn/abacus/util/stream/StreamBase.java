@@ -45,6 +45,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
@@ -902,19 +903,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     static Runnable newCloseHandle(final AutoCloseable closeable) {
-        return new Runnable() {
-            private boolean isClosed = false;
-
-            @Override
-            public void run() {
-                if (isClosed) {
-                    return;
-                }
-
-                isClosed = true;
-                IOUtil.closeQuietly(closeable);
-            }
-        };
+        return Fn.closeQuietly(closeable);
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {

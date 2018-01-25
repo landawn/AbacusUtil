@@ -6922,6 +6922,81 @@ public final class N {
         }
     }
 
+    public static String wrap(final String str, final String prefixSuffix) {
+        N.requireNonNull(prefixSuffix);
+
+        return wrap(str, prefixSuffix, prefixSuffix);
+    }
+
+    /**
+     * <pre>
+     * N.wrap(null, "[", "]") -> "[]"
+     * N.wrap("", "[", "]") -> "[]"
+     * N.wrap("[", "[", "]") -> "[[]"
+     * N.wrap("]", "[", "]") -> "[]]"
+     * N.wrap("abc", "[", "]") -> "[abc]"
+     * N.wrap("a", "aa", "aa") -> "aaaaa"
+     * N.wrap("aa", "aa", "aa") -> "aaaaaa"
+     * N.wrap("aaa", "aa", "aa") -> "aaaaaaa"
+     * </pre>
+     * 
+     * @param str
+     * @param prefix
+     * @param suffix
+     * @return
+     */
+    public static String wrap(final String str, final String prefix, final String suffix) {
+        N.requireNonNull(prefix);
+        N.requireNonNull(suffix);
+
+        if (N.isNullOrEmpty(str)) {
+            return prefix + suffix;
+        } else {
+            return N.concat(prefix, str, suffix);
+        }
+    }
+
+    public static String unwrap(final String str, final String prefixSuffix) {
+        N.requireNonNull(prefixSuffix);
+
+        return unwrap(str, prefixSuffix, prefixSuffix);
+    }
+
+    /** 
+     * <p>
+     * Unwraps the specified string {@code str} if and only if it's wrapped by the specified {@code prefix} and {@code suffix}
+     * </p>
+     * 
+     * <pre>
+     * N.unwrap(null, "[", "]") -> ""
+     * N.unwrap("", "[", "]") -> ""
+     * N.unwrap("[", "[", "]") -> "["
+     * N.unwrap("]", "[", "]") -> "["
+     * N.unwrap("[abc]", "[", "]") -> "abc"
+     * N.unwrap("aaaaa", "aa", "aa") -> "a"
+     * N.unwrap("aa", "aa", "aa") -> "aa"
+     * N.unwrap("aaa", "aa", "aa") -> "aaa"
+     * N.unwrap("aaaa", "aa", "aa") -> ""
+     * </pre>
+     * 
+     * @param str
+     * @param prefix
+     * @param suffix
+     * @return
+     */
+    public static String unwrap(final String str, final String prefix, final String suffix) {
+        N.requireNonNull(prefix);
+        N.requireNonNull(suffix);
+
+        if (N.isNullOrEmpty(str)) {
+            return N.EMPTY_STRING;
+        } else if (str.length() - prefix.length() >= suffix.length() && str.startsWith(prefix) && str.endsWith(suffix)) {
+            return str.substring(prefix.length(), str.length() - suffix.length());
+        } else {
+            return str;
+        }
+    }
+
     public static boolean isLowerCase(final char ch) {
         return Character.isLowerCase(ch);
     }
@@ -16122,11 +16197,6 @@ public final class N {
         return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
     }
 
-    public static <T, E extends Exception> List<T> findAll(final String str, final char prefix, final char postfix,
-            final Try.Function<? super String, T, E> func) throws E {
-        return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
-    }
-
     /**
      * 
      * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
@@ -16149,18 +16219,6 @@ public final class N {
         return res;
     }
 
-    public static <T, E extends Exception> List<T> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix,
-            final Try.Function<? super String, T, E> func) throws E {
-        final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
-        final List<T> res = new ArrayList<>(strs.size());
-
-        for (String s : strs) {
-            res.add(func.apply(s));
-        }
-
-        return res;
-    }
-
     /**
      * 
      * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
@@ -16172,11 +16230,6 @@ public final class N {
      */
     public static List<String> findAll(final String str, final String prefix, final String postfix) {
         return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
-    }
-
-    public static <T, E extends Exception> List<T> findAll(final String str, final String prefix, final String postfix,
-            final Try.Function<? super String, T, E> func) throws E {
-        return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
     }
 
     /**
@@ -16196,18 +16249,6 @@ public final class N {
 
         for (IntPair p : points) {
             res.add(str.substring(p._1, p._2));
-        }
-
-        return res;
-    }
-
-    public static <T, E extends Exception> List<T> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix,
-            final Try.Function<? super String, T, E> func) throws E {
-        final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
-        final List<T> res = new ArrayList<>(strs.size());
-
-        for (String s : strs) {
-            res.add(func.apply(s));
         }
 
         return res;

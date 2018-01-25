@@ -11,7 +11,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 @Beta
-public abstract class Any<T> {
+abstract class Any<T> {
 
     final T value;
     final boolean isPresent;
