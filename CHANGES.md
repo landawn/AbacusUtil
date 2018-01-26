@@ -2,17 +2,23 @@
 
 * Remove `Mapper/AsyncMapper.stream(Connection...)`.
 
-* Rename `Splitter.split(..., Function...)` to `Splitter.splitAndThen(..., Function...)`
-
 * Remove `Try.reader/writer/stream/callable`.
 
 * Remove `N.findAll(..., Function...)`.
+
+* Rename `N.findAllIndices` to `findAllIndicesBetween`, `N.findAll` to `findAllSubstringsBetween`.
+
+* Rename `Splitter.split(..., Function...)` to `Splitter.splitAndThen(..., Function...)`
 
 * Add `N.wrap/unwrap`.
 
 * Add `N.flatMap/flattMap`.
 
 * Add `N.EMPTY_BOOLEAN/CHAR/BYTE/SHORT/INT/../DOUBLE_OBJ_ARRAY`.
+
+* Add `N.sleep/run/callUninterruptibly`, copied from Google Guava.
+
+* Add `Stopwatch/RateLimiter`, copied from Google Guava.
 
 * Improvements and bug fix.
 

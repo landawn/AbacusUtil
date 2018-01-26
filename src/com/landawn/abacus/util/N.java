@@ -2360,6 +2360,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code byte}.
      */
     public static byte asByte(final String str) {
         if (N.isNullOrEmpty(str)) {
@@ -2391,6 +2393,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code short}.
      */
     public static short asShort(final String str) {
         if (N.isNullOrEmpty(str)) {
@@ -2418,6 +2422,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code int}.
      */
     public static int asInt(final String str) {
         if (N.isNullOrEmpty(str)) {
@@ -2445,6 +2451,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code long}.
      */
     public static long asLong(final String str) {
         if (N.isNullOrEmpty(str)) {
@@ -2472,6 +2480,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code float}.
      */
     public static float asFloat(final String str) {
         if (isNullOrEmpty(str)) {
@@ -2492,6 +2502,8 @@ public final class N {
      *
      * @param str
      * @return
+     * @throws  NumberFormatException If the string does not
+     *          contain a parsable {@code double}.
      */
     public static double asDouble(final String str) {
         return isNullOrEmpty(str) ? 0d : Double.parseDouble(str);
@@ -16036,20 +16048,20 @@ public final class N {
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param prefix
      * @param postfix
      * @return
      */
-    public static List<IntPair> findAllIndices(final String str, final char prefix, final char postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndices(str, 0, str.length(), prefix, postfix);
+    public static List<IntPair> findAllIndicesBetween(final String str, final char prefix, final char postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndicesBetween(str, 0, str.length(), prefix, postfix);
     }
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param fromIndex
@@ -16058,7 +16070,7 @@ public final class N {
      * @param postfix
      * @return
      */
-    public static List<IntPair> findAllIndices(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
+    public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
         N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
 
         final List<IntPair> res = new ArrayList<>();
@@ -16097,20 +16109,20 @@ public final class N {
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param prefix
      * @param postfix
      * @return
      */
-    public static List<IntPair> findAllIndices(final String str, final String prefix, final String postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndices(str, 0, str.length(), prefix, postfix);
+    public static List<IntPair> findAllIndicesBetween(final String str, final String prefix, final String postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndicesBetween(str, 0, str.length(), prefix, postfix);
     }
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param fromIndex
@@ -16119,7 +16131,7 @@ public final class N {
      * @param postfix
      * @return
      */
-    public static List<IntPair> findAllIndices(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
+    public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
         N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
 
         final List<IntPair> res = new ArrayList<>();
@@ -16186,20 +16198,20 @@ public final class N {
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param prefix
      * @param postfix
      * @return
      */
-    public static List<String> findAll(final String str, final char prefix, final char postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
+    public static List<String> findAllSubstringsBetween(final String str, final char prefix, final char postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAllSubstringsBetween(str, 0, str.length(), prefix, postfix);
     }
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param fromIndex
@@ -16208,8 +16220,8 @@ public final class N {
      * @param postfix
      * @return
      */
-    public static List<String> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
-        final List<IntPair> points = findAllIndices(str, prefix, postfix);
+    public static List<String> findAllSubstringsBetween(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
+        final List<IntPair> points = findAllIndicesBetween(str, prefix, postfix);
         final List<String> res = new ArrayList<>(points.size());
 
         for (IntPair p : points) {
@@ -16221,20 +16233,20 @@ public final class N {
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param prefix
      * @param postfix
      * @return
      */
-    public static List<String> findAll(final String str, final String prefix, final String postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
+    public static List<String> findAllSubstringsBetween(final String str, final String prefix, final String postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAllSubstringsBetween(str, 0, str.length(), prefix, postfix);
     }
 
     /**
      * 
-     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
      * 
      * @param str
      * @param fromIndex
@@ -16243,8 +16255,8 @@ public final class N {
      * @param postfix
      * @return
      */
-    public static List<String> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
-        final List<IntPair> points = findAllIndices(str, prefix, postfix);
+    public static List<String> findAllSubstringsBetween(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
+        final List<IntPair> points = findAllIndicesBetween(str, prefix, postfix);
         final List<String> res = new ArrayList<>(points.size());
 
         for (IntPair p : points) {
@@ -32689,12 +32701,321 @@ public final class N {
         }
     }
 
-    public static void sleep(final long millis) {
-        if (millis > 0) {
-            try {
-                Thread.sleep(millis);
-            } catch (InterruptedException e) {
-                throw new UncheckedException(e);
+    public static void sleep(final long timeoutInMillis) {
+        if (timeoutInMillis <= 0) {
+            return;
+        }
+
+        try {
+            TimeUnit.MILLISECONDS.sleep(timeoutInMillis);
+        } catch (InterruptedException e) {
+            throw new UncheckedException(e);
+        }
+    }
+
+    public static void sleep(final long timeout, final TimeUnit unit) {
+        N.requireNonNull(unit, "unit");
+
+        if (timeout <= 0) {
+            return;
+        }
+
+        try {
+            unit.sleep(timeout);
+        } catch (InterruptedException e) {
+            throw new UncheckedException(e);
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeoutInMillis
+     */
+    public static void sleepUninterruptibly(final long timeoutInMillis) {
+        if (timeoutInMillis <= 0) {
+            return;
+        }
+
+        boolean interrupted = false;
+
+        try {
+            long remainingNanos = TimeUnit.MILLISECONDS.toNanos(timeoutInMillis);
+            final long sysNanos = System.nanoTime();
+            final long end = remainingNanos >= Long.MAX_VALUE - sysNanos ? Long.MAX_VALUE : sysNanos + remainingNanos;
+
+            while (true) {
+                try {
+                    // TimeUnit.sleep() treats negative timeouts just like zero.
+                    TimeUnit.NANOSECONDS.sleep(remainingNanos);
+                    return;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingNanos = end - System.nanoTime();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeoutInMillis
+     */
+    public static void sleepUninterruptibly(final long timeout, final TimeUnit unit) {
+        N.requireNonNull(unit, "unit");
+
+        if (timeout <= 0) {
+            return;
+        }
+
+        boolean interrupted = false;
+
+        try {
+            long remainingNanos = unit.toNanos(timeout);
+            final long sysNanos = System.nanoTime();
+            final long end = remainingNanos >= Long.MAX_VALUE - sysNanos ? Long.MAX_VALUE : sysNanos + remainingNanos;
+
+            while (true) {
+                try {
+                    // TimeUnit.sleep() treats negative timeouts just like zero.
+                    TimeUnit.NANOSECONDS.sleep(remainingNanos);
+                    return;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingNanos = end - System.nanoTime();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /** 
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param cmd
+     */
+    public static void runUninterruptibly(final Try.Runnable<InterruptedException> cmd) {
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+
+        try {
+            while (true) {
+                try {
+                    cmd.run();
+                    return;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeoutInMillis
+     * @param cmd
+     */
+    public static void runUninterruptibly(final long timeoutInMillis, final Try.LongConsumer<InterruptedException> cmd) {
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+
+        try {
+            long remainingMillis = timeoutInMillis;
+            final long sysMillis = System.currentTimeMillis();
+            final long end = remainingMillis >= Long.MAX_VALUE - sysMillis ? Long.MAX_VALUE : sysMillis + remainingMillis;
+
+            while (true) {
+                try {
+                    cmd.accept(remainingMillis);
+                    return;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingMillis = end - System.currentTimeMillis();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeout
+     * @param unit
+     * @param cmd
+     */
+    public static void runUninterruptibly(final long timeout, final TimeUnit unit, final Try.BiConsumer<Long, TimeUnit, InterruptedException> cmd) {
+        N.requireNonNull(unit, "unit");
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+
+        try {
+            long remainingNanos = unit.toNanos(timeout);
+            final long sysNanos = System.nanoTime();
+            final long end = remainingNanos >= Long.MAX_VALUE - sysNanos ? Long.MAX_VALUE : sysNanos + remainingNanos;
+
+            while (true) {
+                try {
+                    cmd.accept(remainingNanos, TimeUnit.NANOSECONDS);
+                    return;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingNanos = end - System.nanoTime();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param cmd
+     * @return
+     */
+    public static <T> T callUninterruptibly(Try.Callable<T, InterruptedException> cmd) {
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+        try {
+            while (true) {
+                try {
+                    return cmd.call();
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeoutInMillis
+     * @param cmd
+     * @return
+     */
+    public static <T> T callUninterruptibly(final long timeoutInMillis, final Try.LongFunction<T, InterruptedException> cmd) {
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+
+        try {
+            long remainingMillis = timeoutInMillis;
+            final long sysMillis = System.currentTimeMillis();
+            final long end = remainingMillis >= Long.MAX_VALUE - sysMillis ? Long.MAX_VALUE : sysMillis + remainingMillis;
+
+            while (true) {
+                try {
+                    return cmd.apply(remainingMillis);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingMillis = end - System.currentTimeMillis();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Note: Copied from Google Guava under Apache License v2.0
+     * <br />
+     * <br />
+     * 
+     * If a thread is interrupted during such a call, the call continues to block until the result is available or the
+     * timeout elapses, and only then re-interrupts the thread.
+     * 
+     * @param timeout
+     * @param unit
+     * @param cmd
+     * @return
+     */
+    public static <T> T callUninterruptibly(final long timeout, final TimeUnit unit, final Try.BiFunction<Long, TimeUnit, T, InterruptedException> cmd) {
+        N.requireNonNull(unit, "unit");
+        N.requireNonNull(cmd);
+
+        boolean interrupted = false;
+
+        try {
+            long remainingNanos = unit.toNanos(timeout);
+            final long sysNanos = System.nanoTime();
+            final long end = remainingNanos >= Long.MAX_VALUE - sysNanos ? Long.MAX_VALUE : sysNanos + remainingNanos;
+
+            while (true) {
+                try {
+                    return cmd.apply(remainingNanos, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    remainingNanos = end - System.nanoTime();
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
             }
         }
     }
