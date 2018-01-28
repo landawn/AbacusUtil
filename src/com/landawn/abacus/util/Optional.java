@@ -128,6 +128,10 @@ public final class Optional<T> {
         return value == null ? (Optional<T>) empty() : of(value);
     }
 
+    public static <T> Optional<T> from(java.util.Optional<T> optional) {
+        return optional.isPresent() ? of(optional.get()) : Optional.<T> empty();
+    }
+
     /**
      * If a value is present in this {@code Optional}, returns the value,
      * otherwise throws {@code NoSuchElementException}.

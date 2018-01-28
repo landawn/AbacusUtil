@@ -50,7 +50,6 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.ClassUtil;
-import com.landawn.abacus.util.WD;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
@@ -72,6 +71,7 @@ import com.landawn.abacus.util.SQLBuilder.RE2;
 import com.landawn.abacus.util.SQLBuilder.RE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
+import com.landawn.abacus.util.WD;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -378,6 +378,7 @@ public final class SQLiteExecutor {
      * @p
      * @return
      */
+    @SuppressWarnings("deprecation")
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
         if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
             throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "

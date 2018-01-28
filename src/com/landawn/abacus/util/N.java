@@ -1743,22 +1743,6 @@ public final class N {
      * @return
      */
     @SafeVarargs
-    public static Map<String, Object> asOptions(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new HashMap<>();
-        }
-
-        return newMap(new HashMap<String, Object>(initHashCapacity(a.length / 2)), a);
-    }
-
-    /**
-     *
-     * @param a
-     *            pairs of property name and value or a Java Entity Object what
-     *            allows access to properties using getter and setter methods.
-     * @return
-     */
-    @SafeVarargs
     public static Map<String, Object> asProps(final Object... a) {
         if (N.isNullOrEmpty(a)) {
             return new LinkedHashMap<>();

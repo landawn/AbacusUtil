@@ -1,3 +1,8 @@
+### 1.2.2
+
+* Improvements and bug fix.
+
+
 ### 1.2.1
 
 * Remove `Mapper/AsyncMapper.stream(Connection...)`.

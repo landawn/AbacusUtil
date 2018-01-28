@@ -62,7 +62,6 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.Options.Query;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
@@ -167,6 +166,8 @@ public final class SQLExecutor implements Closeable {
 
     static final String ID = "id";
 
+    static final String QUERY_WITH_DATA_SOURCE = "queryWithDataSource";
+
     static final StatementSetter DEFAULT_STATEMENT_SETTER = new DefaultStatementSetter();
 
     static final ResultSetExtractor<?> DEFAULT_RESULT_SET_EXTRACTOR = new DefaultResultSetExtractor();
@@ -208,6 +209,7 @@ public final class SQLExecutor implements Closeable {
 
     @SuppressWarnings("rawtypes")
     private static final ResultSetExtractor ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<Object>() {
+        @SuppressWarnings("deprecation")
         @Override
         public Object extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
@@ -255,6 +257,7 @@ public final class SQLExecutor implements Closeable {
 
     @SuppressWarnings("rawtypes")
     private static final ResultSetExtractor ENTITY_LIST_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<List<Object>>() {
+        @SuppressWarnings("deprecation")
         @Override
         public List<Object> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             final List<Object> resultList = new ArrayList<>();
@@ -2249,6 +2252,7 @@ public final class SQLExecutor implements Closeable {
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
             return new Function<Object[], T>() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public T apply(Object[] a) {
                     if (isMap) {
@@ -2939,7 +2943,7 @@ public final class SQLExecutor implements Closeable {
             if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
                 return _dss.select(_dsm, null, sql, parameters, null);
             } else {
-                return _dss.select(_dsm, null, sql, parameters, N.asOptions(Query.QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
+                return _dss.select(_dsm, null, sql, parameters, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
             }
         }
     }
@@ -2956,7 +2960,7 @@ public final class SQLExecutor implements Closeable {
             if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
                 return _dss.select(_dsm, null, sql, batchParameters, null);
             } else {
-                return _dss.select(_dsm, null, sql, batchParameters, N.asOptions(Query.QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
+                return _dss.select(_dsm, null, sql, batchParameters, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
             }
         }
     }

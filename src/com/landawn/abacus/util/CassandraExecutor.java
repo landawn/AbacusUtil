@@ -383,6 +383,7 @@ public final class CassandraExecutor implements Closeable {
         return toEntity(targetClass, row, row.getColumnDefinitions());
     }
 
+    @SuppressWarnings("deprecation")
     static <T> T toEntity(final Class<T> targetClass, final Row row, final ColumnDefinitions columnDefinitions) {
         final int columnCount = columnDefinitions.size();
 

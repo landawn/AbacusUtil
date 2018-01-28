@@ -118,6 +118,10 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         return new OptionalInt(value);
     }
 
+    public static OptionalInt from(java.util.OptionalInt optional) {
+        return optional.isPresent() ? of(optional.getAsInt()) : OptionalInt.empty();
+    }
+
     /**
      * If a value is present in this {@code OptionalInt}, returns the value,
      * otherwise throws {@code NoSuchElementException}.

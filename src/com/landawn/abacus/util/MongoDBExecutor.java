@@ -310,6 +310,7 @@ public final class MongoDBExecutor {
      * @param doc
      * @return
      */
+    @SuppressWarnings("deprecation")
     public static <T> T toEntity(final Class<T> targetClass, final Document doc) {
         checkTargetClass(targetClass);
 

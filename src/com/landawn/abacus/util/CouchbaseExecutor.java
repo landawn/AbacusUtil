@@ -334,6 +334,7 @@ public final class CouchbaseExecutor implements Closeable {
      * @param jsonObject
      * @return
      */
+    @SuppressWarnings("deprecation")
     public static <T> T toEntity(final Class<T> targetClass, final JsonObject jsonObject) {
         checkTargetClass(targetClass);
 

@@ -2193,6 +2193,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
         return Stream.of(rowIterator).map(new Function<Object[], T>() {
+            @SuppressWarnings("deprecation")
             @Override
             public T apply(Object[] a) {
                 if (isMap) {

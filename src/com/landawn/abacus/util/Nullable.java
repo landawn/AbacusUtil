@@ -95,6 +95,14 @@ public final class Nullable<T> extends Any<T> {
         return new Nullable<>(value);
     }
 
+    public static <T> Nullable<T> from(Optional<T> optional) {
+        return optional.isPresent() ? of(optional.get()) : Nullable.<T> empty();
+    }
+
+    public static <T> Nullable<T> from(java.util.Optional<T> optional) {
+        return optional.isPresent() ? of(optional.get()) : Nullable.<T> empty();
+    }
+
     /**
      * If a value is present, and the value matches the given predicate,
      * return an {@code Nullable} describing the value, otherwise return an

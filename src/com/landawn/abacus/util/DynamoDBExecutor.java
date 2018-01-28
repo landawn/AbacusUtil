@@ -422,6 +422,7 @@ public final class DynamoDBExecutor implements Closeable {
         return toValue(type, targetClass, item);
     }
 
+    @SuppressWarnings("deprecation")
     private static <T> T toValue(final Type<T> type, final Class<T> targetClass, final Map<String, AttributeValue> item) {
         if (item == null) {
             return null;

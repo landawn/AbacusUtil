@@ -118,6 +118,10 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         return new OptionalLong(value);
     }
 
+    public static OptionalLong from(java.util.OptionalLong optional) {
+        return optional.isPresent() ? of(optional.getAsLong()) : OptionalLong.empty();
+    }
+
     /**
      * If a value is present in this {@code OptionalLong}, returns the value,
      * otherwise throws {@code NoSuchElementException}.

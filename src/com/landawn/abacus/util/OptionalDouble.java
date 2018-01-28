@@ -118,6 +118,10 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         return new OptionalDouble(value);
     }
 
+    public static OptionalDouble from(java.util.OptionalDouble optional) {
+        return optional.isPresent() ? of(optional.getAsDouble()) : OptionalDouble.empty();
+    }
+
     /**
      * If a value is present in this {@code OptionalDouble}, returns the value,
      * otherwise throws {@code NoSuchElementException}.

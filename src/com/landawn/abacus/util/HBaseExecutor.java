@@ -232,6 +232,7 @@ public final class HBaseExecutor implements Closeable {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static <T> T toValue(final Type<T> type, final Class<T> targetClass, final Result result) throws IOException {
         if (type.isMap()) {
             throw new IllegalArgumentException("Map is not supported");
