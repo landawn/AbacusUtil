@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -3049,37 +3048,23 @@ public final class SQLExecutor implements Closeable {
         return stmt;
     }
 
+    /**
+     * 
+     * @param sql should be prepared sql because it will be cached.
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     protected static List<String> getColumnLabelList(final String sql, final ResultSet rs) throws SQLException {
         List<String> labelList = N.notNullOrEmpty(sql) ? _sqlColumnLabelPool.get(sql) : null;
 
         if (labelList == null) {
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            labelList = new ArrayList<>(columnCount);
+            labelList = ImmutableList.of(JdbcUtil.getColumnLabelList(rs));
 
-            for (int i = 1, n = columnCount + 1; i < n; i++) {
-                labelList.add(metaData.getColumnLabel(i));
-            }
-
-            //            int fromIndex = SQLParser.indexWord(sql, D.FROM, 0, false);
-            //
-            //            boolean isCachable = true;
-            //            for (int i = 6; i < fromIndex; i++) {
-            //                char ch = sql.charAt(i);
-            //
-            //                if (ch == '*' && (sql.charAt(i - 1) != '(' || sql.charAt(i + 1) != ')')) {
-            //                    isCachable = false;
-            //
-            //                    break;
-            //                }
-            //            }
-            //
-            //            if (isCachable) {
             if (N.notNullOrEmpty(sql) && sql.length() <= CACHED_SQL_LENGTH) {
-                labelList = ImmutableList.of(labelList);
-
                 if (_sqlColumnLabelPool.size() >= SQL_CACHE_SIZE) {
-                    _sqlColumnLabelPool.remove(_sqlColumnLabelPool.keySet().iterator().next());
+                    final List<String> tmp = new ArrayList<>(_sqlColumnLabelPool.keySet());
+                    Maps.removeAll(_sqlColumnLabelPool, tmp.subList(0, (int) (tmp.size() * 0.25)));
                 }
 
                 _sqlColumnLabelPool.put(sql, labelList);

@@ -44,19 +44,19 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
     private final long count;
     private final ResultSetMetaData metaData;
     private final int columnCount;
-    private List<String> columnLabelList = null;
+    private volatile List<String> columnLabelList = null;
     private boolean hasNext = false;
     private long cnt = 0;
     private final boolean closeStatement;
     private final boolean closeConnection;
     private volatile boolean isClosed = false;
 
-    public RowIterator(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) throws IllegalArgumentException {
+    public RowIterator(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) throws IllegalArgumentException, UncheckedSQLException {
         this(rs, 0, Long.MAX_VALUE, closeStatement, closeConnection);
     }
 
     public RowIterator(final ResultSet rs, long offset, long count, final boolean closeStatement, final boolean closeConnection)
-            throws IllegalArgumentException {
+            throws IllegalArgumentException, UncheckedSQLException {
         if (offset < 0 || count < 0) {
             throw new IllegalArgumentException("'offset' and 'count' can't be negative");
         }
@@ -75,7 +75,7 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
             throw new UncheckedSQLException(e);
         }
 
-        JdbcUtil.absolute(rs, offset);
+        JdbcUtil.skip(rs, offset);
 
         this.closeStatement = closeStatement;
         this.closeConnection = closeConnection;
@@ -85,15 +85,17 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
         return rs;
     }
 
-    public static RowIterator of(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) {
+    public static RowIterator of(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) throws UncheckedSQLException {
         return new RowIterator(rs, closeStatement, closeConnection);
     }
 
-    public static RowIterator of(final ResultSet rs, final long offset, final long count, final boolean closeStatement, final boolean closeConnection) {
+    public static RowIterator of(final ResultSet rs, final long offset, final long count, final boolean closeStatement, final boolean closeConnection)
+            throws UncheckedSQLException {
         return new RowIterator(rs, offset, count, closeStatement, closeConnection);
     }
 
-    public static List<RowIterator> of(final Collection<ResultSet> c, final boolean closeStatement, final boolean closeConnection) {
+    public static List<RowIterator> of(final Collection<ResultSet> c, final boolean closeStatement, final boolean closeConnection)
+            throws UncheckedSQLException {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -113,24 +115,14 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
 
     public List<String> getColumnLabelList() throws UncheckedSQLException {
         if (columnLabelList == null) {
-            final List<String> columnLabels = new ArrayList<>(columnCount);
-
-            try {
-                for (int i = 1, n = columnCount + 1; i < n; i++) {
-                    columnLabels.add(metaData.getColumnLabel(i));
-                }
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-
-            columnLabelList = ImmutableList.of(columnLabels);
+            columnLabelList = ImmutableList.of(JdbcUtil.getColumnLabelList(rs));
         }
 
         return columnLabelList;
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNext() throws UncheckedSQLException {
         if (hasNext == false) {
             try {
                 hasNext = cnt < count && rs.next();
@@ -142,7 +134,7 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
         return hasNext;
     }
 
-    public boolean moveToNext() {
+    public boolean moveToNext() throws UncheckedSQLException {
         if (hasNext) {
             cnt++;
             hasNext = false;
@@ -161,8 +153,23 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
         return false;
     }
 
+    public void skip(final int n) throws UncheckedSQLException {
+        skip((long) n);
+    }
+
+    public void skip(final long n) throws UncheckedSQLException {
+        if (n <= 0) {
+            return;
+        }
+
+        final long m = Math.min(hasNext ? n - 1 : n, count - cnt);
+        JdbcUtil.skip(rs, m);
+        cnt += Math.min(n, count - cnt);
+        hasNext = false;
+    }
+
     @Override
-    public Object[] next() {
+    public Object[] next() throws UncheckedSQLException {
         if (!hasNext()) {
             throw new NoSuchElementException("No more rows");
         }
@@ -184,7 +191,7 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
     }
 
     @Override
-    public synchronized void close() {
+    public synchronized void close() throws UncheckedSQLException {
         if (isClosed) {
             return;
         }

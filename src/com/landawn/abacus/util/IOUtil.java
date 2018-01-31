@@ -293,7 +293,7 @@ public final class IOUtil {
      * @throws IllegalStateException if an error occurred in initialisation
      * @throws UncheckedIOException if an error occurs when finding the free space
      */
-    public static long freeDiskSpaceKb() {
+    public static long freeDiskSpaceKb() throws UncheckedIOException {
         try {
             return FileSystemUtil.freeSpaceKb();
         } catch (IOException e) {
@@ -314,7 +314,7 @@ public final class IOUtil {
      * @throws IllegalStateException if an error occurred in initialisation
      * @throws UncheckedIOException if an error occurs when finding the free space
      */
-    public static long freeDiskSpaceKb(final long timeout) {
+    public static long freeDiskSpaceKb(final long timeout) throws UncheckedIOException {
         try {
             return FileSystemUtil.freeSpaceKb(timeout);
         } catch (IOException e) {
@@ -346,7 +346,7 @@ public final class IOUtil {
      * @throws IllegalStateException if an error occurred in initialisation
      * @throws UncheckedIOException if an error occurs when finding the free space
      */
-    public static long freeDiskSpaceKb(final String path) {
+    public static long freeDiskSpaceKb(final String path) throws UncheckedIOException {
         try {
             return FileSystemUtil.freeSpaceKb(path);
         } catch (IOException e) {
@@ -379,7 +379,7 @@ public final class IOUtil {
      * @throws IllegalStateException if an error occurred in initialisation
      * @throws UncheckedIOException if an error occurs when finding the free space
      */
-    public static long freeDiskSpaceKb(final String path, final long timeout) {
+    public static long freeDiskSpaceKb(final String path, final long timeout) throws UncheckedIOException {
         try {
             return FileSystemUtil.freeSpaceKb(path, timeout);
         } catch (IOException e) {
@@ -453,11 +453,11 @@ public final class IOUtil {
         return new StringWriter(sb);
     }
 
-    public static byte[] readBytes(final File file) {
+    public static byte[] readBytes(final File file) throws UncheckedIOException {
         return readBytes(file, 0, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final File file, final long offset, final int maxLen) {
+    public static byte[] readBytes(final File file, final long offset, final int maxLen) throws UncheckedIOException {
         final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
@@ -473,11 +473,11 @@ public final class IOUtil {
         }
     }
 
-    public static byte[] readBytes(final InputStream is) {
+    public static byte[] readBytes(final InputStream is) throws UncheckedIOException {
         return readBytes(is, 0, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final InputStream is, final long offset, final int maxLen) {
+    public static byte[] readBytes(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
         if (maxLen == 0) {
             return N.EMPTY_BYTE_ARRAY;
         }
@@ -520,15 +520,15 @@ public final class IOUtil {
         }
     }
 
-    public static char[] readChars(final File file) {
+    public static char[] readChars(final File file) throws UncheckedIOException {
         return readChars(file, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final File file, final long offset, final int maxLen) {
+    public static char[] readChars(final File file, final long offset, final int maxLen) throws UncheckedIOException {
         return readChars(file, 0, maxLen, Charsets.DEFAULT);
     }
 
-    public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) {
+    public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
         final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
@@ -544,15 +544,15 @@ public final class IOUtil {
         }
     }
 
-    public static char[] readChars(final InputStream is) {
+    public static char[] readChars(final InputStream is) throws UncheckedIOException {
         return readChars(is, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final InputStream is, final long offset, final int maxLen) {
+    public static char[] readChars(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
         return readChars(is, 0, maxLen, Charsets.DEFAULT);
     }
 
-    public static char[] readChars(final InputStream is, final long offset, final int maxLen, Charset encoding) {
+    public static char[] readChars(final InputStream is, final long offset, final int maxLen, Charset encoding) throws UncheckedIOException {
         encoding = encoding == null ? Charsets.DEFAULT : encoding;
 
         Reader reader = null;
@@ -567,11 +567,11 @@ public final class IOUtil {
         // }
     }
 
-    public static char[] readChars(final Reader reader) {
+    public static char[] readChars(final Reader reader) throws UncheckedIOException {
         return readChars(reader, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final Reader reader, final long offset, final int maxLen) {
+    public static char[] readChars(final Reader reader, final long offset, final int maxLen) throws UncheckedIOException {
         if (maxLen == 0) {
             return N.EMPTY_CHAR_ARRAY;
         }
@@ -620,53 +620,53 @@ public final class IOUtil {
         }
     }
 
-    public static String readString(final File file) {
+    public static String readString(final File file) throws UncheckedIOException {
         return readString(file, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final File file, final long offset, final int maxLen) {
+    public static String readString(final File file, final long offset, final int maxLen) throws UncheckedIOException {
         return readString(file, offset, maxLen, Charsets.DEFAULT);
     }
 
-    public static String readString(final File file, final long offset, final int maxLen, final Charset encoding) {
+    public static String readString(final File file, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
         final char[] chs = readChars(file, offset, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
-    public static String readString(final InputStream is) {
+    public static String readString(final InputStream is) throws UncheckedIOException {
         return readString(is, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final InputStream is, final long offset, final int maxLen) {
+    public static String readString(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
         return readString(is, offset, maxLen, Charsets.DEFAULT);
     }
 
-    public static String readString(final InputStream is, final long offset, final int maxLen, final Charset encoding) {
+    public static String readString(final InputStream is, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
         final char[] chs = readChars(is, offset, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
-    public static String readString(final Reader reader) {
+    public static String readString(final Reader reader) throws UncheckedIOException {
         return readString(reader, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final Reader reader, final long offset, final int maxLen) {
+    public static String readString(final Reader reader, final long offset, final int maxLen) throws UncheckedIOException {
         final char[] chs = readChars(reader, offset, maxLen);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
-    public static String readLine(final File file) {
+    public static String readLine(final File file) throws UncheckedIOException {
         return readLine(file, 0);
     }
 
-    public static String readLine(final File file, final int lineIndex) {
+    public static String readLine(final File file, final int lineIndex) throws UncheckedIOException {
         return readLine(file, lineIndex, Charsets.DEFAULT);
     }
 
-    public static String readLine(final File file, final int lineIndex, final Charset encoding) {
+    public static String readLine(final File file, final int lineIndex, final Charset encoding) throws UncheckedIOException {
         final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
@@ -682,23 +682,23 @@ public final class IOUtil {
         }
     }
 
-    public static String readLine(final InputStream is) {
+    public static String readLine(final InputStream is) throws UncheckedIOException {
         return readLine(is, 0);
     }
 
-    public static String readLine(final InputStream is, final int lineIndex) {
+    public static String readLine(final InputStream is, final int lineIndex) throws UncheckedIOException {
         return readLine(is, lineIndex, Charsets.DEFAULT);
     }
 
-    public static String readLine(final InputStream is, final int lineIndex, final Charset encoding) {
+    public static String readLine(final InputStream is, final int lineIndex, final Charset encoding) throws UncheckedIOException {
         return readLine(createReader(is, encoding), lineIndex);
     }
 
-    public static String readLine(final Reader reader) {
+    public static String readLine(final Reader reader) throws UncheckedIOException {
         return readLine(reader, 0);
     }
 
-    public static String readLine(final Reader reader, int lineIndex) {
+    public static String readLine(final Reader reader, int lineIndex) throws UncheckedIOException {
         final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
 
         try {
@@ -719,15 +719,15 @@ public final class IOUtil {
         }
     }
 
-    public static List<String> readLines(final File file) {
+    public static List<String> readLines(final File file) throws UncheckedIOException {
         return readLines(file, 0, Integer.MAX_VALUE);
     }
 
-    public static List<String> readLines(final File file, final int offset, final int count) {
+    public static List<String> readLines(final File file, final int offset, final int count) throws UncheckedIOException {
         return readLines(file, offset, count, Charsets.DEFAULT);
     }
 
-    public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
+    public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) throws UncheckedIOException {
         final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
@@ -743,27 +743,27 @@ public final class IOUtil {
         }
     }
 
-    public static List<String> readLines(final InputStream is) {
+    public static List<String> readLines(final InputStream is) throws UncheckedIOException {
         return readLines(is, 0, Integer.MAX_VALUE);
     }
 
-    public static List<String> readLines(final InputStream is, final int offset, final int count) {
+    public static List<String> readLines(final InputStream is, final int offset, final int count) throws UncheckedIOException {
         return readLines(is, offset, count, Charsets.DEFAULT);
     }
 
-    public static List<String> readLines(final InputStream is, final int offset, final int count, final Charset encoding) {
+    public static List<String> readLines(final InputStream is, final int offset, final int count, final Charset encoding) throws UncheckedIOException {
         return readLines(createReader(is, encoding), offset, count);
     }
 
-    private static InputStreamReader createReader(final InputStream is, final Charset encoding) {
+    private static InputStreamReader createReader(final InputStream is, final Charset encoding) throws UncheckedIOException {
         return encoding == null ? new InputStreamReader(is, Charsets.DEFAULT) : new InputStreamReader(is, encoding);
     }
 
-    public static List<String> readLines(final Reader reader) {
+    public static List<String> readLines(final Reader reader) throws UncheckedIOException {
         return readLines(reader, 0, Integer.MAX_VALUE);
     }
 
-    public static List<String> readLines(final Reader reader, int offset, int count) {
+    public static List<String> readLines(final Reader reader, int offset, int count) throws UncheckedIOException {
         final List<String> res = new ArrayList<>();
         final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
 
@@ -796,7 +796,7 @@ public final class IOUtil {
      * @throws UncheckedIOException in case of an I/O error (file closed)
      * @see #iterate(File, Charset)
      */
-    public static LineIterator iterate(final File file) {
+    public static LineIterator iterate(final File file) throws UncheckedIOException {
         return iterate(file, Charsets.DEFAULT);
     }
 
@@ -830,7 +830,7 @@ public final class IOUtil {
      * @return an Iterator of the lines in the file, never {@code null}
      * @throws UncheckedIOException in case of an I/O error (file closed)
      */
-    public static LineIterator iterate(final File file, final Charset encoding) {
+    public static LineIterator iterate(final File file, final Charset encoding) throws UncheckedIOException {
         InputStream in = null;
 
         try {
@@ -846,7 +846,7 @@ public final class IOUtil {
         }
     }
 
-    public static LineIterator iterate(final InputStream input) {
+    public static LineIterator iterate(final InputStream input) throws UncheckedIOException {
         return iterate(input, null);
     }
 
@@ -879,7 +879,7 @@ public final class IOUtil {
      * @throws IllegalArgumentException if the input is null
      * @throws UncheckedIOException if an I/O error occurs, such as if the encoding is invalid
      */
-    public static LineIterator iterate(final InputStream input, final Charset encoding) {
+    public static LineIterator iterate(final InputStream input, final Charset encoding) throws UncheckedIOException {
         return new LineIterator(createReader(input, encoding));
     }
 
@@ -911,7 +911,7 @@ public final class IOUtil {
      * @return an Iterator of the lines in the reader, never null
      * @throws IllegalArgumentException if the reader is null
      */
-    public static LineIterator iterate(final Reader reader) {
+    public static LineIterator iterate(final Reader reader) throws UncheckedIOException {
         return new LineIterator(reader);
     }
 
@@ -923,7 +923,7 @@ public final class IOUtil {
      * @param len
      * @return
      */
-    public static int read(final File file, final byte[] buf, final int off, final int len) {
+    public static int read(final File file, final byte[] buf, final int off, final int len) throws UncheckedIOException {
         InputStream is = null;
 
         try {
@@ -981,7 +981,7 @@ public final class IOUtil {
      * @param len
      * @return
      */
-    public static int read(final File file, final char[] buf, final int off, final int len) {
+    public static int read(final File file, final char[] buf, final int off, final int len) throws UncheckedIOException {
         Reader reader = null;
 
         try {
@@ -1031,7 +1031,7 @@ public final class IOUtil {
         return n;
     }
 
-    public static void writeLine(final File file, final Object obj) {
+    public static void writeLine(final File file, final Object obj) throws UncheckedIOException {
         Writer writer = null;
 
         try {
@@ -1047,19 +1047,19 @@ public final class IOUtil {
         }
     }
 
-    public static void writeLine(final OutputStream os, final Object obj) {
+    public static void writeLine(final OutputStream os, final Object obj) throws UncheckedIOException {
         writeLine(os, obj, false);
     }
 
-    public static void writeLine(final OutputStream os, final Object obj, final boolean flush) {
+    public static void writeLine(final OutputStream os, final Object obj, final boolean flush) throws UncheckedIOException {
         writeLine(new OutputStreamWriter(os), obj, flush);
     }
 
-    public static void writeLine(final Writer writer, final Object obj) {
+    public static void writeLine(final Writer writer, final Object obj) throws UncheckedIOException {
         writeLine(writer, obj, false);
     }
 
-    public static void writeLine(final Writer writer, final Object obj, final boolean flush) {
+    public static void writeLine(final Writer writer, final Object obj, final boolean flush) throws UncheckedIOException {
         try {
             if (obj == null) {
                 writer.write(N.NULL_CHAR_ARRAY);
@@ -1077,11 +1077,11 @@ public final class IOUtil {
         }
     }
 
-    public static void writeLines(final File file, final Object[] lines) {
+    public static void writeLines(final File file, final Object[] lines) throws UncheckedIOException {
         writeLines(file, lines, 0, lines.length);
     }
 
-    public static void writeLines(final File file, final Object[] lines, final int offset, final int count) {
+    public static void writeLines(final File file, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
         Writer writer = null;
 
         try {
@@ -1097,35 +1097,36 @@ public final class IOUtil {
         }
     }
 
-    public static void writeLines(final OutputStream os, final Object[] lines) {
+    public static void writeLines(final OutputStream os, final Object[] lines) throws UncheckedIOException {
         writeLines(os, lines, false);
     }
 
-    public static void writeLines(final OutputStream os, final Object[] lines, final boolean flush) {
+    public static void writeLines(final OutputStream os, final Object[] lines, final boolean flush) throws UncheckedIOException {
         writeLines(os, lines, 0, lines.length, flush);
     }
 
-    public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count) {
+    public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
         writeLines(os, lines, offset, count, false);
     }
 
-    public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count, final boolean flush) {
+    public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count, final boolean flush)
+            throws UncheckedIOException {
         writeLines(new OutputStreamWriter(os), lines, offset, count, flush);
     }
 
-    public static void writeLines(final Writer writer, final Object[] lines) {
+    public static void writeLines(final Writer writer, final Object[] lines) throws UncheckedIOException {
         writeLines(writer, lines, false);
     }
 
-    public static void writeLines(final Writer writer, final Object[] lines, final boolean flush) {
+    public static void writeLines(final Writer writer, final Object[] lines, final boolean flush) throws UncheckedIOException {
         writeLines(writer, lines, 0, lines.length, flush);
     }
 
-    public static void writeLines(final Writer writer, final Object[] lines, final int offset, final int count) {
+    public static void writeLines(final Writer writer, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
         writeLines(writer, lines, offset, count, false);
     }
 
-    public static void writeLines(final Writer writer, final Object[] lines, final int offset, int count, final boolean flush) {
+    public static void writeLines(final Writer writer, final Object[] lines, final int offset, int count, final boolean flush) throws UncheckedIOException {
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? writer : ObjectFactory.createBufferedWriter(writer);
 
@@ -1162,11 +1163,11 @@ public final class IOUtil {
         }
     }
 
-    public static void writeLines(final File file, final Collection<?> lines) {
+    public static void writeLines(final File file, final Collection<?> lines) throws UncheckedIOException {
         writeLines(file, lines, 0, lines.size());
     }
 
-    public static void writeLines(final File file, final Collection<?> lines, final int offset, final int count) {
+    public static void writeLines(final File file, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
         Writer writer = null;
 
         try {
@@ -1182,35 +1183,37 @@ public final class IOUtil {
         }
     }
 
-    public static void writeLines(final OutputStream os, final Collection<?> lines) {
+    public static void writeLines(final OutputStream os, final Collection<?> lines) throws UncheckedIOException {
         writeLines(os, lines, false);
     }
 
-    public static void writeLines(final OutputStream os, final Collection<?> lines, final boolean flush) {
+    public static void writeLines(final OutputStream os, final Collection<?> lines, final boolean flush) throws UncheckedIOException {
         writeLines(os, lines, 0, lines.size(), flush);
     }
 
-    public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count) {
+    public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
         writeLines(os, lines, offset, count, false);
     }
 
-    public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count, final boolean flush) {
+    public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count, final boolean flush)
+            throws UncheckedIOException {
         writeLines(new OutputStreamWriter(os), lines, offset, count, flush);
     }
 
-    public static void writeLines(final Writer writer, final Collection<?> lines) {
+    public static void writeLines(final Writer writer, final Collection<?> lines) throws UncheckedIOException {
         writeLines(writer, lines, false);
     }
 
-    public static void writeLines(final Writer writer, final Collection<?> lines, final boolean flush) {
+    public static void writeLines(final Writer writer, final Collection<?> lines, final boolean flush) throws UncheckedIOException {
         writeLines(writer, lines, 0, lines.size(), flush);
     }
 
-    public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, final int count) {
+    public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
         writeLines(writer, lines, offset, count, false);
     }
 
-    public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, int count, final boolean flush) {
+    public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, int count, final boolean flush)
+            throws UncheckedIOException {
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? writer : ObjectFactory.createBufferedWriter(writer);
 
@@ -1343,29 +1346,29 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final File out, final CharSequence str) {
+    public static void write(final File out, final CharSequence str) throws UncheckedIOException {
         write(out, str, Charsets.DEFAULT);
     }
 
-    public static void write(final File out, final CharSequence str, Charset charset) {
+    public static void write(final File out, final CharSequence str, Charset charset) throws UncheckedIOException {
         charset = charset == null ? Charsets.DEFAULT : charset;
 
         write(out, chars2Bytes(toCharArray(str), charset));
     }
 
-    public static void write(final OutputStream out, final CharSequence str) {
+    public static void write(final OutputStream out, final CharSequence str) throws UncheckedIOException {
         write(out, str, false);
     }
 
-    public static void write(final OutputStream out, final CharSequence str, final Charset charset) {
+    public static void write(final OutputStream out, final CharSequence str, final Charset charset) throws UncheckedIOException {
         write(out, str, charset, false);
     }
 
-    public static void write(final OutputStream out, final CharSequence str, final boolean flush) {
+    public static void write(final OutputStream out, final CharSequence str, final boolean flush) throws UncheckedIOException {
         write(out, str, Charsets.DEFAULT, flush);
     }
 
-    public static void write(final OutputStream out, final CharSequence str, Charset charset, final boolean flush) {
+    public static void write(final OutputStream out, final CharSequence str, Charset charset, final boolean flush) throws UncheckedIOException {
         charset = charset == null ? Charsets.DEFAULT : charset;
 
         try {
@@ -1379,63 +1382,64 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final Writer out, final CharSequence str) {
+    public static void write(final Writer out, final CharSequence str) throws UncheckedIOException {
         write(out, str, false);
     }
 
-    public static void write(final Writer out, final CharSequence str, final boolean flush) {
+    public static void write(final Writer out, final CharSequence str, final boolean flush) throws UncheckedIOException {
         write(out, toCharArray(str), flush);
     }
 
-    public static void write(final File out, final char[] chars) {
+    public static void write(final File out, final char[] chars) throws UncheckedIOException {
         write(out, chars, 0, chars.length);
     }
 
-    public static void write(final File out, final char[] chars, final int offset, final int len) {
+    public static void write(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
         write(out, chars, offset, len, Charsets.DEFAULT);
     }
 
-    public static void write(final File out, final char[] chars, final int offset, final int len, final Charset charset) {
+    public static void write(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
         write(out, chars2Bytes(chars, offset, len, charset));
     }
 
-    public static void write(final OutputStream out, final char[] chars) {
+    public static void write(final OutputStream out, final char[] chars) throws UncheckedIOException {
         write(out, chars, 0, chars.length);
     }
 
-    public static void write(final OutputStream out, final char[] chars, final int offset, final int len) {
+    public static void write(final OutputStream out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
         write(out, chars, offset, len, Charsets.DEFAULT);
     }
 
-    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset) {
+    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
         write(out, chars, offset, len, charset, false);
     }
 
-    public static void write(final OutputStream out, final char[] chars, final boolean flush) {
+    public static void write(final OutputStream out, final char[] chars, final boolean flush) throws UncheckedIOException {
         write(out, chars, 0, chars.length, flush);
     }
 
-    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final boolean flush) {
+    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final boolean flush) throws UncheckedIOException {
         write(out, chars, offset, len, Charsets.DEFAULT, flush);
     }
 
-    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset, final boolean flush) {
+    public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset, final boolean flush)
+            throws UncheckedIOException {
         write(out, chars2Bytes(chars, offset, len, charset), flush);
     }
 
-    public static void write(final Writer out, final char[] chars) {
+    public static void write(final Writer out, final char[] chars) throws UncheckedIOException {
         write(out, chars, 0, chars.length);
     }
 
-    public static void write(final Writer out, final char[] chars, final int offset, final int len) {
+    public static void write(final Writer out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
         write(out, chars, offset, len, false);
     }
 
-    public static void write(final Writer out, final char[] chars, final boolean flush) {
+    public static void write(final Writer out, final char[] chars, final boolean flush) throws UncheckedIOException {
         write(out, chars, 0, chars.length, flush);
     }
 
-    public static void write(final Writer out, final char[] chars, final int offset, final int len, final boolean flush) {
+    public static void write(final Writer out, final char[] chars, final int offset, final int len, final boolean flush) throws UncheckedIOException {
         try {
             out.write(chars, offset, len);
 
@@ -1447,11 +1451,11 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final File out, final byte[] bytes) {
+    public static void write(final File out, final byte[] bytes) throws UncheckedIOException {
         write(out, bytes, 0, bytes.length);
     }
 
-    public static void write(final File out, final byte[] bytes, final int offset, final int len) {
+    public static void write(final File out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -1471,19 +1475,19 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final OutputStream out, final byte[] bytes) {
+    public static void write(final OutputStream out, final byte[] bytes) throws UncheckedIOException {
         write(out, bytes, 0, bytes.length);
     }
 
-    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len) {
+    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
         write(out, bytes, offset, len, false);
     }
 
-    public static void write(final OutputStream out, final byte[] bytes, final boolean flush) {
+    public static void write(final OutputStream out, final byte[] bytes, final boolean flush) throws UncheckedIOException {
         write(out, bytes, 0, bytes.length, flush);
     }
 
-    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len, final boolean flush) {
+    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len, final boolean flush) throws UncheckedIOException {
         try {
             out.write(bytes, offset, len);
 
@@ -1495,7 +1499,7 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final File output, final InputStream input) {
+    public static long write(final File output, final InputStream input) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE);
     }
 
@@ -1507,7 +1511,7 @@ public final class IOUtil {
      * @param len by byte
      * @return
      */
-    public static long write(final File output, final InputStream input, final long offset, final long len) {
+    public static long write(final File output, final InputStream input, final long offset, final long len) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -1529,15 +1533,15 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final OutputStream output, final InputStream input) {
+    public static long write(final OutputStream output, final InputStream input) throws UncheckedIOException {
         return write(output, input, false);
     }
 
-    public static long write(final OutputStream output, final InputStream input, final long offset, final long len) {
+    public static long write(final OutputStream output, final InputStream input, final long offset, final long len) throws UncheckedIOException {
         return write(output, input, offset, len, false);
     }
 
-    public static long write(final OutputStream output, final InputStream input, final boolean flush) {
+    public static long write(final OutputStream output, final InputStream input, final boolean flush) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
@@ -1550,7 +1554,8 @@ public final class IOUtil {
      * @param flush
      * @return
      */
-    public static long write(final OutputStream output, final InputStream input, final long offset, final long len, final boolean flush) {
+    public static long write(final OutputStream output, final InputStream input, final long offset, final long len, final boolean flush)
+            throws UncheckedIOException {
         final byte[] buf = ObjectFactory.createByteArrayBuffer();
 
         try {
@@ -1584,15 +1589,15 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final File output, final Reader input) {
+    public static long write(final File output, final Reader input) throws UncheckedIOException {
         return write(output, input, Charsets.DEFAULT);
     }
 
-    public static long write(final File output, final Reader input, final Charset charset) {
+    public static long write(final File output, final Reader input, final Charset charset) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE, charset);
     }
 
-    public static long write(final File output, final Reader input, final long offset, final long len) {
+    public static long write(final File output, final Reader input, final long offset, final long len) throws UncheckedIOException {
         return write(output, input, offset, len, Charsets.DEFAULT);
     }
 
@@ -1604,8 +1609,9 @@ public final class IOUtil {
      * @param len by char
      * @param charset
      * @return
+     * @throws UncheckedIOException
      */
-    public static long write(final File output, final Reader input, final long offset, final long len, final Charset charset) {
+    public static long write(final File output, final Reader input, final long offset, final long len, final Charset charset) throws UncheckedIOException {
         Writer writer = null;
 
         try {
@@ -1623,15 +1629,15 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final Writer output, final Reader input) {
+    public static long write(final Writer output, final Reader input) throws UncheckedIOException {
         return write(output, input, false);
     }
 
-    public static long write(final Writer output, final Reader input, final long offset, final long len) {
+    public static long write(final Writer output, final Reader input, final long offset, final long len) throws UncheckedIOException {
         return write(output, input, offset, len, false);
     }
 
-    public static long write(final Writer output, final Reader input, final boolean flush) {
+    public static long write(final Writer output, final Reader input, final boolean flush) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
@@ -1644,7 +1650,7 @@ public final class IOUtil {
      * @param flush
      * @return
      */
-    public static long write(final Writer output, final Reader input, final long offset, final long len, final boolean flush) {
+    public static long write(final Writer output, final Reader input, final long offset, final long len, final boolean flush) throws UncheckedIOException {
         final char[] buf = ObjectFactory.createCharArrayBuffer();
 
         try {
@@ -1695,11 +1701,11 @@ public final class IOUtil {
     //        return java.util.Base64.getDecoder().wrap(is);
     //    }
 
-    public static long write(final File output, final File input) {
+    public static long write(final File output, final File input) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE);
     }
 
-    public static long write(final File output, final File input, final long offset, final long len) {
+    public static long write(final File output, final File input, final long offset, final long len) throws UncheckedIOException {
         OutputStream os = null;
         InputStream is = null;
 
@@ -1716,15 +1722,15 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final OutputStream output, final File input) {
+    public static long write(final OutputStream output, final File input) throws UncheckedIOException {
         return write(output, input, false);
     }
 
-    public static long write(final OutputStream output, final File input, final long offset, final long len) {
+    public static long write(final OutputStream output, final File input, final long offset, final long len) throws UncheckedIOException {
         return write(output, input, offset, len, false);
     }
 
-    public static long write(final OutputStream output, final File input, final boolean flush) {
+    public static long write(final OutputStream output, final File input, final boolean flush) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
@@ -1737,7 +1743,7 @@ public final class IOUtil {
      * @param len by byte
      * @return
      */
-    public static long write(final OutputStream output, final File input, final long offset, final long len, final boolean flush) {
+    public static long write(final OutputStream output, final File input, final long offset, final long len, final boolean flush) throws UncheckedIOException {
         InputStream is = null;
         try {
             is = new FileInputStream(input);
@@ -1750,15 +1756,15 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final Writer output, final File input) {
+    public static long write(final Writer output, final File input) throws UncheckedIOException {
         return write(output, input, false);
     }
 
-    public static long write(final Writer output, final File input, final long offset, final long len) {
+    public static long write(final Writer output, final File input, final long offset, final long len) throws UncheckedIOException {
         return write(output, input, offset, len, false);
     }
 
-    public static long write(final Writer output, final File input, final boolean flush) {
+    public static long write(final Writer output, final File input, final boolean flush) throws UncheckedIOException {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
@@ -1771,7 +1777,7 @@ public final class IOUtil {
      * @param flush
      * @return
      */
-    public static long write(final Writer output, final File input, final long offset, final long len, final boolean flush) {
+    public static long write(final Writer output, final File input, final long offset, final long len, final boolean flush) throws UncheckedIOException {
         Reader reader = null;
         try {
             reader = new FileReader(input);
@@ -1784,11 +1790,11 @@ public final class IOUtil {
         }
     }
 
-    public static void append(final File out, final byte[] bytes) {
+    public static void append(final File out, final byte[] bytes) throws UncheckedIOException {
         append(out, bytes, 0, bytes.length);
     }
 
-    public static void append(final File out, final byte[] bytes, final int offset, final int len) {
+    public static void append(final File out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -1808,29 +1814,29 @@ public final class IOUtil {
         }
     }
 
-    public static void append(final File out, final char[] chars) {
+    public static void append(final File out, final char[] chars) throws UncheckedIOException {
         append(out, chars, 0, chars.length);
     }
 
-    public static void append(final File out, final char[] chars, final int offset, final int len) {
+    public static void append(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
         append(out, chars, offset, len, Charsets.DEFAULT);
     }
 
-    public static void append(final File out, final char[] chars, final int offset, final int len, final Charset charset) {
+    public static void append(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
         append(out, chars2Bytes(chars, offset, len, charset));
     }
 
-    public static void append(File output, CharSequence str) {
+    public static void append(File output, CharSequence str) throws UncheckedIOException {
         append(output, str, Charsets.DEFAULT);
     }
 
-    public static void append(File output, CharSequence str, Charset charset) {
+    public static void append(File output, CharSequence str, Charset charset) throws UncheckedIOException {
         final char[] chs = toCharArray(str);
 
         append(output, chs, 0, chs.length, charset);
     }
 
-    public static long append(final File output, final InputStream input) {
+    public static long append(final File output, final InputStream input) throws UncheckedIOException {
         return append(output, input, 0, Long.MAX_VALUE);
     }
 
@@ -1842,7 +1848,7 @@ public final class IOUtil {
      * @param len by byte
      * @return
      */
-    public static long append(final File output, final InputStream input, final long offset, final long len) {
+    public static long append(final File output, final InputStream input, final long offset, final long len) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -1864,15 +1870,15 @@ public final class IOUtil {
         }
     }
 
-    public static long append(final File output, final Reader input) {
+    public static long append(final File output, final Reader input) throws UncheckedIOException {
         return append(output, input, Charsets.DEFAULT);
     }
 
-    public static long append(final File output, final Reader input, final Charset charset) {
+    public static long append(final File output, final Reader input, final Charset charset) throws UncheckedIOException {
         return append(output, input, 0, Long.MAX_VALUE, charset);
     }
 
-    public static long append(final File output, final Reader input, final long offset, final long len) {
+    public static long append(final File output, final Reader input, final long offset, final long len) throws UncheckedIOException {
         return append(output, input, offset, len, Charsets.DEFAULT);
     }
 
@@ -1885,7 +1891,7 @@ public final class IOUtil {
      * @param charset
      * @return
      */
-    public static long append(final File output, final Reader input, final long offset, final long len, final Charset charset) {
+    public static long append(final File output, final Reader input, final long offset, final long len, final Charset charset) throws UncheckedIOException {
         Writer writer = null;
 
         try {
@@ -1903,11 +1909,11 @@ public final class IOUtil {
         }
     }
 
-    public static long append(final File output, final File input) {
+    public static long append(final File output, final File input) throws UncheckedIOException {
         return append(output, input, 0, Long.MAX_VALUE);
     }
 
-    public static long append(final File output, final File input, final long offset, final long len) {
+    public static long append(final File output, final File input, final long offset, final long len) throws UncheckedIOException {
         OutputStream os = null;
         InputStream is = null;
 
@@ -1931,7 +1937,7 @@ public final class IOUtil {
      * @param toSkip
      * @return
      */
-    public static long skip(final InputStream input, final long toSkip) {
+    public static long skip(final InputStream input, final long toSkip) throws UncheckedIOException {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
         } else if (toSkip == 0) {
@@ -1968,7 +1974,7 @@ public final class IOUtil {
      * @param toSkip
      * @return
      */
-    public static long skip(final Reader input, final long toSkip) {
+    public static long skip(final Reader input, final long toSkip) throws UncheckedIOException {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
         } else if (toSkip == 0) {
@@ -2061,7 +2067,7 @@ public final class IOUtil {
      * @see FileChannel#map(MapMode, long, long)
      * @since 2.0
      */
-    public static MappedByteBuffer map(File file, MapMode mode) {
+    public static MappedByteBuffer map(File file, MapMode mode) throws UncheckedIOException {
         N.requireNonNull(file);
         N.requireNonNull(mode);
 
@@ -2096,7 +2102,7 @@ public final class IOUtil {
      * @see FileChannel#map(MapMode, long, long)
      * @since 2.0
      */
-    public static MappedByteBuffer map(File file, MapMode mode, long offset, long len) {
+    public static MappedByteBuffer map(File file, MapMode mode, long offset, long len) throws UncheckedIOException {
         N.requireNonNull(file);
         N.requireNonNull(mode);
 
@@ -2218,11 +2224,11 @@ public final class IOUtil {
         return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
     }
 
-    static java.io.BufferedReader newBufferedReader(String filePath) {
+    static java.io.BufferedReader newBufferedReader(String filePath) throws UncheckedIOException {
         return newBufferedReader(new File(filePath));
     }
 
-    public static java.io.BufferedReader newBufferedReader(File file) {
+    public static java.io.BufferedReader newBufferedReader(File file) throws UncheckedIOException {
         try {
             return new java.io.BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
@@ -2230,7 +2236,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader newBufferedReader(File file, Charset charset) {
+    public static java.io.BufferedReader newBufferedReader(File file, Charset charset) throws UncheckedIOException {
         try {
             return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (FileNotFoundException e) {
@@ -2238,7 +2244,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader newBufferedReader(Path path) {
+    public static java.io.BufferedReader newBufferedReader(Path path) throws UncheckedIOException {
         try {
             return Files.newBufferedReader(path, Charsets.DEFAULT);
         } catch (IOException e) {
@@ -2246,7 +2252,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader newBufferedReader(Path path, Charset charset) {
+    public static java.io.BufferedReader newBufferedReader(Path path, Charset charset) throws UncheckedIOException {
         try {
             return Files.newBufferedReader(path, charset);
         } catch (IOException e) {
@@ -2254,19 +2260,19 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader newBufferedReader(InputStream is) {
+    public static java.io.BufferedReader newBufferedReader(InputStream is) throws UncheckedIOException {
         return new java.io.BufferedReader(new InputStreamReader(is));
     }
 
-    public static java.io.BufferedReader newBufferedReader(InputStream is, Charset charset) {
+    public static java.io.BufferedReader newBufferedReader(InputStream is, Charset charset) throws UncheckedIOException {
         return new java.io.BufferedReader(new InputStreamReader(is, charset == null ? Charsets.DEFAULT : charset));
     }
 
-    static java.io.BufferedWriter newBufferedWriter(String filePath) {
+    static java.io.BufferedWriter newBufferedWriter(String filePath) throws UncheckedIOException {
         return newBufferedWriter(new File(filePath));
     }
 
-    public static java.io.BufferedWriter newBufferedWriter(File file) {
+    public static java.io.BufferedWriter newBufferedWriter(File file) throws UncheckedIOException {
         try {
             return new java.io.BufferedWriter(new FileWriter(file));
         } catch (IOException e) {
@@ -2274,7 +2280,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedWriter newBufferedWriter(File file, Charset charset) {
+    public static java.io.BufferedWriter newBufferedWriter(File file, Charset charset) throws UncheckedIOException {
         try {
             return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (IOException e) {
@@ -2282,15 +2288,15 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedWriter newBufferedWriter(OutputStream os) {
+    public static java.io.BufferedWriter newBufferedWriter(OutputStream os) throws UncheckedIOException {
         return new java.io.BufferedWriter(new OutputStreamWriter(os));
     }
 
-    public static java.io.BufferedWriter newBufferedWriter(OutputStream os, Charset charset) {
+    public static java.io.BufferedWriter newBufferedWriter(OutputStream os, Charset charset) throws UncheckedIOException {
         return new java.io.BufferedWriter(new OutputStreamWriter(os, charset == null ? Charsets.DEFAULT : charset));
     }
 
-    public static LZ4BlockInputStream newLZ4BlockInputStream(final InputStream is) {
+    public static LZ4BlockInputStream newLZ4BlockInputStream(final InputStream is) throws UncheckedIOException {
         try {
             return new LZ4BlockInputStream(is);
         } catch (IOException e) {
@@ -2298,7 +2304,7 @@ public final class IOUtil {
         }
     }
 
-    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os) {
+    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os) throws UncheckedIOException {
         try {
             return new LZ4BlockOutputStream(os);
         } catch (IOException e) {
@@ -2309,7 +2315,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os, final int blockSize) {
+    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os, final int blockSize) throws UncheckedIOException {
         try {
             return new LZ4BlockOutputStream(os, blockSize);
         } catch (IOException e) {
@@ -2317,7 +2323,7 @@ public final class IOUtil {
         }
     }
 
-    public static SnappyInputStream newSnappyInputStream(final InputStream is) {
+    public static SnappyInputStream newSnappyInputStream(final InputStream is) throws UncheckedIOException {
         try {
             return new SnappyInputStream(is);
         } catch (IOException e) {
@@ -2325,7 +2331,7 @@ public final class IOUtil {
         }
     }
 
-    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os) {
+    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os) throws UncheckedIOException {
         try {
             return new SnappyOutputStream(os);
         } catch (IOException e) {
@@ -2336,7 +2342,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os, final int bufferSize) {
+    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os, final int bufferSize) throws UncheckedIOException {
         try {
             return new SnappyOutputStream(os, bufferSize);
         } catch (IOException e) {
@@ -2344,7 +2350,7 @@ public final class IOUtil {
         }
     }
 
-    public static GZIPInputStream newGZIPInputStream(final InputStream is) {
+    public static GZIPInputStream newGZIPInputStream(final InputStream is) throws UncheckedIOException {
         try {
             return new GZIPInputStream(is);
         } catch (IOException e) {
@@ -2355,7 +2361,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static GZIPInputStream newGZIPInputStream(final InputStream is, final int bufferSize) {
+    public static GZIPInputStream newGZIPInputStream(final InputStream is, final int bufferSize) throws UncheckedIOException {
         try {
             return new GZIPInputStream(is, bufferSize);
         } catch (IOException e) {
@@ -2363,7 +2369,7 @@ public final class IOUtil {
         }
     }
 
-    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os) {
+    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os) throws UncheckedIOException {
         try {
             return new GZIPOutputStream(os);
         } catch (IOException e) {
@@ -2374,7 +2380,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os, final int bufferSize) {
+    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os, final int bufferSize) throws UncheckedIOException {
         try {
             return new GZIPOutputStream(os, bufferSize);
         } catch (IOException e) {
@@ -2472,7 +2478,7 @@ public final class IOUtil {
      * @param filter
      */
     public static <E extends Exception> void copy(File srcFile, File destDir, final boolean preserveFileDate,
-            final Try.BiPredicate<? super File, ? super File, E> filter) throws E {
+            final Try.BiPredicate<? super File, ? super File, E> filter) throws UncheckedIOException, E {
         if (!srcFile.exists()) {
             throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
@@ -2653,7 +2659,7 @@ public final class IOUtil {
      * @see Files#copy(Path, Path, CopyOption...)
      */
     @SafeVarargs
-    public static Path copy(Path source, Path target, CopyOption... options) {
+    public static Path copy(Path source, Path target, CopyOption... options) throws UncheckedIOException {
         try {
             return Files.copy(source, target, options);
         } catch (IOException e) {
@@ -2670,7 +2676,7 @@ public final class IOUtil {
      * @see Files#copy(InputStream, Path, CopyOption...)
      */
     @SafeVarargs
-    public static long copy(InputStream in, Path target, CopyOption... options) {
+    public static long copy(InputStream in, Path target, CopyOption... options) throws UncheckedIOException {
         try {
             return Files.copy(in, target, options);
         } catch (IOException e) {
@@ -2685,7 +2691,7 @@ public final class IOUtil {
      * @return
      * @see Files#copy(Path, OutputStream)
      */
-    public static long copy(Path source, OutputStream out) {
+    public static long copy(Path source, OutputStream out) throws UncheckedIOException {
         try {
             return Files.copy(source, out);
         } catch (IOException e) {
@@ -2713,7 +2719,7 @@ public final class IOUtil {
      * @throws UncheckedIOException if <code>destination</code> needs creating but can't be
      * @throws UncheckedIOException if an IO error occurs during copying
      */
-    public static void copyURLToFile(final URL source, final File destination) {
+    public static void copyURLToFile(final URL source, final File destination) throws UncheckedIOException {
         InputStream is = null;
         try {
             is = source.openStream();
@@ -2745,7 +2751,7 @@ public final class IOUtil {
      * @throws UncheckedIOException if <code>destination</code> needs creating but can't be
      * @throws UncheckedIOException if an IO error occurs during copying
      */
-    public static void copyURLToFile(final URL source, final File destination, final int connectionTimeout, final int readTimeout) {
+    public static void copyURLToFile(final URL source, final File destination, final int connectionTimeout, final int readTimeout) throws UncheckedIOException {
         InputStream is = null;
         try {
             final URLConnection connection = source.openConnection();
@@ -2761,7 +2767,7 @@ public final class IOUtil {
         }
     }
 
-    public static void move(final File srcFile, final File destDir) {
+    public static void move(final File srcFile, final File destDir) throws UncheckedIOException {
         if (!srcFile.exists()) {
             throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
@@ -2904,7 +2910,7 @@ public final class IOUtil {
      * @param file
      * @return <code>false</code> if file exists or failed to create new file.
      */
-    public static boolean createIfNotExists(final File file) {
+    public static boolean createIfNotExists(final File file) throws UncheckedIOException {
         try {
             return file.exists() ? false : file.createNewFile();
         } catch (IOException e) {
@@ -2912,7 +2918,7 @@ public final class IOUtil {
         }
     }
 
-    public static void zip(final File sourceFile, final File targetFile) {
+    public static void zip(final File sourceFile, final File targetFile) throws UncheckedIOException {
         ZipOutputStream zos = null;
 
         try {
@@ -2925,7 +2931,7 @@ public final class IOUtil {
         }
     }
 
-    public static void zip(final Collection<File> sourceFiles, final File targetFile) {
+    public static void zip(final Collection<File> sourceFiles, final File targetFile) throws UncheckedIOException {
         ZipOutputStream zos = null;
 
         try {
@@ -3040,17 +3046,17 @@ public final class IOUtil {
         }
     }
 
-    public static void split(final File file, final int countOfParts) {
+    public static void split(final File file, final int countOfParts) throws UncheckedIOException {
         split(file, countOfParts, file.getParentFile());
     }
 
-    public static void split(final File file, final int countOfParts, final File destDir) {
+    public static void split(final File file, final int countOfParts, final File destDir) throws UncheckedIOException {
         final long sizeOfPart = (file.length() % countOfParts) == 0 ? (file.length() / countOfParts) : (file.length() / countOfParts) + 1;
 
         splitBySize(file, sizeOfPart, destDir);
     }
 
-    public static void splitBySize(final File file, final long sizeOfPart) {
+    public static void splitBySize(final File file, final long sizeOfPart) throws UncheckedIOException {
         splitBySize(file, sizeOfPart, file.getParentFile());
     }
 
@@ -3061,7 +3067,7 @@ public final class IOUtil {
      * @param sizeOfPart
      * @param destDir
      */
-    public static void splitBySize(final File file, final long sizeOfPart, final File destDir) {
+    public static void splitBySize(final File file, final long sizeOfPart, final File destDir) throws UncheckedIOException {
         final int numOfParts = (int) ((file.length() % sizeOfPart) == 0 ? (file.length() / sizeOfPart) : (file.length() / sizeOfPart) + 1);
 
         final String fileName = file.getName();
@@ -3106,7 +3112,7 @@ public final class IOUtil {
         }
     }
 
-    static void splitByLine(final File file, final int numOfParts) {
+    static void splitByLine(final File file, final int numOfParts) throws UncheckedIOException {
         splitByLine(file, numOfParts, file.getParentFile());
     }
 
@@ -3117,7 +3123,7 @@ public final class IOUtil {
      * @param numOfParts
      * @param destDir
      */
-    static void splitByLine(final File file, final int numOfParts, final File destDir) {
+    static void splitByLine(final File file, final int numOfParts, final File destDir) throws UncheckedIOException {
         final long lineNumOfPart = estimateLineCount(file, 10000) / numOfParts;
 
         int index = file.getName().lastIndexOf('.');
@@ -3185,7 +3191,7 @@ public final class IOUtil {
      * @param byReadingLineNum
      * @return
      */
-    private static long estimateLineCount(final File file, final int byReadingLineNum) {
+    private static long estimateLineCount(final File file, final int byReadingLineNum) throws UncheckedIOException {
         final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
         BufferedReader br = null;
@@ -3215,7 +3221,7 @@ public final class IOUtil {
         }
     }
 
-    public static long merge(final File[] sourceFiles, final File destFile) {
+    public static long merge(final File[] sourceFiles, final File destFile) throws UncheckedIOException {
         return merge(N.asList(sourceFiles), destFile);
     }
 
@@ -3226,7 +3232,7 @@ public final class IOUtil {
      * @param destFile
      * @return the total bytes have been merged into the destination file.
      */
-    public static long merge(final Collection<File> sourceFiles, final File destFile) {
+    public static long merge(final Collection<File> sourceFiles, final File destFile) throws UncheckedIOException {
         final byte[] buf = ObjectFactory.createByteArrayBuffer();
 
         long totalCount = 0;
@@ -3467,7 +3473,7 @@ public final class IOUtil {
      * @throws IllegalArgumentException if any file is incorrectly encoded
      * @since 1.1
      */
-    public static File[] toFiles(final URL[] urls) {
+    public static File[] toFiles(final URL[] urls) throws UncheckedIOException {
         if (N.isNullOrEmpty(urls)) {
             return new File[0];
         }
@@ -3481,7 +3487,7 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<File> toFiles(final Collection<URL> urls) {
+    public static List<File> toFiles(final Collection<URL> urls) throws UncheckedIOException {
         if (N.isNullOrEmpty(urls)) {
             return new ArrayList<>();
         }
@@ -3495,7 +3501,7 @@ public final class IOUtil {
         return files;
     }
 
-    public static URL toURL(final File file) {
+    public static URL toURL(final File file) throws UncheckedIOException {
         try {
             return file.toURI().toURL();
         } catch (IOException e) {
@@ -3503,7 +3509,7 @@ public final class IOUtil {
         }
     }
 
-    public static URL[] toURLs(final File[] files) {
+    public static URL[] toURLs(final File[] files) throws UncheckedIOException {
         if (N.isNullOrEmpty(files)) {
             return new URL[0];
         }
@@ -3559,17 +3565,17 @@ public final class IOUtil {
     }
 
     public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
-            throws E {
+            throws UncheckedIOException, E {
         parse(file, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count,
-            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(file, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Try.Consumer<String, E> lineParser) throws E {
+            final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(file, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3586,31 +3592,31 @@ public final class IOUtil {
      * @param onComplete
      */
     public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
     }
 
-    public static <E extends Exception> void parse(final List<File> files, final Try.Consumer<String, E> lineParser) throws E {
+    public static <E extends Exception> void parse(final List<File> files, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(files, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final Try.Consumer<String, E> lineParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(files, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
-            throws E {
+            throws UncheckedIOException, E {
         parse(files, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
-            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(files, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(files, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3625,7 +3631,8 @@ public final class IOUtil {
      * @param lineParser
      */
     public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete)
+            throws UncheckedIOException, E, E2 {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -3658,17 +3665,17 @@ public final class IOUtil {
     }
 
     public static <E extends Exception> void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Try.Consumer<String, E> lineParser) throws E {
+            final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(file, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final File file, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(file, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(file, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3685,23 +3692,24 @@ public final class IOUtil {
      * @param onComplete
      */
     public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete)
+            throws UncheckedIOException, E, E2 {
         parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser,
                 onComplete);
     }
 
     public static <E extends Exception> void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Try.Consumer<String, E> lineParser) throws E {
+            final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(files, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(files, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(files, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3719,7 +3727,7 @@ public final class IOUtil {
      */
     public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
             final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -3751,27 +3759,27 @@ public final class IOUtil {
         }
     }
 
-    public static <E extends Exception> void parse(final InputStream is, final Try.Consumer<String, E> lineParser) throws E {
+    public static <E extends Exception> void parse(final InputStream is, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(is, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final Try.Consumer<String, E> lineParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(is, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final InputStream is, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
-            throws E {
+            throws UncheckedIOException, E {
         parse(is, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final long lineOffset, final long count,
-            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(is, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(is, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3787,7 +3795,8 @@ public final class IOUtil {
      * @param onComplete
      */
     public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final long lineOffset, final long count,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete)
+            throws UncheckedIOException, E, E2 {
         final BufferedReader br = ObjectFactory.createBufferedReader(is);
 
         try {
@@ -3797,27 +3806,27 @@ public final class IOUtil {
         }
     }
 
-    public static <E extends Exception> void parse(final Reader reader, final Try.Consumer<String, E> lineParser) throws E {
+    public static <E extends Exception> void parse(final Reader reader, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(reader, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final Try.Consumer<String, E> lineParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(reader, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final Reader reader, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
-            throws E {
+            throws UncheckedIOException, E {
         parse(reader, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
     public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final long lineOffset, final long count,
-            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws UncheckedIOException, E, E2 {
         parse(reader, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
     public static <E extends Exception> void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum,
-            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws UncheckedIOException, E {
         parse(reader, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
@@ -3833,7 +3842,8 @@ public final class IOUtil {
      * @param onComplete
      */
     public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final long lineOffset, final long count,
-            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete)
+            throws UncheckedIOException, E, E2 {
         N.parse(new LineIterator(reader), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
     }
 

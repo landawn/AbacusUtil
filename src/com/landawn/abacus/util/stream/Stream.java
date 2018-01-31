@@ -2016,26 +2016,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
 
         if (iterator instanceof RowIterator) {
-            final RowIterator rowIterator = ((RowIterator) iterator);
-
-            return new IteratorStream<>(new ObjIteratorEx<T>() {
-                @Override
-                public boolean hasNext() {
-                    return iterator.hasNext();
-                }
-
-                @Override
-                public T next() {
-                    return iterator.next();
-                }
-
-                @Override
-                public void skip(long n) {
-                    while (n-- > 0 && rowIterator.hasNext()) {
-                        rowIterator.moveToNext();
-                    }
-                }
-            });
+            return (Stream<T>) of((RowIterator) iterator);
         } else {
             return new IteratorStream<>(iterator);
         }
@@ -2160,9 +2141,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
             @Override
             public void skip(long n) {
-                while (n-- > 0 && rowIterator.hasNext()) {
-                    rowIterator.moveToNext();
-                }
+                rowIterator.skip(n);
             }
         });
     }

@@ -1,5 +1,9 @@
 ### 1.2.2
 
+* Rename `JdbcUtil.absolute` to `JdbcUtil.skip`.
+
+* Add `JdbcUtil.getColumnLabelList`.
+
 * Improvements and bug fix.
 
 
