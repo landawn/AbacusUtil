@@ -844,47 +844,47 @@ public final class JdbcUtil {
     /**
      * 
      * @param rs
-     * @param offset the count of row to move ahead.
+     * @param n the count of row to move ahead.
      * @throws UncheckedSQLException
      */
-    public static void skip(final ResultSet rs, int offset) throws UncheckedSQLException {
-        skip(rs, (long) offset);
+    public static void skip(final ResultSet rs, int n) throws UncheckedSQLException {
+        skip(rs, (long) n);
     }
 
     /**
      * 
      * @param rs
-     * @param offset the count of row to move ahead.
+     * @param n the count of row to move ahead.
      * @throws UncheckedSQLException
      * @see {@link ResultSet#absolute(int)}
      */
-    public static void skip(final ResultSet rs, long offset) throws UncheckedSQLException {
+    public static void skip(final ResultSet rs, long n) throws UncheckedSQLException {
         //    N.checkArgument(offset >= 0, "'offset' can't be negative: %s", offset);
         //
         //    if (offset == 0) {
         //        return;
         //    }
 
-        if (offset <= 0) {
+        if (n <= 0) {
             return;
         }
 
-        if (offset > 0L) {
-            if (offset <= Integer.MAX_VALUE) {
+        if (n > 0L) {
+            if (n <= Integer.MAX_VALUE) {
                 try {
-                    if (offset > Integer.MAX_VALUE - rs.getRow()) {
+                    if (n > Integer.MAX_VALUE - rs.getRow()) {
                         try {
-                            while (offset-- > 0L && rs.next()) {
+                            while (n-- > 0L && rs.next()) {
                             }
                         } catch (SQLException e) {
                             throw new UncheckedSQLException(e);
                         }
                     } else {
-                        rs.absolute((int) offset + rs.getRow());
+                        rs.absolute((int) n + rs.getRow());
                     }
                 } catch (SQLException e) {
                     try {
-                        while (offset-- > 0L && rs.next()) {
+                        while (n-- > 0L && rs.next()) {
                         }
                     } catch (SQLException e1) {
                         throw new UncheckedSQLException(e);
@@ -892,7 +892,7 @@ public final class JdbcUtil {
                 }
             } else {
                 try {
-                    while (offset-- > 0L && rs.next()) {
+                    while (n-- > 0L && rs.next()) {
                     }
                 } catch (SQLException e) {
                     throw new UncheckedSQLException(e);
