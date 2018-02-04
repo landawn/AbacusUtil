@@ -60,6 +60,7 @@ import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
@@ -893,6 +894,11 @@ public final class CassandraExecutor implements Closeable {
         return query(targetClass, pair.cql, pair.parameters.toArray());
     }
 
+    @Beta
+    public <T> Nullable<String> queryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return this.queryForSingleResult(targetClass, String.class, propName, whereCause);
+    }
+
     public <T, E> Nullable<E> queryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName, final Condition whereCause) {
         final CP pair = prepareQuery(targetClass, Arrays.asList(propName), whereCause, 1);
 
@@ -946,6 +952,12 @@ public final class CassandraExecutor implements Closeable {
     @SafeVarargs
     public final long count(final String query, final Object... parameters) {
         return queryForSingleResult(long.class, query, parameters).orElse(0L);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final Nullable<String> queryForString(final String query, final Object... parameters) {
+        return this.queryForSingleResult(String.class, query, parameters);
     }
 
     @SafeVarargs
@@ -1433,6 +1445,15 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
+    public <T> CompletableFuture<Nullable<String>> asyncQueryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Nullable<String>>() {
+            @Override
+            public Nullable<String> call() throws Exception {
+                return queryForString(targetClass, propName, whereCause);
+            }
+        });
+    }
+
     public <T, E> CompletableFuture<Nullable<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
             final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<E>>() {
@@ -1527,11 +1548,21 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> CompletableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<String>>() {
+            @Override
+            public Nullable<String> call() throws Exception {
+                return queryForString(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> valueClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
             public Nullable<T> call() throws Exception {
-                return queryForSingleResult(targetClass, query, parameters);
+                return queryForSingleResult(valueClass, query, parameters);
             }
         });
     }

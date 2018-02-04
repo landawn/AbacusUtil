@@ -40,6 +40,7 @@ import com.couchbase.client.java.query.QueryResult;
 import com.couchbase.client.java.query.QueryRow;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.pool.KeyedObjectPool;
@@ -721,6 +722,12 @@ public final class CouchbaseExecutor implements Closeable {
         return queryForSingleResult(long.class, query, parameters).orElse(0L);
     }
 
+    @Beta
+    @SafeVarargs
+    public final Nullable<String> queryForString(final String query, final Object... parameters) {
+        return this.queryForSingleResult(String.class, query, parameters);
+    }
+
     @SafeVarargs
     public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
@@ -1128,6 +1135,16 @@ public final class CouchbaseExecutor implements Closeable {
             @Override
             public Long call() throws Exception {
                 return count(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<String>>() {
+            @Override
+            public Nullable<String> call() throws Exception {
+                return queryForString(query, parameters);
             }
         });
     }

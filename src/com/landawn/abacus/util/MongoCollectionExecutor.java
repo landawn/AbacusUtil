@@ -160,6 +160,11 @@ public final class MongoCollectionExecutor {
         return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null);
     }
 
+    @Beta
+    public Nullable<String> queryForString(final String propName, final Bson filter) {
+        return queryForSingleResult(String.class, propName, filter);
+    }
+
     public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
         final FindIterable<Document> findIterable = query(N.asList(propName), filter, null, 0, 1);
 

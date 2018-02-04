@@ -49,6 +49,7 @@ import com.landawn.abacus.DataSourceManager;
 import com.landawn.abacus.DataSourceSelector;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.IsolationLevel;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Equal;
@@ -533,14 +534,17 @@ public final class SQLExecutor implements Closeable {
     //        return _sqlMapper;
     //    }
 
+    @Beta
     public static SQLExecutor w(final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(url, user, password));
     }
 
+    @Beta
     public static SQLExecutor w(final String driver, final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(driver, url, user, password));
     }
 
+    @Beta
     public static SQLExecutor w(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(driverClass, url, user, password));
     }

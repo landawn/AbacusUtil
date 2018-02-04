@@ -216,6 +216,15 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
+    public CompletableFuture<Nullable<String>> queryForString(final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Nullable<String>>() {
+            @Override
+            public Nullable<String> call() throws Exception {
+                return collExecutor.queryForString(propName, filter);
+            }
+        });
+    }
+
     public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override

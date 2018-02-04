@@ -196,6 +196,86 @@ abstract class Any<T> {
      */
     public abstract <U, E extends Exception> Any<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
+    public <E extends Exception> OptionalBoolean mapToBoolean(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalBoolean.of(mapper.applyAsBoolean(value));
+        } else {
+            return OptionalBoolean.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalChar mapToChar(final Try.ToCharFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalChar.of(mapper.applyAsChar(value));
+        } else {
+            return OptionalChar.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalByte mapToByte(final Try.ToByteFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalByte.of(mapper.applyAsByte(value));
+        } else {
+            return OptionalByte.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalShort mapToShort(final Try.ToShortFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalShort.of(mapper.applyAsShort(value));
+        } else {
+            return OptionalShort.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalLong.of(mapper.applyAsLong(value));
+        } else {
+            return OptionalLong.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalFloat mapToFloat(final Try.ToFloatFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalFloat.of(mapper.applyAsFloat(value));
+        } else {
+            return OptionalFloat.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalDouble.of(mapper.applyAsDouble(value));
+        } else {
+            return OptionalDouble.empty();
+        }
+    }
+
     /**
      * If a value is present, apply the provided {@code Any}-bearing
      * mapping function to it, return that result, otherwise return an empty
@@ -256,6 +336,86 @@ abstract class Any<T> {
      * @throws NullPointerException if the mapping function is null
      */
     public abstract <U, E extends Exception> Any<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E;
+
+    public <E extends Exception> OptionalBoolean mapToBooleanIfNotNull(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalBoolean.of(mapper.applyAsBoolean(value));
+        } else {
+            return OptionalBoolean.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalChar mapToCharIfNotNull(final Try.ToCharFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalChar.of(mapper.applyAsChar(value));
+        } else {
+            return OptionalChar.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalByte mapToByteIfNotNull(final Try.ToByteFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalByte.of(mapper.applyAsByte(value));
+        } else {
+            return OptionalByte.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalShort mapToShortIfNotNull(final Try.ToShortFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalShort.of(mapper.applyAsShort(value));
+        } else {
+            return OptionalShort.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalInt mapToIntIfNotNull(final Try.ToIntFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalLong mapToLongIfNotNull(final Try.ToLongFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalLong.of(mapper.applyAsLong(value));
+        } else {
+            return OptionalLong.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalFloat mapToFloatIfNotNull(final Try.ToFloatFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalFloat.of(mapper.applyAsFloat(value));
+        } else {
+            return OptionalFloat.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalDouble mapToDoubleIfNotNull(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return OptionalDouble.of(mapper.applyAsDouble(value));
+        } else {
+            return OptionalDouble.empty();
+        }
+    }
 
     /**
      * If a value is not null, apply the provided {@code Any}-bearing
