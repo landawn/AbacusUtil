@@ -4,6 +4,12 @@
 
 * Add `JdbcUtil.getColumnLabelList`.
 
+* Add `Nullable.mapToBoolean/Char/Byte/.../Double`.
+
+* Add `Nullable.mapToBoolean/Char/Byte/.../DoubleIfNotNull`.
+
+* Add `CassandraExecutor/MongoDBExecutor/CouchbaseExecutor.queryForBoolean/Char/Byte/.../Double/String`.
+
 * Improvements and bug fix.
 
 
