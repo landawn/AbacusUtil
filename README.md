@@ -210,20 +210,38 @@ More see: [Parser](https://static.javadoc.io/com.landawn/abacus-util/1.2.1/com/l
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
 ```java
+final DataSource ds = JdbcUtil.createDataSource(...); // Refer to: .\schema\DataSource.xsd
+final SQLExecutor sqlExecutor = new SQLExecutor(ds);
 Account account = createAccount();
 // create
-String sql_insert = insert("gui", "firstName", "lastName", "lastUpdateTime").into(Account.class).sql();
+String sql_insert = NE.insert("gui", "firstName", "lastName", "lastUpdateTime").into(Account.class).sql();
 sqlExecutor.insert(sql_insert, account);
 // read
-String sql_selectByGUI = selectFrom(Account.class).where(L.eq("gui")).sql();
+String sql_selectByGUI = NE.selectFrom(Account.class).where(L.eq("gui")).sql();
 Account dbAccount = sqlExecutor.queryForEntity(Account.class, sql_selectByGUI, account);
 // update
-String sql_updateByLastName = update(Account.class).set("firstName").where(L.eq("lastName")).sql();
+String sql_updateByLastName = NE.update(Account.class).set("firstName").where(L.eq("lastName")).sql();
 dbAccount.setFirstName("newFirstName");
 sqlExecutor.update(sql_updateByLastName, dbAccount);
 // delete
-String sql_deleteByFirstName = deleteFrom(Account.class).where(L.eq("firstName)).sql();
+String sql_deleteByFirstName = NE.deleteFrom(Account.class).where(L.eq("firstName)).sql();
 sqlExecutor.update(sql_deleteByFirstName, dbAccount);
+```
+
+### NoSQL: [MongoDB][MongoDBExecutor]/[Cassandra][CassandraExecutor]/[Couchbase][CouchbaseExecutor]...
+A simple CRUD(create/read/update/delete) sample for MongoDB:
+```java
+// create
+collExecutor.insert(account);
+// read
+Account dbAccount = collExecutor.get(Account.class, account.getId());
+// update
+dbAccount.setFirstName("newFirstName");
+collExecutor.update(dbAccount.getId(), N.asMap(FIRST_NAME, dbAccount.getFirstName()));
+// delete
+collExecutor.delete(dbAccount.getId());
+// check
+assertFalse(collExecutor.exists(dbAccount.getId()));
 ```
 
 ### Programming in Android with [retrolambda](https://github.com/orfjackal/retrolambda)
@@ -243,23 +261,6 @@ Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
 // Get 'firstName' and 'lastName' of user with 'id' = 1.             
 sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
 ```
-
-### NoSQL: [MongoDB][MongoDBExecutor]/[Cassandra][CassandraExecutor]/[Couchbase][CouchbaseExecutor]...
-A simple CRUD(create/read/update/delete) sample for MongoDB:
-```java
-// create
-collExecutor.insert(account);
-// read
-Account dbAccount = collExecutor.get(Account.class, account.getId());
-// update
-dbAccount.setFirstName("newFirstName");
-collExecutor.update(dbAccount.getId(), N.asMap(FIRST_NAME, dbAccount.getFirstName()));
-// delete
-collExecutor.delete(dbAccount.getId());
-// check
-assertFalse(collExecutor.exists(dbAccount.getId()));
-```
-
 
 [IOUtil]: https://static.javadoc.io/com.landawn/abacus-util/1.2.1/com/landawn/abacus/util/IOUtil.html
 [Multiset]: https://static.javadoc.io/com.landawn/abacus-util/1.2.1/com/landawn/abacus/util/Multiset.html
