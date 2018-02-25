@@ -220,6 +220,78 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
+    public CompletableFuture<OptionalBoolean> queryForBoolean(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalBoolean>() {
+            @Override
+            public OptionalBoolean call() throws Exception {
+                return dbExecutor.queryForBoolean(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalChar> queryForChar(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalChar>() {
+            @Override
+            public OptionalChar call() throws Exception {
+                return dbExecutor.queryForChar(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalByte> queryForByte(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalByte>() {
+            @Override
+            public OptionalByte call() throws Exception {
+                return dbExecutor.queryForByte(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalShort> queryForShort(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalShort>() {
+            @Override
+            public OptionalShort call() throws Exception {
+                return dbExecutor.queryForShort(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalInt> queryForInt(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalInt>() {
+            @Override
+            public OptionalInt call() throws Exception {
+                return dbExecutor.queryForInt(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalLong> queryForLong(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalLong>() {
+            @Override
+            public OptionalLong call() throws Exception {
+                return dbExecutor.queryForLong(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalFloat> queryForFloat(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalFloat>() {
+            @Override
+            public OptionalFloat call() throws Exception {
+                return dbExecutor.queryForFloat(collectionName, propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<OptionalDouble> queryForDouble(final String collectionName, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<OptionalDouble>() {
+            @Override
+            public OptionalDouble call() throws Exception {
+                return dbExecutor.queryForDouble(collectionName, propName, filter);
+            }
+        });
+    }
+
     public CompletableFuture<Nullable<String>> queryForString(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override

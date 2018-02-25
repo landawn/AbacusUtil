@@ -701,6 +701,46 @@ public final class MongoDBExecutor {
         return collExecutor(collectionName).gett(targetClass, objectId, selectPropNames);
     }
 
+    @Beta
+    public OptionalBoolean queryForBoolean(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForBoolean(propName, filter);
+    }
+
+    @Beta
+    public OptionalChar queryForChar(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForChar(propName, filter);
+    }
+
+    @Beta
+    public OptionalByte queryForByte(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForByte(propName, filter);
+    }
+
+    @Beta
+    public OptionalShort queryForShort(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForShort(propName, filter);
+    }
+
+    @Beta
+    public OptionalInt queryForInt(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForInt(propName, filter);
+    }
+
+    @Beta
+    public OptionalLong queryForLong(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForLong(propName, filter);
+    }
+
+    @Beta
+    public OptionalFloat queryForFloat(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForFloat(propName, filter);
+    }
+
+    @Beta
+    public OptionalDouble queryForDouble(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForDouble(propName, filter);
+    }
+
     public Nullable<String> queryForString(final String collectionName, final String propName, final Bson filter) {
         return collExecutor(collectionName).queryForString(propName, filter);
     }

@@ -48,6 +48,14 @@ import com.landawn.abacus.pool.PoolFactory;
 import com.landawn.abacus.pool.PoolableWrapper;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -724,6 +732,54 @@ public final class CouchbaseExecutor implements Closeable {
 
     @Beta
     @SafeVarargs
+    public final OptionalBoolean queryForBoolean(final String query, final Object... parameters) {
+        return queryForSingleResult(Boolean.class, query, parameters).mapToBoolean(ToBooleanFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalChar queryForChar(final String query, final Object... parameters) {
+        return queryForSingleResult(Character.class, query, parameters).mapToChar(ToCharFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalByte queryForByte(final String query, final Object... parameters) {
+        return queryForSingleResult(Byte.class, query, parameters).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalShort queryForShort(final String query, final Object... parameters) {
+        return queryForSingleResult(Short.class, query, parameters).mapToShort(ToShortFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalInt queryForInt(final String query, final Object... parameters) {
+        return queryForSingleResult(Integer.class, query, parameters).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalLong queryForLong(final String query, final Object... parameters) {
+        return queryForSingleResult(Long.class, query, parameters).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalFloat queryForFloat(final String query, final Object... parameters) {
+        return queryForSingleResult(Float.class, query, parameters).mapToFloat(ToFloatFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalDouble queryForDouble(final String query, final Object... parameters) {
+        return queryForSingleResult(Double.class, query, parameters).mapToDouble(ToDoubleFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
     public final Nullable<String> queryForString(final String query, final Object... parameters) {
         return this.queryForSingleResult(String.class, query, parameters);
     }
@@ -1135,6 +1191,86 @@ public final class CouchbaseExecutor implements Closeable {
             @Override
             public Long call() throws Exception {
                 return count(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalBoolean>() {
+            @Override
+            public OptionalBoolean call() throws Exception {
+                return queryForBoolean(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalChar>() {
+            @Override
+            public OptionalChar call() throws Exception {
+                return queryForChar(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalByte>() {
+            @Override
+            public OptionalByte call() throws Exception {
+                return queryForByte(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalShort>() {
+            @Override
+            public OptionalShort call() throws Exception {
+                return queryForShort(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalInt>() {
+            @Override
+            public OptionalInt call() throws Exception {
+                return queryForInt(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalLong>() {
+            @Override
+            public OptionalLong call() throws Exception {
+                return queryForLong(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalFloat>() {
+            @Override
+            public OptionalFloat call() throws Exception {
+                return queryForFloat(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalDouble>() {
+            @Override
+            public OptionalDouble call() throws Exception {
+                return queryForDouble(query, parameters);
             }
         });
     }

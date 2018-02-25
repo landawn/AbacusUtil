@@ -134,25 +134,6 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
         return hasNext;
     }
 
-    public boolean moveToNext() throws UncheckedSQLException {
-        if (hasNext) {
-            cnt++;
-            hasNext = false;
-            return true;
-        } else {
-            try {
-                if (cnt < count && rs.next()) {
-                    cnt++;
-                    return true;
-                }
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-        }
-
-        return false;
-    }
-
     public void skip(final int n) throws UncheckedSQLException {
         skip((long) n);
     }

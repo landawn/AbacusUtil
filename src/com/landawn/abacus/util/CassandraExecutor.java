@@ -75,6 +75,14 @@ import com.landawn.abacus.util.CQLBuilder.NE;
 import com.landawn.abacus.util.CQLBuilder.NE2;
 import com.landawn.abacus.util.CQLBuilder.NE3;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -895,6 +903,46 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @Beta
+    public <T> OptionalBoolean queryForBoolean(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Boolean.class, propName, whereCause).mapToBoolean(ToBooleanFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalChar queryForChar(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Character.class, propName, whereCause).mapToChar(ToCharFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalByte queryForByte(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Byte.class, propName, whereCause).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalShort queryForShort(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Short.class, propName, whereCause).mapToShort(ToShortFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalInt queryForInt(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Integer.class, propName, whereCause).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalLong queryForLong(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Long.class, propName, whereCause).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalFloat queryForFloat(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Float.class, propName, whereCause).mapToFloat(ToFloatFunction.UNBOX);
+    }
+
+    @Beta
+    public <T> OptionalDouble queryForDouble(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return queryForSingleResult(targetClass, Double.class, propName, whereCause).mapToDouble(ToDoubleFunction.UNBOX);
+    }
+
+    @Beta
     public <T> Nullable<String> queryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return this.queryForSingleResult(targetClass, String.class, propName, whereCause);
     }
@@ -952,6 +1000,54 @@ public final class CassandraExecutor implements Closeable {
     @SafeVarargs
     public final long count(final String query, final Object... parameters) {
         return queryForSingleResult(long.class, query, parameters).orElse(0L);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalBoolean queryForBoolean(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Boolean.class, query, parameters).mapToBoolean(ToBooleanFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalChar queryForChar(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Character.class, query, parameters).mapToChar(ToCharFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalByte queryForByte(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Byte.class, query, parameters).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalShort queryForShort(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Short.class, query, parameters).mapToShort(ToShortFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalInt queryForInt(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Integer.class, query, parameters).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalLong queryForLong(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Long.class, query, parameters).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalFloat queryForFloat(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Float.class, query, parameters).mapToFloat(ToFloatFunction.UNBOX);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final OptionalDouble queryForDouble(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Double.class, query, parameters).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     @Beta
@@ -1445,6 +1541,78 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
+    public <T> CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalBoolean>() {
+            @Override
+            public OptionalBoolean call() throws Exception {
+                return queryForBoolean(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalChar> asyncQueryForChar(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalChar>() {
+            @Override
+            public OptionalChar call() throws Exception {
+                return queryForChar(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalByte> asyncQueryForByte(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalByte>() {
+            @Override
+            public OptionalByte call() throws Exception {
+                return queryForByte(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalShort> asyncQueryForShort(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalShort>() {
+            @Override
+            public OptionalShort call() throws Exception {
+                return queryForShort(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalInt> asyncQueryForInt(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalInt>() {
+            @Override
+            public OptionalInt call() throws Exception {
+                return queryForInt(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalLong> asyncQueryForLong(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalLong>() {
+            @Override
+            public OptionalLong call() throws Exception {
+                return queryForLong(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalFloat> asyncQueryForFloat(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalFloat>() {
+            @Override
+            public OptionalFloat call() throws Exception {
+                return queryForFloat(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<OptionalDouble> asyncQueryForDouble(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<OptionalDouble>() {
+            @Override
+            public OptionalDouble call() throws Exception {
+                return queryForDouble(targetClass, propName, whereCause);
+            }
+        });
+    }
+
     public <T> CompletableFuture<Nullable<String>> asyncQueryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override
@@ -1543,6 +1711,86 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public Long call() throws Exception {
                 return count(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalBoolean>() {
+            @Override
+            public OptionalBoolean call() throws Exception {
+                return queryForBoolean(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalChar>() {
+            @Override
+            public OptionalChar call() throws Exception {
+                return queryForChar(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalByte>() {
+            @Override
+            public OptionalByte call() throws Exception {
+                return queryForByte(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalShort>() {
+            @Override
+            public OptionalShort call() throws Exception {
+                return queryForShort(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalInt>() {
+            @Override
+            public OptionalInt call() throws Exception {
+                return queryForInt(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalLong>() {
+            @Override
+            public OptionalLong call() throws Exception {
+                return queryForLong(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalFloat>() {
+            @Override
+            public OptionalFloat call() throws Exception {
+                return queryForFloat(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<OptionalDouble>() {
+            @Override
+            public OptionalDouble call() throws Exception {
+                return queryForDouble(query, parameters);
             }
         });
     }

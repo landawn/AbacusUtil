@@ -26,6 +26,14 @@ import org.bson.types.ObjectId;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 import com.mongodb.BasicDBObject;
 import com.mongodb.bulk.BulkWriteResult;
@@ -158,6 +166,46 @@ public final class MongoCollectionExecutor {
 
     public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
         return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null);
+    }
+
+    @Beta
+    public OptionalBoolean queryForBoolean(final String propName, final Bson filter) {
+        return queryForSingleResult(Boolean.class, propName, filter).mapToBoolean(ToBooleanFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalChar queryForChar(final String propName, final Bson filter) {
+        return queryForSingleResult(Character.class, propName, filter).mapToChar(ToCharFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalByte queryForByte(final String propName, final Bson filter) {
+        return queryForSingleResult(Byte.class, propName, filter).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalShort queryForShort(final String propName, final Bson filter) {
+        return queryForSingleResult(Short.class, propName, filter).mapToShort(ToShortFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalInt queryForInt(final String propName, final Bson filter) {
+        return queryForSingleResult(Integer.class, propName, filter).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalLong queryForLong(final String propName, final Bson filter) {
+        return queryForSingleResult(Long.class, propName, filter).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalFloat queryForFloat(final String propName, final Bson filter) {
+        return queryForSingleResult(Float.class, propName, filter).mapToFloat(ToFloatFunction.UNBOX);
+    }
+
+    @Beta
+    public OptionalDouble queryForDouble(final String propName, final Bson filter) {
+        return queryForSingleResult(Double.class, propName, filter).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     @Beta

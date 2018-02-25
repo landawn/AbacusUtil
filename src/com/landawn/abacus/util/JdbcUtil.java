@@ -867,36 +867,38 @@ public final class JdbcUtil {
 
         if (n <= 0) {
             return;
-        }
-
-        if (n > 0L) {
-            if (n <= Integer.MAX_VALUE) {
-                try {
-                    if (n > Integer.MAX_VALUE - rs.getRow()) {
-                        try {
-                            while (n-- > 0L && rs.next()) {
-                            }
-                        } catch (SQLException e) {
-                            throw new UncheckedSQLException(e);
-                        }
-                    } else {
-                        rs.absolute((int) n + rs.getRow());
-                    }
-                } catch (SQLException e) {
+        } else if (n == 1) {
+            try {
+                rs.next();
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            }
+        } else if (n <= Integer.MAX_VALUE) {
+            try {
+                if (n > Integer.MAX_VALUE - rs.getRow()) {
                     try {
                         while (n-- > 0L && rs.next()) {
                         }
-                    } catch (SQLException e1) {
+                    } catch (SQLException e) {
                         throw new UncheckedSQLException(e);
                     }
+                } else {
+                    rs.absolute((int) n + rs.getRow());
                 }
-            } else {
+            } catch (SQLException e) {
                 try {
                     while (n-- > 0L && rs.next()) {
                     }
-                } catch (SQLException e) {
+                } catch (SQLException e1) {
                     throw new UncheckedSQLException(e);
                 }
+            }
+        } else {
+            try {
+                while (n-- > 0L && rs.next()) {
+                }
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
             }
         }
     }
