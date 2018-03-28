@@ -15,9 +15,11 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.DataSet;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -174,6 +176,16 @@ public class Builder<T> {
      */
     public static final <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> MultimapBuilder<K, E, V, M> of(M val) {
         return new MultimapBuilder<>(val);
+    }
+
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
+    public static final <T> DataSetBuilder of(DataSet val) {
+        return new DataSetBuilder(val);
     }
 
     /**
@@ -1032,6 +1044,141 @@ public class Builder<T> {
             val.removeAll(m);
 
             return this;
+        }
+    }
+
+    public static final class DataSetBuilder extends Builder<DataSet> {
+        DataSetBuilder(DataSet ds) {
+            super(ds);
+        }
+
+        public void renameColumn(String columnName, String newColumnName) {
+            val.renameColumn(columnName, newColumnName);
+        }
+
+        public void renameColumn(Map<String, String> oldNewNames) {
+            val.renameColumn(oldNewNames);
+        }
+
+        public <E extends Exception> void renameColumn(String columnName, Try.Function<String, String, E> func) throws E {
+            val.renameColumn(columnName, func);
+        }
+
+        public <E extends Exception> void renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E {
+            val.renameColumn(columnNames, func);
+        }
+
+        public void addColumn(String columnName, List<?> column) {
+            val.addColumn(columnName, column);
+        }
+
+        public void addColumn(int columnIndex, String columnName, List<?> column) {
+            val.addColumn(columnIndex, columnName, column);
+        }
+
+        public <T, E extends Exception> void addColumn(String newColumnName, String fromColumnName, Try.Function<T, ?, E> func) throws E {
+            val.addColumn(newColumnName, fromColumnName, func);
+        }
+
+        public <T, E extends Exception> void addColumn(int columnIndex, String newColumnName, String fromColumnName, Try.Function<T, ?, E> func) throws E {
+            val.addColumn(columnIndex, newColumnName, fromColumnName, func);
+        }
+
+        public <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func)
+                throws E {
+            val.addColumn(newColumnName, fromColumnNames, func);
+        }
+
+        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
+                Try.Function<? super Object[], ?, E> func) throws E {
+            val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+        }
+
+        public void removeColumn(String columnName) {
+            val.removeColumn(columnName);
+        }
+
+        public void removeColumnAll(Collection<String> columnNames) {
+            val.removeColumnAll(columnNames);
+        }
+
+        public <T, E extends Exception> void updateColumn(String columnName, Try.Function<T, ?, E> func) throws E {
+            val.updateColumn(columnName, func);
+        }
+
+        public <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
+            val.updateColumn(columnNames, func);
+        }
+
+        public void convertColumn(String columnName, Class<?> targetType) {
+            val.convertColumn(columnName, targetType);
+        }
+
+        public void convertColumn(Map<String, Class<?>> columnTargetTypes) {
+            val.convertColumn(columnTargetTypes);
+        }
+
+        public void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass) {
+            val.combineColumn(columnNames, newColumnName, newColumnClass);
+        }
+
+        public <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc)
+                throws E {
+            val.combineColumn(columnNames, newColumnName, combineFunc);
+        }
+
+        public <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
+            val.combineColumn(columnNameFilter, newColumnName, newColumnClass);
+        }
+
+        public <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
+                Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
+            val.combineColumn(columnNameFilter, newColumnName, combineFunc);
+        }
+
+        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames,
+                Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
+            val.divideColumn(columnName, newColumnNames, divideFunc);
+        }
+
+        public <E extends Exception> void updateAll(Try.Function<?, ?, E> func) throws E {
+            val.updateAll(func);
+        }
+
+        public <E extends Exception> void replaceIf(Try.Predicate<?, E> func, Object newValue) throws E {
+            val.replaceIf(func, newValue);
+        }
+
+        public void sortBy(String columnName) {
+            val.sortBy(columnName);
+        }
+
+        public <T> void sortBy(String columnName, Comparator<T> cmp) {
+            val.sortBy(columnName, cmp);
+        }
+
+        public void sortBy(Collection<String> columnNames) {
+            val.sortBy(columnNames);
+        }
+
+        public void sortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
+            val.sortBy(columnNames, cmp);
+        }
+
+        public void parallelSortBy(String columnName) {
+            val.parallelSortBy(columnName);
+        }
+
+        public <T> void parallelSortBy(String columnName, Comparator<T> cmp) {
+            val.parallelSortBy(columnName, cmp);
+        }
+
+        public void parallelSortBy(Collection<String> columnNames) {
+            val.parallelSortBy(columnNames);
+        }
+
+        public void parallelSortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
+            val.parallelSortBy(columnNames, cmp);
         }
     }
 

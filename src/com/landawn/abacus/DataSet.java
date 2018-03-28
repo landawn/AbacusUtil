@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.Builder.DataSetBuilder;
 import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
@@ -4586,6 +4587,8 @@ public interface DataSet {
     //    <T> T removeProperty(String propName);
 
     <T> Sheet<Integer, String, T> toSheet();
+
+    DataSetBuilder builder();
 
     /**
      * it's same as: N.println(toString());

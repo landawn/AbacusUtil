@@ -2120,7 +2120,7 @@ public final class CodeGenerator {
 
             int start = i + 1;
 
-            while (i < size && (lines.get(i).indexOf(") {") < 0 && lines.get(i).indexOf("}") < 0)) {
+            while (i < size && (lines.get(i).indexOf(") {") < 0 /*&& lines.get(i).indexOf("}") < 0*/)) {
                 i++;
             }
 
@@ -2248,12 +2248,21 @@ public final class CodeGenerator {
                     if (newLines.get(i).indexOf(importUtilClass) >= 0) {
                         break;
                     } else if (newLines.get(i).indexOf("public ") >= 0) {
-                        int ins = 0;
-                        if (newLines.get(i - 1).trim().length() > 0) {
-                            newLines.add(i + ins++, N.EMPTY_STRING);
+
+                        int j = i;
+                        while (j-- >= 0) {
+                            if (newLines.get(j).startsWith("import") || newLines.get(j).startsWith("package")) {
+                                break;
+                            }
                         }
-                        newLines.add(i + ins++, importUtilClass);
-                        newLines.add(i + ins++, N.EMPTY_STRING);
+
+                        newLines.add(j + 1, N.EMPTY_STRING);
+                        newLines.add(j + 2, importUtilClass);
+
+                        if (newLines.get(j + 3).trim().length() > 0) {
+                            newLines.add(j + 3, N.EMPTY_STRING);
+                        }
+
                         break;
                     }
                 }
@@ -2901,6 +2910,46 @@ public final class CodeGenerator {
         } else {
             IOUtil.write(utilClassFile, _N_STRING.replaceFirst("com.landawn.abacus.util", pkgName).replaceAll("_N", utilClassName));
         }
+    }
+
+    public static void printTransferMethod(final Class<?> sourceClass, final Class<?> targetClass) {
+        printTransferMethod(sourceClass, targetClass, null);
+    }
+
+    public static void printTransferMethod(final Class<?> sourceClass, final Class<?> targetClass, final Map<String, String> propNameMapping) {
+        final String iden = "    ";
+        final String srcClassName = sourceClass.getSimpleName();
+        final String targetClassName = targetClass.getSimpleName();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("public static ").append(targetClassName).append(" ").append(ClassUtil.formalizePropName(srcClassName)).append("2").append(targetClassName)
+                .append(" (").append(srcClassName).append(" source) {").append(IOUtil.LINE_SEPARATOR);
+        sb.append(iden).append("final ").append(targetClassName).append(" result = new ").append(targetClassName).append("();").append(IOUtil.LINE_SEPARATOR);
+
+        for (Map.Entry<String, Method> entry : ClassUtil.getPropGetMethodList(sourceClass).entrySet()) {
+            Method setMethod = ClassUtil.getPropSetMethod(targetClass, entry.getKey());
+
+            if (setMethod == null && propNameMapping != null && propNameMapping.containsKey(entry.getKey())) {
+                setMethod = ClassUtil.getPropSetMethod(targetClass, propNameMapping.get(entry.getKey()));
+            }
+
+            if (setMethod == null) {
+                sb.append(iden).append("// No set method found for: source.").append(entry.getValue().getName()).append("()").append(IOUtil.LINE_SEPARATOR);
+            } else if (!setMethod.getParameterTypes()[0].isAssignableFrom(entry.getValue().getReturnType())) {
+                sb.append(iden).append("// Incompatible parameter type for: source.").append(entry.getValue().getName()).append("()")
+                        .append(IOUtil.LINE_SEPARATOR);
+            } else {
+                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(entry.getValue().getName()).append("());")
+                        .append(IOUtil.LINE_SEPARATOR);
+            }
+        }
+
+        sb.append(iden).append("return result; ").append(IOUtil.LINE_SEPARATOR);
+        sb.append("}").append(IOUtil.LINE_SEPARATOR);
+
+        System.out.println(IOUtil.LINE_SEPARATOR);
+        System.out.println(sb.toString());
+        System.out.println(IOUtil.LINE_SEPARATOR);
     }
 
     //    /**

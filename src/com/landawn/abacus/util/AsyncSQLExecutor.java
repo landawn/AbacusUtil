@@ -15,6 +15,7 @@
 package com.landawn.abacus.util;
 
 import java.sql.Connection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -741,6 +742,26 @@ public final class AsyncSQLExecutor {
             @Override
             public Nullable<String> call() throws Exception {
                 return sqlExecutor.queryForString(sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<Nullable<Date>> queryForDate(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+            @Override
+            public Nullable<Date> call() throws Exception {
+                return sqlExecutor.queryForDate(sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T extends Date> CompletableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+            @Override
+            public Nullable<T> call() throws Exception {
+                return sqlExecutor.queryForDate(targetClass, sql, parameters);
             }
         });
     }

@@ -34,6 +34,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1671,6 +1672,40 @@ public final class SQLExecutor implements Closeable {
     @SafeVarargs
     public final Nullable<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, null, sql, parameters);
+    }
+
+    /**
+     * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
+     */
+    @SafeVarargs
+    public final Nullable<Date> queryForDate(final String sql, final Object... parameters) {
+        return queryForSingleResult(Date.class, sql, parameters);
+    }
+
+    /**
+     * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
+     */
+    @SafeVarargs
+    public final <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
+        //    final Nullable<Date> date = this.queryForDate(sql, parameters);
+        //
+        //    if (date.isNotNull()) {
+        //        if (targetClass.isAssignableFrom(date.get().getClass())) {
+        //            return (Nullable) date;
+        //        } else if (targetClass.equals(Timestamp.class)) {
+        //            return (Nullable) Nullable.of((new Timestamp(date.get().getTime())));
+        //        } else if (targetClass.equals(Time.class)) {
+        //            return (Nullable) Nullable.of((new Time(date.get().getTime())));
+        //        } else if (targetClass.equals(java.sql.Date.class)) {
+        //            return (Nullable) Nullable.of((new java.sql.Date(date.get().getTime())));
+        //        } else {
+        //            return Nullable.of(N.as(targetClass, date.get()));
+        //        }
+        //    } else {
+        //        return (Nullable<T>) date;
+        //    }
+
+        return queryForSingleResult(targetClass, sql, parameters);
     }
 
     @SafeVarargs
@@ -3526,6 +3561,32 @@ public final class SQLExecutor implements Closeable {
             return queryForSingleResult(String.class, propName, whereCause);
         }
 
+        public Nullable<Date> queryForDate(final String propName, final Condition whereCause) {
+            return queryForSingleResult(Date.class, propName, whereCause);
+        }
+
+        public <V extends Date> Nullable<V> queryForDate(final Class<V> targetClass, final String propName, final Condition whereCause) {
+            //    final Nullable<Date> date = this.queryForDate(propName, whereCause);
+            //
+            //    if (date.isNotNull()) {
+            //        if (targetClass.isAssignableFrom(date.get().getClass())) {
+            //            return (Nullable) date;
+            //        } else if (targetClass.equals(Timestamp.class)) {
+            //            return (Nullable) Nullable.of((new Timestamp(date.get().getTime())));
+            //        } else if (targetClass.equals(Time.class)) {
+            //            return (Nullable) Nullable.of((new Time(date.get().getTime())));
+            //        } else if (targetClass.equals(java.sql.Date.class)) {
+            //            return (Nullable) Nullable.of((new java.sql.Date(date.get().getTime())));
+            //        } else {
+            //            return Nullable.of(N.as(targetClass, date.get()));
+            //        }
+            //    } else {
+            //        return (Nullable<T>) date;
+            //    }
+
+            return queryForSingleResult(targetClass, propName, whereCause);
+        }
+
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
             return queryForSingleResult(targetValueClass, propName, L.eq(idName, id));
         }
@@ -4658,6 +4719,25 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Nullable<String> call() throws Exception {
                     return mapper.queryForString(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Nullable<Date>> queryForDate(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+                @Override
+                public Nullable<Date> call() throws Exception {
+                    return mapper.queryForDate(propName, whereCause);
+                }
+            });
+        }
+
+        @SuppressWarnings("hiding")
+        public <T extends Date> CompletableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<T>>() {
+                @Override
+                public Nullable<T> call() throws Exception {
+                    return mapper.queryForDate(targetClass, propName, whereCause);
                 }
             });
         }

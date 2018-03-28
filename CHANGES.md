@@ -1,3 +1,13 @@
+
+### 1.2.3
+
+* Add `queryForDate`.
+
+* Add `DataSet.builder()`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.2
 
 * Rename `JdbcUtil.absolute` to `JdbcUtil.skip`.
