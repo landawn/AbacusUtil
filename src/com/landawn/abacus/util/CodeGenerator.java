@@ -2927,19 +2927,21 @@ public final class CodeGenerator {
         sb.append(iden).append("final ").append(targetClassName).append(" result = new ").append(targetClassName).append("();").append(IOUtil.LINE_SEPARATOR);
 
         for (Map.Entry<String, Method> entry : ClassUtil.getPropGetMethodList(sourceClass).entrySet()) {
-            Method setMethod = ClassUtil.getPropSetMethod(targetClass, entry.getKey());
+            final Method getMethod = entry.getValue();
+            String propName = entry.getKey();
 
-            if (setMethod == null && propNameMapping != null && propNameMapping.containsKey(entry.getKey())) {
-                setMethod = ClassUtil.getPropSetMethod(targetClass, propNameMapping.get(entry.getKey()));
+            if (propNameMapping != null && propNameMapping.containsKey(propName)) {
+                propName = propNameMapping.get(propName);
             }
 
+            final Method setMethod = ClassUtil.getPropSetMethod(targetClass, propName);
+
             if (setMethod == null) {
-                sb.append(iden).append("// No set method found for: source.").append(entry.getValue().getName()).append("()").append(IOUtil.LINE_SEPARATOR);
-            } else if (!setMethod.getParameterTypes()[0].isAssignableFrom(entry.getValue().getReturnType())) {
-                sb.append(iden).append("// Incompatible parameter type for: source.").append(entry.getValue().getName()).append("()")
-                        .append(IOUtil.LINE_SEPARATOR);
+                sb.append(iden).append("// No set method found for: source.").append(getMethod.getName()).append("()").append(IOUtil.LINE_SEPARATOR);
+            } else if (!setMethod.getParameterTypes()[0].isAssignableFrom(getMethod.getReturnType())) {
+                sb.append(iden).append("// Incompatible parameter type for: source.").append(getMethod.getName()).append("()").append(IOUtil.LINE_SEPARATOR);
             } else {
-                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(entry.getValue().getName()).append("());")
+                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(getMethod.getName()).append("());")
                         .append(IOUtil.LINE_SEPARATOR);
             }
         }

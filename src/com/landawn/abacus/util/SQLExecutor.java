@@ -3899,6 +3899,8 @@ public final class SQLExecutor implements Closeable {
 
             if (entity instanceof Map) {
                 return prepareAdd((Map<String, Object>) entity);
+            } else if (entity instanceof DirtyMarker) {
+                return prepareAdd(Maps.entity2Map(entity, readOnlyPropNamesMap.get(entity.getClass())));
             } else {
                 final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(entity.getClass());
 

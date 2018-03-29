@@ -236,14 +236,15 @@ public abstract class SQLBuilder {
                 if (includeSubEntityProperties) {
                     Method method = null;
                     Class<?> subEntityClass = null;
+                    String subEntityClassName = null;
 
                     for (String subEntityPropName : subEntityPropNames) {
                         method = ClassUtil.getPropGetMethod(entityClass, subEntityPropName);
                         subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
+                        subEntityClassName = ClassUtil.getSimpleClassName(subEntityClass);
 
                         for (String pn : getPropNamesByClass(subEntityClass, false, null)) {
-                            entityPropNames.add(
-                                    N.concat(ClassUtil.getSimpleClassName(subEntityClass), WD.PERIOD, pn, SPACE_AS_SPACE, subEntityPropName, WD.PERIOD, pn));
+                            entityPropNames.add(N.concat(subEntityClassName, WD.PERIOD, pn));
                         }
                     }
                 }
@@ -2605,8 +2606,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -2855,8 +2855,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -3104,8 +3103,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -3354,8 +3352,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -3604,8 +3601,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -3854,8 +3850,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -4104,8 +4099,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -4354,8 +4348,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -4604,8 +4597,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -4854,8 +4846,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -5104,8 +5095,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
@@ -5354,8 +5344,7 @@ public abstract class SQLBuilder {
                 if (N.isNullOrEmpty(selectTableNames)) {
                     return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames).toArray(new String[0]))
-                            .from(selectTableNames);
+                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
                 return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);

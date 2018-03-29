@@ -5085,11 +5085,20 @@ public final class N {
 
                 if (Character.isUpperCase(ch)) {
                     if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        sb.append(WD._UNDERSCORE);
+                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
+                            sb.append(WD._UNDERSCORE);
+                        }
                     }
 
                     sb.append(Character.toLowerCase(ch));
                 } else {
+                    if (i > 0 && ((N.isAsciiNumeric(ch) && !N.isAsciiNumeric(str.charAt(i - 1)))
+                            || (N.isAsciiNumeric(str.charAt(i - 1)) && !N.isAsciiNumeric(ch)))) {
+                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
+                            sb.append(WD._UNDERSCORE);
+                        }
+                    }
+
                     sb.append(ch);
                 }
             }
@@ -5186,11 +5195,20 @@ public final class N {
 
                 if (Character.isUpperCase(ch)) {
                     if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        sb.append(WD._UNDERSCORE);
+                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
+                            sb.append(WD._UNDERSCORE);
+                        }
                     }
 
                     sb.append(ch);
                 } else {
+                    if (i > 0 && ((N.isAsciiNumeric(ch) && !N.isAsciiNumeric(str.charAt(i - 1)))
+                            || (N.isAsciiNumeric(str.charAt(i - 1)) && !N.isAsciiNumeric(ch)))) {
+                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
+                            sb.append(WD._UNDERSCORE);
+                        }
+                    }
+
                     sb.append(Character.toUpperCase(ch));
                 }
             }
