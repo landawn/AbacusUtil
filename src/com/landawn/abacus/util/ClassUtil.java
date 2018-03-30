@@ -1776,7 +1776,7 @@ public final class ClassUtil {
      */
     public static void setPropValue(final Object entity, final Method propSetMethod, Object propValue) {
         try {
-            propSetMethod.invoke(entity, propValue);
+            propSetMethod.invoke(entity, propValue == null ? N.defaultValueOf(propSetMethod.getParameterTypes()[0]) : propValue);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             propValue = N.as(ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).type, propValue);
 
@@ -2028,6 +2028,12 @@ public final class ClassUtil {
         return propName;
     }
 
+    /**
+     * It's designed for field/method/class/column/table names. and source and target Strings will be cached.
+     * 
+     * @param propName
+     * @return
+     */
     public static String formalizePropName(final String propName) {
         String newPropName = formalizedPropNamePool.get(propName);
 
@@ -2096,6 +2102,12 @@ public final class ClassUtil {
         return newPropName;
     }
 
+    /**
+     * It's designed for field/method/class/column/table names. and source and target Strings will be cached.
+     * 
+     * @param str
+     * @return
+     */
     public static String toLowerCaseWithUnderscore(final String str) {
         if (N.isNullOrEmpty(str)) {
             return str;
@@ -2124,6 +2136,12 @@ public final class ClassUtil {
         ObjectFactory.recycle(tmp);
     }
 
+    /**
+     * It's designed for field/method/class/column/table names. and source and target Strings will be cached.
+     * 
+     * @param str
+     * @return
+     */
     public static String toUpperCaseWithUnderscore(final String str) {
         if (N.isNullOrEmpty(str)) {
             return str;

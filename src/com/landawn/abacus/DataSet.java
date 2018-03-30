@@ -4588,7 +4588,7 @@ public interface DataSet {
 
     <T> Sheet<Integer, String, T> toSheet();
 
-    DataSetBuilder builder();
+    DataSetBuilder __();
 
     /**
      * it's same as: N.println(toString());

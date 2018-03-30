@@ -3757,7 +3757,14 @@ public final class SQLExecutor implements Closeable {
             return add(null, props);
         }
 
+        @SuppressWarnings("deprecation")
         public <E> E add(final Connection conn, final Object entity) {
+            N.requireNonNull(entity);
+
+            if (entity instanceof DirtyMarker && N.isNullOrEmpty(((DirtyMarker) entity).signedPropNames())) {
+                throw new IllegalArgumentException("No property value is signed to the specified entity");
+            }
+
             final SP pair = prepareAdd(entity);
 
             final E id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
@@ -3773,6 +3780,8 @@ public final class SQLExecutor implements Closeable {
          * @return the auto-generated id or null if there is no auto-generated id.
          */
         public <E> E add(final Connection conn, final Map<String, Object> props) {
+            N.requireNonNull(props);
+
             final SP pair = prepareAdd(props);
 
             return sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
@@ -3900,9 +3909,9 @@ public final class SQLExecutor implements Closeable {
             if (entity instanceof Map) {
                 return prepareAdd((Map<String, Object>) entity);
             } else if (entity instanceof DirtyMarker) {
-                return prepareAdd(Maps.entity2Map(entity, readOnlyPropNamesMap.get(entity.getClass())));
+                return prepareAdd(Maps.entity2Map(entity));
             } else {
-                final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(entity.getClass());
+                final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
 
                 switch (namingPolicy) {
                     case LOWER_CASE_WITH_UNDERSCORE:
@@ -3921,6 +3930,14 @@ public final class SQLExecutor implements Closeable {
         }
 
         private SP prepareAdd(final Map<String, Object> props) {
+            N.checkArgument(N.notNullOrEmpty(props), "The specified 'props' can't be null or empty");
+
+            final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
+
+            if (N.notNullOrEmpty(readOnlyPropNames) && !Seq.disjoint(readOnlyPropNames, props.keySet())) {
+                throw new IllegalArgumentException("Can't write read-only properties: " + N.intersection(readOnlyPropNames, props.keySet()));
+            }
+
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     return NE.insert(props).into(targetClass).pair();
@@ -3952,6 +3969,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object id, final Map<String, Object> props) {
+            N.requireNonNull(id);
+
             return update(props, L.eq(idName, id));
         }
 
@@ -3959,7 +3978,14 @@ public final class SQLExecutor implements Closeable {
             return update(null, props, whereCause);
         }
 
+        @SuppressWarnings("deprecation")
         public int update(final Connection conn, final Object entity) {
+            N.requireNonNull(entity);
+
+            if (entity instanceof DirtyMarker && !((DirtyMarker) entity).isDirty()) {
+                return 0;
+            }
+
             final SP pair = prepareUpdate(entity);
 
             final int updateCount = sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
@@ -3972,10 +3998,19 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Connection conn, final Object id, final Map<String, Object> props) {
+            N.requireNonNull(id);
+
             return update(conn, props, L.eq(idName, id));
         }
 
         public int update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
+            N.requireNonNull(props);
+            N.requireNonNull(whereCause);
+
+            if (N.isNullOrEmpty(props)) {
+                return 0;
+            }
+
             final SP pair = prepareUpdate(whereCause, props);
 
             return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
@@ -4100,14 +4135,23 @@ public final class SQLExecutor implements Closeable {
         private SP prepareUpdate(final Object entity) {
             checkEntity(entity);
 
-            final Class<?> cls = entity.getClass();
-            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(cls);
-            final Collection<String> propNames = SQLBuilder.getPropNamesByClass(cls, false, nonUpdatablePropNames);
-            final Set<String> dirtyPropNames = N.isDirtyMarker(cls) ? ((DirtyMarker) entity).dirtyPropNames() : null;
-            final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
+            final boolean isDirtyMarkerEntity = entity instanceof DirtyMarker;
+            final Set<String> dirtyPropNames = isDirtyMarkerEntity ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
 
-            for (String propName : propNames) {
-                if (N.isNullOrEmpty(dirtyPropNames) || dirtyPropNames.contains(propName)) {
+            Map<String, Object> props = null;
+
+            if (isDirtyMarkerEntity) {
+                props = N.newHashMap(N.initHashCapacity(dirtyPropNames.size()));
+
+                for (String propName : dirtyPropNames) {
+                    props.put(propName, ClassUtil.getPropValue(entity, propName));
+                }
+            } else {
+                final Collection<String> propNames = SQLBuilder.getPropNamesByClass(entity.getClass(), false, nonUpdatablePropNames);
+                props = N.newHashMap(N.initHashCapacity(propNames.size()));
+
+                for (String propName : propNames) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
             }
@@ -4123,6 +4167,12 @@ public final class SQLExecutor implements Closeable {
         }
 
         private SP prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
+            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
+
+            if (N.notNullOrEmpty(nonUpdatablePropNames) && !Seq.disjoint(nonUpdatablePropNames, props.keySet())) {
+                throw new IllegalArgumentException("Can't write non-updatable properties: " + N.intersection(nonUpdatablePropNames, props.keySet()));
+            }
+
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     return NE.update(targetClass).set(props).where(whereCause).pair();
@@ -4154,6 +4204,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int delete(final Connection conn, final Object idOrEntity) {
+            N.requireNonNull(idOrEntity);
+
             checkEntity(idOrEntity);
 
             final Class<?> cls = idOrEntity.getClass();
@@ -4163,6 +4215,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int delete(final Connection conn, final Condition whereCause) {
+            N.requireNonNull(whereCause);
+
             if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
                 final Object id = ((Equal) whereCause).getPropValue();
                 return sqlExecutor.update(conn, sql_delete_by_id, id);

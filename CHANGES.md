@@ -3,7 +3,7 @@
 
 * Add `queryForDate`.
 
-* Add `DataSet.builder()`.
+* Add `DataSet.__()`.
 
 * Improvements and bug fix.
 
