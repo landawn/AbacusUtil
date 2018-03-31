@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -3411,6 +3412,59 @@ public final class SQLExecutor implements Closeable {
             return Optional.ofNullable(this.get(conn, id, selectPropNames));
         }
 
+        public List<T> batchGet(final List<?> ids) {
+            return batchGet(ids, (Collection<String>) null);
+        }
+
+        @SafeVarargs
+        public final List<T> batchGet(final List<?> ids, final String... selectPropNames) {
+            return batchGet(ids, Arrays.asList(selectPropNames));
+        }
+
+        public List<T> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
+            return batchGet(null, ids, selectPropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        public List<T> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+
+            if (N.isNullOrEmpty(ids)) {
+                return new ArrayList<>();
+            }
+
+            final List<T> entities = new ArrayList<>(ids.size());
+            String sql = prepareQuery(selectPropNames, L.eq(idName)).sql;
+            sql = sql.substring(0, sql.lastIndexOf('=')) + "IN ";
+
+            if (ids.size() >= batchSize) {
+                final Joiner joiner = Joiner.with(", ", "(", ")").reuseStringBuilder(true);
+
+                for (int i = 0; i < batchSize; i++) {
+                    joiner.append('?');
+                }
+
+                String inSQL = sql + joiner.toString();
+
+                for (int i = 0, to = ids.size() - batchSize; i <= to; i += batchSize) {
+                    entities.addAll(sqlExecutor.find(targetClass, conn, inSQL, null, null, ids.subList(i, i + batchSize).toArray()));
+                }
+            }
+
+            if (ids.size() % batchSize != 0) {
+                final int remaining = ids.size() % batchSize;
+                final Joiner joiner = Joiner.with(", ", "(", ")").reuseStringBuilder(true);
+
+                for (int i = 0; i < remaining; i++) {
+                    joiner.append('?');
+                }
+
+                String inSQL = sql + joiner.toString();
+                entities.addAll(sqlExecutor.find(targetClass, conn, inSQL, null, null, ids.subList(ids.size() - remaining, ids.size()).toArray()));
+            }
+
+            return entities;
+        }
+
         public List<T> find(final Condition whereCause) {
             return find(null, whereCause);
         }
@@ -3805,6 +3859,10 @@ public final class SQLExecutor implements Closeable {
          * @return a list with the auto-generated id or null element if there is no auto-generated id.
          */
         public <E> List<E> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            if (N.isNullOrEmpty(entities)) {
+                return new ArrayList<>();
+            }
+
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
             final Connection conn = tran.connection();
             final List<E> result = new ArrayList<>(entities.size());
@@ -3837,6 +3895,10 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public <E> List<E> addAll(final Connection conn, final Collection<?> entities) {
+            if (N.isNullOrEmpty(entities)) {
+                return new ArrayList<>();
+            }
+
             if (conn == null) {
                 return addAll(entities);
             }
@@ -3884,7 +3946,11 @@ public final class SQLExecutor implements Closeable {
         }
 
         private <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+
+            if (N.isNullOrEmpty(entities)) {
+                return new ArrayList<>();
+            }
 
             final SP pair = prepareAdd(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
@@ -3909,7 +3975,15 @@ public final class SQLExecutor implements Closeable {
             if (entity instanceof Map) {
                 return prepareAdd((Map<String, Object>) entity);
             } else if (entity instanceof DirtyMarker) {
-                return prepareAdd(Maps.entity2Map(entity));
+                @SuppressWarnings("deprecation")
+                final Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
+                final Map<String, Object> props = new HashMap<>(N.initHashCapacity(signedPropNames.size()));
+
+                for (String propName : signedPropNames) {
+                    props.put(propName, ClassUtil.getPropValue(entity, propName));
+                }
+
+                return prepareAdd(props);
             } else {
                 final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
 
@@ -4035,6 +4109,10 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            if (N.isNullOrEmpty(entities)) {
+                return 0;
+            }
+
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
             final Connection conn = tran.connection();
             int result = 0;
@@ -4067,6 +4145,10 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int updateAll(final Connection conn, final Collection<?> entities) {
+            if (N.isNullOrEmpty(entities)) {
+                return 0;
+            }
+
             if (conn == null) {
                 return updateAll(entities);
             }
@@ -4114,7 +4196,11 @@ public final class SQLExecutor implements Closeable {
         }
 
         private int batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+
+            if (N.isNullOrEmpty(entities)) {
+                return 0;
+            }
 
             final SP pair = prepareUpdate(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
@@ -4136,12 +4222,12 @@ public final class SQLExecutor implements Closeable {
             checkEntity(entity);
 
             final boolean isDirtyMarkerEntity = entity instanceof DirtyMarker;
-            final Set<String> dirtyPropNames = isDirtyMarkerEntity ? ((DirtyMarker) entity).dirtyPropNames() : null;
             final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
 
             Map<String, Object> props = null;
 
             if (isDirtyMarkerEntity) {
+                final Set<String> dirtyPropNames = ((DirtyMarker) entity).dirtyPropNames();
                 props = N.newHashMap(N.initHashCapacity(dirtyPropNames.size()));
 
                 for (String propName : dirtyPropNames) {
@@ -4245,6 +4331,10 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
+            if (N.isNullOrEmpty(idsOrEntities)) {
+                return 0;
+            }
+
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
             final Connection conn = tran.connection();
             int result = 0;
@@ -4277,6 +4367,10 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int deleteAll(final Connection conn, final Collection<?> idsOrEntities) {
+            if (N.isNullOrEmpty(idsOrEntities)) {
+                return 0;
+            }
+
             if (conn == null) {
                 return deleteAll(idsOrEntities);
             }
@@ -4347,7 +4441,11 @@ public final class SQLExecutor implements Closeable {
         }
 
         private int batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+
+            if (N.isNullOrEmpty(idsOrEntities)) {
+                return 0;
+            }
 
             final List<Object> ids = new ArrayList<>(idsOrEntities.size());
 
@@ -4355,49 +4453,7 @@ public final class SQLExecutor implements Closeable {
                 ids.add(N.isEntity(idOrEntity.getClass()) ? getId(idOrEntity) : idOrEntity);
             }
 
-            final SQLTransaction tran = conn == null ? sqlExecutor.beginTransaction(isolationLevel) : null;
-            final Connection localConn = tran == null ? conn : tran.connection();
-            int result = 0;
-            boolean isOk = false;
-
-            try {
-                if (batchSize == 1) {
-                    for (Object id : ids) {
-                        result += sqlExecutor.update(localConn, sql_delete_by_id, id);
-                    }
-                } else {
-                    if (ids.size() >= batchSize) {
-                        final String batchSQL = batchSize == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id
-                                        + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
-
-                        for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
-                            result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
-                        }
-                    }
-
-                    if (ids.size() % batchSize != 0) {
-                        final int remaining = ids.size() % batchSize;
-                        final String batchSQL = remaining == 1 ? sql_delete_by_id
-                                : (sql_delete_by_id
-                                        + N.repeat(" OR" + N.substringBetween(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
-
-                        result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
-                    }
-                }
-
-                isOk = true;
-            } finally {
-                if (tran != null) {
-                    if (isOk) {
-                        tran.commit();
-                    } else {
-                        tran.rollback();
-                    }
-                }
-            }
-
-            return result;
+            return sqlExecutor.batchUpdate(conn, sql_delete_by_id, null, ids);
         }
 
         private SP prepareDelete(final Condition whereCause) {
@@ -4575,6 +4631,42 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Optional<T> call() throws Exception {
                     return mapper.gett(conn, id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> batchGet(final List<?> ids) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.batchGet(ids);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> batchGet(final List<?> ids, final String... selectPropNames) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.batchGet(ids, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.batchGet(ids, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.batchGet(conn, ids, selectPropNames, batchSize);
                 }
             });
         }
