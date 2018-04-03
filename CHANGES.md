@@ -1,4 +1,17 @@
 
+### 1.2.4
+
+* Remove `Fn.limited`.
+
+* Remove `Fn.limitThenFilter` and `Fn.filterThenLimit`.
+
+* Refactoring `condition.In`.
+
+* Improve `LocalTimeType/LocalDateType/LocalDateTimeType`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.3
 
 * Add `queryForDate`.

@@ -2053,7 +2053,7 @@ public final class CassandraExecutor implements Closeable {
                 }
             }
         } else if ((parameters.length == 1) && (parameters[0] != null)) {
-            if (parameters[0] instanceof Object[] && ((((Object[]) parameters[0]).length) >= namedCQL.getParameterCount())) {
+            if (parameters[0].getClass().equals(Object[].class) && ((((Object[]) parameters[0]).length) >= namedCQL.getParameterCount())) {
                 values = (Object[]) parameters[0];
             } else if (parameters[0] instanceof List && (((List<?>) parameters[0]).size() >= namedCQL.getParameterCount())) {
                 final Collection<?> c = (Collection<?>) parameters[0];

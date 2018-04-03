@@ -45,6 +45,7 @@ import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Expression;
+import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
@@ -2126,7 +2127,7 @@ public final class SQLiteExecutor {
             }
         } else {
             if ((parameters.length == 1) && (parameters[0] != null)) {
-                if (parameters[0] instanceof Object[] && ((((Object[]) parameters[0]).length) >= parameterCount)) {
+                if (parameters[0].getClass().equals(Object[].class) && ((((Object[]) parameters[0]).length) >= parameterCount)) {
                     return (Object[]) parameters[0];
                 } else if (parameters[0] instanceof List && (((List<?>) parameters[0]).size() >= parameterCount)) {
                     final Collection<?> c = (Collection<?>) parameters[0];
@@ -2143,6 +2144,8 @@ public final class SQLiteExecutor {
             return interpretBinary((Binary) condition);
         } else if (condition instanceof Between) {
             return interpretBetween((Between) condition);
+        } else if (condition instanceof In) {
+            return interpretIn((In) condition);
         } else if (condition instanceof Junction) {
             return interpretJunction((Junction) condition);
         } else if (condition instanceof Expression) {
@@ -2167,6 +2170,23 @@ public final class SQLiteExecutor {
 
         cmd.setSql(formatName(bt.getPropName()) + WD.SPACE + bt.getOperator() + " (?, ?)");
         cmd.setArgs(N.asArray(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
+
+        return cmd;
+    }
+
+    private Command interpretIn(In in) {
+        final Command cmd = new Command();
+
+        cmd.setSql(formatName(in.getPropName()) + in.inPart());
+
+        final List<Object> parameters = in.getParameters();
+        final String[] args = new String[parameters.size()];
+
+        for (int i = 0, len = args.length; i < len; i++) {
+            args[i] = N.stringOf(parameters.get(i));
+        }
+
+        cmd.setArgs(args);
 
         return cmd;
     }

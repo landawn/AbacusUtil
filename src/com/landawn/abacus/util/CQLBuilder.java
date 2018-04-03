@@ -57,6 +57,7 @@ import com.landawn.abacus.condition.Cell;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Expression;
+import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.condition.SubQuery;
 import com.landawn.abacus.exception.AbacusException;
@@ -1578,6 +1579,30 @@ public abstract class CQLBuilder {
             } else {
                 setParameter(propName, maxValue);
             }
+        } else if (cond instanceof In) {
+            final In in = (In) cond;
+            final String propName = in.getPropName();
+            final List<Object> parameters = in.getParameters();
+
+            sb.append(formalizeName(tableName, propName));
+
+            sb.append(WD._SPACE);
+            sb.append(in.getOperator().toString());
+            sb.append(WD.SPACE_PARENTHESES_L);
+
+            for (int i = 0, len = parameters.size(); i < len; i++) {
+                if (i > 0) {
+                    sb.append(WD.COMMA_SPACE);
+                }
+
+                if (cqlPolicy == CQLPolicy.NAMED_CQL || cqlPolicy == CQLPolicy.IBATIS_CQL) {
+                    setParameter(propName + (i + 1), parameters.get(i));
+                } else {
+                    setParameter(propName, parameters.get(i));
+                }
+            }
+
+            sb.append(WD._PARENTHESES_R);
         } else if (cond instanceof Cell) {
             final Cell cell = (Cell) cond;
 
