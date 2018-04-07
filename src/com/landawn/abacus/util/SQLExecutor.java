@@ -5500,7 +5500,7 @@ public final class SQLExecutor implements Closeable {
 
         protected Object[] getArrayParameters(final NamedSQL namedSQL, final Object... parameters) {
             if ((parameters.length == 1) && (parameters[0] != null)) {
-                if (parameters[0].getClass().equals(Object[].class) && ((((Object[]) parameters[0]).length) >= namedSQL.getParameterCount())) {
+                if (parameters[0] instanceof Object[] && ((((Object[]) parameters[0]).length) >= namedSQL.getParameterCount())) {
                     return (Object[]) parameters[0];
                 } else if (parameters[0] instanceof List && (((List<?>) parameters[0]).size() >= namedSQL.getParameterCount())) {
                     final Collection<?> c = (Collection<?>) parameters[0];

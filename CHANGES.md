@@ -7,6 +7,8 @@
 
 * Refactoring `condition.In`.
 
+* Refactoring `IF.Or`.
+
 * Improve `LocalTimeType/LocalDateType/LocalDateTimeType`.
 
 * Improvements and bug fix.

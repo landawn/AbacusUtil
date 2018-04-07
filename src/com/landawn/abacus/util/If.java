@@ -490,49 +490,49 @@ public final class If {
         public <T, E extends Exception> Or<T> then(final Try.Callable<T, E> callable) throws E {
             N.requireNonNull(callable);
 
-            return b ? new TrueOr<>(Nullable.of(callable.call())) : FALSE_OR;
+            return b ? new TrueOr<>(callable.call()) : FALSE_OR;
         }
 
         public <T, U, E extends Exception> Or<T> then(final U seed, final Try.Function<? super U, T, E> func) throws E {
             N.requireNonNull(func);
 
-            return b ? new TrueOr<>(Nullable.of(func.apply(seed))) : FALSE_OR;
+            return b ? new TrueOr<>(func.apply(seed)) : FALSE_OR;
         }
 
         public static abstract class Or<T> {
             Or() {
             }
 
-            public abstract <E extends Exception> Nullable<T> orElse(final Try.Callable<T, E> callable) throws E;
+            public abstract <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E;
 
-            public abstract <U, E extends Exception> Nullable<T> orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
+            public abstract <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
 
-            public abstract <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
+            public abstract <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
         }
 
         static final class TrueOr<T> extends Or<T> {
-            private final Nullable<T> result;
+            private final T result;
 
-            TrueOr(final Nullable<T> result) {
+            TrueOr(final T result) {
                 this.result = result;
             }
 
             @Override
-            public <E extends Exception> Nullable<T> orElse(final Try.Callable<T, E> callable) throws E {
+            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
                 N.requireNonNull(callable);
 
                 return result;
             }
 
             @Override
-            public <U, E extends Exception> Nullable<T> orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
+            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
                 N.requireNonNull(func);
 
                 return result;
             }
 
             @Override
-            public <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
                 N.requireNonNull(exceptionSupplier);
 
                 return result;
@@ -544,17 +544,17 @@ public final class If {
             }
 
             @Override
-            public <E extends Exception> Nullable<T> orElse(final Try.Callable<T, E> callable) throws E {
-                return Nullable.of(callable.call());
+            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
+                return callable.call();
             }
 
             @Override
-            public <U, E extends Exception> Nullable<T> orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
-                return Nullable.of(func.apply(seed));
+            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
+                return func.apply(seed);
             }
 
             @Override
-            public <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
                 throw exceptionSupplier.get();
             }
         }
