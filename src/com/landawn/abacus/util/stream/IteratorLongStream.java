@@ -22,7 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
@@ -1514,6 +1518,29 @@ class IteratorLongStream extends AbstractLongStream {
                 elements.skip(n);
             }
         }, sorted, closeHandlers);
+    }
+
+    @Override
+    public java.util.stream.LongStream toJdkStream() {
+        final PrimitiveIterator.OfLong spliterator = new PrimitiveIterator.OfLong() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                return elements.nextLong();
+            }
+        };
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            return StreamSupport.longStream(Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL),
+                    isParallel());
+        } else {
+            return StreamSupport.longStream(Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL),
+                    isParallel()).onClose(() -> close(closeHandlers));
+        }
     }
 
     @Override

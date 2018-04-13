@@ -172,6 +172,46 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         }
     }
 
+    public <E extends Exception> OptionalShort filter(Try.ShortPredicate<E> predicate) throws E {
+        N.requireNonNull(predicate);
+
+        if (isPresent() && predicate.test(value)) {
+            return this;
+        } else {
+            return empty();
+        }
+    }
+
+    public <E extends Exception> OptionalShort map(final Try.ShortUnaryOperator<E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalShort.of(mapper.applyAsShort(value));
+        } else {
+            return empty();
+        }
+    }
+
+    public <T, E extends Exception> Nullable<T> mapToObj(final Try.ShortFunction<T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return Nullable.of(mapper.apply(value));
+        } else {
+            return Nullable.<T> empty();
+        }
+    }
+
+    public <E extends Exception> OptionalShort flatMap(Try.ShortFunction<OptionalShort, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
+        }
+    }
+
     public short orZero() {
         return isPresent() ? value : 0;
     }

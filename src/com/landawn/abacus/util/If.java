@@ -308,6 +308,7 @@ public final class If {
      *
      */
     @Beta
+    @Deprecated
     public static final class IF {
         private static final IF TRUE = new IF(true);
         private static final IF FALSE = new IF(false);

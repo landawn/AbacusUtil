@@ -176,6 +176,46 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         }
     }
 
+    public <E extends Exception> OptionalDouble filter(Try.DoublePredicate<E> predicate) throws E {
+        N.requireNonNull(predicate);
+
+        if (isPresent() && predicate.test(value)) {
+            return this;
+        } else {
+            return empty();
+        }
+    }
+
+    public <E extends Exception> OptionalDouble map(final Try.DoubleUnaryOperator<E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalDouble.of(mapper.applyAsDouble(value));
+        } else {
+            return empty();
+        }
+    }
+
+    public <T, E extends Exception> Nullable<T> mapToObj(final Try.DoubleFunction<T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return Nullable.of(mapper.apply(value));
+        } else {
+            return Nullable.<T> empty();
+        }
+    }
+
+    public <E extends Exception> OptionalDouble flatMap(Try.DoubleFunction<OptionalDouble, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
+        }
+    }
+
     public double orZero() {
         return isPresent() ? value : 0;
     }

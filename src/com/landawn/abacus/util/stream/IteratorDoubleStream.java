@@ -22,7 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -1435,6 +1439,31 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return hasResult ? OptionalDouble.of(result) : OptionalDouble.empty();
+    }
+
+    @Override
+    public java.util.stream.DoubleStream toJdkStream() {
+        final PrimitiveIterator.OfDouble spliterator = new PrimitiveIterator.OfDouble() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                return elements.nextDouble();
+            }
+        };
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            return StreamSupport.doubleStream(
+                    Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL), isParallel());
+        } else {
+            return StreamSupport
+                    .doubleStream(Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL),
+                            isParallel())
+                    .onClose(() -> close(closeHandlers));
+        }
     }
 
     @Override

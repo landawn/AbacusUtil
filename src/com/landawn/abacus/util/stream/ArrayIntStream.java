@@ -2040,6 +2040,29 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public java.util.stream.IntStream toJdkStream() {
+        java.util.stream.IntStream s = java.util.stream.IntStream.of(elements);
+
+        if (fromIndex > 0) {
+            s = s.skip(fromIndex);
+        }
+
+        if (toIndex < elements.length) {
+            s = s.limit(toIndex - fromIndex);
+        }
+
+        if (this.isParallel()) {
+            s = s.parallel();
+        }
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            s = s.onClose(() -> close(closeHandlers));
+        }
+
+        return s;
+    }
+
+    @Override
     public Stream<Integer> boxed() {
         return new IteratorStream<>(iterator(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
     }

@@ -759,30 +759,30 @@ public final class JdbcUtil {
      * 
      * @param conn
      * @param sql
-     * @param batchParametersList
+     * @param parametersListList
      * @return
      * @throws UncheckedSQLException
      */
-    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> batchParametersList) throws UncheckedSQLException {
-        return executeBatchUpdate(conn, sql, batchParametersList, JdbcSettings.DEFAULT_BATCH_SIZE);
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList) throws UncheckedSQLException {
+        return executeBatchUpdate(conn, sql, parametersListList, JdbcSettings.DEFAULT_BATCH_SIZE);
     }
 
     /**
      * 
      * @param conn
      * @param sql
-     * @param batchParametersList
+     * @param parametersListList
      * @param batchSize.
      * @return 
      * @throws UncheckedSQLException
      */
-    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> batchParametersList, final int batchSize)
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize)
             throws UncheckedSQLException {
         N.requireNonNull(conn);
         N.requireNonNull(sql);
         N.checkArgument(batchSize > 0, "'batchSize' can't be 0 or negative");
 
-        if (N.isNullOrEmpty(batchParametersList)) {
+        if (N.isNullOrEmpty(parametersListList)) {
             return 0;
         }
 
@@ -795,7 +795,7 @@ public final class JdbcUtil {
             int res = 0;
             int idx = 0;
 
-            for (Object parameters : batchParametersList) {
+            for (Object parameters : parametersListList) {
                 SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
                 stmt.addBatch();
 

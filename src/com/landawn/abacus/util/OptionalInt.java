@@ -176,6 +176,46 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
     }
 
+    public <E extends Exception> OptionalInt filter(Try.IntPredicate<E> predicate) throws E {
+        N.requireNonNull(predicate);
+
+        if (isPresent() && predicate.test(value)) {
+            return this;
+        } else {
+            return empty();
+        }
+    }
+
+    public <E extends Exception> OptionalInt map(final Try.IntUnaryOperator<E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return empty();
+        }
+    }
+
+    public <T, E extends Exception> Nullable<T> mapToObj(final Try.IntFunction<T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return Nullable.of(mapper.apply(value));
+        } else {
+            return Nullable.<T> empty();
+        }
+    }
+
+    public <E extends Exception> OptionalInt flatMap(Try.IntFunction<OptionalInt, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
+        }
+    }
+
     public int orZero() {
         return isPresent() ? value : 0;
     }

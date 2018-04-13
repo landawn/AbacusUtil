@@ -176,6 +176,46 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         }
     }
 
+    public <E extends Exception> OptionalLong filter(Try.LongPredicate<E> predicate) throws E {
+        N.requireNonNull(predicate);
+
+        if (isPresent() && predicate.test(value)) {
+            return this;
+        } else {
+            return empty();
+        }
+    }
+
+    public <E extends Exception> OptionalLong map(final Try.LongUnaryOperator<E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalLong.of(mapper.applyAsLong(value));
+        } else {
+            return empty();
+        }
+    }
+
+    public <T, E extends Exception> Nullable<T> mapToObj(final Try.LongFunction<T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return Nullable.of(mapper.apply(value));
+        } else {
+            return Nullable.<T> empty();
+        }
+    }
+
+    public <E extends Exception> OptionalLong flatMap(Try.LongFunction<OptionalLong, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
+        }
+    }
+
     public long orZero() {
         return isPresent() ? value : 0;
     }

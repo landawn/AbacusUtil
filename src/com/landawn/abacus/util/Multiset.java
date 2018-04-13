@@ -888,15 +888,34 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> boolean replaceIf(Try.Predicate<? super T, E> predicate, final int newOccurrences) throws E {
-        checkNewOccurrences(newOccurrences);
+        checkOccurrences(newOccurrences);
 
         boolean modified = false;
 
-        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
-            if (predicate.test(entry.getKey())) {
-                entry.getValue().setValue(newOccurrences);
+        if (newOccurrences == 0) {
+            final List<T> keysToRemove = new ArrayList<>();
+
+            for (T key : valueMap.keySet()) {
+                if (predicate.test(key)) {
+                    keysToRemove.add(key);
+                }
+            }
+
+            if (keysToRemove.size() > 0) {
+                for (T key : keysToRemove) {
+                    valueMap.remove(key);
+                }
 
                 modified = true;
+            }
+
+        } else {
+            for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
+                if (predicate.test(entry.getKey())) {
+                    entry.getValue().setValue(newOccurrences);
+
+                    modified = true;
+                }
             }
         }
 
@@ -904,15 +923,34 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> boolean replaceIf(Try.BiPredicate<? super T, ? super Integer, E> predicate, final int newOccurrences) throws E {
-        checkNewOccurrences(newOccurrences);
+        checkOccurrences(newOccurrences);
 
         boolean modified = false;
 
-        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
-            if (predicate.test(entry.getKey(), entry.getValue().value())) {
-                entry.getValue().setValue(newOccurrences);
+        if (newOccurrences == 0) {
+            final List<T> keysToRemove = new ArrayList<>();
+
+            for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
+                if (predicate.test(entry.getKey(), entry.getValue().value())) {
+                    keysToRemove.add(entry.getKey());
+                }
+            }
+
+            if (keysToRemove.size() > 0) {
+                for (T key : keysToRemove) {
+                    valueMap.remove(key);
+                }
 
                 modified = true;
+            }
+
+        } else {
+            for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
+                if (predicate.test(entry.getKey(), entry.getValue().value())) {
+                    entry.getValue().setValue(newOccurrences);
+
+                    modified = true;
+                }
             }
         }
 
@@ -1384,12 +1422,6 @@ public final class Multiset<T> implements Iterable<T> {
     private static void checkOccurrences(final int occurrences) {
         if (occurrences < 0) {
             throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
-        }
-    }
-
-    private static void checkNewOccurrences(final int newOccurrences) {
-        if (newOccurrences < 1) {
-            throw new IllegalArgumentException("The specified 'newOccurrences' can not be less than 1");
         }
     }
 }

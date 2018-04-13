@@ -3,13 +3,19 @@
 
 * Remove `Fn.limited`.
 
-* Remove `Fn.limitThenFilter` and `Fn.filterThenLimit`.
+* Add `Fn.limitThenFilter` and `Fn.filterThenLimit`.
 
 * Refactoring `condition.In`.
 
 * Refactoring `IF.Or`.
 
 * Improve `LocalTimeType/LocalDateType/LocalDateTimeType`.
+
+* Add `filter/map/mapToObj/flatMap` to `OptionalBoolean/OptionalChar/OptionalByte/.../OptionalDouble`.
+
+* Add `Index`.
+
+* Add `toJdkStream` to `Stream/IntStream/LongStream/DoubleStream`.
 
 * Improvements and bug fix.
 

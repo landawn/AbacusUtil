@@ -29,6 +29,9 @@ import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -2590,6 +2593,17 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> parallel(int maxThreadNum, Splitor splitor) {
         return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+    }
+
+    @Override
+    public java.util.stream.Stream<T> toJdkStream() {
+        final Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(elements, Spliterator.ORDERED);
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            return StreamSupport.stream(spliterator, isParallel());
+        } else {
+            return StreamSupport.stream(spliterator, isParallel()).onClose(() -> close(closeHandlers));
+        }
     }
 
     @Override

@@ -1563,6 +1563,29 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public java.util.stream.DoubleStream toJdkStream() {
+        java.util.stream.DoubleStream s = java.util.stream.DoubleStream.of(elements);
+
+        if (fromIndex > 0) {
+            s = s.skip(fromIndex);
+        }
+
+        if (toIndex < elements.length) {
+            s = s.limit(toIndex - fromIndex);
+        }
+
+        if (this.isParallel()) {
+            s = s.parallel();
+        }
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            s = s.onClose(() -> close(closeHandlers));
+        }
+
+        return s;
+    }
+
+    @Override
     public Stream<Double> boxed() {
         return new IteratorStream<>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, closeHandlers);
     }

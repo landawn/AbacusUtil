@@ -22,7 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -1822,6 +1826,29 @@ class IteratorIntStream extends AbstractIntStream {
                 elements.skip(n);
             }
         }, sorted, closeHandlers);
+    }
+
+    @Override
+    public java.util.stream.IntStream toJdkStream() {
+        final PrimitiveIterator.OfInt spliterator = new PrimitiveIterator.OfInt() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                return elements.nextInt();
+            }
+        };
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            return StreamSupport.intStream(Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL),
+                    isParallel());
+        } else {
+            return StreamSupport.intStream(Spliterators.spliteratorUnknownSize(spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL),
+                    isParallel()).onClose(() -> close(closeHandlers));
+        }
     }
 
     @Override

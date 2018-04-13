@@ -118,115 +118,115 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    <T> CompletableFuture<List<T>> batchInsert(final String sql, final Object[] batchParameters) {
+    <T> CompletableFuture<List<T>> batchInsert(final String sql, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, batchParameters);
+                return sqlExecutor.batchInsert(sql, parametersList);
             }
         });
     }
 
-    <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
+    <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, statementSetter, batchParameters);
+                return sqlExecutor.batchInsert(sql, statementSetter, parametersList);
             }
         });
     }
 
     <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
+            final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchInsert(sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final Object[] batchParameters) {
+    <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, batchParameters);
+                return sqlExecutor.batchInsert(conn, sql, parametersList);
             }
         });
     }
 
-    <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
+    <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, statementSetter, batchParameters);
+                return sqlExecutor.batchInsert(conn, sql, statementSetter, parametersList);
             }
         });
     }
 
     <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
+            final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchInsert(conn, sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> batchInsert(final String sql, final List<?> batchParameters) {
+    public <T> CompletableFuture<List<T>> batchInsert(final String sql, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, batchParameters);
+                return sqlExecutor.batchInsert(sql, parametersList);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
+    public <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, statementSetter, batchParameters);
+                return sqlExecutor.batchInsert(sql, statementSetter, parametersList);
             }
         });
     }
 
     public <T> CompletableFuture<List<T>> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final List<?> batchParameters) {
+            final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchInsert(sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final List<?> batchParameters) {
+    public <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, batchParameters);
-            }
-        });
-    }
-
-    public <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final List<?> batchParameters) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, statementSetter, batchParameters);
+                return sqlExecutor.batchInsert(conn, sql, parametersList);
             }
         });
     }
 
     public <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final List<?> batchParameters) {
+            final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return sqlExecutor.batchInsert(conn, sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchInsert(conn, sql, statementSetter, parametersList);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<List<T>> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final List<?> parametersList) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.batchInsert(conn, sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
@@ -293,115 +293,115 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    CompletableFuture<Integer> batchUpdate(final String sql, final Object[] batchParameters) {
+    CompletableFuture<Integer> batchUpdate(final String sql, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, batchParameters);
+                return sqlExecutor.batchUpdate(sql, parametersList);
             }
         });
     }
 
-    CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
+    CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, statementSetter, batchParameters);
+                return sqlExecutor.batchUpdate(sql, statementSetter, parametersList);
             }
         });
     }
 
     CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
+            final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchUpdate(sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final Object[] batchParameters) {
+    CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, batchParameters);
+                return sqlExecutor.batchUpdate(conn, sql, parametersList);
             }
         });
     }
 
-    CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
+    CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, statementSetter, batchParameters);
+                return sqlExecutor.batchUpdate(conn, sql, statementSetter, parametersList);
             }
         });
     }
 
     CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
+            final Object[] parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchUpdate(conn, sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    public CompletableFuture<Integer> batchUpdate(final String sql, final List<?> batchParameters) {
+    public CompletableFuture<Integer> batchUpdate(final String sql, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, batchParameters);
+                return sqlExecutor.batchUpdate(sql, parametersList);
             }
         });
     }
 
-    public CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
+    public CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, statementSetter, batchParameters);
+                return sqlExecutor.batchUpdate(sql, statementSetter, parametersList);
             }
         });
     }
 
     public CompletableFuture<Integer> batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final List<?> batchParameters) {
+            final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchUpdate(sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }
 
-    public CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final List<?> batchParameters) {
+    public CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, batchParameters);
-            }
-        });
-    }
-
-    public CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final List<?> batchParameters) {
-        return asyncExecutor.execute(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, statementSetter, batchParameters);
+                return sqlExecutor.batchUpdate(conn, sql, parametersList);
             }
         });
     }
 
     public CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final List<?> batchParameters) {
+            final List<?> parametersList) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return sqlExecutor.batchUpdate(conn, sql, statementSetter, jdbcSettings, batchParameters);
+                return sqlExecutor.batchUpdate(conn, sql, statementSetter, parametersList);
+            }
+        });
+    }
+
+    public CompletableFuture<Integer> batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final List<?> parametersList) {
+        return asyncExecutor.execute(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return sqlExecutor.batchUpdate(conn, sql, statementSetter, jdbcSettings, parametersList);
             }
         });
     }

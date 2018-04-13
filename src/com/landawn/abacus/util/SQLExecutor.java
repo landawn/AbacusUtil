@@ -271,8 +271,8 @@ public final class SQLExecutor implements Closeable {
             }
 
             if (offset <= 0 && count > 0) {
-                final List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
-                final int columnCount = columnLabelList.size();
+                final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(N.EMPTY_STRING_ARRAY);
+                final int columnCount = columnLabels.length;
                 final boolean isMap = Map.class.isAssignableFrom(cls);
                 final boolean isDirtyMarker = N.isDirtyMarker(cls);
 
@@ -283,7 +283,7 @@ public final class SQLExecutor implements Closeable {
                         final Map<String, Object> m = (Map<String, Object>) entity;
 
                         for (int i = 0; i < columnCount; i++) {
-                            m.put(columnLabelList.get(i), rs.getObject(i + 1));
+                            m.put(columnLabels[i], rs.getObject(i + 1));
                         }
                     } else {
                         //    Method method = null;
@@ -297,7 +297,7 @@ public final class SQLExecutor implements Closeable {
                         //    }
 
                         for (int i = 0; i < columnCount; i++) {
-                            ClassUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                            ClassUtil.setPropValue(entity, columnLabels[i], rs.getObject(i + 1), true);
                         }
 
                         if (isDirtyMarker) {
@@ -747,24 +747,24 @@ public final class SQLExecutor implements Closeable {
         return id;
     }
 
-    <T> List<T> batchInsert(final String sql, final Object[] batchParameters) {
-        return batchInsert(null, sql, null, null, batchParameters);
+    <T> List<T> batchInsert(final String sql, final Object[] parametersList) {
+        return batchInsert(null, sql, null, null, parametersList);
     }
 
-    <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
-        return batchInsert(null, sql, statementSetter, null, batchParameters);
+    <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
+        return batchInsert(null, sql, statementSetter, null, parametersList);
     }
 
-    <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object[] batchParameters) {
-        return batchInsert(null, sql, statementSetter, jdbcSettings, batchParameters);
+    <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object[] parametersList) {
+        return batchInsert(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    <T> List<T> batchInsert(final Connection conn, final String sql, final Object[] batchParameters) {
-        return batchInsert(conn, sql, null, null, batchParameters);
+    <T> List<T> batchInsert(final Connection conn, final String sql, final Object[] parametersList) {
+        return batchInsert(conn, sql, null, null, parametersList);
     }
 
-    <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
-        return batchInsert(conn, sql, statementSetter, null, batchParameters);
+    <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
+        return batchInsert(conn, sql, statementSetter, null, parametersList);
     }
 
     /**
@@ -777,32 +777,32 @@ public final class SQLExecutor implements Closeable {
      * @param sql
      * @param statementSetter
      * @param props
-     * @param batchParameters
+     * @param parametersList
      * @return
      */
     <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
-        return batchInsert(conn, sql, statementSetter, jdbcSettings, Arrays.asList(batchParameters));
+            final Object[] parametersList) {
+        return batchInsert(conn, sql, statementSetter, jdbcSettings, Arrays.asList(parametersList));
     }
 
-    public <T> List<T> batchInsert(final String sql, final List<?> batchParameters) {
-        return batchInsert(null, sql, null, null, batchParameters);
+    public <T> List<T> batchInsert(final String sql, final List<?> parametersList) {
+        return batchInsert(null, sql, null, null, parametersList);
     }
 
-    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
-        return batchInsert(null, sql, statementSetter, null, batchParameters);
+    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+        return batchInsert(null, sql, statementSetter, null, parametersList);
     }
 
-    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> batchParameters) {
-        return batchInsert(null, sql, statementSetter, jdbcSettings, batchParameters);
+    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+        return batchInsert(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    public <T> List<T> batchInsert(final Connection conn, final String sql, final List<?> batchParameters) {
-        return batchInsert(conn, sql, null, null, batchParameters);
+    public <T> List<T> batchInsert(final Connection conn, final String sql, final List<?> parametersList) {
+        return batchInsert(conn, sql, null, null, parametersList);
     }
 
-    public <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
-        return batchInsert(conn, sql, statementSetter, null, batchParameters);
+    public <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+        return batchInsert(conn, sql, statementSetter, null, parametersList);
     }
 
     /**
@@ -811,14 +811,14 @@ public final class SQLExecutor implements Closeable {
      */
     @SuppressWarnings("deprecation")
     public <T> List<T> batchInsert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final List<?> batchParameters) {
+            final List<?> parametersList) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
 
         String idPropName = checkGeneratedIdPropName(jdbcSettings);
 
-        final int len = batchParameters.size();
+        final int len = parametersList.size();
         final int batchSize = getBatchSize(jdbcSettings);
 
         List<T> resultIdList = new ArrayList<>(len);
@@ -830,7 +830,7 @@ public final class SQLExecutor implements Closeable {
         boolean autoCommit = true;
 
         try {
-            ds = getDataSource(namedSQL.getPureSQL(), batchParameters, jdbcSettings);
+            ds = getDataSource(namedSQL.getPureSQL(), parametersList, jdbcSettings);
 
             localConn = (conn == null) ? ds.getConnection() : conn;
 
@@ -852,11 +852,11 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, true, batchParameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, true, parametersList);
 
             if (len <= batchSize) {
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, batchParameters.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
                     stmt.addBatch();
                 }
 
@@ -865,7 +865,7 @@ public final class SQLExecutor implements Closeable {
                 int num = 0;
 
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, batchParameters.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
                     stmt.addBatch();
                     num++;
 
@@ -917,10 +917,10 @@ public final class SQLExecutor implements Closeable {
         }
 
         if (N.notNullOrEmpty(resultIdList)) {
-            if (isEntityOrMapParameter(namedSQL, batchParameters.get(0))) {
+            if (isEntityOrMapParameter(namedSQL, parametersList.get(0))) {
                 if (resultIdList.size() == len) {
-                    boolean isTypedParameter = batchParameters.get(0) instanceof TypedParameters;
-                    Object parameter_0 = isTypedParameter ? ((TypedParameters) batchParameters.get(0)).parameters[0] : batchParameters.get(0);
+                    boolean isTypedParameter = parametersList.get(0) instanceof TypedParameters;
+                    Object parameter_0 = isTypedParameter ? ((TypedParameters) parametersList.get(0)).parameters[0] : parametersList.get(0);
 
                     if (parameter_0 instanceof Map) {
                         // // don't update input map ?
@@ -949,7 +949,7 @@ public final class SQLExecutor implements Closeable {
                                 Object idPropValue = null;
 
                                 for (int i = 0; i < len; i++) {
-                                    entity = (isTypedParameter ? ((TypedParameters) batchParameters.get(i)).parameters[0] : batchParameters.get(i));
+                                    entity = (isTypedParameter ? ((TypedParameters) parametersList.get(i)).parameters[0] : parametersList.get(i));
                                     idPropValue = ClassUtil.invokeMethod(entity, idGetMethod);
 
                                     if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
@@ -1069,24 +1069,24 @@ public final class SQLExecutor implements Closeable {
         return stmt.executeUpdate();
     }
 
-    int batchUpdate(final String sql, final Object[] batchParameters) {
-        return batchUpdate(null, sql, null, null, batchParameters);
+    int batchUpdate(final String sql, final Object[] parametersList) {
+        return batchUpdate(null, sql, null, null, parametersList);
     }
 
-    int batchUpdate(final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
-        return batchUpdate(null, sql, statementSetter, null, batchParameters);
+    int batchUpdate(final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
+        return batchUpdate(null, sql, statementSetter, null, parametersList);
     }
 
-    int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object[] batchParameters) {
-        return batchUpdate(null, sql, statementSetter, jdbcSettings, batchParameters);
+    int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object[] parametersList) {
+        return batchUpdate(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    int batchUpdate(final Connection conn, final String sql, final Object[] batchParameters) {
-        return batchUpdate(conn, sql, null, null, batchParameters);
+    int batchUpdate(final Connection conn, final String sql, final Object[] parametersList) {
+        return batchUpdate(conn, sql, null, null, parametersList);
     }
 
-    int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] batchParameters) {
-        return batchUpdate(conn, sql, statementSetter, null, batchParameters);
+    int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object[] parametersList) {
+        return batchUpdate(conn, sql, statementSetter, null, parametersList);
     }
 
     /**
@@ -1096,43 +1096,43 @@ public final class SQLExecutor implements Closeable {
      * @param sql
      * @param statementSetter
      * @param props
-     * @param batchParameters
+     * @param parametersList
      * @return
      */
     int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object[] batchParameters) {
-        return batchUpdate(conn, sql, statementSetter, jdbcSettings, Arrays.asList(batchParameters));
+            final Object[] parametersList) {
+        return batchUpdate(conn, sql, statementSetter, jdbcSettings, Arrays.asList(parametersList));
     }
 
-    public int batchUpdate(final String sql, final List<?> batchParameters) {
-        return batchUpdate(null, sql, null, null, batchParameters);
+    public int batchUpdate(final String sql, final List<?> parametersList) {
+        return batchUpdate(null, sql, null, null, parametersList);
     }
 
-    public int batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
-        return batchUpdate(null, sql, statementSetter, null, batchParameters);
+    public int batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+        return batchUpdate(null, sql, statementSetter, null, parametersList);
     }
 
-    public int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> batchParameters) {
-        return batchUpdate(null, sql, statementSetter, jdbcSettings, batchParameters);
+    public int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+        return batchUpdate(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    public int batchUpdate(final Connection conn, final String sql, final List<?> batchParameters) {
-        return batchUpdate(conn, sql, null, null, batchParameters);
+    public int batchUpdate(final Connection conn, final String sql, final List<?> parametersList) {
+        return batchUpdate(conn, sql, null, null, parametersList);
     }
 
-    public int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> batchParameters) {
-        return batchUpdate(conn, sql, statementSetter, null, batchParameters);
+    public int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+        return batchUpdate(conn, sql, statementSetter, null, parametersList);
     }
 
     /**
      * @see #batchUpdate(Connection, String, StatementSetter, JdbcSettings, Object[])
      */
-    public int batchUpdate(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final List<?> batchParameters) {
+    public int batchUpdate(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final List<?> parametersList) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
 
-        final int len = batchParameters.size();
+        final int len = parametersList.size();
         final int batchSize = getBatchSize(jdbcSettings);
 
         DataSource ds = null;
@@ -1142,7 +1142,7 @@ public final class SQLExecutor implements Closeable {
         boolean autoCommit = true;
 
         try {
-            ds = getDataSource(namedSQL.getPureSQL(), batchParameters, jdbcSettings);
+            ds = getDataSource(namedSQL.getPureSQL(), parametersList, jdbcSettings);
 
             localConn = (conn == null) ? ds.getConnection() : conn;
 
@@ -1164,13 +1164,13 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, true, batchParameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, true, parametersList);
 
             int result = 0;
 
             if (len <= batchSize) {
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, batchParameters.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
                     stmt.addBatch();
                 }
 
@@ -1179,7 +1179,7 @@ public final class SQLExecutor implements Closeable {
                 int num = 0;
 
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, batchParameters.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
                     stmt.addBatch();
                     num++;
 
@@ -2987,7 +2987,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    protected DataSource getDataSource(final String sql, final List<?> batchParameters, final JdbcSettings jdbcSettings) {
+    protected DataSource getDataSource(final String sql, final List<?> parametersList, final JdbcSettings jdbcSettings) {
         if (_dsm == null || _dss == null) {
             if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
                 throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
@@ -2997,9 +2997,9 @@ public final class SQLExecutor implements Closeable {
             return _ds;
         } else {
             if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
-                return _dss.select(_dsm, null, sql, batchParameters, null);
+                return _dss.select(_dsm, null, sql, parametersList, null);
             } else {
-                return _dss.select(_dsm, null, sql, batchParameters, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
+                return _dss.select(_dsm, null, sql, parametersList, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
             }
         }
     }
@@ -3954,9 +3954,9 @@ public final class SQLExecutor implements Closeable {
 
             final SP pair = prepareAdd(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
-            final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
+            final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final List<E> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, batchParameters);
+            final List<E> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, parametersList);
 
             if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
                 int idx = 0;
@@ -4204,9 +4204,9 @@ public final class SQLExecutor implements Closeable {
 
             final SP pair = prepareUpdate(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
-            final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
+            final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, null, jdbcSettings, batchParameters);
+            final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, null, jdbcSettings, parametersList);
 
             if (updateCount > 0) {
                 for (Object entity : entities) {

@@ -2607,6 +2607,29 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public java.util.stream.Stream<T> toJdkStream() {
+        java.util.stream.Stream<T> s = java.util.stream.Stream.of(elements);
+
+        if (fromIndex > 0) {
+            s = s.skip(fromIndex);
+        }
+
+        if (toIndex < elements.length) {
+            s = s.limit(toIndex - fromIndex);
+        }
+
+        if (this.isParallel()) {
+            s = s.parallel();
+        }
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            s = s.onClose(() -> close(closeHandlers));
+        }
+
+        return s;
+    }
+
+    @Override
     public Stream<T> onClose(Runnable closeHandler) {
         final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 

@@ -172,6 +172,46 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         }
     }
 
+    public <E extends Exception> OptionalFloat filter(Try.FloatPredicate<E> predicate) throws E {
+        N.requireNonNull(predicate);
+
+        if (isPresent() && predicate.test(value)) {
+            return this;
+        } else {
+            return empty();
+        }
+    }
+
+    public <E extends Exception> OptionalFloat map(final Try.FloatUnaryOperator<E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalFloat.of(mapper.applyAsFloat(value));
+        } else {
+            return empty();
+        }
+    }
+
+    public <T, E extends Exception> Nullable<T> mapToObj(final Try.FloatFunction<T, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return Nullable.of(mapper.apply(value));
+        } else {
+            return Nullable.<T> empty();
+        }
+    }
+
+    public <E extends Exception> OptionalFloat flatMap(Try.FloatFunction<OptionalFloat, E> mapper) throws E {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
+        }
+    }
+
     public float orZero() {
         return isPresent() ? value : 0;
     }

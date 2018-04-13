@@ -1887,6 +1887,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
+    public abstract java.util.stream.Stream<T> toJdkStream();
+
     @Override
     public ObjIterator<T> iterator() {
         return iteratorEx();

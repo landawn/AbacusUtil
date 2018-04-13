@@ -684,6 +684,8 @@ public abstract class DoubleStream
     public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
             DoubleTriFunction<Double> zipFunction);
 
+    public abstract java.util.stream.DoubleStream toJdkStream();
+
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * boxed to {@code Double}.

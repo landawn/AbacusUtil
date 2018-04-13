@@ -99,10 +99,12 @@ abstract class AbstractIntStream extends IntStream {
             final MutableLong cnt = MutableLong.of(n);
 
             return removeWhile(new IntPredicate() {
+
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
                 }
+
             }, action);
         }
     }

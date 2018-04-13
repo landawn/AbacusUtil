@@ -685,6 +685,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract DoubleStream asDoubleStream();
 
+    public abstract java.util.stream.IntStream toJdkStream();
+
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * each boxed to an {@code Integer}.

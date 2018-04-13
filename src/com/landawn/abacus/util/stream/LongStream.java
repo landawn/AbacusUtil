@@ -649,6 +649,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract DoubleStream asDoubleStream();
 
+    public abstract java.util.stream.LongStream toJdkStream();
+
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * each boxed to a {@code Long}.

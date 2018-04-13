@@ -1662,6 +1662,29 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public java.util.stream.LongStream toJdkStream() {
+        java.util.stream.LongStream s = java.util.stream.LongStream.of(elements);
+
+        if (fromIndex > 0) {
+            s = s.skip(fromIndex);
+        }
+
+        if (toIndex < elements.length) {
+            s = s.limit(toIndex - fromIndex);
+        }
+
+        if (this.isParallel()) {
+            s = s.parallel();
+        }
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            s = s.onClose(() -> close(closeHandlers));
+        }
+
+        return s;
+    }
+
+    @Override
     public Stream<Long> boxed() {
         return new IteratorStream<>(iterator(), sorted, sorted ? LONG_COMPARATOR : null, closeHandlers);
     }
