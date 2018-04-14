@@ -9518,7 +9518,7 @@ public final class N {
      */
     public static <T> T requireNonNull(final T obj, final String errorMessage) {
         if (obj == null) {
-            if (isErrorMsg(errorMessage)) {
+            if (isNullErrorMsg(errorMessage)) {
                 throw new NullPointerException(errorMessage);
             } else {
                 throw new NullPointerException(errorMessage + " can not be null");
@@ -9538,7 +9538,7 @@ public final class N {
      */
     public static <T extends CharSequence> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.length() == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9558,7 +9558,7 @@ public final class N {
      */
     public static boolean[] checkNullOrEmpty(final boolean[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9578,7 +9578,7 @@ public final class N {
      */
     public static char[] checkNullOrEmpty(final char[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9598,7 +9598,7 @@ public final class N {
      */
     public static byte[] checkNullOrEmpty(final byte[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9618,7 +9618,7 @@ public final class N {
      */
     public static short[] checkNullOrEmpty(final short[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9638,7 +9638,7 @@ public final class N {
      */
     public static int[] checkNullOrEmpty(final int[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9658,7 +9658,7 @@ public final class N {
      */
     public static long[] checkNullOrEmpty(final long[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9678,7 +9678,7 @@ public final class N {
      */
     public static float[] checkNullOrEmpty(final float[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9698,7 +9698,7 @@ public final class N {
      */
     public static double[] checkNullOrEmpty(final double[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9718,7 +9718,7 @@ public final class N {
      */
     public static <T> T[] checkNullOrEmpty(final T[] parameter, final String msg) {
         if (parameter == null || parameter.length == 0) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9731,7 +9731,7 @@ public final class N {
     @SuppressWarnings("rawtypes")
     public static <T extends PrimitiveList> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9751,7 +9751,7 @@ public final class N {
      */
     public static <E, T extends Collection<E>> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9771,7 +9771,7 @@ public final class N {
      */
     public static <K, V, T extends Map<K, V>> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9791,7 +9791,7 @@ public final class N {
      */
     public static <E> Multiset<E> checkNullOrEmpty(final Multiset<E> parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9811,7 +9811,7 @@ public final class N {
      */
     public static <E> LongMultiset<E> checkNullOrEmpty(final LongMultiset<E> parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9831,7 +9831,7 @@ public final class N {
      */
     public static <K, E, V extends Collection<E>, T extends Multimap<K, E, V>> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9851,7 +9851,7 @@ public final class N {
      */
     public static <T extends DataSet> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9871,7 +9871,7 @@ public final class N {
      */
     public static <T extends EntityId> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty");
@@ -9892,7 +9892,7 @@ public final class N {
     // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
     public static <T extends CharSequence> T checkNullOrEmptyOrBlank(final T parameter, final String msg) {
         if (N.isNullOrEmptyOrBlank(parameter)) {
-            if (isErrorMsg(msg)) {
+            if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
                 throw new IllegalArgumentException(msg + " can not be null or empty or blank");
@@ -9928,7 +9928,7 @@ public final class N {
      * is fine with that.
      */
 
-    private static boolean isErrorMsg(final String msg) {
+    private static boolean isNullErrorMsg(final String msg) {
         // shortest message: "it is null"
         return msg.length() > 9 && msg.indexOf(WD._SPACE) > 0;
     }
@@ -10279,6 +10279,286 @@ public final class N {
             throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
         }
     }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static <T extends CharSequence> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final boolean[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final char[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final byte[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final short[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final int[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final long[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final float[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static void checkArgNotNullOrEmpty(final double[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static <T> void checkArgNotNullOrEmpty(final T[] arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static <T extends Collection<?>> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     */
+    public static <T extends Map<?, ?>> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    //    /**
+    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+    //     * 
+    //     * @param arg
+    //     * @param argNameOrErrorMsg
+    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+    //     */
+    //    public static <T extends CharSequence> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
+    //        if (N.isNullOrEmpty(arg)) {
+    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+    //            } else {
+    //                throw new IllegalArgumentException(argNameOrErrorMsg);
+    //            }
+    //        }
+    //
+    //        return arg;
+    //    }
+    //
+    //    /**
+    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+    //     * 
+    //     * @param arg
+    //     * @param argNameOrErrorMsg
+    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+    //     */
+    //    public static <T> T[] checkArgNotNullOrEmptty(final T[] arg, final String argNameOrErrorMsg) {
+    //        if (N.isNullOrEmpty(arg)) {
+    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+    //            } else {
+    //                throw new IllegalArgumentException(argNameOrErrorMsg);
+    //            }
+    //        }
+    //
+    //        return arg;
+    //    }
+    //
+    //    /**
+    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+    //     * 
+    //     * @param arg
+    //     * @param argNameOrErrorMsg
+    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+    //     */
+    //    public static <T extends Collection<?>> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
+    //        if (N.isNullOrEmpty(arg)) {
+    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+    //            } else {
+    //                throw new IllegalArgumentException(argNameOrErrorMsg);
+    //            }
+    //        }
+    //
+    //        return arg;
+    //    }
+    //
+    //    /**
+    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
+    //     * 
+    //     * @param arg
+    //     * @param argNameOrErrorMsg
+    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+    //     */
+    //    public static <T extends Map<?, ?>> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
+    //        if (N.isNullOrEmpty(arg)) {
+    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+    //            } else {
+    //                throw new IllegalArgumentException(argNameOrErrorMsg);
+    //            }
+    //        }
+    //
+    //        return arg;
+    //    }
 
     /**
      * Ensures the truth of an expression involving the state of the calling instance, but not

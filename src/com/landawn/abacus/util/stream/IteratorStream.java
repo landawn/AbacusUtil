@@ -2600,9 +2600,10 @@ class IteratorStream<T> extends AbstractStream<T> {
         final Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(elements, Spliterator.ORDERED);
 
         if (N.isNullOrEmpty(closeHandlers)) {
-            return StreamSupport.stream(spliterator, isParallel());
+            return StreamSupport.stream(() -> spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL, isParallel());
         } else {
-            return StreamSupport.stream(spliterator, isParallel()).onClose(() -> close(closeHandlers));
+            return StreamSupport.stream(() -> spliterator, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL, isParallel())
+                    .onClose(() -> close(closeHandlers));
         }
     }
 

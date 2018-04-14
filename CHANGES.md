@@ -17,6 +17,8 @@
 
 * Add `toJdkStream` to `Stream/IntStream/LongStream/DoubleStream`.
 
+* Add `N.checkArgNotNullOrEmpty`.
+
 * Improvements and bug fix.
 
 
