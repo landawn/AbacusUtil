@@ -45,6 +45,9 @@ import java.text.DateFormat;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +55,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -69,6 +73,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -124,6 +130,7 @@ import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
@@ -547,7 +554,7 @@ public final class N {
     @SuppressWarnings("rawtypes")
     private static final Comparator NULL_MAX_COMPARATOR = Comparators.nullsLast();
     @SuppressWarnings("rawtypes")
-    private static final Comparator OBJ_COMPARATOR = Comparators.OBJ_COMPARATOR;
+    private static final Comparator NATURAL_ORDER = Comparators.naturalOrder();
 
     // ...
     static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = new BiMap<>();
@@ -4346,7 +4353,7 @@ public final class N {
      * @see Comparator
      */
     public static <T> int compare(final T a, final T b, final Comparator<? super T> cmp) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? OBJ_COMPARATOR : cmp).compare(a, b));
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? NATURAL_ORDER : cmp).compare(a, b));
     }
 
     /**
@@ -4917,11 +4924,11 @@ public final class N {
         }
     }
 
-    public static String repeat(final char ch, final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+    public static String repeatt(final char ch, final int n) {
+        checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
-            return N.EMPTY_STRING;
+            return EMPTY_STRING;
         } else if (n == 1) {
             return String.valueOf(ch);
         }
@@ -4930,7 +4937,7 @@ public final class N {
             final char[] array = new char[n];
             Arrays.fill(array, ch);
 
-            return N.newString(array, true);
+            return newString(array, true);
         } else {
             final char[] array = new char[n];
             array[0] = ch;
@@ -4945,12 +4952,12 @@ public final class N {
                 copy(array, 0, array, cnt, n - cnt);
             }
 
-            return N.newString(array, true);
+            return newString(array, true);
         }
     }
 
-    public static String repeat(final char ch, final int n, final char delimiter) {
-        return repeat(String.valueOf(ch), n, String.valueOf(delimiter));
+    public static String repeatt(final char ch, final int n, final char delimiter) {
+        return repeatt(String.valueOf(ch), n, String.valueOf(delimiter));
     }
 
     /**
@@ -4959,18 +4966,18 @@ public final class N {
      * @param repeat
      * @return
      */
-    public static String repeat(final String str, final int repeat) {
-        return repeat(str, repeat, N.EMPTY_STRING);
+    public static String repeatt(final String str, final int repeat) {
+        return repeatt(str, repeat, EMPTY_STRING);
     }
 
-    public static String repeat(String str, final int n, String delimiter) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+    public static String repeatt(String str, final int n, String delimiter) {
+        checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        str = str == null ? N.EMPTY_STRING : str;
-        delimiter = delimiter == null ? N.EMPTY_STRING : delimiter;
+        str = str == null ? EMPTY_STRING : str;
+        delimiter = delimiter == null ? EMPTY_STRING : delimiter;
 
-        if (n == 0 || (N.isNullOrEmpty(str) && N.isNullOrEmpty(delimiter))) {
-            return N.EMPTY_STRING;
+        if (n == 0 || (isNullOrEmpty(str) && isNullOrEmpty(delimiter))) {
+            return EMPTY_STRING;
         } else if (n == 1) {
             return str;
         }
@@ -10567,7 +10574,7 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgNonNegative(final int arg, final String argNameOrErrorMsg) {
+    public static void checkArgNotNegative(final int arg, final String argNameOrErrorMsg) {
         if (arg < 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
                 throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
@@ -10584,7 +10591,7 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgNonNegative(final long arg, final String argNameOrErrorMsg) {
+    public static void checkArgNotNegative(final long arg, final String argNameOrErrorMsg) {
         if (arg < 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
                 throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
@@ -12874,6 +12881,22 @@ public final class N {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    public static void reverse(final Collection<?> c) {
+        if (N.isNullOrEmpty(c) && c.size() < 2) {
+            return;
+        }
+
+        if (c instanceof List) {
+            N.reverse((List) c);
+        } else {
+            final Object[] tmp = c.toArray();
+            N.reverse(tmp);
+            c.clear();
+            c.addAll((List) Arrays.asList(tmp));
+        }
+    }
+
     public static void rotate(final boolean[] a, int distance) {
         if (a == null || a.length <= 1 || distance % a.length == 0) {
             return;
@@ -13183,6 +13206,22 @@ public final class N {
         Collections.rotate(list, distance);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static void rotate(final Collection<?> c, final int distance) {
+        if (N.isNullOrEmpty(c) && c.size() < 2) {
+            return;
+        }
+
+        if (c instanceof List) {
+            N.rotate((List) c, distance);
+        } else {
+            final Object[] tmp = c.toArray();
+            N.rotate(tmp, distance);
+            c.clear();
+            c.addAll((List) Arrays.asList(tmp));
+        }
+    }
+
     public static void shuffle(final boolean[] a) {
         shuffle(a, RAND);
     }
@@ -13323,6 +13362,38 @@ public final class N {
         }
 
         Collections.shuffle(list, rnd);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static void shuffle(final Collection<?> c) {
+        if (N.isNullOrEmpty(c) && c.size() < 2) {
+            return;
+        }
+
+        if (c instanceof List) {
+            N.shuffle((List) c);
+        } else {
+            final Object[] tmp = c.toArray();
+            N.shuffle(tmp);
+            c.clear();
+            c.addAll((List) Arrays.asList(tmp));
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static void shuffle(final Collection<?> c, final Random rnd) {
+        if (N.isNullOrEmpty(c) && c.size() < 2) {
+            return;
+        }
+
+        if (c instanceof List) {
+            N.shuffle((List) c, rnd);
+        } else {
+            final Object[] tmp = c.toArray();
+            N.shuffle(tmp, rnd);
+            c.clear();
+            c.addAll((List) Arrays.asList(tmp));
+        }
     }
 
     public static void swap(final boolean[] a, final int i, final int j) {
@@ -13594,6 +13665,145 @@ public final class N {
         }
 
         return resultList;
+    }
+
+    public static <T> List<T> repeat(final T value, final int n) {
+        final List<T> res = new ArrayList<>(n);
+        fill(res, 0, n, value);
+        return res;
+    }
+
+    /**
+     * Repeats the elements in the specified Collection one by one.
+     * 
+     * <pre>
+     * <code>
+     * Seq.nRepeat(N.asList(1, 2, 3), 2) => [1, 1, 2, 2, 3, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param n
+     * @return
+     */
+    public static <T> List<T> repeatEle(final Collection<T> c, final int n) {
+        checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0 || isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final List<T> result = new ArrayList<>(c.size() * n);
+
+        for (T e : c) {
+            for (int i = 0; i < n; i++) {
+                result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * <pre>
+     * <code>
+     * Seq.repeat(N.asList(1, 2, 3), 2) => [1, 2, 3, 1, 2, 3]
+     * </code>
+     * </pre>
+     * @param c
+     * @param n
+     * @return
+     */
+    public static <T> List<T> repeatAll(final Collection<T> c, final int n) {
+        checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0 || isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final List<T> result = new ArrayList<>(c.size() * n);
+
+        for (int i = 0; i < n; i++) {
+            result.addAll(c);
+        }
+
+        return result;
+    }
+
+    /**
+     * Repeats the elements in the specified Collection one by one till reach the specified size.
+     * 
+     * <pre>
+     * <code>
+     * Seq.nRepeatToSize(N.asList(1, 2, 3), 5) => [1, 1, 2, 2, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param size
+     * @return
+     */
+    public static <T> List<T> repeatEleToSize(final Collection<T> c, final int size) {
+        checkArgument(size >= 0, "'size' can't be negative: %s", size);
+        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
+
+        if (size == 0 || isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final int n = size / c.size();
+        int mod = size % c.size();
+
+        final List<T> result = new ArrayList<>(size);
+
+        for (T e : c) {
+            for (int i = 0, len = mod-- > 0 ? n + 1 : n; i < len; i++) {
+                result.add(e);
+            }
+
+            if (result.size() == size) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * <pre>
+     * <code>
+     * Seq.repeatToSize(N.asList(1, 2, 3), 5) => [1, 2, 3, 1, 2]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param size
+     * @return
+     */
+    public static <T> List<T> repeatAllToSize(final Collection<T> c, final int size) {
+        checkArgument(size >= 0, "'size' can't be negative: %s", size);
+        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
+
+        if (size == 0 || isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final List<T> result = new ArrayList<>(size);
+
+        while (result.size() < size) {
+            if (c.size() <= size - result.size()) {
+                result.addAll(c);
+            } else {
+                final Iterator<T> iter = c.iterator();
+
+                for (int i = 0, len = size - result.size(); i < len; i++) {
+                    result.add(iter.next());
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -22674,7 +22884,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int n) {
-        return (T[]) top(a, n, N.OBJ_COMPARATOR);
+        return (T[]) top(a, n, N.NATURAL_ORDER);
     }
 
     public static <T> T[] top(final T[] a, final int n, final Comparator<? super T> cmp) {
@@ -22682,7 +22892,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n) {
-        return (T[]) top(a, fromIndex, toIndex, n, N.OBJ_COMPARATOR);
+        return (T[]) top(a, fromIndex, toIndex, n, N.NATURAL_ORDER);
     }
 
     @SuppressWarnings("rawtypes")
@@ -25154,20 +25364,35 @@ public final class N {
         return result;
     }
 
-    public static <T> List<T> concat(final Collection<? extends T> a, final Collection<? extends T> b, final Collection<? extends T> c) {
+    @SafeVarargs
+    public static <T> List<T> concat(final Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return concat(b, c);
-        } else if (N.isNullOrEmpty(b)) {
-            return concat(a, c);
-        } else if (N.isNullOrEmpty(c)) {
-            return concat(a, b);
+            return new ArrayList<>();
         }
 
-        final List<T> result = new ArrayList<>(a.size() + b.size() + c.size());
+        return concat(Arrays.asList(a));
+    }
 
-        result.addAll(a);
-        result.addAll(b);
-        result.addAll(c);
+    public static <T> List<T> concat(final Collection<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        int count = 0;
+
+        for (Collection<? extends T> e : c) {
+            if (N.notNullOrEmpty(e)) {
+                count += e.size();
+            }
+        }
+
+        final List<T> result = new ArrayList<>(count);
+
+        for (Collection<? extends T> e : c) {
+            if (N.notNullOrEmpty(e)) {
+                result.addAll(e);
+            }
+        }
 
         return result;
     }
@@ -30769,15 +30994,15 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> List<T> minAll(final T[] a) {
-        return minAll(a, Comparators.<T> naturalOrder());
+        return minAll(a, NULL_MAX_COMPARATOR);
     }
 
-    public static <T> List<T> minAll(final T[] a, Comparator<? super T> comparator) {
+    public static <T> List<T> minAll(final T[] a, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
-        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+        cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
 
         final List<T> result = new ArrayList<>();
         T candicate = a[0];
@@ -30801,15 +31026,15 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> List<T> minAll(final Collection<T> c) {
-        return minAll(c, Comparators.<T> naturalOrder());
+        return minAll(c, NULL_MAX_COMPARATOR);
     }
 
-    public static <T> List<T> minAll(final Collection<T> c, Comparator<? super T> comparator) {
+    public static <T> List<T> minAll(final Collection<T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+        cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
 
         final Iterator<T> iter = c.iterator();
         final List<T> result = new ArrayList<>();
@@ -31403,15 +31628,15 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> List<T> maxAll(final T[] a) {
-        return maxAll(a, Comparators.<T> naturalOrder());
+        return maxAll(a, NULL_MIN_COMPARATOR);
     }
 
-    public static <T> List<T> maxAll(final T[] a, Comparator<? super T> comparator) {
+    public static <T> List<T> maxAll(final T[] a, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
-        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         final List<T> result = new ArrayList<>();
         T candicate = a[0];
@@ -31435,15 +31660,15 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> List<T> maxAll(final Collection<T> c) {
-        return maxAll(c, Comparators.<T> naturalOrder());
+        return maxAll(c, NULL_MIN_COMPARATOR);
     }
 
-    public static <T> List<T> maxAll(final Collection<T> c, Comparator<? super T> comparator) {
+    public static <T> List<T> maxAll(final Collection<T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         final Iterator<T> iter = c.iterator();
         final List<T> result = new ArrayList<>();
@@ -31902,7 +32127,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) median(a, from, to, OBJ_COMPARATOR);
+        return (T) median(a, from, to, NATURAL_ORDER);
     }
 
     /**
@@ -31925,7 +32150,7 @@ public final class N {
 
         checkFromToIndex(from, to, a.length);
 
-        cmp = cmp == null ? OBJ_COMPARATOR : cmp;
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
 
         final int len = to - from;
 
@@ -31946,7 +32171,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c, final int from, final int to) {
-        return (T) median(c, from, to, OBJ_COMPARATOR);
+        return (T) median(c, from, to, NATURAL_ORDER);
     }
 
     /**
@@ -31969,7 +32194,7 @@ public final class N {
 
         checkFromToIndex(from, to, c.size());
 
-        cmp = cmp == null ? OBJ_COMPARATOR : cmp;
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
 
         final int len = to - from;
 
@@ -33648,6 +33873,1071 @@ public final class N {
      */
     public static <T> ObjIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
         return Iterators.concatt(c);
+    }
+
+    public static boolean disjoint(final Object[] a, final Object[] b) {
+        if (isNullOrEmpty(a) || isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return a.length >= b.length ? disjoint(Arrays.asList(a), asSet(b)) : disjoint(asSet(a), Arrays.asList(b));
+    }
+
+    /**
+     * Returns {@code true} if the two specified arrays have no elements in common.
+     * 
+     * @param a
+     * @param b
+     * @return {@code true} if the two specified arrays have no elements in common.
+     * @see Collections#disjoint(Collection, Collection)
+     */
+    public static boolean disjoint(final Collection<?> c1, final Collection<?> c2) {
+        if (isNullOrEmpty(c1) || isNullOrEmpty(c2)) {
+            return true;
+        }
+
+        if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
+            for (Object e : c2) {
+                if (c1.contains(e)) {
+                    return false;
+                }
+            }
+        } else {
+            for (Object e : c1) {
+                if (c2.contains(e)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static <T, E extends Exception> List<T> merge(final T[] a, final T[] b, final Try.BiFunction<? super T, ? super T, Nth, E> nextSelector) throws E {
+        if (isNullOrEmpty(a)) {
+            return isNullOrEmpty(b) ? new ArrayList<T>() : asList(b);
+        } else if (isNullOrEmpty(b)) {
+            return asList(a);
+        }
+
+        final List<T> result = new ArrayList<>(a.length + b.length);
+        final int lenA = a.length;
+        final int lenB = b.length;
+        int cursorA = 0;
+        int cursorB = 0;
+
+        while (cursorA < lenA || cursorB < lenB) {
+            if (cursorA < lenA) {
+                if (cursorB < lenB) {
+                    if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                        result.add(a[cursorA++]);
+                    } else {
+                        result.add(b[cursorB++]);
+                    }
+                } else {
+                    result.add(a[cursorA++]);
+                }
+            } else {
+                result.add(b[cursorB++]);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, E extends Exception> List<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+            final Try.BiFunction<? super T, ? super T, Nth, E> nextSelector) throws E {
+        if (isNullOrEmpty(a)) {
+            return isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
+        } else if (isNullOrEmpty(b)) {
+            return new ArrayList<T>(a);
+        }
+
+        final List<T> result = new ArrayList<>(a.size() + b.size());
+        final Iterator<? extends T> iterA = a.iterator();
+        final Iterator<? extends T> iterB = b.iterator();
+
+        T nextA = null;
+        T nextB = null;
+        boolean hasNextA = false;
+        boolean hasNextB = false;
+
+        while (hasNextA || hasNextB || iterA.hasNext() || iterB.hasNext()) {
+            if (hasNextA) {
+                if (iterB.hasNext()) {
+                    if (nextSelector.apply(nextA, (nextB = iterB.next())) == Nth.FIRST) {
+                        hasNextA = false;
+                        hasNextB = true;
+                        result.add(nextA);
+                    } else {
+                        result.add(nextB);
+                    }
+                } else {
+                    hasNextA = false;
+                    result.add(nextA);
+                }
+            } else if (hasNextB) {
+                if (iterA.hasNext()) {
+                    if (nextSelector.apply((nextA = iterA.next()), nextB) == Nth.FIRST) {
+                        result.add(nextA);
+                    } else {
+                        hasNextA = true;
+                        hasNextB = false;
+                        result.add(nextB);
+                    }
+                } else {
+                    hasNextB = false;
+                    result.add(nextB);
+                }
+            } else if (iterA.hasNext()) {
+                if (iterB.hasNext()) {
+                    if (nextSelector.apply((nextA = iterA.next()), (nextB = iterB.next())) == Nth.FIRST) {
+                        hasNextB = true;
+                        result.add(nextA);
+                    } else {
+                        hasNextA = true;
+                        result.add(nextB);
+                    }
+                } else {
+                    result.add(iterA.next());
+                }
+            } else {
+                result.add(iterB.next());
+            }
+        }
+
+        return result;
+    }
+
+    public static <A, B, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+        if (isNullOrEmpty(a) || isNullOrEmpty(b)) {
+            return new ArrayList<>();
+        }
+
+        final int minLen = min(a.length, b.length);
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(a[i], b[i]));
+        }
+
+        return result;
+    }
+
+    public static <A, B, R, E extends Exception> List<R> zip(final Collection<A> a, final Collection<B> b,
+            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+        if (isNullOrEmpty(a) || isNullOrEmpty(b)) {
+            return new ArrayList<>();
+        }
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+        final int minLen = min(a.size(), b.size());
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(iterA.next(), iterB.next()));
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final C[] c,
+            final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+        if (isNullOrEmpty(a) || isNullOrEmpty(b) || isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        final int minLen = min(a.length, b.length, c.length);
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(a[i], b[i], c[i]));
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R, E extends Exception> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+            final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+        if (isNullOrEmpty(a) || isNullOrEmpty(b) || isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+        final Iterator<C> iterC = c.iterator();
+        final int minLen = min(a.size(), b.size(), c.size());
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(iterA.next(), iterB.next(), iterC.next()));
+        }
+
+        return result;
+    }
+
+    public static <A, B, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+        final int maxLen = max(lenA, lenB);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB));
+        }
+
+        return result;
+    }
+
+    public static <A, B, R, E extends Exception> List<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+        final int maxLen = max(lenA, lenB);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB));
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+        final int lenC = c == null ? 0 : c.length;
+        final int maxLen = max(lenA, lenB, lenC);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB, i < lenC ? c[i] : valueForNoneC));
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R, E extends Exception> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+        final int lenC = c == null ? 0 : c.size();
+        final int maxLen = max(lenA, lenB, lenC);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB,
+                    i < lenC ? iterC.next() : valueForNoneC));
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, R, E extends Exception> Pair<List<L>, List<R>> unzip(final Collection<? extends T> c,
+            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip) throws E {
+        final int len = c == null ? 0 : c.size();
+
+        final List<L> l = new ArrayList<L>(len);
+        final List<R> r = new ArrayList<R>(len);
+        final Pair<L, R> p = new Pair<>();
+
+        if (notNullOrEmpty(c)) {
+            for (T e : c) {
+                unzip.accept(e, p);
+
+                l.add(p.left);
+                r.add(p.right);
+            }
+        }
+
+        return Pair.of(l, r);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @param supplier
+     * @return
+     */
+    public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>, E extends Exception> Pair<LC, RC> unzip(final Collection<? extends T> c,
+            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier) throws E {
+        final int len = c == null ? 0 : c.size();
+
+        final LC l = (LC) supplier.apply(len);
+        final RC r = (RC) supplier.apply(len);
+        final Pair<L, R> p = new Pair<>();
+
+        if (notNullOrEmpty(c)) {
+            for (T e : c) {
+                unzip.accept(e, p);
+
+                l.add(p.left);
+                r.add(p.right);
+            }
+        }
+
+        return Pair.of(l, r);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Collection<? extends T> c,
+            final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
+        final int len = c == null ? 0 : c.size();
+
+        final List<L> l = new ArrayList<L>(len);
+        final List<M> m = new ArrayList<M>(len);
+        final List<R> r = new ArrayList<R>(len);
+        final Triple<L, M, R> t = new Triple<>();
+
+        if (notNullOrEmpty(c)) {
+            for (T e : c) {
+                unzip.accept(e, t);
+
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
+            }
+        }
+
+        return Triple.of(l, m, r);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @param supplier
+     * @return
+     */
+    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
+            final Collection<? extends T> c, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier)
+            throws E {
+        final int len = c == null ? 0 : c.size();
+
+        final LC l = (LC) supplier.apply(len);
+        final MC m = (MC) supplier.apply(len);
+        final RC r = (RC) supplier.apply(len);
+        final Triple<L, M, R> t = new Triple<>();
+
+        if (notNullOrEmpty(c)) {
+            for (T e : c) {
+                unzip.accept(e, t);
+
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
+            }
+        }
+
+        return Triple.of(l, m, r);
+    }
+
+    public static <T> List<List<T>> rollup(Collection<? extends T> c) {
+        final List<List<T>> res = new ArrayList<>();
+        res.add(new ArrayList<T>());
+
+        if (notNullOrEmpty(c)) {
+            for (T e : c) {
+                final List<T> prev = res.get(res.size() - 1);
+                List<T> cur = new ArrayList<>(prev.size() + 1);
+                cur.addAll(prev);
+                cur.add(e);
+                res.add(cur);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns the set of all possible subsets of {@code set}. For example,
+     * {@code powerSet(ImmutableSet.of(1, 2))} returns the set {@code {{},
+     * {1}, {2}, {1, 2}}}.
+     *
+     * <p>Elements appear in these subsets in the same iteration order as they
+     * appeared in the input set. The order in which these subsets appear in the
+     * outer set is undefined. Note that the power set of the empty set is not the
+     * empty set, but a one-element set containing the empty set.
+     *
+     * <p>The returned set and its constituent sets use {@code equals} to decide
+     * whether two elements are identical, even if the input set uses a different
+     * concept of equivalence.
+     *
+     * <p><i>Performance notes:</i> while the power set of a set with size {@code
+     * n} is of size {@code 2^n}, its memory usage is only {@code O(n)}. When the
+     * power set is constructed, the input set is merely copied. Only as the
+     * power set is iterated are the individual subsets created, and these subsets
+     * themselves occupy only a small constant amount of memory.
+     *
+     * @param set the set of elements to construct a power set from
+     * @return the power set, as an immutable set of immutable sets
+     * @throws IllegalArgumentException if {@code set} has more than 30 unique
+     *     elements (causing the power set size to exceed the {@code int} range)
+     * @throws NullPointerException if {@code set} is or contains {@code null}
+     * @see <a href="http://en.wikipedia.org/wiki/Power_set">Power set article at
+     *      Wikipedia</a>
+     */
+    public static <E> Set<Set<E>> powerSet(Set<E> set) {
+        return new PowerSet<>(set);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Collection}.
+     *
+     * <p><i>Notes:</i> This is an implementation of the Plain Changes algorithm
+     * for permutations generation, described in Knuth's "The Art of Computer
+     * Programming", Volume 4, Chapter 7, Section 7.2.1.2.
+     *
+     * <p>If the input list contains equal elements, some of the generated
+     * permutations will be equal.
+     *
+     * <p>An empty collection has only one permutation, which is an empty list.
+     *
+     * @param elements the original collection whose elements have to be permuted.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original collection.
+     * @throws NullPointerException if the specified collection is null or has any
+     *     null elements.
+     */
+    public static <E> Collection<List<E>> permutations(Collection<E> elements) {
+        return new PermutationCollection<E>(elements);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Iterable}.
+     *
+     * <p><i>Notes:</i> This is an implementation of the algorithm for
+     * Lexicographical Permutations Generation, described in Knuth's "The Art of
+     * Computer Programming", Volume 4, Chapter 7, Section 7.2.1.2. The
+     * iteration order follows the lexicographical order. This means that
+     * the first permutation will be in ascending order, and the last will be in
+     * descending order.
+     *
+     * <p>Duplicate elements are considered equal. For example, the list [1, 1]
+     * will have only one permutation, instead of two. This is why the elements
+     * have to implement {@link Comparable}.
+     *
+     * <p>An empty iterable has only one permutation, which is an empty list.
+     *
+     * <p>This method is equivalent to
+     * {@code Collections2.orderedPermutations(list, Ordering.natural())}.
+     *
+     * @param elements the original iterable whose elements have to be permuted.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original iterable.
+     * @throws NullPointerException if the specified iterable is null or has any
+     *     null elements.
+     */
+    public static <E extends Comparable<? super E>> Collection<List<E>> orderedPermutations(Collection<E> elements) {
+        return orderedPermutations(elements, Comparators.naturalOrder());
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Iterable} using the specified {@link Comparator} for establishing
+     * the lexicographical ordering.
+     *
+     * <p>Examples: <pre>   {@code
+     *
+     *   for (List<String> perm : orderedPermutations(asList("b", "c", "a"))) {
+     *     println(perm);
+     *   }
+     *   // -> ["a", "b", "c"]
+     *   // -> ["a", "c", "b"]
+     *   // -> ["b", "a", "c"]
+     *   // -> ["b", "c", "a"]
+     *   // -> ["c", "a", "b"]
+     *   // -> ["c", "b", "a"]
+     *
+     *   for (List<Integer> perm : orderedPermutations(asList(1, 2, 2, 1))) {
+     *     println(perm);
+     *   }
+     *   // -> [1, 1, 2, 2]
+     *   // -> [1, 2, 1, 2]
+     *   // -> [1, 2, 2, 1]
+     *   // -> [2, 1, 1, 2]
+     *   // -> [2, 1, 2, 1]
+     *   // -> [2, 2, 1, 1]}</pre>
+     *
+     * <p><i>Notes:</i> This is an implementation of the algorithm for
+     * Lexicographical Permutations Generation, described in Knuth's "The Art of
+     * Computer Programming", Volume 4, Chapter 7, Section 7.2.1.2. The
+     * iteration order follows the lexicographical order. This means that
+     * the first permutation will be in ascending order, and the last will be in
+     * descending order.
+     *
+     * <p>Elements that compare equal are considered equal and no new permutations
+     * are created by swapping them.
+     *
+     * <p>An empty iterable has only one permutation, which is an empty list.
+     *
+     * @param elements the original iterable whose elements have to be permuted.
+     * @param comparator a comparator for the iterable's elements.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original iterable.
+     * @throws NullPointerException If the specified iterable is null, has any
+     *     null elements, or if the specified comparator is null.
+     */
+    public static <E> Collection<List<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
+        return new OrderedPermutationCollection<E>(elements, comparator);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns every possible list that can be formed by choosing one element
+     * from each of the given lists in order; the "n-ary
+     * <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian
+     * product</a>" of the lists. For example: <pre>   {@code
+     *
+     *   Lists.cartesianProduct(ImmutableList.of(
+     *       ImmutableList.of(1, 2),
+     *       ImmutableList.of("A", "B", "C")))}</pre>
+     *
+     * <p>returns a list containing six lists in the following order:
+     *
+     * <ul>
+     * <li>{@code ImmutableList.of(1, "A")}
+     * <li>{@code ImmutableList.of(1, "B")}
+     * <li>{@code ImmutableList.of(1, "C")}
+     * <li>{@code ImmutableList.of(2, "A")}
+     * <li>{@code ImmutableList.of(2, "B")}
+     * <li>{@code ImmutableList.of(2, "C")}
+     * </ul>
+     *
+     * <p>The result is guaranteed to be in the "traditional", lexicographical
+     * order for Cartesian products that you would get from nesting for loops:
+     * <pre>   {@code
+     *
+     *   for (B b0 : lists.get(0)) {
+     *     for (B b1 : lists.get(1)) {
+     *       ...
+     *       ImmutableList<B> tuple = ImmutableList.of(b0, b1, ...);
+     *       // operate on tuple
+     *     }
+     *   }}</pre>
+     *
+     * <p>Note that if any input list is empty, the Cartesian product will also be
+     * empty. If no lists at all are provided (an empty list), the resulting
+     * Cartesian product has one element, an empty list (counter-intuitive, but
+     * mathematically consistent).
+     *
+     * <p><i>Performance notes:</i> while the cartesian product of lists of size
+     * {@code m, n, p} is a list of size {@code m x n x p}, its actual memory
+     * consumption is much smaller. When the cartesian product is constructed, the
+     * input lists are merely copied. Only as the resulting list is iterated are
+     * the individual lists created, and these are not retained after iteration.
+     *
+     * @param cs the lists to choose elements from, in the order that
+     *     the elements chosen from those lists should appear in the resulting
+     *     lists
+     * @param <E> any common base class shared by all axes (often just {@link
+     *     Object})
+     * @return the Cartesian product, as an immutable list containing immutable
+     *     lists
+     * @throws IllegalArgumentException if the size of the cartesian product would
+     *     be greater than {@link Integer#MAX_VALUE}
+     * @throws NullPointerException if {@code lists}, any one of the
+     *     {@code lists}, or any element of a provided list is null
+     */
+    @SafeVarargs
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
+        if (N.isNullOrEmpty(cs)) {
+            return new ArrayList<>();
+        }
+
+        return cartesianProduct(Arrays.asList(cs));
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns every possible list that can be formed by choosing one element
+     * from each of the given lists in order; the "n-ary
+     * <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian
+     * product</a>" of the lists. For example: <pre>   {@code
+     *
+     *   Lists.cartesianProduct(ImmutableList.of(
+     *       ImmutableList.of(1, 2),
+     *       ImmutableList.of("A", "B", "C")))}</pre>
+     *
+     * <p>returns a list containing six lists in the following order:
+     *
+     * <ul>
+     * <li>{@code ImmutableList.of(1, "A")}
+     * <li>{@code ImmutableList.of(1, "B")}
+     * <li>{@code ImmutableList.of(1, "C")}
+     * <li>{@code ImmutableList.of(2, "A")}
+     * <li>{@code ImmutableList.of(2, "B")}
+     * <li>{@code ImmutableList.of(2, "C")}
+     * </ul>
+     *
+     * <p>The result is guaranteed to be in the "traditional", lexicographical
+     * order for Cartesian products that you would get from nesting for loops:
+     * <pre>   {@code
+     *
+     *   for (B b0 : lists.get(0)) {
+     *     for (B b1 : lists.get(1)) {
+     *       ...
+     *       ImmutableList<B> tuple = ImmutableList.of(b0, b1, ...);
+     *       // operate on tuple
+     *     }
+     *   }}</pre>
+     *
+     * <p>Note that if any input list is empty, the Cartesian product will also be
+     * empty. If no lists at all are provided (an empty list), the resulting
+     * Cartesian product has one element, an empty list (counter-intuitive, but
+     * mathematically consistent).
+     *
+     * <p><i>Performance notes:</i> while the cartesian product of lists of size
+     * {@code m, n, p} is a list of size {@code m x n x p}, its actual memory
+     * consumption is much smaller. When the cartesian product is constructed, the
+     * input lists are merely copied. Only as the resulting list is iterated are
+     * the individual lists created, and these are not retained after iteration.
+     *
+     * @param cs the lists to choose elements from, in the order that
+     *     the elements chosen from those lists should appear in the resulting
+     *     lists
+     * @param <E> any common base class shared by all axes (often just {@link
+     *     Object})
+     * @return the Cartesian product, as an immutable list containing immutable
+     *     lists
+     * @throws IllegalArgumentException if the size of the cartesian product would
+     *     be greater than {@link Integer#MAX_VALUE}
+     * @throws NullPointerException if {@code lists}, any one of the {@code lists},
+     *     or any element of a provided list is null
+     */
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
+        return new CartesianList<>(cs);
+    }
+
+    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
+        Objects.requireNonNull(function);
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            K k;
+            V v;
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            // ise thrown from function is not a cme.
+            v = function.apply(k, v);
+
+            try {
+                entry.setValue(v);
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+        }
+    }
+
+    static <K, V, E extends Exception> V merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction) throws E {
+        Objects.requireNonNull(remappingFunction);
+        Objects.requireNonNull(value);
+
+        V oldValue = map.get(key);
+        V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
+        if (newValue == null) {
+            map.remove(key);
+        } else {
+            map.put(key, newValue);
+        }
+
+        return newValue;
+    }
+
+    private static final class PowerSet<E> extends AbstractSet<Set<E>> {
+        final ImmutableMap<E, Integer> inputSet;
+
+        PowerSet(Set<E> input) {
+            this.inputSet = indexMap(input);
+            N.checkArgument(inputSet.size() <= 30, "Too many elements to create power set: %s > 30", inputSet.size());
+        }
+
+        @Override
+        public int size() {
+            return 1 << inputSet.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<Set<E>> iterator() {
+            return new Iterator<Set<E>>() {
+                private final int size = size();
+                private int position;
+
+                @Override
+                public boolean hasNext() {
+                    return position < size;
+                }
+
+                @Override
+                public Set<E> next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+
+                    return new SubSet<>(inputSet, position++);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Set) {
+                Set<?> set = (Set<?>) obj;
+                return inputSet.keySet().containsAll(set);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PowerSet) {
+                PowerSet<?> that = (PowerSet<?>) obj;
+                return inputSet.equals(that.inputSet);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            /*
+             * The sum of the sums of the hash codes in each subset is just the sum of
+             * each input element's hash code times the number of sets that element
+             * appears in. Each element appears in exactly half of the 2^n sets, so:
+             */
+            return inputSet.keySet().hashCode() << (inputSet.size() - 1);
+        }
+
+        @Override
+        public String toString() {
+            return "powerSet(" + inputSet + ")";
+        }
+
+        /**
+         * Returns a map from the ith element of list to i.
+         */
+        private static <E> ImmutableMap<E, Integer> indexMap(Collection<E> c) {
+            final Map<E, Integer> map = new LinkedHashMap<>();
+
+            int i = 0;
+
+            for (E e : c) {
+                map.put(e, i++);
+            }
+
+            return ImmutableMap.of(map);
+        }
+    }
+
+    private static final class SubSet<E> extends AbstractSet<E> {
+        private final ImmutableMap<E, Integer> inputSet;
+        private final ImmutableList<E> elements;
+        private final int mask;
+
+        SubSet(ImmutableMap<E, Integer> inputSet, int mask) {
+            this.inputSet = inputSet;
+            this.elements = ImmutableList.of((E[]) inputSet.keySet().toArray());
+            this.mask = mask;
+        }
+
+        @Override
+        public Iterator<E> iterator() {
+            return new Iterator<E>() {
+                int remainingSetBits = mask;
+
+                @Override
+                public boolean hasNext() {
+                    return remainingSetBits != 0;
+                }
+
+                @Override
+                public E next() {
+                    int index = Integer.numberOfTrailingZeros(remainingSetBits);
+                    if (index == 32) {
+                        throw new NoSuchElementException();
+                    }
+                    remainingSetBits &= ~(1 << index);
+                    return elements.get(index);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        @Override
+        public int size() {
+            return Integer.bitCount(mask);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            Integer index = inputSet.get(o);
+            return index != null && (mask & (1 << index)) != 0;
+        }
+    }
+
+    private static final class PermutationCollection<E> extends AbstractCollection<List<E>> {
+        final List<E> inputList;
+
+        PermutationCollection(Collection<E> input) {
+            this.inputList = new ArrayList<>(input);
+        }
+
+        @Override
+        public int size() {
+            return Maths.factorial(inputList.size());
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<List<E>> iterator() {
+            return PermutationIterator.of(inputList);
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Collection) {
+                return isPermutations(inputList, (Collection<?>) obj);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "permutations(" + inputList + ")";
+        }
+    }
+
+    private static final class OrderedPermutationCollection<E> extends AbstractCollection<List<E>> {
+        final List<E> inputList;
+        final Comparator<? super E> comparator;
+        final int size;
+
+        OrderedPermutationCollection(Collection<E> input, Comparator<? super E> comparator) {
+            this.inputList = new ArrayList<E>(input);
+            N.sort(inputList, comparator);
+            this.comparator = comparator;
+            this.size = calculateSize(inputList, comparator);
+        }
+
+        @Override
+        public int size() {
+            return size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<List<E>> iterator() {
+            return PermutationIterator.ordered(inputList, comparator);
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Collection) {
+                return isPermutations(inputList, (Collection<?>) obj);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "orderedPermutationCollection(" + inputList + ")";
+        }
+
+        /**
+         * The number of permutations with repeated elements is calculated as
+         * follows:
+         * <ul>
+         * <li>For an empty list, it is 1 (base case).</li>
+         * <li>When r numbers are added to a list of n-r elements, the number of
+         * permutations is increased by a factor of (n choose r).</li>
+         * </ul>
+         */
+        private static <E> int calculateSize(List<E> sortedInputList, Comparator<? super E> comparator) {
+            long permutations = 1;
+            int n = 1;
+            int r = 1;
+            while (n < sortedInputList.size()) {
+                int comparison = comparator.compare(sortedInputList.get(n - 1), sortedInputList.get(n));
+
+                if (comparison < 0) {
+                    // We move to the next non-repeated element.
+                    permutations *= Maths.binomial(n, r);
+                    r = 0;
+                    if (!isPositiveInt(permutations)) {
+                        return Integer.MAX_VALUE;
+                    }
+                }
+
+                n++;
+                r++;
+            }
+
+            permutations *= Maths.binomial(n, r);
+
+            if (!isPositiveInt(permutations)) {
+                return Integer.MAX_VALUE;
+            }
+
+            return (int) permutations;
+        }
+
+        private static boolean isPositiveInt(long n) {
+            return n >= 0 && n <= Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Returns {@code true} if the second list is a permutation of the first.
+     */
+    private static boolean isPermutations(Collection<?> a, Collection<?> b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+
+        return N.difference(a, b).size() == 0;
+    }
+
+    private static final class CartesianList<E> extends AbstractList<List<E>> implements RandomAccess {
+        private final transient Object[][] axes;
+        private final transient int[] axesSizeProduct;
+
+        CartesianList(final Collection<? extends Collection<? extends E>> cs) {
+            final Iterator<? extends Collection<? extends E>> iter = cs.iterator();
+            this.axes = new Object[cs.size()][];
+
+            for (int i = 0, len = this.axes.length; i < len; i++) {
+                this.axes[i] = iter.next().toArray();
+            }
+
+            this.axesSizeProduct = new int[axes.length + 1];
+            axesSizeProduct[axes.length] = 1;
+
+            try {
+                for (int i = axes.length - 1; i >= 0; i--) {
+                    axesSizeProduct[i] = Maths.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
+                }
+            } catch (ArithmeticException e) {
+                throw new IllegalArgumentException("Cartesian product too large; must have size at most Integer.MAX_VALUE");
+            }
+        }
+
+        @Override
+        public List<E> get(final int index) {
+            N.checkArgument(index < size(), "Invalid index %s. It must be less than the size %s", index, size());
+
+            final List<E> result = new ArrayList<>(axes.length);
+
+            for (int k = 0, len = axes.length; k < len; k++) {
+                result.add((E) axes[k][getAxisIndexForProductIndex(index, k)]);
+            }
+
+            return result;
+        }
+
+        @Override
+        public int size() {
+            return axesSizeProduct[0];
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (!(obj instanceof Collection)) {
+                return false;
+            }
+
+            final Collection<?> c = (Collection<?>) obj;
+
+            if (c.size() != axes.length) {
+                return false;
+            }
+
+            int idx = 0;
+            for (Object e : c) {
+                boolean found = false;
+
+                for (Object p : axes[idx++]) {
+                    if (N.equals(e, p)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found == false) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int getAxisIndexForProductIndex(int index, int axis) {
+            return (index / axesSizeProduct[axis + 1]) % axes[axis].length;
+        }
     }
 
     static <T> T createMask(final Class<T> interfaceClass) {

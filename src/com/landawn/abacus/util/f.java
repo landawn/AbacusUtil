@@ -20,7 +20,7 @@ import com.landawn.abacus.annotation.Beta;
 @Beta
 public final class f {
 
-    private static final String ARRAY_PRINT_SEPERATOR = N.repeat('-', 80);
+    private static final String ARRAY_PRINT_SEPERATOR = N.repeatt('-', 80);
 
     static final char CHAR_0 = (char) 0;
     static final byte BYTE_0 = (byte) 0;

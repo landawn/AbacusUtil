@@ -1,8 +1,22 @@
 ### 1.2.5
 
+* Remove `Seq.iterate`.
+
+* Rename `N.repeat` to `N.repeatt`.
+
+* Move/Rename `Seq.repeat/repeatt/nRepeat/repeatToSize/nRepeatToSize` to `N.repeat/repeatAll/repeatEle/repeatAllToSize/repeatEleToSize`.
+
+* Move `Seq.iterate/concat/disjoint/merge/zip/unzip/rollup/powset/permutations/orderedPermutations/cartesianProduct/reverse/rotate/shuffle` to `N`.
+
+* Rename `Iterators.repeatt/nRepeat/repeatToSize/nRepeatToSize` to `repeatAll/repeatEle/repeatAllToSize/repeatEleToSize`.
+
+* Add `Iterators.forEach`.
+
 * Add `N.minAll/maxAll`.
 
-* Add `N.checkArgNonNegative`.
+* Add `N.checkArgNotNegative`.
+
+* Add `Iterators.forEach/forEachNonNull`.
 
 * Improvements and bug fix.
 

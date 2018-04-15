@@ -1383,7 +1383,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+            N.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
         }
 
         return result;
@@ -1423,7 +1423,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
             }
         };
 
-        Seq.replaceAll(intermediate, function);
+        N.replaceAll(intermediate, function);
 
         return result;
     }

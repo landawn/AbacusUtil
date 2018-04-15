@@ -40,7 +40,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public final class Comparators {
     @SuppressWarnings("rawtypes")
-    private static final Comparator NULL_FIRST_COMPARATOR = new Comparator<Comparable>() {
+    static final Comparator NULL_FIRST_COMPARATOR = new Comparator<Comparable>() {
         @Override
         public int compare(final Comparable a, final Comparable b) {
             return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
@@ -48,7 +48,7 @@ public final class Comparators {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Comparator NULL_LAST_COMPARATOR = new Comparator<Comparable>() {
+    static final Comparator NULL_LAST_COMPARATOR = new Comparator<Comparable>() {
         @Override
         public int compare(final Comparable a, final Comparable b) {
             return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : a.compareTo(b));
@@ -56,13 +56,10 @@ public final class Comparators {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Comparator NATURAL_ORDER = NULL_FIRST_COMPARATOR;
+    static final Comparator NATURAL_ORDER = NULL_FIRST_COMPARATOR;
 
     @SuppressWarnings("rawtypes")
-    private static final Comparator REVERSED_ORDER = Collections.reverseOrder(NATURAL_ORDER);
-
-    @SuppressWarnings("rawtypes")
-    static final Comparator OBJ_COMPARATOR = NATURAL_ORDER;
+    static final Comparator REVERSED_ORDER = Collections.reverseOrder(NATURAL_ORDER);
 
     static final Comparator<String> COMPARING_IGNORE_CASE = new Comparator<String>() {
         @Override

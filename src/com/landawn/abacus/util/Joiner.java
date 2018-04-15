@@ -1270,7 +1270,7 @@ public class Joiner {
      * @param b
      * @return
      */
-    public static Object concat(final Object a, final Object b) {
+    public static String concat(final Object a, final Object b) {
         return N.concat(N.toString(a), N.toString(b));
     }
 
@@ -1282,7 +1282,7 @@ public class Joiner {
      * @return
      * @see #concat(Object, Object)
      */
-    public static Object concat(final Object a, final Object b, final Object c) {
+    public static String concat(final Object a, final Object b, final Object c) {
         return N.concat(N.toString(a), N.toString(b), N.toString(c));
     }
 
@@ -1295,7 +1295,7 @@ public class Joiner {
      * @return
      * @see #concat(Object, Object)
      */
-    public static Object concat(final Object a, final Object b, final Object c, final Object d) {
+    public static String concat(final Object a, final Object b, final Object c, final Object d) {
         return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d));
     }
 
@@ -1309,7 +1309,7 @@ public class Joiner {
      * @return
      * @see #concat(Object, Object)
      */
-    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e) {
+    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e) {
         return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e));
     }
 
@@ -1324,7 +1324,7 @@ public class Joiner {
      * @return
      * @see #concat(Object, Object)
      */
-    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f) {
+    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f) {
         return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f));
     }
 
@@ -1342,7 +1342,7 @@ public class Joiner {
      * @return
      * @see #concat(Object, Object)
      */
-    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
+    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
         return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g));
     }
 
@@ -1353,7 +1353,7 @@ public class Joiner {
      * @see #concat(Object, Object)
      */
     @SafeVarargs
-    public static Object concat(final Object... a) {
+    public static String concat(final Object... a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         } else if (a.getClass().equals(String[].class)) {
@@ -1372,7 +1372,7 @@ public class Joiner {
         }
     }
 
-    public static Object concat(final Collection<?> c) {
+    public static String concat(final Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_STRING;
         }

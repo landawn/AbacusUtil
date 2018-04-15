@@ -65,7 +65,6 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
-import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1877,7 +1876,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         cList.add(this.toList());
         cList.addAll(cs);
 
-        return newStream(Seq.cartesianProduct(cList).iterator(), false, null);
+        return newStream(N.cartesianProduct(cList).iterator(), false, null);
     }
 
     @Override

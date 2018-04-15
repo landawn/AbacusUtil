@@ -96,11 +96,11 @@ public final class Iterators {
         }
 
         final Map<K, T> result = new HashMap<>();
-        T next = null;
+        T e = null;
 
         while (iter.hasNext()) {
-            next = iter.next();
-            result.put(keyExtractor.apply(next), next);
+            e = iter.next();
+            result.put(keyExtractor.apply(e), e);
         }
 
         return result;
@@ -116,11 +116,11 @@ public final class Iterators {
         }
 
         final Map<K, V> result = new HashMap<>();
-        T next = null;
+        T e = null;
 
         while (iter.hasNext()) {
-            next = iter.next();
-            result.put(keyExtractor.apply(next), valueExtractor.apply(next));
+            e = iter.next();
+            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
         }
 
         return result;
@@ -137,14 +137,278 @@ public final class Iterators {
         }
 
         final M result = mapSupplier.get();
-        T next = null;
+        T e = null;
 
         while (iter.hasNext()) {
-            next = iter.next();
-            result.put(keyExtractor.apply(next), valueExtractor.apply(next));
+            e = iter.next();
+            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
         }
 
         return result;
+    }
+
+    public static <T, E extends Exception> void forEach(final Iterator<T> iter, final Try.Consumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        while (iter.hasNext()) {
+            action.accept(iter.next());
+        }
+    }
+
+    public static <T, E extends Exception> void forEach(final Iterator<T> iter, final Try.IndexedConsumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        int idx = 0;
+
+        while (iter.hasNext()) {
+            action.accept(idx++, iter.next());
+        }
+    }
+
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final Iterator<T> iter, final R seed,
+            Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
+        if (iter == null) {
+            return seed;
+        }
+
+        R result = seed;
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            result = accumulator.apply(result, e);
+
+            if (conditionToBreak.test(result, e)) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final Iterator<T> iter, final R seed,
+            final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
+        if (iter == null) {
+            return seed;
+        }
+
+        R result = seed;
+        T e = null;
+        int index = 0;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            result = accumulator.apply(result, index++, e);
+
+            if (conditionToBreak.test(result, e)) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, U, E extends Exception, E2 extends Exception> void forEach(final Iterator<T> iter,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            final Collection<U> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (U u : c2) {
+                    action.accept(e, u);
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final Iterator<T> iter,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            final Collection<T2> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (T2 t2 : c2) {
+                    final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                    if (N.notNullOrEmpty(c3)) {
+                        for (T3 t3 : c3) {
+                            action.accept(e, t2, t3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <A, B, E extends Exception> void forEach(final Iterator<A> a, final Iterator<B> b, final Try.BiConsumer<? super A, ? super B, E> action)
+            throws E {
+        N.requireNonNull(action);
+
+        if (a == null || b == null) {
+            return;
+        }
+
+        while (a.hasNext() && b.hasNext()) {
+            action.accept(a.next(), b.next());
+        }
+    }
+
+    public static <A, B, C, E extends Exception> void forEach(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c,
+            final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
+
+        if (a == null || b == null || c == null) {
+            return;
+        }
+
+        while (a.hasNext() && b.hasNext() && c.hasNext()) {
+            action.accept(a.next(), b.next(), c.next());
+        }
+    }
+
+    public static <A, B, E extends Exception> void forEach(final Iterator<A> a, final Iterator<B> b, final A valueForNoneA, final B valueForNoneB,
+            final Try.BiConsumer<? super A, ? super B, E> action) throws E {
+        N.requireNonNull(action);
+
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
+
+        A nextA = null;
+        B nextB = null;
+
+        while (iterA.hasNext() || iterB.hasNext()) {
+            nextA = iterA.hasNext() ? iterA.next() : valueForNoneA;
+            nextB = iterB.hasNext() ? iterB.next() : valueForNoneB;
+
+            action.accept(nextA, nextB);
+        }
+    }
+
+    public static <A, B, C, E extends Exception> void forEach(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
+
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
+        final Iterator<C> iterC = b == null ? ObjIterator.<C> empty() : c;
+
+        A nextA = null;
+        B nextB = null;
+        C nextC = null;
+
+        while (iterA.hasNext() || iterB.hasNext() || iterC.hasNext()) {
+            nextA = iterA.hasNext() ? iterA.next() : valueForNoneA;
+            nextB = iterB.hasNext() ? iterB.next() : valueForNoneB;
+            nextC = iterC.hasNext() ? iterC.next() : valueForNoneC;
+
+            action.accept(nextA, nextB, nextC);
+        }
+    }
+
+    public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final Iterator<T> iter,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            if (e != null) {
+                final Collection<U> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (U u : c2) {
+                        if (u != null) {
+                            action.accept(e, u);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final Iterator<T> iter,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
+        if (iter == null) {
+            return;
+        }
+
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            if (e != null) {
+                final Collection<T2> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (T2 t2 : c2) {
+                        if (t2 != null) {
+                            final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                            if (N.notNullOrEmpty(c3)) {
+                                for (T3 t3 : c3) {
+                                    if (t3 != null) {
+                                        action.accept(e, t2, t3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static <T> ObjIterator<T> repeat(final T e, final int n) {
@@ -174,7 +438,45 @@ public final class Iterators {
         };
     };
 
-    public static <T> ObjIterator<T> repeatt(final Collection<T> c, final int n) {
+    public static <T> ObjIterator<T> repeatEle(final Collection<T> c, final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+    
+        if (n == 0 || N.isNullOrEmpty(c)) {
+            return ObjIterator.empty();
+        }
+    
+        return new ObjIterator<T>() {
+            private Iterator<T> iter = null;
+            private T next = null;
+            private int cnt = n;
+    
+            @Override
+            public boolean hasNext() {
+                return cnt > 0 || (iter != null && iter.hasNext());
+            }
+    
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+    
+                if (iter == null) {
+                    iter = c.iterator();
+                    next = iter.next();
+                } else if (cnt <= 0) {
+                    next = iter.next();
+                    cnt = n;
+                }
+    
+                cnt--;
+    
+                return next;
+            }
+        };
+    }
+
+    public static <T> ObjIterator<T> repeatAll(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0 || N.isNullOrEmpty(c)) {
@@ -206,7 +508,49 @@ public final class Iterators {
         };
     };
 
-    public static <T> ObjIterator<T> repeatToSize(final Collection<T> c, final int size) {
+    public static <T> ObjIterator<T> repeatEleToSize(final Collection<T> c, final int size) {
+        N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
+        N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
+    
+        if (N.isNullOrEmpty(c) || size == 0) {
+            return ObjIterator.empty();
+        }
+    
+        return new ObjIterator<T>() {
+            private final int n = size / c.size();
+            private int mod = size % c.size();
+    
+            private Iterator<T> iter = null;
+            private T next = null;
+            private int cnt = mod-- > 0 ? n + 1 : n;
+    
+            @Override
+            public boolean hasNext() {
+                return cnt > 0 || ((n > 0 || mod > 0) && (iter != null && iter.hasNext()));
+            }
+    
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+    
+                if (iter == null) {
+                    iter = c.iterator();
+                    next = iter.next();
+                } else if (cnt <= 0) {
+                    next = iter.next();
+                    cnt = mod-- > 0 ? n + 1 : n;
+                }
+    
+                cnt--;
+    
+                return next;
+            }
+        };
+    }
+
+    public static <T> ObjIterator<T> repeatAllToSize(final Collection<T> c, final int size) {
         N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
         N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
@@ -236,86 +580,6 @@ public final class Iterators {
                 cnt--;
 
                 return iter.next();
-            }
-        };
-    };
-
-    public static <T> ObjIterator<T> nRepeat(final Collection<T> c, final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        if (n == 0 || N.isNullOrEmpty(c)) {
-            return ObjIterator.empty();
-        }
-
-        return new ObjIterator<T>() {
-            private Iterator<T> iter = null;
-            private T next = null;
-            private int cnt = n;
-
-            @Override
-            public boolean hasNext() {
-                return cnt > 0 || (iter != null && iter.hasNext());
-            }
-
-            @Override
-            public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (iter == null) {
-                    iter = c.iterator();
-                    next = iter.next();
-                } else if (cnt <= 0) {
-                    next = iter.next();
-                    cnt = n;
-                }
-
-                cnt--;
-
-                return next;
-            }
-        };
-    };
-
-    public static <T> ObjIterator<T> nRepeatToSize(final Collection<T> c, final int size) {
-        N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
-        N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
-
-        if (N.isNullOrEmpty(c) || size == 0) {
-            return ObjIterator.empty();
-        }
-
-        return new ObjIterator<T>() {
-            private final int n = size / c.size();
-            private int mod = size % c.size();
-
-            private Iterator<T> iter = null;
-            private T next = null;
-            private int cnt = mod-- > 0 ? n + 1 : n;
-
-            @Override
-            public boolean hasNext() {
-                return cnt > 0 || ((n > 0 || mod > 0) && (iter != null && iter.hasNext()));
-            }
-
-            @Override
-            public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (iter == null) {
-                    iter = c.iterator();
-                    next = iter.next();
-                } else if (cnt <= 0) {
-                    next = iter.next();
-                    cnt = mod-- > 0 ? n + 1 : n;
-                }
-
-                cnt--;
-
-                return next;
             }
         };
     };
@@ -1217,11 +1481,11 @@ public final class Iterators {
             return Optional.empty();
         }
 
-        T next = null;
+        T e = null;
 
         while (iter.hasNext()) {
-            if ((next = iter.next()) != null) {
-                return Optional.of(next);
+            if ((e = iter.next()) != null) {
+                return Optional.of(e);
             }
         }
 
@@ -1233,13 +1497,13 @@ public final class Iterators {
             return Nullable.empty();
         }
 
-        T next = null;
+        T e = null;
 
         while (iter.hasNext()) {
-            next = iter.next();
+            e = iter.next();
         }
 
-        return Nullable.of(next);
+        return Nullable.of(e);
     }
 
     public static <T> Optional<T> lastNonNull(final Iterator<T> iter) {
@@ -1247,12 +1511,12 @@ public final class Iterators {
             return Optional.empty();
         }
 
-        T next = null;
+        T e = null;
         T lastNonNull = null;
 
         while (iter.hasNext()) {
-            if ((next = iter.next()) != null) {
-                lastNonNull = next;
+            if ((e = iter.next()) != null) {
+                lastNonNull = e;
             }
         }
 
@@ -1327,4 +1591,5 @@ public final class Iterators {
             }
         };
     }
+
 }

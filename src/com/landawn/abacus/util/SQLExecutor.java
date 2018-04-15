@@ -4008,7 +4008,7 @@ public final class SQLExecutor implements Closeable {
 
             final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
 
-            if (N.notNullOrEmpty(readOnlyPropNames) && !Seq.disjoint(readOnlyPropNames, props.keySet())) {
+            if (N.notNullOrEmpty(readOnlyPropNames) && !N.disjoint(readOnlyPropNames, props.keySet())) {
                 throw new IllegalArgumentException("Can't write read-only properties: " + N.intersection(readOnlyPropNames, props.keySet()));
             }
 
@@ -4255,7 +4255,7 @@ public final class SQLExecutor implements Closeable {
         private SP prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
             final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
 
-            if (N.notNullOrEmpty(nonUpdatablePropNames) && !Seq.disjoint(nonUpdatablePropNames, props.keySet())) {
+            if (N.notNullOrEmpty(nonUpdatablePropNames) && !N.disjoint(nonUpdatablePropNames, props.keySet())) {
                 throw new IllegalArgumentException("Can't write non-updatable properties: " + N.intersection(nonUpdatablePropNames, props.keySet()));
             }
 

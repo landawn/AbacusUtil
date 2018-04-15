@@ -2432,7 +2432,7 @@ public final class Array {
     }
 
     static void sort(final Object[] a, final int fromIndex, final int toIndex) {
-        sort(a, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
+        sort(a, fromIndex, toIndex, Comparators.NATURAL_ORDER);
     }
 
     static <T> void sort(final T[] a, final Comparator<? super T> cmp) {
@@ -2462,7 +2462,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void sort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        sort(c, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
+        sort(c, fromIndex, toIndex, Comparators.NATURAL_ORDER);
     }
 
     static <T> void sort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -3546,7 +3546,7 @@ public final class Array {
     }
 
     static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
-        parallelSort(a, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
+        parallelSort(a, fromIndex, toIndex, Comparators.NATURAL_ORDER);
     }
 
     static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
@@ -3564,7 +3564,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
         final int len = toIndex - fromIndex;
 
         if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
@@ -3681,7 +3681,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        parallelSort(c, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
+        parallelSort(c, fromIndex, toIndex, Comparators.NATURAL_ORDER);
     }
 
     static <T> void parallelSort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -3941,7 +3941,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
         final Multiset<T> multiset = new Multiset<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -4020,7 +4020,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
         final Multiset<T> multiset = new Multiset<>();
         ListIterator<T> itr = (ListIterator<T>) c.listIterator(fromIndex);
         int i = fromIndex;
@@ -4351,7 +4351,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? Comparators.NATURAL_ORDER : cmp);
     }
 
     /**
@@ -4369,7 +4369,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? Comparators.NATURAL_ORDER : cmp);
     }
 
     /**
@@ -4392,7 +4392,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return binarySearch(list, fromIndex, toIndex, key, Comparators.OBJ_COMPARATOR);
+        return binarySearch(list, fromIndex, toIndex, key, Comparators.NATURAL_ORDER);
     }
 
     static <T> int binarySearch(final List<? extends T> list, final T key, final Comparator<? super T> cmp) {
@@ -4429,14 +4429,14 @@ public final class Array {
             }
 
             if (array != null) {
-                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
+                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? Comparators.NATURAL_ORDER : cmp);
             }
         }
 
         if (list instanceof RandomAccess || list.size() < BINARYSEARCH_THRESHOLD) {
-            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
+            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.NATURAL_ORDER : cmp);
         } else {
-            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
+            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.NATURAL_ORDER : cmp);
         }
     }
 
@@ -4906,7 +4906,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k) {
-        return (T) kthLargest(a, fromIndex, toIndex, k, Comparators.OBJ_COMPARATOR);
+        return (T) kthLargest(a, fromIndex, toIndex, k, Comparators.NATURAL_ORDER);
     }
 
     static <T> T kthLargest(final T[] a, int k, final Comparator<? super T> cmp) {
@@ -4917,7 +4917,7 @@ public final class Array {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
         N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
-        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
         final int len = toIndex - fromIndex;
 
         if (k == 1) {
@@ -4971,7 +4971,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k) {
-        return (T) kthLargest(c, fromIndex, toIndex, k, Comparators.OBJ_COMPARATOR);
+        return (T) kthLargest(c, fromIndex, toIndex, k, Comparators.NATURAL_ORDER);
     }
 
     static <T> T kthLargest(final Collection<? extends T> c, int k, final Comparator<? super T> cmp) {
@@ -4982,7 +4982,7 @@ public final class Array {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
-        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
         final int len = toIndex - fromIndex;
 
         if (k == 1) {
