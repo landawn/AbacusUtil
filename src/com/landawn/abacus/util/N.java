@@ -9521,7 +9521,7 @@ public final class N {
             if (isNullErrorMsg(errorMessage)) {
                 throw new NullPointerException(errorMessage);
             } else {
-                throw new NullPointerException(errorMessage + " can not be null");
+                throw new NullPointerException("'" + errorMessage + "' can not be null");
             }
         }
 
@@ -9541,7 +9541,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9561,7 +9561,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9581,7 +9581,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9601,7 +9601,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9621,7 +9621,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9641,7 +9641,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9661,7 +9661,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9681,7 +9681,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9701,7 +9701,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9721,7 +9721,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9734,7 +9734,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9754,7 +9754,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9774,7 +9774,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9794,7 +9794,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9814,7 +9814,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9834,7 +9834,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9854,7 +9854,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9874,7 +9874,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
             }
         }
 
@@ -9895,7 +9895,7 @@ public final class N {
             if (isNullErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty or blank");
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty or blank");
             }
         }
 
@@ -10559,6 +10559,40 @@ public final class N {
     //
     //        return arg;
     //    }
+
+    /**
+     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgNonNegative(final int arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgNonNegative(final long arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
 
     /**
      * Ensures the truth of an expression involving the state of the calling instance, but not
@@ -30734,6 +30768,73 @@ public final class N {
         return candidate;
     }
 
+    public static <T extends Comparable<T>> List<T> minAll(final T[] a) {
+        return minAll(a, Comparators.<T> naturalOrder());
+    }
+
+    public static <T> List<T> minAll(final T[] a, Comparator<? super T> comparator) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+
+        final List<T> result = new ArrayList<>();
+        T candicate = a[0];
+        int cp = 0;
+
+        result.add(candicate);
+
+        for (int i = 1, len = a.length; i < len; i++) {
+            cp = cmp.compare(a[i], candicate);
+
+            if (cp == 0) {
+                result.add(a[i]);
+            } else if (cp < 0) {
+                result.clear();
+                result.add(a[i]);
+                candicate = a[i];
+            }
+        }
+
+        return result;
+    }
+
+    public static <T extends Comparable<T>> List<T> minAll(final Collection<T> c) {
+        return minAll(c, Comparators.<T> naturalOrder());
+    }
+
+    public static <T> List<T> minAll(final Collection<T> c, Comparator<? super T> comparator) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+
+        final Iterator<T> iter = c.iterator();
+        final List<T> result = new ArrayList<>();
+        T candicate = iter.next();
+        T next = null;
+        int cp = 0;
+
+        result.add(candicate);
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            cp = cmp.compare(next, candicate);
+
+            if (cp == 0) {
+                result.add(next);
+            } else if (cp < 0) {
+                result.clear();
+                result.add(next);
+                candicate = next;
+            }
+        }
+
+        return result;
+    }
+
     /**
      * <p>
      * Gets the maximum of two <code>char</code> values.
@@ -31299,6 +31400,73 @@ public final class N {
         }
 
         return candidate;
+    }
+
+    public static <T extends Comparable<T>> List<T> maxAll(final T[] a) {
+        return maxAll(a, Comparators.<T> naturalOrder());
+    }
+
+    public static <T> List<T> maxAll(final T[] a, Comparator<? super T> comparator) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+
+        final List<T> result = new ArrayList<>();
+        T candicate = a[0];
+        int cp = 0;
+
+        result.add(candicate);
+
+        for (int i = 1, len = a.length; i < len; i++) {
+            cp = cmp.compare(a[i], candicate);
+
+            if (cp == 0) {
+                result.add(a[i]);
+            } else if (cp > 0) {
+                result.clear();
+                result.add(a[i]);
+                candicate = a[i];
+            }
+        }
+
+        return result;
+    }
+
+    public static <T extends Comparable<T>> List<T> maxAll(final Collection<T> c) {
+        return maxAll(c, Comparators.<T> naturalOrder());
+    }
+
+    public static <T> List<T> maxAll(final Collection<T> c, Comparator<? super T> comparator) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        final Comparator<T> cmp = comparator == null ? Comparators.<T> naturalOrder() : (Comparator<T>) comparator;
+
+        final Iterator<T> iter = c.iterator();
+        final List<T> result = new ArrayList<>();
+        T candicate = iter.next();
+        T next = null;
+        int cp = 0;
+
+        result.add(candicate);
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            cp = cmp.compare(next, candicate);
+
+            if (cp == 0) {
+                result.add(next);
+            } else if (cp > 0) {
+                result.clear();
+                result.add(next);
+                candicate = next;
+            }
+        }
+
+        return result;
     }
 
     /** 

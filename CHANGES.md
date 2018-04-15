@@ -1,3 +1,11 @@
+### 1.2.5
+
+* Add `N.minAll/maxAll`.
+
+* Add `N.checkArgNonNegative`.
+
+* Improvements and bug fix.
+
 
 ### 1.2.4
 
