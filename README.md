@@ -74,9 +74,9 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Fraction](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Fraction.html),
 [MutableBoolean](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/MutableBoolean.html)
 ...
-[MutableDouble(https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/MutableDouble.html,
-[Index(https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Index.html,
-[Indexed(https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Indexed.html,
+[MutableDouble](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/MutableDouble.html),
+[Index](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Index.html),
+[Indexed](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Indexed.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/f.html),
 [Hashing](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/hash/Hashing.html),
 [Maths](https://static.javadoc.io/com.landawn/abacus-util/1.2.4/com/landawn/abacus/util/Maths.html),
