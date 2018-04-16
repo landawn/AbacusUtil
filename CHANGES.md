@@ -10,8 +10,6 @@
 
 * Rename `Iterators.repeatt/nRepeat/repeatToSize/nRepeatToSize` to `repeatAll/repeatEle/repeatAllToSize/repeatEleToSize`.
 
-* Add `Iterators.forEach`.
-
 * Add `N.minAll/maxAll`.
 
 * Add `N.checkArgNotNegative`.
