@@ -38,7 +38,8 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @author haiyangl
  *
  */
-public final class Comparators {
+public abstract class Comparators {
+
     @SuppressWarnings("rawtypes")
     static final Comparator NULL_FIRST_COMPARATOR = new Comparator<Comparable>() {
         @Override
@@ -91,7 +92,7 @@ public final class Comparators {
         }
     };
 
-    private Comparators() {
+    Comparators() {
         // Singleton
     }
 
@@ -274,6 +275,17 @@ public final class Comparators {
 
     public static Comparator<String> comparingIgnoreCase() {
         return COMPARING_IGNORE_CASE;
+    }
+
+    public static <T> Comparator<T> comparingIgnoreCase(final Function<? super T, String> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return N.compareIgnoreCase(keyExtractor.apply(a), keyExtractor.apply(b));
+            }
+        };
     }
 
     @SuppressWarnings("rawtypes")

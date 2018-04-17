@@ -1,3 +1,10 @@
+### 1.2.6
+ 
+* Add `Comparators.comparingIgnoreCase(final Function<? super T, String> keyExtractor)`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.5
 
 * Remove `Seq.iterate`.

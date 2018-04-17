@@ -102,7 +102,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @author haiyang li
  *
  */
-public final class Fn {
+public final class Fn extends Comparators {
 
     @SuppressWarnings("rawtypes")
     public static final IntFunction<Map<String, Object>> FACTORY_OF_MAP = (IntFunction) Factory.MAP_FACTORY;
@@ -393,33 +393,12 @@ public final class Fn {
     private static final Object NULL = new Object();
 
     private Fn() {
+        super();
         // Singleton.
     }
 
     public static <T> T get(final Supplier<T> supplier) {
         return supplier.get();
-    }
-
-    public static <T> Comparator<T> naturalOrder() {
-        return Comparators.naturalOrder();
-    }
-
-    public static <T> Comparator<T> reversedOrder() {
-        return Comparators.reversedOrder();
-    }
-
-    public static <T> Comparator<T> reversedOrder(final Comparator<T> cmp) {
-        return Comparators.reversedOrder(cmp);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        return Comparators.comparingBy(keyExtractor);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        return Comparators.reversedComparingBy(keyExtractor);
     }
 
     public static com.landawn.abacus.util.function.Runnable close(final AutoCloseable closeable) {
