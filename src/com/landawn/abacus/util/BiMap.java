@@ -307,7 +307,7 @@ public final class BiMap<K, V> implements Map<K, V> {
         return new AbstractSet<Map.Entry<K, V>>() {
             @Override
             public Iterator<Map.Entry<K, V>> iterator() {
-                return new ImmutableIterator<Map.Entry<K, V>>() {
+                return new ObjIterator<Map.Entry<K, V>>() {
                     private final Iterator<Map.Entry<K, V>> keyValueEntryIter = keyMap.entrySet().iterator();
 
                     @Override

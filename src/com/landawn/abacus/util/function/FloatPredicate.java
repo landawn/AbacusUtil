@@ -125,4 +125,8 @@ public interface FloatPredicate extends Try.FloatPredicate<RuntimeException> {
     static FloatPredicate lessEqual(float targetFloat) {
         return value -> N.compare(value, targetFloat) <= 0;
     }
+
+    static FloatPredicate between(float minValue, float maxValue) {
+        return value -> N.compare(value, minValue) > 0 && N.compare(value, maxValue) < 0;
+    }
 }

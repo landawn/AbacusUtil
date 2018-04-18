@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -93,18 +92,22 @@ public interface IntPredicate extends java.util.function.IntPredicate, Try.IntPr
     }
 
     static IntPredicate greaterThan(int targetInt) {
-        return value -> N.compare(value, targetInt) > 0;
+        return value -> value > targetInt;
     }
 
     static IntPredicate greaterEqual(int targetInt) {
-        return value -> N.compare(value, targetInt) >= 0;
+        return value -> value >= targetInt;
     }
 
     static IntPredicate lessThan(int targetInt) {
-        return value -> N.compare(value, targetInt) < 0;
+        return value -> value < targetInt;
     }
 
     static IntPredicate lessEqual(int targetInt) {
-        return value -> N.compare(value, targetInt) <= 0;
+        return value -> value <= targetInt;
+    }
+
+    static IntPredicate between(int minValue, int maxValue) {
+        return value -> value > minValue && value < maxValue;
     }
 }

@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.Builder.DataSetBuilder;
-import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
@@ -4375,7 +4375,7 @@ public interface DataSet {
      */
     DataSet clone(boolean freeze);
 
-    ImmutableIterator<Object[]> iterator();
+    ObjIterator<Object[]> iterator();
 
     /**
      * Method paginate.

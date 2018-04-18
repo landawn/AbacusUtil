@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -440,27 +441,27 @@ public final class Iterators {
 
     public static <T> ObjIterator<T> repeatEle(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-    
+
         if (n == 0 || N.isNullOrEmpty(c)) {
             return ObjIterator.empty();
         }
-    
+
         return new ObjIterator<T>() {
             private Iterator<T> iter = null;
             private T next = null;
             private int cnt = n;
-    
+
             @Override
             public boolean hasNext() {
                 return cnt > 0 || (iter != null && iter.hasNext());
             }
-    
+
             @Override
             public T next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
-    
+
                 if (iter == null) {
                     iter = c.iterator();
                     next = iter.next();
@@ -468,9 +469,9 @@ public final class Iterators {
                     next = iter.next();
                     cnt = n;
                 }
-    
+
                 cnt--;
-    
+
                 return next;
             }
         };
@@ -511,30 +512,30 @@ public final class Iterators {
     public static <T> ObjIterator<T> repeatEleToSize(final Collection<T> c, final int size) {
         N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
         N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
-    
+
         if (N.isNullOrEmpty(c) || size == 0) {
             return ObjIterator.empty();
         }
-    
+
         return new ObjIterator<T>() {
             private final int n = size / c.size();
             private int mod = size % c.size();
-    
+
             private Iterator<T> iter = null;
             private T next = null;
             private int cnt = mod-- > 0 ? n + 1 : n;
-    
+
             @Override
             public boolean hasNext() {
                 return cnt > 0 || ((n > 0 || mod > 0) && (iter != null && iter.hasNext()));
             }
-    
+
             @Override
             public T next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
-    
+
                 if (iter == null) {
                     iter = c.iterator();
                     next = iter.next();
@@ -542,9 +543,9 @@ public final class Iterators {
                     next = iter.next();
                     cnt = mod-- > 0 ? n + 1 : n;
                 }
-    
+
                 cnt--;
-    
+
                 return next;
             }
         };
@@ -1564,8 +1565,8 @@ public final class Iterators {
         };
     }
 
-    public static <T> ImmutableIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> next) {
-        return new ImmutableIterator<T>() {
+    public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> next) {
+        return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
                 return hasNext.getAsBoolean();
@@ -1578,8 +1579,8 @@ public final class Iterators {
         };
     }
 
-    public static <T, U> ImmutableIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> next) {
-        return new ImmutableIterator<T>() {
+    public static <T, U> ObjIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> next) {
+        return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
                 return hasNext.test(seed);
@@ -1592,4 +1593,19 @@ public final class Iterators {
         };
     }
 
+    public static <T, U> ObjIterator<T> generate(final U seed, final BiPredicate<? super U, T> hasNext, final BiFunction<? super U, T, T> next) {
+        return new ObjIterator<T>() {
+            private T prev = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext.test(seed, prev);
+            }
+
+            @Override
+            public T next() {
+                return (prev = next.apply(seed, prev));
+            }
+        };
+    }
 }

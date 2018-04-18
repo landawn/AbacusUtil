@@ -16,7 +16,6 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -111,18 +110,22 @@ public interface ShortPredicate extends Try.ShortPredicate<RuntimeException> {
     }
 
     static ShortPredicate greaterThan(short targetShort) {
-        return value -> N.compare(value, targetShort) > 0;
+        return value -> value > targetShort;
     }
 
     static ShortPredicate greaterEqual(short targetShort) {
-        return value -> N.compare(value, targetShort) >= 0;
+        return value -> value >= targetShort;
     }
 
     static ShortPredicate lessThan(short targetShort) {
-        return value -> N.compare(value, targetShort) < 0;
+        return value -> value < targetShort;
     }
 
     static ShortPredicate lessEqual(short targetShort) {
-        return value -> N.compare(value, targetShort) <= 0;
+        return value -> value <= targetShort;
+    }
+
+    static ShortPredicate between(short minValue, short maxValue) {
+        return value -> value > minValue && value < maxValue;
     }
 }

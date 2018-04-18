@@ -2,6 +2,10 @@
  
 * Add `Comparators.comparingIgnoreCase(final Function<? super T, String> keyExtractor)`.
 
+* Add `Iterators.generate(...)`.
+
+* Add `Fn/IntPredicate/.../Predicate.between(...)`.
+
 * Improvements and bug fix.
 
 

@@ -106,4 +106,8 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Try
     static DoublePredicate lessEqual(double targetDouble) {
         return value -> N.compare(value, targetDouble) <= 0;
     }
+
+    static DoublePredicate between(double minValue, double maxValue) {
+        return value -> N.compare(value, minValue) > 0 && N.compare(value, maxValue) < 0;
+    }
 }

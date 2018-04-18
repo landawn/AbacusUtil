@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -75,5 +76,9 @@ public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predi
 
     static <T extends Comparable<? super T>> Predicate<T> lessEqual(T targetRef) {
         return Fn.lessEqual(targetRef);
+    }
+
+    static <T extends Comparable<? super T>> Predicate<T> between(T minValue, T maxValue) {
+        return value -> N.compare(value, minValue) > 0 && N.compare(value, maxValue) < 0;
     }
 }

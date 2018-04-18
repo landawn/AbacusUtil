@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -93,18 +92,22 @@ public interface LongPredicate extends java.util.function.LongPredicate, Try.Lon
     }
 
     static LongPredicate greaterThan(long targetLong) {
-        return value -> N.compare(value, targetLong) > 0;
+        return value -> value > targetLong;
     }
 
     static LongPredicate greaterEqual(long targetLong) {
-        return value -> N.compare(value, targetLong) >= 0;
+        return value -> value >= targetLong;
     }
 
     static LongPredicate lessThan(long targetLong) {
-        return value -> N.compare(value, targetLong) < 0;
+        return value -> value < targetLong;
     }
 
     static LongPredicate lessEqual(long targetLong) {
-        return value -> N.compare(value, targetLong) <= 0;
+        return value -> value <= targetLong;
+    }
+
+    static LongPredicate between(long minValue, long maxValue) {
+        return value -> value > minValue && value < maxValue;
     }
 }

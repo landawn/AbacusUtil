@@ -16,7 +16,6 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -83,18 +82,22 @@ public interface CharPredicate extends Try.CharPredicate<RuntimeException> {
     }
 
     static CharPredicate greaterThan(char targetChar) {
-        return value -> N.compare(value, targetChar) > 0;
+        return value -> value > targetChar;
     }
 
     static CharPredicate greaterEqual(char targetChar) {
-        return value -> N.compare(value, targetChar) >= 0;
+        return value -> value >= targetChar;
     }
 
     static CharPredicate lessThan(char targetChar) {
-        return value -> N.compare(value, targetChar) < 0;
+        return value -> value < targetChar;
     }
 
     static CharPredicate lessEqual(char targetChar) {
-        return value -> N.compare(value, targetChar) <= 0;
+        return value -> value <= targetChar;
+    }
+
+    static CharPredicate between(char minValue, char maxValue) {
+        return value -> value > minValue && value < maxValue;
     }
 }

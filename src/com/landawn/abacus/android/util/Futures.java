@@ -29,8 +29,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Try.TriFunction;
@@ -533,7 +533,7 @@ public final class Futures {
     }
 
     private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeout, unit);
 
             @Override
@@ -586,7 +586,7 @@ public final class Futures {
             });
         }
 
-        return new ImmutableIterator<Pair<T, Exception>>() {
+        return new ObjIterator<Pair<T, Exception>>() {
             private final int end = cfs.size();
             private int cursor = 0;
 

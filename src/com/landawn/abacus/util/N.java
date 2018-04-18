@@ -2461,7 +2461,7 @@ public final class N {
     }
 
     public static long asLong(final Number num) {
-        return num == null ? 0l : num.longValue();
+        return num == null ? 0L : num.longValue();
     }
 
     /**
@@ -6668,11 +6668,12 @@ public final class N {
             return str;
         }
 
-        final Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");//$NON-NLS-1$
         final String decomposed = Normalizer.normalize(str, Normalizer.Form.NFD);
         // Note that this doesn't correctly remove ligatures...
-        return pattern.matcher(decomposed).replaceAll("");//$NON-NLS-1$
+        return pattern_accent.matcher(decomposed).replaceAll("");//$NON-NLS-1$
     }
+
+    private static final Pattern pattern_accent = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");//$NON-NLS-1$
 
     public static String[] stripAccents(final String[] strs) {
         if (N.isNullOrEmpty(strs)) {

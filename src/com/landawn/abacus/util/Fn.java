@@ -680,6 +680,23 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * Checks if the value/element: {@code minValue < e < maxValue}.
+     * 
+     * @param minValue
+     * @param maxValue
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Predicate<T> between(final T minValue, final T maxValue) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.compare(value, minValue) > 0 && N.compare(value, maxValue) < 0;
+            }
+        };
+    }
+
     public static <T> Predicate<T> in(final Collection<?> c) {
         return new Predicate<T>() {
             @Override

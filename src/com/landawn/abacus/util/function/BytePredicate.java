@@ -5,7 +5,6 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
@@ -94,18 +93,22 @@ public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
     }
 
     static BytePredicate greaterThan(byte targetByte) {
-        return value -> N.compare(value, targetByte) > 0;
+        return value -> value > targetByte;
     }
 
     static BytePredicate greaterEqual(byte targetByte) {
-        return value -> N.compare(value, targetByte) >= 0;
+        return value -> value >= targetByte;
     }
 
     static BytePredicate lessThan(byte targetByte) {
-        return value -> N.compare(value, targetByte) < 0;
+        return value -> value < targetByte;
     }
 
     static BytePredicate lessEqual(byte targetByte) {
-        return value -> N.compare(value, targetByte) <= 0;
+        return value -> value <= targetByte;
+    }
+
+    static BytePredicate between(byte minValue, byte maxValue) {
+        return value -> value > minValue && value < maxValue;
     }
 }

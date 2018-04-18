@@ -526,7 +526,7 @@ public final class Futures {
     }
 
     private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeout, unit);
 
             @Override
@@ -579,7 +579,7 @@ public final class Futures {
             });
         }
 
-        return new ImmutableIterator<Pair<T, Exception>>() {
+        return new ObjIterator<Pair<T, Exception>>() {
             private final int end = cfs.size();
             private int cursor = 0;
 

@@ -2137,7 +2137,7 @@ public final class CodeGenerator {
                         if (firstIdx > 0) {
                             hasGenericTypeField = true;
 
-                            int fromIndex = line.lastIndexOf(' ', firstIdx < 0 ? lastIndex - 1 : firstIdx);
+                            int fromIndex = line.lastIndexOf(' ', lastIndex - 1);
 
                             if (fromIndex >= 0) {
                                 String typeName = line.substring(fromIndex + 1, lastIndex);
