@@ -989,7 +989,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         while (elements.hasNext()) {
             next = elements.nextLong();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1017,7 +1017,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         while (elements.hasNext()) {
             next = elements.nextLong();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

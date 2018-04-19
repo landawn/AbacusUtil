@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
@@ -1289,7 +1290,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream interval(final long delay, final long interval, final TimeUnit unit) {
         return of(new LongIteratorEx() {
             private final long intervalInMillis = unit.toMillis(interval);
-            private long nextTime = N.currentMillis() + unit.toMillis(delay);
+            private long nextTime = DateUtil.currentMillis() + unit.toMillis(delay);
             private long val = 0;
 
             @Override
@@ -1299,7 +1300,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public long nextLong() {
-                long now = N.currentMillis();
+                long now = DateUtil.currentMillis();
 
                 if (now < nextTime) {
                     N.sleep(nextTime - now);

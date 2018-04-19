@@ -910,7 +910,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         while (elements.hasNext()) {
             next = elements.nextChar();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -938,7 +938,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         while (elements.hasNext()) {
             next = elements.nextChar();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

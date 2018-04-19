@@ -921,7 +921,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         while (elements.hasNext()) {
             next = elements.nextShort();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -949,7 +949,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         while (elements.hasNext()) {
             next = elements.nextShort();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

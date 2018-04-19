@@ -37,14 +37,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.Normalizer;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.AbstractSet;
@@ -59,7 +53,6 @@ import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -82,7 +75,6 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -101,9 +93,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
-
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
@@ -145,7 +134,7 @@ import com.landawn.abacus.util.stream.Stream;
  * Note: This class includes codes copied from Apache Commons Lang, Google Guava and other open source projects under the Apache License 2.0.
  * The methods copied from other libraries/frameworks/projects may be modified in this class.
  * </p>
- * Class <code>N</code> is a general java utility class. It provides the most daily used operations for Object/primitive types/String/Array/Collection/Map/Entity/Date...:
+ * Class <code>N</code> is a general java utility class. It provides the most daily used operations for Object/primitive types/String/Array/Collection/Map/Entity...:
  *
  * <ul>
  * <br>
@@ -193,12 +182,6 @@ import com.landawn.abacus.util.stream.Stream;
  * <b>newXXX/asXXX/copy/clone/erase/eraseAll/getPropValue/setPropValue/
  * setPropValueByGet/entity2Map/deepEntity2Map/entity2FlatMap/map2Entity/formalizePropName/getPropNameByMethod/...</b>
  * <li>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Date/Calendar operations:<br>
- * <b>asXXX/format/currentXXX/roll/...</b>
  *
  * <br>
  * <br>
@@ -254,7 +237,7 @@ public final class N {
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
-    private static final int POOL_SIZE;
+    static final int POOL_SIZE;
 
     static {
         int multi = (int) (Runtime.getRuntime().maxMemory() / ((1024 * 1024) * 256));
@@ -338,68 +321,6 @@ public final class N {
      * {@link java.util.List} .
      */
     public static final int INDEX_NOT_FOUND = -1;
-
-    // ...
-    public static final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone("UTC");
-    /**
-     * The system default time zone
-     */
-    public static final TimeZone LOCAL_TIME_ZONE = Calendar.getInstance().getTimeZone();
-
-    /**
-     * Date format.
-     */
-    public static final String LOCAL_YEAR_FORMAT = "yyyy";
-    public static final String LOCAL_MONTH_DAY_FORMAT = "MM-dd";
-    static final String LOCAL_MONTH_DAY_FORMAT_SLASH = "MM/dd";
-    public static final String LOCAL_DATE_FORMAT = "yyyy-MM-dd";
-    static final String LOCAL_DATE_FORMAT_SLASH = "yyyy/MM/dd";
-    public static final String LOCAL_TIME_FORMAT = "HH:mm:ss";
-    public static final String LOCAL_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    static final String LOCAL_DATETIME_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss";
-    public static final String LOCAL_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-    static final String LOCAL_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss.SSS";
-
-    /**
-     * It's default date/time format.
-     */
-    public static final String ISO_8601_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-    static final String ISO_8601_DATETIME_FORMAT_SLASH = "yyyy/MM/dd'T'HH:mm:ss'Z'";
-    /**
-     * It's default timestamp format.
-     */
-    public static final String ISO_8601_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    static final String ISO_8601_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd'T'HH:mm:ss.SSS'Z'";
-
-    /**
-     * This constant defines the date format specified by
-     * RFC 1123 / RFC 822. Used for parsing via `SimpleDateFormat` as well as
-     * error messages.
-     */
-    public final static String RFC1123_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-
-    private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
-    private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
-    private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(POOL_SIZE);
-    private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(POOL_SIZE);
-    private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(POOL_SIZE);
-    // ...
-    private static final Queue<char[]> utcTimestampFormatCharsPool = new ArrayBlockingQueue<>(POOL_SIZE);
-    private static final DatatypeFactory dataTypeFactory;
-
-    static {
-        DatatypeFactory temp = null;
-
-        try {
-            temp = DatatypeFactory.newInstance();
-        } catch (Exception e) {
-            // ignore.
-            // logger.error("Failed to initialize XMLGregorianCalendarType: " +
-            // e.getMessage(), e);
-        }
-
-        dataTypeFactory = temp;
-    }
 
     // ...
     public static final String EMPTY_STRING = "".intern();
@@ -499,45 +420,6 @@ public final class N {
 
     // ...
     static final Object NULL_MASK = new NullMask();
-
-    // ...
-    private static final char[][][] cbufOfSTDInt = new char[5][][];
-
-    static {
-        for (int i = 0, j = 1; i < 5; i++, j = j * 10) {
-            cbufOfSTDInt[i] = new char[j][];
-
-            for (int k = 0; k < j; k++) {
-                if (i == 1) {
-                    cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                } else if (i == 2) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                } else if (i == 3) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
-                    } else if (k < 100) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                } else if (i == 4) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("000" + String.valueOf(k)).toCharArray();
-                    } else if (k < 100) {
-                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
-                    } else if (k < 1000) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                }
-            }
-        }
-    }
 
     static final String BACKSLASH_ASTERISK = "*";
 
@@ -1742,6 +1624,80 @@ public final class N {
         return c.toArray((T[]) N.newArray(targetClass.getComponentType(), c.size()));
     }
 
+    public static <T> List<T> toList(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        return N.asList(a);
+    }
+
+    public static <T> List<T> toList(final T[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return new ArrayList<>();
+        } else if (fromIndex == 0 && toIndex == a.length) {
+            return N.asList(a);
+        }
+
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T> Set<T> toSet(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new HashSet<>();
+        }
+
+        return N.asSet(a);
+    }
+
+    public static <T> Set<T> toSet(final T[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<T> result = new HashSet<>(N.min(64, N.initHashCapacity(toIndex - fromIndex)));
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T, C extends Collection<T>> C toCollection(final T[] a, final IntFunction<C> supplier) {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        return toCollection(a, 0, a.length, supplier);
+    }
+
+    public static <T, C extends Collection<T>> C toCollection(final T[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
     /**
      *
      * @param a
@@ -2502,946 +2458,6 @@ public final class N {
 
     public static double asDouble(final Number num) {
         return num == null ? 0d : num.doubleValue();
-    }
-
-    public static java.util.Date asJUDate(final Calendar c) {
-        return (c == null) ? null : asJUDate(c.getTimeInMillis());
-    }
-
-    public static java.util.Date asJUDate(final java.util.Date date) {
-        return (date == null) ? null : asJUDate(date.getTime());
-    }
-
-    public static java.util.Date asJUDate(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new java.util.Date(timeInMillis);
-    }
-
-    public static java.util.Date asJUDate(final String date) {
-        return asJUDate(date, null);
-    }
-
-    public static java.util.Date asJUDate(final String date, final String format) {
-        return asJUDate(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.util.Date.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     *
-     * @param date
-     * @param format
-     * @throws IllegalArgumentException
-     *             if the date given can't be parsed with specified format.
-     */
-    public static java.util.Date asJUDate(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asJUDate(parse(date, format, timeZone));
-    }
-
-    private static long parse(final String date, String format, TimeZone timeZone) {
-        if ((format == null) && (date.charAt(2) >= '0' && date.charAt(2) <= '9' && date.charAt(4) >= '0' && date.charAt(4) <= '9')) {
-            try {
-                return Long.parseLong(date);
-            } catch (NumberFormatException e) {
-                // ignore.
-            }
-        }
-
-        format = checkDateFormat(date, format);
-
-        if (N.isNullOrEmpty(format)) {
-            if (timeZone == null) {
-                return ISO8601Util.parse(date).getTime();
-            } else {
-                throw new RuntimeException("Unsupported date format: " + format + " with time zone: " + timeZone);
-            }
-        }
-
-        timeZone = checkTimeZone(format, timeZone);
-
-        long timeInMillis = fastDateParse(date, format, timeZone);
-
-        if (timeInMillis > 0) {
-            return timeInMillis;
-        }
-
-        DateFormat sdf = getSDF(format, timeZone);
-
-        try {
-            return sdf.parse(date).getTime();
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            recycleSDF(format, timeZone, sdf);
-        }
-    }
-
-    private static DateFormat getSDF(final String format, final TimeZone timeZone) {
-        DateFormat sdf = null;
-
-        if (timeZone == UTC_TIME_ZONE) {
-            if ((format.length() == 28) && (format == ISO_8601_TIMESTAMP_FORMAT)) {
-                sdf = utcTimestampDFPool.poll();
-
-                if (sdf == null) {
-                    sdf = new SimpleDateFormat(format);
-                    sdf.setTimeZone(timeZone);
-                }
-
-                return sdf;
-            } else if ((format.length() == 24) && (format == ISO_8601_DATETIME_FORMAT)) {
-                sdf = utcDateTimeDFPool.poll();
-
-                if (sdf == null) {
-                    sdf = new SimpleDateFormat(format);
-                    sdf.setTimeZone(timeZone);
-                }
-
-                return sdf;
-            }
-        }
-
-        Queue<DateFormat> queue = dfPool.get(format);
-
-        if (queue == null) {
-            queue = new ArrayBlockingQueue<>(POOL_SIZE);
-            dfPool.put(format, queue);
-        }
-
-        sdf = queue.poll();
-
-        if (sdf == null) {
-            sdf = new SimpleDateFormat(format);
-        }
-
-        sdf.setTimeZone(timeZone);
-
-        return sdf;
-    }
-
-    private static void recycleSDF(final String format, final TimeZone timeZone, final DateFormat sdf) {
-        if (timeZone == UTC_TIME_ZONE) {
-            if ((format.length() == 28) && (format == ISO_8601_TIMESTAMP_FORMAT)) {
-                utcTimestampDFPool.add(sdf);
-            } else if ((format.length() == 24) && (format == ISO_8601_DATETIME_FORMAT)) {
-                utcDateTimeDFPool.add(sdf);
-            } else {
-                dfPool.get(format).add(sdf);
-            }
-        } else {
-            dfPool.get(format).add(sdf);
-        }
-    }
-
-    private static String checkDateFormat(final String str, final String format) {
-        if (N.isNullOrEmpty(format)) {
-            int len = str.length();
-
-            switch (len) {
-                case 4:
-                    return LOCAL_YEAR_FORMAT;
-
-                case 5:
-                    if (str.charAt(2) == '/') {
-                        return LOCAL_MONTH_DAY_FORMAT_SLASH;
-                    } else {
-                        return LOCAL_MONTH_DAY_FORMAT;
-                    }
-
-                case 8:
-                    return LOCAL_TIME_FORMAT;
-
-                case 10:
-                    if (str.charAt(4) == '/') {
-                        return LOCAL_DATE_FORMAT_SLASH;
-                    } else {
-                        return LOCAL_DATE_FORMAT;
-                    }
-
-                case 19:
-                    if (str.charAt(4) == '/') {
-                        return LOCAL_DATETIME_FORMAT_SLASH;
-                    } else {
-                        return LOCAL_DATETIME_FORMAT;
-                    }
-
-                case 23:
-                    if (str.charAt(4) == '/') {
-                        return LOCAL_TIMESTAMP_FORMAT_SLASH;
-                    } else {
-                        return LOCAL_TIMESTAMP_FORMAT;
-                    }
-
-                case 24:
-                    if (str.charAt(4) == '/') {
-                        return ISO_8601_DATETIME_FORMAT_SLASH;
-                    } else {
-                        return ISO_8601_DATETIME_FORMAT;
-                    }
-
-                case 28:
-                    if (str.charAt(4) == '/') {
-                        return ISO_8601_TIMESTAMP_FORMAT_SLASH;
-                    } else {
-                        return ISO_8601_TIMESTAMP_FORMAT;
-                    }
-
-                case 29:
-                    if (str.charAt(3) == ',') {
-                        return RFC1123_DATE_FORMAT;
-                    }
-
-                default:
-                    // throw new AbacusException("No valid date format found for: " + str);
-                    return null;
-            }
-        }
-
-        return format;
-    }
-
-    private static TimeZone checkTimeZone(final String format, TimeZone timeZone) {
-        if (timeZone == null) {
-            timeZone = format.endsWith("'Z'") ? UTC_TIME_ZONE : LOCAL_TIME_ZONE;
-        }
-
-        return timeZone;
-    }
-
-    private static long fastDateParse(final String str, final String format, final TimeZone timeZone) {
-        if (!((str.length() == 24) || (str.length() == 20) || (str.length() == 19) || (str.length() == 23))) {
-            return 0;
-        }
-
-        if (!(format.equals(ISO_8601_TIMESTAMP_FORMAT) || format.equals(ISO_8601_DATETIME_FORMAT) || format.equals(LOCAL_DATETIME_FORMAT)
-                || format.equals(LOCAL_TIMESTAMP_FORMAT))) {
-            return 0;
-        }
-
-        //
-        // if (!((str.charAt(4) == '-') && (str.charAt(7) == '-') &&
-        // (str.charAt(10) == 'T') && (str.charAt(13) == ':') && (str.charAt(16)
-        // == ':') && (str
-        // .charAt(str.length() - 1) == 'Z'))) {
-        // return 0;
-        // }
-        //
-        // int year = Integer.valueOf(str.substring(0, 4));
-        // int month = Integer.valueOf(str.substring(5, 7)) - 1;
-        // int date = Integer.valueOf(str.substring(8, 10));
-        // int hourOfDay = Integer.valueOf(str.substring(11, 13));
-        // int minute = Integer.valueOf(str.substring(14, 16));
-        // int second = Integer.valueOf(str.substring(17, 19));
-        // int milliSecond = (str.length() == 24) ?
-        // Integer.valueOf(str.substring(20, 23)) : 0;
-        //
-        //
-
-        int year = parseInt(str, 0, 4);
-        int month = parseInt(str, 5, 7) - 1;
-        int date = parseInt(str, 8, 10);
-        int hourOfDay = parseInt(str, 11, 13);
-        int minute = parseInt(str, 14, 16);
-        int second = parseInt(str, 17, 19);
-        int milliSecond = ((str.length() == 24) || (str.length() == 23)) ? parseInt(str, 20, 23) : 0;
-
-        Calendar c = null;
-        Queue<Calendar> timeZoneCalendarQueue = null;
-
-        if (timeZone == UTC_TIME_ZONE) {
-            c = utcCalendarPool.poll();
-        } else {
-            timeZoneCalendarQueue = calendarPool.get(timeZone);
-
-            if (timeZoneCalendarQueue == null) {
-                timeZoneCalendarQueue = new ArrayBlockingQueue<>(POOL_SIZE);
-                calendarPool.put(timeZone, timeZoneCalendarQueue);
-            } else {
-                c = timeZoneCalendarQueue.poll();
-            }
-        }
-
-        if (c == null) {
-            c = Calendar.getInstance(timeZone);
-        }
-
-        c.set(year, month, date, hourOfDay, minute, second);
-        c.set(Calendar.MILLISECOND, milliSecond);
-
-        long timeInMillis = c.getTimeInMillis();
-
-        if (timeZone == UTC_TIME_ZONE) {
-            utcCalendarPool.add(c);
-        } else {
-            timeZoneCalendarQueue.add(c);
-        }
-
-        return timeInMillis;
-    }
-
-    private static int parseInt(final String str, int from, final int to) {
-        int result = 0;
-
-        while (from < to) {
-            result = (result * 10) + (str.charAt(from++) - 48);
-        }
-
-        return result;
-    }
-
-    public static Date asDate(final Calendar c) {
-        return (c == null) ? null : asDate(c.getTimeInMillis());
-    }
-
-    public static Date asDate(final java.util.Date date) {
-        return (date == null) ? null : asDate(date.getTime());
-    }
-
-    public static Date asDate(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Date(timeInMillis);
-    }
-
-    public static Date asDate(final String date) {
-        return asDate(date, null);
-    }
-
-    public static Date asDate(final String date, final String format) {
-        return asDate(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.sql.Date.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Date asDate(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asDate(parse(date, format, timeZone));
-    }
-
-    public static Time asTime(final Calendar c) {
-        return (c == null) ? null : asTime(c.getTimeInMillis());
-    }
-
-    public static Time asTime(final java.util.Date date) {
-        return (date == null) ? null : asTime(date.getTime());
-    }
-
-    public static Time asTime(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Time(timeInMillis);
-    }
-
-    public static Time asTime(final String date) {
-        return asTime(date, null);
-    }
-
-    public static Time asTime(final String date, final String format) {
-        return asTime(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Time.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Time asTime(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asTime(parse(date, format, timeZone));
-    }
-
-    public static Timestamp asTimestamp(final Calendar c) {
-        return (c == null) ? null : asTimestamp(c.getTimeInMillis());
-    }
-
-    public static Timestamp asTimestamp(final java.util.Date date) {
-        return (date == null) ? null : asTimestamp(date.getTime());
-    }
-
-    public static Timestamp asTimestamp(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Timestamp(timeInMillis);
-    }
-
-    public static Timestamp asTimestamp(final String date) {
-        return asTimestamp(date, null);
-    }
-
-    public static Timestamp asTimestamp(final String date, final String format) {
-        return asTimestamp(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Timestamp.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Timestamp asTimestamp(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asTimestamp(parse(date, format, timeZone));
-    }
-
-    public static Calendar asCalendar(final Calendar c) {
-        return (c == null) ? null : asCalendar(c.getTimeInMillis());
-    }
-
-    public static Calendar asCalendar(final java.util.Date date) {
-        return (date == null) ? null : asCalendar(date.getTime());
-    }
-
-    public static Calendar asCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final Calendar c = Calendar.getInstance();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
-    }
-
-    public static Calendar asCalendar(final String calendar) {
-        return asCalendar(calendar, null);
-    }
-
-    public static Calendar asCalendar(final String calendar, final String format) {
-        return asCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of Calendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Calendar asCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : asGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : asGregorianCalendar(date.getTime());
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final GregorianCalendar c = new GregorianCalendar();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final String calendar) {
-        return asGregorianCalendar(calendar, null);
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final String calendar, final String format) {
-        return asGregorianCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of GregorianCalendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static GregorianCalendar asGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asGregorianCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : asXMLGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : asXMLGregorianCalendar(date.getTime());
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        return dataTypeFactory.newXMLGregorianCalendar(asGregorianCalendar(timeInMillis));
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar) {
-        return asXMLGregorianCalendar(calendar, null);
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar, final String format) {
-        return asXMLGregorianCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of XMLGregorianCalendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asXMLGregorianCalendar(parse(calendar, format, timeZone));
-    }
-
-    /**
-     * @see System#currentTimeMillis()
-     * @return
-     */
-    public static long currentMillis() {
-        return System.currentTimeMillis();
-    }
-
-    /**
-     * A new instance of <code>java.sql.Time</code> returned is based on the
-     * current time in the default time zone with the default locale.
-     *
-     * @return
-     */
-    public static Time currentTime() {
-        return new Time(System.currentTimeMillis());
-    }
-
-    /**
-     * A new instance of <code>java.sql.Date</code> returned is based on the
-     * current time in the default time zone with the default locale.
-     *
-     * @return
-     */
-    public static Date currentDate() {
-        return new Date(System.currentTimeMillis());
-    }
-
-    /**
-     * A new instance of <code>java.sql.Timestamp</code> returned is based on
-     * the current time in the default time zone with the default locale.
-     *
-     * @return
-     */
-    public static Timestamp currentTimestamp() {
-        return new Timestamp(System.currentTimeMillis());
-    }
-
-    /**
-     * A new instance of <code>java.util.Date</code> returned is based on the
-     * current time in the default time zone with the default locale.
-     *
-     * @return
-     */
-    public static java.util.Date currentJUDate() {
-        return new java.util.Date();
-    }
-
-    /**
-     * A new instance of <code>java.util.Calendar</code> returned is based on
-     * the current time in the default time zone with the default locale.
-     *
-     * @return a Calendar.
-     */
-    public static Calendar currentCalendar() {
-        return Calendar.getInstance();
-    }
-
-    public static GregorianCalendar currentGregorianCalendar() {
-        return new GregorianCalendar();
-    }
-
-    public static XMLGregorianCalendar currentXMLGregorianCalendar() {
-        return dataTypeFactory.newXMLGregorianCalendar(currentGregorianCalendar());
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given time unit,
-     * based on the calendar's rules. For example, to subtract 5 days from the
-     * current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(date, -5, TimeUnit.DAYS)</code>.
-     *
-     * @param date
-     * @param amount
-     * @param unit
-     * @return a new instance of Date with the specified amount rolled.
-     */
-    public static <T extends java.util.Date> T roll(final T date, final long amount, final TimeUnit unit) {
-        return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given calendar
-     * unit, based on the calendar's rules. For example, to subtract 5 days from
-     * the current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(date, -5, CalendarUnit.DAY)</code>.
-     *
-     * @param date
-     * @param amount
-     * @param unit
-     * @return a new instance of Date with the specified amount rolled.
-     */
-    public static <T extends java.util.Date> T roll(final T date, final long amount, final CalendarUnit unit) {
-        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
-            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
-        }
-
-        switch (unit) {
-            case MONTH:
-            case YEAR:
-                final Calendar c = asCalendar(date);
-                c.add(unit.intValue(), (int) amount);
-
-                return createDate(date.getClass(), c.getTimeInMillis());
-
-            default:
-                return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
-        }
-    }
-
-    private static <T extends java.util.Date> T createDate(final Class<? extends java.util.Date> cls, final long millis) {
-        java.util.Date result = null;
-
-        if (cls.equals(java.util.Date.class)) {
-            result = new java.util.Date(millis);
-        } else if (cls.equals(java.sql.Date.class)) {
-            result = new java.sql.Date(millis);
-        } else if (cls.equals(Time.class)) {
-            result = new Time(millis);
-        } else if (cls.equals(Timestamp.class)) {
-            result = new Timestamp(millis);
-        } else {
-            result = ClassUtil.invokeConstructor(ClassUtil.getDeclaredConstructor(cls, long.class), millis);
-        }
-
-        return (T) result;
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given time unit,
-     * based on the calendar's rules. For example, to subtract 5 days from the
-     * current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(c, -5, TimeUnit.DAYS)</code>.
-     *
-     * @param c
-     * @param amount
-     * @param unit
-     * @return a new instance of Calendar with the specified amount rolled.
-     */
-    public static <T extends Calendar> T roll(final T c, final long amount, final TimeUnit unit) {
-        return createCalendar(c, c.getTimeInMillis() + unit.toMillis(amount));
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given calendar
-     * unit, based on the calendar's rules. For example, to subtract 5 days from
-     * the current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(c, -5, CalendarUnit.DAY)</code>.
-     *
-     * @param c
-     * @param amount
-     * @param unit
-     * @return a new instance of Calendar with the specified amount rolled.
-     */
-    public static <T extends Calendar> T roll(final T c, final long amount, final CalendarUnit unit) {
-        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
-            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
-        }
-
-        final T result = createCalendar(c, c.getTimeInMillis());
-
-        result.add(unit.intValue(), (int) amount);
-
-        return result;
-    }
-
-    private static <T extends Calendar> T createCalendar(final T c, final long millis) {
-        final Class<T> cls = (Class<T>) c.getClass();
-
-        Calendar result = null;
-
-        if (cls.equals(Calendar.class)) {
-            result = Calendar.getInstance();
-        } else if (cls.equals(GregorianCalendar.class)) {
-            result = GregorianCalendar.getInstance();
-        } else {
-            result = ClassUtil.invokeConstructor(ClassUtil.getDeclaredConstructor(cls, long.class), millis);
-        }
-
-        result.setTimeInMillis(millis);
-
-        if (!equals(c.getTimeZone(), result.getTimeZone())) {
-            result.setTimeZone(c.getTimeZone());
-        }
-
-        return (T) result;
-    }
-
-    public static String format(final java.util.Date date) {
-        return format(date, null, null);
-    }
-
-    public static String format(final java.util.Date date, final String format) {
-        return format(date, format, null);
-    }
-
-    public static String format(final java.util.Date date, final String format, final TimeZone timeZone) {
-        return formatDate(null, date, format, timeZone);
-    }
-
-    public static void format(final Writer writer, final java.util.Date date) {
-        format(writer, date, null, null);
-    }
-
-    public static void format(final Writer writer, final java.util.Date date, final String format, final TimeZone timeZone) {
-        formatDate(writer, date, format, timeZone);
-    }
-
-    private static String formatDate(final Writer writer, final java.util.Date date, String format, TimeZone timeZone) {
-        boolean isTimestamp = date instanceof Timestamp;
-
-        if ((format == null) && (timeZone == null)) {
-            if (writer == null) {
-                final BufferedWriter bw = ObjectFactory.createBufferedWriter();
-
-                fastDateFormat(bw, date.getTime(), isTimestamp);
-
-                String str = bw.toString();
-
-                ObjectFactory.recycle(bw);
-
-                return str;
-            } else {
-                fastDateFormat(writer, date.getTime(), isTimestamp);
-
-                return null;
-            }
-        }
-
-        if (format == null) {
-            format = isTimestamp ? ISO_8601_TIMESTAMP_FORMAT : ISO_8601_DATETIME_FORMAT;
-        }
-
-        timeZone = checkTimeZone(format, timeZone);
-
-        DateFormat sdf = getSDF(format, timeZone);
-
-        String str = sdf.format(date);
-
-        if (writer != null) {
-            try {
-                writer.write(str);
-            } catch (IOException e) {
-                throw new UncheckedIOException();
-            }
-        }
-
-        recycleSDF(format, timeZone, sdf);
-
-        return str;
-    }
-
-    public static String format(final Calendar c) {
-        return format(c, null, null);
-    }
-
-    public static String format(final Calendar c, final String format) {
-        return format(c, format, null);
-    }
-
-    public static String format(final Calendar c, final String format, final TimeZone timeZone) {
-        if ((format == null) && (timeZone == null)) {
-            final BufferedWriter cbuff = ObjectFactory.createBufferedWriter();
-            fastDateFormat(cbuff, c.getTimeInMillis(), false);
-
-            String str = cbuff.toString();
-
-            ObjectFactory.recycle(cbuff);
-
-            return str;
-        }
-
-        return format(asJUDate(c), format, timeZone);
-    }
-
-    public static void format(final Writer writer, final Calendar c) {
-        format(writer, c, null, null);
-    }
-
-    public static void format(final Writer writer, final Calendar c, final String format, final TimeZone timeZone) {
-        if ((format == null) && (timeZone == null)) {
-            fastDateFormat(writer, c.getTimeInMillis(), false);
-        } else {
-            format(writer, asJUDate(c), format, timeZone);
-        }
-    }
-
-    public static String format(final XMLGregorianCalendar c) {
-        return format(c, null, null);
-    }
-
-    public static String format(final XMLGregorianCalendar c, final String format) {
-        return format(c, format, null);
-    }
-
-    public static String format(final XMLGregorianCalendar c, final String format, final TimeZone timeZone) {
-        if ((format == null) && (timeZone == null)) {
-            final BufferedWriter cbuff = ObjectFactory.createBufferedWriter();
-
-            fastDateFormat(cbuff, c.toGregorianCalendar().getTimeInMillis(), false);
-
-            String str = cbuff.toString();
-
-            ObjectFactory.recycle(cbuff);
-
-            return str;
-        }
-
-        return format(asJUDate(c.toGregorianCalendar()), format, timeZone);
-    }
-
-    public static void format(final Writer writer, final XMLGregorianCalendar c) {
-        format(writer, c, null, null);
-    }
-
-    public static void format(final Writer writer, final XMLGregorianCalendar c, final String format, final TimeZone timeZone) {
-        if ((format == null) && (timeZone == null)) {
-            fastDateFormat(writer, c.toGregorianCalendar().getTimeInMillis(), false);
-        } else {
-            format(writer, asJUDate(c.toGregorianCalendar()), format, timeZone);
-        }
-    }
-
-    private static void fastDateFormat(final Writer writer, final long timeInMillis, final boolean isTimestamp) {
-        Calendar c = utcCalendarPool.poll();
-
-        if (c == null) {
-            c = Calendar.getInstance(UTC_TIME_ZONE);
-        }
-
-        c.setTimeInMillis(timeInMillis);
-
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH) + 1;
-        int day = c.get(Calendar.DAY_OF_MONTH);
-        int hour = c.get(Calendar.HOUR_OF_DAY);
-        int minute = c.get(Calendar.MINUTE);
-        int second = c.get(Calendar.SECOND);
-
-        char[] utcTimestamp = utcTimestampFormatCharsPool.poll();
-
-        if (utcTimestamp == null) {
-            utcTimestamp = new char[24];
-            utcTimestamp[4] = '-';
-            utcTimestamp[7] = '-';
-            utcTimestamp[10] = 'T';
-            utcTimestamp[13] = ':';
-            utcTimestamp[16] = ':';
-            utcTimestamp[19] = '.';
-            utcTimestamp[23] = 'Z';
-        }
-        //
-        // copy(cbufOfSTDInt[4][year], 0, utcTimestamp, 0, 4);
-        // copy(cbufOfSTDInt[2][month], 0, utcTimestamp, 5, 2);
-        // copy(cbufOfSTDInt[2][day], 0, utcTimestamp, 8, 2);
-        // copy(cbufOfSTDInt[2][hour], 0, utcTimestamp, 11, 2);
-        // copy(cbufOfSTDInt[2][minute], 0, utcTimestamp, 14, 2);
-        // copy(cbufOfSTDInt[2][second], 0, utcTimestamp, 17, 2);
-        //
-        utcTimestamp[0] = cbufOfSTDInt[4][year][0];
-        utcTimestamp[1] = cbufOfSTDInt[4][year][1];
-        utcTimestamp[2] = cbufOfSTDInt[4][year][2];
-        utcTimestamp[3] = cbufOfSTDInt[4][year][3];
-
-        utcTimestamp[5] = cbufOfSTDInt[2][month][0];
-        utcTimestamp[6] = cbufOfSTDInt[2][month][1];
-
-        utcTimestamp[8] = cbufOfSTDInt[2][day][0];
-        utcTimestamp[9] = cbufOfSTDInt[2][day][1];
-
-        utcTimestamp[11] = cbufOfSTDInt[2][hour][0];
-        utcTimestamp[12] = cbufOfSTDInt[2][hour][1];
-
-        utcTimestamp[14] = cbufOfSTDInt[2][minute][0];
-        utcTimestamp[15] = cbufOfSTDInt[2][minute][1];
-
-        utcTimestamp[17] = cbufOfSTDInt[2][second][0];
-        utcTimestamp[18] = cbufOfSTDInt[2][second][1];
-
-        if (isTimestamp) {
-            utcTimestamp[19] = '.';
-
-            int milliSecond = c.get(Calendar.MILLISECOND);
-            // copy(cbufOfSTDInt[3][milliSecond], 0, utcTimestamp,
-            // 20, 3);
-            utcTimestamp[20] = cbufOfSTDInt[3][milliSecond][0];
-            utcTimestamp[21] = cbufOfSTDInt[3][milliSecond][1];
-            utcTimestamp[22] = cbufOfSTDInt[3][milliSecond][2];
-        } else {
-            utcTimestamp[19] = 'Z';
-        }
-
-        try {
-            if (isTimestamp) {
-                writer.write(utcTimestamp);
-            } else {
-                writer.write(utcTimestamp, 0, 20);
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } finally {
-            utcCalendarPool.add(c);
-            utcTimestampFormatCharsPool.add(utcTimestamp);
-        }
     }
 
     /**
@@ -12884,7 +11900,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static void reverse(final Collection<?> c) {
-        if (N.isNullOrEmpty(c) && c.size() < 2) {
+        if (N.isNullOrEmpty(c) || c.size() < 2) {
             return;
         }
 
@@ -13209,7 +12225,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static void rotate(final Collection<?> c, final int distance) {
-        if (N.isNullOrEmpty(c) && c.size() < 2) {
+        if (N.isNullOrEmpty(c) || c.size() < 2) {
             return;
         }
 
@@ -13367,7 +12383,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static void shuffle(final Collection<?> c) {
-        if (N.isNullOrEmpty(c) && c.size() < 2) {
+        if (N.isNullOrEmpty(c) || c.size() < 2) {
             return;
         }
 
@@ -13383,7 +12399,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static void shuffle(final Collection<?> c, final Random rnd) {
-        if (N.isNullOrEmpty(c) && c.size() < 2) {
+        if (N.isNullOrEmpty(c) || c.size() < 2) {
             return;
         }
 
@@ -13616,7 +12632,7 @@ public final class N {
             } else if (Number.class.isAssignableFrom(parameterClass)) {
                 propValue = type.valueOf(String.valueOf(RAND.nextInt()));
             } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(N.currentMillis()));
+                propValue = type.valueOf(String.valueOf(DateUtil.currentMillis()));
             } else if (N.isEntity(parameterClass)) {
                 propValue = fill(parameterClass);
             } else {
@@ -22621,7 +21637,7 @@ public final class N {
     }
 
     public static int[] top(final int[] a, final int n, final Comparator<? super Integer> cmp) {
-        return top(a, 0, a.length, n, cmp);
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
     public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22688,7 +21704,7 @@ public final class N {
     }
 
     public static long[] top(final long[] a, final int n, final Comparator<? super Long> cmp) {
-        return top(a, 0, a.length, n, cmp);
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
     public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22755,7 +21771,7 @@ public final class N {
     }
 
     public static float[] top(final float[] a, final int n, final Comparator<? super Float> cmp) {
-        return top(a, 0, a.length, n, cmp);
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
     public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22822,7 +21838,7 @@ public final class N {
     }
 
     public static double[] top(final double[] a, final int n, final Comparator<? super Double> cmp) {
-        return top(a, 0, a.length, n, cmp);
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
     public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22884,26 +21900,26 @@ public final class N {
         return res;
     }
 
-    public static <T extends Comparable<T>> T[] top(final T[] a, final int n) {
-        return (T[]) top(a, n, N.NATURAL_ORDER);
+    public static <T extends Comparable<T>> List<T> top(final T[] a, final int n) {
+        return top(a, n, N.NATURAL_ORDER);
     }
 
-    public static <T> T[] top(final T[] a, final int n, final Comparator<? super T> cmp) {
-        return top(a, 0, a.length, n, cmp);
+    public static <T> List<T> top(final T[] a, final int n, final Comparator<? super T> cmp) {
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
-    public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n) {
-        return (T[]) top(a, fromIndex, toIndex, n, N.NATURAL_ORDER);
+    public static <T extends Comparable<T>> List<T> top(final T[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, N.NATURAL_ORDER);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+    public static <T> List<T> top(final T[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
         if (n < 1) {
             throw new IllegalArgumentException("'n' can not be less than 1");
         }
 
         if (n >= toIndex - fromIndex) {
-            return N.copyOfRange(a, fromIndex, toIndex);
+            return N.toList(a, fromIndex, toIndex);
         }
 
         final Comparator<Indexed<T>> pairCmp = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
@@ -22943,10 +21959,10 @@ public final class N {
             }
         });
 
-        final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair.length);
+        final List<T> res = new ArrayList<>(arrayOfPair.length);
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+            res.add(arrayOfPair[i].value());
         }
 
         return res;
@@ -23072,7 +22088,7 @@ public final class N {
      * @return
      */
     public static boolean[] distinct(final boolean[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23096,7 +22112,7 @@ public final class N {
      * @return
      */
     public static char[] distinct(final char[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23120,7 +22136,7 @@ public final class N {
      * @return
      */
     public static byte[] distinct(final byte[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23144,7 +22160,7 @@ public final class N {
      * @return
      */
     public static short[] distinct(final short[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23168,7 +22184,7 @@ public final class N {
      * @return
      */
     public static int[] distinct(final int[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23192,7 +22208,7 @@ public final class N {
      * @return
      */
     public static long[] distinct(final long[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23216,7 +22232,7 @@ public final class N {
      * @return
      */
     public static float[] distinct(final float[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23240,7 +22256,7 @@ public final class N {
      * @return
      */
     public static double[] distinct(final double[] a) {
-        return distinct(a, 0, a.length);
+        return distinct(a, 0, a == null ? 0 : a.length);
     }
 
     /**
@@ -23263,9 +22279,9 @@ public final class N {
      * @param a
      * @return
      */
-    public static <T> T[] distinct(final T[] a) {
+    public static <T> List<T> distinct(final T[] a) {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return new ArrayList<>();
         }
 
         return distinct(a, 0, a.length);
@@ -23280,11 +22296,11 @@ public final class N {
      * @param toIndex
      * @return
      */
-    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex) {
+    public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return new ArrayList<>();
         }
 
         final List<T> result = new ArrayList<>();
@@ -23296,7 +22312,7 @@ public final class N {
             }
         }
 
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+        return result;
     }
 
     /**
@@ -23373,9 +22389,9 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T, E extends Exception> T[] distinctBy(final T[] a, final Try.Function<? super T, ?, E> keyExtractor) throws E {
+    public static <T, E extends Exception> List<T> distinctBy(final T[] a, final Try.Function<? super T, ?, E> keyExtractor) throws E {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return new ArrayList<>();
         }
 
         return distinctBy(a, 0, a.length, keyExtractor);
@@ -23393,12 +22409,12 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T, E extends Exception> T[] distinctBy(final T[] a, final int fromIndex, final int toIndex, final Try.Function<? super T, ?, E> keyExtractor)
-            throws E {
+    public static <T, E extends Exception> List<T> distinctBy(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ?, E> keyExtractor) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return new ArrayList<>();
         }
 
         final List<T> result = new ArrayList<>();
@@ -23410,7 +22426,7 @@ public final class N {
             }
         }
 
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+        return result;
     }
 
     /**
@@ -24262,9 +23278,9 @@ public final class N {
      * @return
      * @see IntList#intersection(IntList)
      */
-    public static <T> T[] intersection(final T[] a, final Object[] b) {
+    public static <T> List<T> intersection(final T[] a, final Object[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
+            return new ArrayList<>();
         }
 
         final Multiset<?> bOccurrences = Multiset.of(b);
@@ -24276,7 +23292,7 @@ public final class N {
             }
         }
 
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+        return result;
     }
 
     /**
@@ -24458,11 +23474,11 @@ public final class N {
      * @return
      * @see IntList#difference(IntList)
      */
-    public static <T> T[] difference(final T[] a, final Object[] b) {
+    public static <T> List<T> difference(final T[] a, final Object[] b) {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return new ArrayList<>();
         } else if (N.isNullOrEmpty(b)) {
-            return a.clone();
+            return N.asList(a);
         }
 
         final Multiset<?> bOccurrences = Multiset.of(b);
@@ -24474,7 +23490,7 @@ public final class N {
             }
         }
 
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+        return result;
     }
 
     /**
@@ -24651,11 +23667,11 @@ public final class N {
      * @return
      * @see IntList#symmetricDifference(IntList)
      */
-    public static <T> T[] symmetricDifference(final T[] a, final T[] b) {
+    public static <T> List<T> symmetricDifference(final T[] a, final T[] b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? a : b.clone();
+            return N.asList(b);
         } else if (N.isNullOrEmpty(b)) {
-            return a.clone();
+            return N.asList(a);
         }
 
         final Multiset<T> bOccurrences = Multiset.of(b);
@@ -24678,7 +23694,7 @@ public final class N {
             }
         }
 
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+        return result;
     }
 
     /**
@@ -24690,9 +23706,9 @@ public final class N {
      */
     public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<T>() : N.asList((T[]) b.toArray());
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<T>() : N.asList((T[]) a.toArray());
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
         }
 
         //        final List<T> result = difference(a, b);
@@ -29466,7 +28482,8 @@ public final class N {
 
             return idx == b.length ? b : N.copyOfRange(b, 0, idx);
         } else {
-            return distinct(a, from, to);
+            final List<T> list = distinct(a, from, to);
+            return list.toArray((T[]) N.newArray(a.getClass().getComponentType(), list.size()));
         }
     }
 

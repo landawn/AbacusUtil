@@ -1118,7 +1118,7 @@ class IteratorShortStream extends AbstractShortStream {
         while (elements.hasNext()) {
             next = elements.nextShort();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1146,7 +1146,7 @@ class IteratorShortStream extends AbstractShortStream {
         while (elements.hasNext()) {
             next = elements.nextShort();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

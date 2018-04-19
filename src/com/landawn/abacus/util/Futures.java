@@ -387,13 +387,13 @@ public final class Futures {
             @Override
             public List<T> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final long timeoutInMillis = unit.toMillis(timeout);
-                final long now = N.currentMillis();
+                final long now = DateUtil.currentMillis();
                 final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
 
                 final List<T> result = new ArrayList<>(cfs.size());
 
                 for (CompletableFuture<? extends T> future : cfs) {
-                    result.add(future.get(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS));
+                    result.add(future.get(N.max(0, endTime - DateUtil.currentMillis()), TimeUnit.MILLISECONDS));
                 }
 
                 return result;

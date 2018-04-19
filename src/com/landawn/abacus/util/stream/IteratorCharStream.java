@@ -1106,7 +1106,7 @@ class IteratorCharStream extends AbstractCharStream {
         while (elements.hasNext()) {
             next = elements.nextChar();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1134,7 +1134,7 @@ class IteratorCharStream extends AbstractCharStream {
         while (elements.hasNext()) {
             next = elements.nextChar();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

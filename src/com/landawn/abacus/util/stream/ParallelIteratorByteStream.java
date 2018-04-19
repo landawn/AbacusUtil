@@ -910,7 +910,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         while (elements.hasNext()) {
             next = elements.nextByte();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -938,7 +938,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         while (elements.hasNext()) {
             next = elements.nextByte();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

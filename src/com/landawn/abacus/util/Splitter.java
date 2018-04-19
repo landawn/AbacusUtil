@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -82,7 +83,7 @@ public final class Splitter {
         return this;
     }
 
-    public List<String> split(CharSequence source) {
+    public List<String> split(final CharSequence source) {
         if (N.isNullOrEmpty(source)) {
             return new ArrayList<>();
         }
@@ -90,13 +91,13 @@ public final class Splitter {
         return N.asList(split(source, delimiter, delimiterRegex, max, trim));
     }
 
-    public <T> List<T> split(Class<T> targetType, CharSequence source) {
+    public <T> List<T> split(Class<T> targetType, final CharSequence source) {
         final Type<T> type = N.typeOf(targetType);
 
         return split(type, source);
     }
 
-    public <T> List<T> split(Type<T> type, CharSequence source) {
+    public <T> List<T> split(Type<T> type, final CharSequence source) {
         if (N.isNullOrEmpty(source)) {
             return new ArrayList<>();
         }
@@ -111,7 +112,7 @@ public final class Splitter {
         return result;
     }
 
-    public <C extends Collection<String>> C split(final C output, CharSequence source) {
+    public <C extends Collection<String>> C split(final C output, final CharSequence source) {
         final C result = output;
 
         if (N.isNullOrEmpty(source)) {
@@ -124,13 +125,13 @@ public final class Splitter {
         return result;
     }
 
-    public <T, C extends Collection<T>> C split(final C output, Class<T> targetType, CharSequence source) {
+    public <T, C extends Collection<T>> C split(final C output, Class<T> targetType, final CharSequence source) {
         final Type<T> type = N.typeOf(targetType);
 
         return split(output, type, source);
     }
 
-    public <T, C extends Collection<T>> C split(final C output, Type<T> type, CharSequence source) {
+    public <T, C extends Collection<T>> C split(final C output, Type<T> type, final CharSequence source) {
         final C result = output;
 
         if (N.isNullOrEmpty(source)) {
@@ -146,23 +147,19 @@ public final class Splitter {
         return result;
     }
 
-    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
-    //        return this.split(supplier.get(), source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
-    //        return this.split(supplier.get(), targetType, source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
-    //        return this.split(supplier.get(), type, source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
-    //        return this.split(supplier.get(), typeName, source);
-    //    }
+    public <C extends Collection<String>> C split(final CharSequence source, final Supplier<C> supplier) {
+        return this.split(supplier.get(), source);
+    }
 
-    public String[] splitToArray(CharSequence source) {
+    public <T, C extends Collection<T>> C split(Class<T> targetType, final CharSequence source, final Supplier<C> supplier) {
+        return this.split(supplier.get(), targetType, source);
+    }
+
+    public <T, C extends Collection<T>> C split(Type<T> type, final CharSequence source, final Supplier<C> supplier) {
+        return this.split(supplier.get(), type, source);
+    }
+
+    public String[] splitToArray(final CharSequence source) {
         if (N.isNullOrEmpty(source)) {
             return N.EMPTY_STRING_ARRAY;
         }
@@ -170,7 +167,7 @@ public final class Splitter {
         return Splitter.split(source, delimiter, delimiterRegex, max, trim);
     }
 
-    public <T> T splitToArray(Class<T> arrayType, CharSequence source) {
+    public <T> T splitToArray(Class<T> arrayType, final CharSequence source) {
         final Class<?> eleCls = arrayType.getComponentType();
 
         if (N.isNullOrEmpty(source)) {
@@ -201,27 +198,27 @@ public final class Splitter {
         }
     }
 
-    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
+    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, final CharSequence source) {
     //        return this.split(supplier.get(), source);
     //    }
     //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, final CharSequence source) {
     //        return this.split(supplier.get(), targetType, source);
     //    }
     //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, final CharSequence source) {
     //        return this.split(supplier.get(), type, source);
     //    }
     //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, final CharSequence source) {
     //        return this.split(supplier.get(), typeName, source);
     //    }
-    
-    public <T, E extends Exception> T splitAndThen(CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
+
+    public <T, E extends Exception> T splitAndThen(final CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
         return converter.apply(this.splitToArray(source));
     }
 
-    static String[] split(CharSequence source, String delimiter, String delimiterRegex, int max, boolean trim) {
+    static String[] split(final CharSequence source, String delimiter, String delimiterRegex, int max, boolean trim) {
         final String sourceStr = source.toString();
         String[] strs = null;
 
@@ -298,7 +295,7 @@ public final class Splitter {
             return this;
         }
 
-        public Map<String, String> split(CharSequence source) {
+        public Map<String, String> split(final CharSequence source) {
             if (N.isNullOrEmpty(source)) {
                 return new LinkedHashMap<>();
             }
@@ -337,14 +334,14 @@ public final class Splitter {
             return result;
         }
 
-        public <K, V> Map<K, V> split(Class<K> keyType, Class<V> valueType, CharSequence source) {
+        public <K, V> Map<K, V> split(Class<K> keyType, Class<V> valueType, final CharSequence source) {
             final Type<K> typeOfKey = N.typeOf(keyType);
             final Type<V> typeOfValue = N.typeOf(valueType);
 
             return split(typeOfKey, typeOfValue, source);
         }
 
-        public <K, V> Map<K, V> split(Type<K> keyType, Type<V> valueType, CharSequence source) {
+        public <K, V> Map<K, V> split(Type<K> keyType, Type<V> valueType, final CharSequence source) {
             if (N.isNullOrEmpty(source)) {
                 return new LinkedHashMap<>();
             }
@@ -383,7 +380,7 @@ public final class Splitter {
             return result;
         }
 
-        public <M extends Map<String, String>> M split(final M output, CharSequence source) {
+        public <M extends Map<String, String>> M split(final M output, final CharSequence source) {
             final M result = output;
 
             if (N.isNullOrEmpty(source)) {
@@ -423,14 +420,14 @@ public final class Splitter {
             return result;
         }
 
-        public <K, V, M extends Map<K, V>> M split(final M output, Class<K> keyType, Class<V> valueType, CharSequence source) {
+        public <K, V, M extends Map<K, V>> M split(final M output, Class<K> keyType, Class<V> valueType, final CharSequence source) {
             final Type<K> typeOfKey = N.typeOf(keyType);
             final Type<V> typeOfValue = N.typeOf(valueType);
 
             return split(output, typeOfKey, typeOfValue, source);
         }
 
-        public <K, V, M extends Map<K, V>> M split(final M output, Type<K> keyType, Type<V> valueType, CharSequence source) {
+        public <K, V, M extends Map<K, V>> M split(final M output, Type<K> keyType, Type<V> valueType, final CharSequence source) {
             final M result = output;
 
             if (N.isNullOrEmpty(source)) {
@@ -470,23 +467,19 @@ public final class Splitter {
             return result;
         }
 
-        //        public <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
-        //            return this.split(supplier.get(), source);
-        //        }
-        //
-        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
-        //            return this.split(supplier.get(), keyType, valueType, source);
-        //        }
-        //
-        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
-        //            return this.split(supplier.get(), keyType, valueType, source);
-        //        }
-        //
-        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
-        //            return this.split(supplier.get(), keyTypeName, valueTypeName, source);
-        //        }
+        public <M extends Map<String, String>> M split(final CharSequence source, final Supplier<M> supplier) {
+            return this.split(supplier.get(), source);
+        }
 
-        public <T, E extends Exception> T splitAndThen(CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
+        public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source, final Supplier<M> supplier) {
+            return this.split(supplier.get(), keyType, valueType, source);
+        }
+
+        public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source, final Supplier<M> supplier) {
+            return this.split(supplier.get(), keyType, valueType, source);
+        }
+
+        public <T, E extends Exception> T splitAndThen(final CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
             return converter.apply(this.split(source));
         }
     }

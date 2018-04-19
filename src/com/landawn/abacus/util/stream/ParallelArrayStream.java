@@ -2641,8 +2641,24 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return new ParallelArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
         } else {
-            final T[] a = N.top(elements, fromIndex, toIndex, n, comparator);
-            return new ParallelArrayStream<>(a, 0, a.length, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+            final List<T> c = N.top(elements, fromIndex, toIndex, n, comparator);
+
+            if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
+                T[] array = null;
+
+                try {
+                    array = (T[]) listElementDataField.get(c);
+                } catch (Throwable e) {
+                    // ignore;
+                    isListElementDataFieldGettable = false;
+                }
+
+                if (array != null) {
+                    return new ParallelArrayStream<>(array, 0, array.length, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+                }
+            }
+
+            return new ParallelIteratorStream<>(c.iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
     }
 

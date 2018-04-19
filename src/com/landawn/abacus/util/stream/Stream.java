@@ -62,6 +62,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.FloatIterator;
@@ -3194,13 +3195,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public static <T> Stream<T> observe(final BlockingQueue<T> queue, final Duration duration) {
         final Iterator<T> iter = new ObjIterator<T>() {
-            private final long endTime = N.currentMillis() + duration.toMillis();
+            private final long endTime = DateUtil.currentMillis() + duration.toMillis();
             private T next = null;
 
             @Override
             public boolean hasNext() {
                 if (next == null) {
-                    final long curTime = N.currentMillis();
+                    final long curTime = DateUtil.currentMillis();
 
                     if (curTime <= endTime) {
                         try {

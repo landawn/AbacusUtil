@@ -1107,7 +1107,7 @@ class IteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.nextByte();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1135,7 +1135,7 @@ class IteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.nextByte();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

@@ -1973,7 +1973,26 @@ class ArrayStream<T> extends AbstractStream<T> {
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return new ArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, closeHandlers);
         } else {
-            return new ArrayStream<>(N.top(elements, fromIndex, toIndex, n, comparator), sorted, cmp, closeHandlers);
+            // return new ArrayStream<>(N.top(elements, fromIndex, toIndex, n, comparator), sorted, cmp, closeHandlers);
+
+            final List<T> c = N.top(elements, fromIndex, toIndex, n, comparator);
+
+            if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
+                T[] array = null;
+
+                try {
+                    array = (T[]) listElementDataField.get(c);
+                } catch (Throwable e) {
+                    // ignore;
+                    isListElementDataFieldGettable = false;
+                }
+
+                if (array != null) {
+                    return new ArrayStream<>(array, sorted, cmp, closeHandlers);
+                }
+            }
+
+            return new IteratorStream<>(c.iterator(), sorted, cmp, closeHandlers);
         }
     }
 

@@ -27,8 +27,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.MoreExecutors;
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Retry;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -377,11 +377,11 @@ public class Async {
 
             @Override
             public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final long beginTime = N.currentMillis();
+                final long beginTime = DateUtil.currentMillis();
 
                 final CompletableFuture<T> resFuture = scheduledFuture.get(timeout, unit);
 
-                final long remainingTimeout = unit.toMillis(timeout) - (N.currentMillis() - beginTime);
+                final long remainingTimeout = unit.toMillis(timeout) - (DateUtil.currentMillis() - beginTime);
 
                 return resFuture == null ? null : (remainingTimeout > 0 ? resFuture.get(remainingTimeout, TimeUnit.MILLISECONDS) : resFuture.get());
             }

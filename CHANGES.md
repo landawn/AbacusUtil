@@ -6,6 +6,12 @@
 
 * Add `Fn/IntPredicate/.../Predicate.between(...)`.
 
+* Add `N.toList/toSet/toCollection`.
+
+* Refactoring: move `N.asJUDate/asDate/currentMillis/roll/format` to `DateUtil`.
+
+* Refatroing: change the return type of `N.intersection/difference/distinct/distinctBy/top/...` from `T[]` to `List<T>`.
+
 * Improvements and bug fix.
 
 

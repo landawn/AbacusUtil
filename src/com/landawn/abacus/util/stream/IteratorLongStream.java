@@ -1309,7 +1309,7 @@ class IteratorLongStream extends AbstractLongStream {
         while (elements.hasNext()) {
             next = elements.nextLong();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1337,7 +1337,7 @@ class IteratorLongStream extends AbstractLongStream {
         while (elements.hasNext()) {
             next = elements.nextLong();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

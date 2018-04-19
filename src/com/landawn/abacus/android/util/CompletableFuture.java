@@ -26,6 +26,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -1048,7 +1049,7 @@ public class CompletableFuture<T> implements Future<T> {
         N.requireNonNull(executor);
 
         return new CompletableFuture<T>(new Future<T>() {
-            private final long delayEndTime = N.currentMillis() + unit.toMillis(delay);
+            private final long delayEndTime = DateUtil.currentMillis() + unit.toMillis(delay);
             private volatile boolean isDelayed = false;
 
             @Override
@@ -1090,7 +1091,7 @@ public class CompletableFuture<T> implements Future<T> {
                 if (isDelayed == false) {
                     isDelayed = true;
 
-                    N.sleep(delayEndTime - N.currentMillis());
+                    N.sleep(delayEndTime - DateUtil.currentMillis());
                 }
             }
         }, null, executor) {

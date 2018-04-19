@@ -472,8 +472,8 @@ public final class Profiler {
         }
 
         protected String time2String(final long timeInMillis) {
-            final Timestamp timestamp = N.asTimestamp(timeInMillis);
-            return N.format(timestamp, N.LOCAL_TIMESTAMP_FORMAT); // + " " + N.LOCAL_TIME_ZONE.getID();
+            final Timestamp timestamp = DateUtil.asTimestamp(timeInMillis);
+            return DateUtil.format(timestamp, DateUtil.LOCAL_TIMESTAMP_FORMAT); // + " " + N.LOCAL_TIME_ZONE.getID();
         }
     }
 

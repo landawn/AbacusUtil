@@ -1090,7 +1090,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
         while (elements.hasNext()) {
             next = elements.nextInt();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1118,7 +1118,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
         while (elements.hasNext()) {
             next = elements.nextInt();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }

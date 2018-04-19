@@ -1592,7 +1592,7 @@ class IteratorIntStream extends AbstractIntStream {
         while (elements.hasNext()) {
             next = elements.nextInt();
 
-            if (N.compare(next, candidate) < 0) {
+            if (next < candidate) {
                 candidate = next;
             }
         }
@@ -1620,7 +1620,7 @@ class IteratorIntStream extends AbstractIntStream {
         while (elements.hasNext()) {
             next = elements.nextInt();
 
-            if (N.compare(next, candidate) > 0) {
+            if (next > candidate) {
                 candidate = next;
             }
         }
