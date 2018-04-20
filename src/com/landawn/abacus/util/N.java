@@ -645,6 +645,8 @@ public final class N {
         }
     }
 
+    private static final int MIN_SIZE_FOR_COPY_ALL = 9;
+
     /**
      * Constructor for
      */
@@ -1608,7 +1610,36 @@ public final class N {
         return c.toArray(new Object[c.size()]);
     }
 
-    public static <T> T[] toArray(final Collection<? extends T> c, final T[] a) {
+    @SuppressWarnings("rawtypes")
+    public static Object[] toArray(final Collection<?> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c)) {
+            return N.EMPTY_OBJECT_ARRAY;
+        } else if (fromIndex == 0 || toIndex == c.size()) {
+            return c.toArray(new Object[c.size()]);
+        } else if (c instanceof List) {
+            return ((List) c).subList(fromIndex, toIndex).toArray(new Object[toIndex - fromIndex]);
+        } else {
+            final Object[] res = new Object[toIndex - fromIndex];
+            final Iterator<?> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (idx < toIndex && iter.hasNext()) {
+                res[idx - fromIndex] = iter.next();
+                idx++;
+            }
+
+            return res;
+        }
+    }
+
+    public static <A, T extends A> A[] toArray(final Collection<T> c, final A[] a) {
         if (N.isNullOrEmpty(c)) {
             return a;
         }
@@ -1616,12 +1647,69 @@ public final class N {
         return c.toArray(a);
     }
 
-    public static <T> T[] toArray(final Class<T[]> targetClass, final Collection<? extends T> c) {
+    public static <A, T extends A> A[] toArray(final Collection<T> c, final int fromIndex, final int toIndex, final A[] a) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c)) {
+            return a;
+        } else if (fromIndex == 0 || toIndex == c.size()) {
+            return c.toArray(a);
+        } else if (c instanceof List) {
+            return ((List<T>) c).subList(fromIndex, toIndex).toArray(a);
+        } else {
+            final A[] res = a.length >= toIndex - fromIndex ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
+            final Iterator<T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (idx < toIndex && iter.hasNext()) {
+                res[idx - fromIndex] = iter.next();
+                idx++;
+            }
+
+            return res;
+        }
+    }
+
+    public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c) {
         if (N.isNullOrEmpty(c)) {
             return N.newArray(targetClass.getComponentType(), 0);
         }
 
-        return c.toArray((T[]) N.newArray(targetClass.getComponentType(), c.size()));
+        return c.toArray((A[]) N.newArray(targetClass.getComponentType(), c.size()));
+    }
+
+    public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        final A[] res = N.newArray(targetClass.getComponentType(), toIndex - fromIndex);
+
+        if (N.isNullOrEmpty(c)) {
+            return res;
+        } else if (fromIndex == 0 || toIndex == c.size()) {
+            return c.toArray(res);
+        } else if (c instanceof List) {
+            return ((List<T>) c).subList(fromIndex, toIndex).toArray(res);
+        } else {
+            final Iterator<T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (idx < toIndex && iter.hasNext()) {
+                res[idx - fromIndex] = iter.next();
+                idx++;
+            }
+
+            return res;
+        }
     }
 
     public static <T> List<T> toList(final T[] a) {
@@ -1687,15 +1775,19 @@ public final class N {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return supplier.apply(0);
+        } else if (fromIndex == 0 && toIndex == a.length && a.length >= MIN_SIZE_FOR_COPY_ALL) {
+            final C result = supplier.apply(a.length);
+            result.addAll(Arrays.asList(a));
+            return result;
+        } else {
+            final C result = supplier.apply(toIndex - fromIndex);
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(a[i]);
+            }
+
+            return result;
         }
-
-        final C result = supplier.apply(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(a[i]);
-        }
-
-        return result;
     }
 
     /**
@@ -1908,7 +2000,7 @@ public final class N {
 
         final List<T> list = new ArrayList<>(a.length);
 
-        if (a.length < 9) {
+        if (a.length < MIN_SIZE_FOR_COPY_ALL) {
             for (T e : a) {
                 list.add(e);
             }
@@ -12893,7 +12985,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -12918,7 +13010,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -12943,7 +13035,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -12968,7 +13060,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -12993,7 +13085,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -13018,7 +13110,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -13043,7 +13135,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -13068,7 +13160,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -13093,7 +13185,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 9) {
+        if (length < MIN_SIZE_FOR_COPY_ALL) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -18497,6 +18589,8 @@ public final class N {
     }
 
     public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -18505,6 +18599,8 @@ public final class N {
     }
 
     public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -18532,6 +18628,7 @@ public final class N {
     public static <E extends Exception> BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -18550,6 +18647,8 @@ public final class N {
     }
 
     public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -18558,6 +18657,8 @@ public final class N {
     }
 
     public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -18584,6 +18685,7 @@ public final class N {
     public static <E extends Exception> CharList filter(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -18602,6 +18704,8 @@ public final class N {
     }
 
     public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -18610,6 +18714,8 @@ public final class N {
     }
 
     public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -18636,6 +18742,7 @@ public final class N {
     public static <E extends Exception> ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -18654,6 +18761,8 @@ public final class N {
     }
 
     public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -18662,6 +18771,8 @@ public final class N {
     }
 
     public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -18688,6 +18799,7 @@ public final class N {
     public static <E extends Exception> ShortList filter(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -18706,6 +18818,8 @@ public final class N {
     }
 
     public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -18714,6 +18828,8 @@ public final class N {
     }
 
     public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -18740,6 +18856,7 @@ public final class N {
     public static <E extends Exception> IntList filter(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter, final int max)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -18758,6 +18875,8 @@ public final class N {
     }
 
     public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -18766,6 +18885,8 @@ public final class N {
     }
 
     public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -18792,6 +18913,7 @@ public final class N {
     public static <E extends Exception> LongList filter(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -18810,6 +18932,8 @@ public final class N {
     }
 
     public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -18818,6 +18942,8 @@ public final class N {
     }
 
     public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -18844,6 +18970,7 @@ public final class N {
     public static <E extends Exception> FloatList filter(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -18862,6 +18989,8 @@ public final class N {
     }
 
     public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -18870,6 +18999,8 @@ public final class N {
     }
 
     public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -18897,6 +19028,7 @@ public final class N {
     public static <E extends Exception> DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -18915,6 +19047,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -18923,6 +19057,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -18949,6 +19085,7 @@ public final class N {
     public static <T, E extends Exception> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -18967,6 +19104,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -18975,6 +19114,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter, final int max) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -18990,6 +19131,7 @@ public final class N {
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -19037,6 +19179,8 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter,
             final IntFunction<R> supplier) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -19046,6 +19190,8 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max,
             final IntFunction<R> supplier) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -19073,6 +19219,7 @@ public final class N {
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -19092,6 +19239,8 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
             final IntFunction<R> supplier) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -19101,6 +19250,8 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
             final int max, final IntFunction<R> supplier) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -19116,6 +19267,7 @@ public final class N {
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -19166,6 +19318,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -19186,6 +19340,7 @@ public final class N {
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -19201,6 +19356,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final Try.ToBooleanFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new BooleanList();
         }
@@ -19221,6 +19378,7 @@ public final class N {
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new BooleanList();
@@ -19254,6 +19412,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final Try.ToCharFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -19274,6 +19434,7 @@ public final class N {
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final Try.ToCharFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -19289,6 +19450,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final Try.ToCharFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new CharList();
         }
@@ -19309,6 +19472,7 @@ public final class N {
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToCharFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new CharList();
@@ -19342,6 +19506,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final Try.ToByteFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -19362,6 +19528,7 @@ public final class N {
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final Try.ToByteFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -19377,6 +19544,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final Try.ToByteFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
         }
@@ -19397,6 +19566,7 @@ public final class N {
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToByteFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ByteList();
@@ -19430,6 +19600,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final Try.ToShortFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -19450,6 +19622,7 @@ public final class N {
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -19465,6 +19638,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final Try.ToShortFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new ShortList();
         }
@@ -19485,6 +19660,7 @@ public final class N {
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ShortList();
@@ -19518,6 +19694,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -19538,6 +19716,7 @@ public final class N {
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -19553,6 +19732,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new IntList();
         }
@@ -19573,6 +19754,7 @@ public final class N {
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new IntList();
@@ -19606,6 +19788,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -19626,6 +19810,7 @@ public final class N {
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19641,6 +19826,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new LongList();
         }
@@ -19661,6 +19848,7 @@ public final class N {
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new LongList();
@@ -19694,6 +19882,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final Try.ToFloatFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -19714,6 +19904,7 @@ public final class N {
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -19729,6 +19920,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final Try.ToFloatFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new FloatList();
         }
@@ -19749,6 +19942,7 @@ public final class N {
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new FloatList();
@@ -19782,6 +19976,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -19802,6 +19998,7 @@ public final class N {
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -19817,6 +20014,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new DoubleList();
         }
@@ -19837,6 +20036,7 @@ public final class N {
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new DoubleList();
@@ -19870,6 +20070,8 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> map(final T[] a, final Try.Function<? super T, ? extends R, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -19890,6 +20092,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -19905,6 +20108,8 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final Try.Function<? super T, ? extends R, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -19925,6 +20130,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -19959,6 +20165,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final Try.Function<? super T, ? extends R, E> func,
             final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -19981,6 +20189,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -19997,6 +20206,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -20019,6 +20230,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -20052,6 +20264,8 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -20072,6 +20286,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20091,6 +20306,8 @@ public final class N {
 
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -20111,6 +20328,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -20149,6 +20367,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -20171,6 +20391,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20190,6 +20411,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -20212,6 +20435,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -20249,7 +20473,105 @@ public final class N {
         return result;
     }
 
+    public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> List<R> flatMap(final T[] a,
+            final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2) throws E, E2 {
+
+        return flatMap(a, func, func2, Fn.Factory.<R> ofList());
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param func
+     * @param func2
+     * @param supplier
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final T[] a,
+            final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
+        N.requireNonNull(func);
+        N.requireNonNull(func2);
+
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(a.length);
+
+        for (T e : a) {
+            final Collection<? extends T2> c1 = func.apply(e);
+
+            if (N.notNullOrEmpty(c1)) {
+                for (T2 e2 : c1) {
+                    final Collection<? extends R> c2 = func2.apply(e2);
+
+                    if (N.notNullOrEmpty(c2)) {
+                        result.addAll(c2);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> List<R> flatMap(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2) throws E, E2 {
+
+        return flatMap(c, func, func2, Fn.Factory.<R> ofList());
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param func
+     * @param func2
+     * @param supplier
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
+        N.requireNonNull(func);
+        N.requireNonNull(func2);
+
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(c.size());
+
+        for (T e : c) {
+            final Collection<? extends T2> c1 = func.apply(e);
+
+            if (N.notNullOrEmpty(c1)) {
+                for (T2 e2 : c1) {
+                    final Collection<? extends R> c2 = func2.apply(e2);
+
+                    if (N.notNullOrEmpty(c2)) {
+                        result.addAll(c2);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -20270,6 +20592,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20288,6 +20611,8 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final Try.Function<? super T, ? extends R[], E> func) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -20308,6 +20633,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -20346,6 +20672,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func,
             final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -20368,6 +20696,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20387,6 +20716,8 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+        N.requireNonNull(func);
+
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -20409,6 +20740,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -21570,7 +21902,7 @@ public final class N {
     }
 
     public static short[] top(final short[] a, final int n, final Comparator<? super Short> cmp) {
-        return top(a, 0, a.length, n, cmp);
+        return top(a, 0, a == null ? 0 : a.length, n, cmp);
     }
 
     public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int n) {
@@ -21578,55 +21910,34 @@ public final class N {
     }
 
     public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Short> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<IndexedShort> pairCmp = cmp == null ? new Comparator<IndexedShort>() {
-            @Override
-            public int compare(final IndexedShort o1, final IndexedShort o2) {
-                return Short.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<IndexedShort>() {
-            @Override
-            public int compare(final IndexedShort o1, final IndexedShort o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<IndexedShort> heap = new PriorityQueue<>(n, pairCmp);
-        IndexedShort pair = null;
+        final Comparator<? super Short> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<Short> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = IndexedShort.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final IndexedShort[] arrayOfPair = heap.toArray(new IndexedShort[heap.size()]);
+        final Iterator<Short> iter = heap.iterator();
+        final short[] res = new short[n];
+        int idx = 0;
 
-        N.sort(arrayOfPair, new Comparator<IndexedShort>() {
-            @Override
-            public int compare(final IndexedShort o1, final IndexedShort o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final short[] res = new short[arrayOfPair.length];
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+        while (iter.hasNext()) {
+            res[idx++] = iter.next();
         }
 
         return res;
@@ -21645,55 +21956,34 @@ public final class N {
     }
 
     public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Integer> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<IndexedInt> pairCmp = cmp == null ? new Comparator<IndexedInt>() {
-            @Override
-            public int compare(final IndexedInt o1, final IndexedInt o2) {
-                return Integer.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<IndexedInt>() {
-            @Override
-            public int compare(final IndexedInt o1, final IndexedInt o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<IndexedInt> heap = new PriorityQueue<>(n, pairCmp);
-        IndexedInt pair = null;
+        final Comparator<? super Integer> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<Integer> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = IndexedInt.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final IndexedInt[] arrayOfPair = heap.toArray(new IndexedInt[heap.size()]);
+        final Iterator<Integer> iter = heap.iterator();
+        final int[] res = new int[n];
+        int idx = 0;
 
-        N.sort(arrayOfPair, new Comparator<IndexedInt>() {
-            @Override
-            public int compare(final IndexedInt o1, final IndexedInt o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final int[] res = new int[arrayOfPair.length];
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+        while (iter.hasNext()) {
+            res[idx++] = iter.next();
         }
 
         return res;
@@ -21712,55 +22002,34 @@ public final class N {
     }
 
     public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Long> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<IndexedLong> pairCmp = cmp == null ? new Comparator<IndexedLong>() {
-            @Override
-            public int compare(final IndexedLong o1, final IndexedLong o2) {
-                return Long.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<IndexedLong>() {
-            @Override
-            public int compare(final IndexedLong o1, final IndexedLong o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<IndexedLong> heap = new PriorityQueue<>(n, pairCmp);
-        IndexedLong pair = null;
+        final Comparator<? super Long> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<Long> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = IndexedLong.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final IndexedLong[] arrayOfPair = heap.toArray(new IndexedLong[heap.size()]);
+        final Iterator<Long> iter = heap.iterator();
+        final long[] res = new long[n];
+        int idx = 0;
 
-        N.sort(arrayOfPair, new Comparator<IndexedLong>() {
-            @Override
-            public int compare(final IndexedLong o1, final IndexedLong o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final long[] res = new long[arrayOfPair.length];
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+        while (iter.hasNext()) {
+            res[idx++] = iter.next();
         }
 
         return res;
@@ -21779,55 +22048,34 @@ public final class N {
     }
 
     public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Float> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return N.EMPTY_FLOAT_ARRAY;
+        } else if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<IndexedFloat> pairCmp = cmp == null ? new Comparator<IndexedFloat>() {
-            @Override
-            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
-                return Float.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<IndexedFloat>() {
-            @Override
-            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<IndexedFloat> heap = new PriorityQueue<>(n, pairCmp);
-        IndexedFloat pair = null;
+        final Comparator<? super Float> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<Float> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = IndexedFloat.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final IndexedFloat[] arrayOfPair = heap.toArray(new IndexedFloat[heap.size()]);
+        final Iterator<Float> iter = heap.iterator();
+        final float[] res = new float[n];
+        int idx = 0;
 
-        N.sort(arrayOfPair, new Comparator<IndexedFloat>() {
-            @Override
-            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final float[] res = new float[arrayOfPair.length];
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+        while (iter.hasNext()) {
+            res[idx++] = iter.next();
         }
 
         return res;
@@ -21846,55 +22094,34 @@ public final class N {
     }
 
     public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Double> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        } else if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<IndexedDouble> pairCmp = cmp == null ? new Comparator<IndexedDouble>() {
-            @Override
-            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
-                return Double.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<IndexedDouble>() {
-            @Override
-            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<IndexedDouble> heap = new PriorityQueue<>(n, pairCmp);
-        IndexedDouble pair = null;
+        final Comparator<? super Double> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<Double> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = IndexedDouble.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final IndexedDouble[] arrayOfPair = heap.toArray(new IndexedDouble[heap.size()]);
+        final Iterator<Double> iter = heap.iterator();
+        final double[] res = new double[n];
+        int idx = 0;
 
-        N.sort(arrayOfPair, new Comparator<IndexedDouble>() {
-            @Override
-            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final double[] res = new double[arrayOfPair.length];
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].value();
+        while (iter.hasNext()) {
+            res[idx++] = iter.next();
         }
 
         return res;
@@ -21912,60 +22139,30 @@ public final class N {
         return top(a, fromIndex, toIndex, n, N.NATURAL_ORDER);
     }
 
-    @SuppressWarnings("rawtypes")
     public static <T> List<T> top(final T[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgNotNegative(n, "n");
 
-        if (n >= toIndex - fromIndex) {
+        if (n == 0) {
+            return new ArrayList<>();
+        } else if (n >= toIndex - fromIndex) {
             return N.toList(a, fromIndex, toIndex);
         }
 
-        final Comparator<Indexed<T>> pairCmp = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
-            @Override
-            public int compare(final Indexed<Comparable> o1, final Indexed<Comparable> o2) {
-                return N.compare(o1.value(), o2.value());
-            }
-        } : new Comparator<Indexed<T>>() {
-            @Override
-            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                return cmp.compare(o1.value(), o2.value());
-            }
-        };
-
-        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
-        Indexed<T> pair = null;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<T> heap = new PriorityQueue<>(n, comparator);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Indexed.of(a[i], i);
-
             if (heap.size() >= n) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                if (comparator.compare(heap.peek(), a[i]) < 0) {
                     heap.poll();
-                    heap.add(pair);
+                    heap.add(a[i]);
                 }
             } else {
-                heap.offer(pair);
+                heap.offer(a[i]);
             }
         }
 
-        final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
-
-        N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
-            @Override
-            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                return o1.index() - o2.index();
-            }
-        });
-
-        final List<T> res = new ArrayList<>(arrayOfPair.length);
-
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res.add(arrayOfPair[i].value());
-        }
-
-        return res;
+        return createList((T[]) heap.toArray(N.EMPTY_OBJECT_ARRAY));
     }
 
     public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int n) {
@@ -21973,21 +22170,60 @@ public final class N {
     }
 
     public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
-        return top(c, 0, c.size(), n, cmp);
+        return top(c, 0, c == null ? 0 : c.size(), n, cmp);
     }
 
     public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
         return top(c, fromIndex, toIndex, n, null);
     }
 
-    @SuppressWarnings("rawtypes")
     public static <T> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
+        N.checkArgNotNegative(n, "n");
+
+        if (n == 0) {
+            return new ArrayList<>();
+        } else if (n >= toIndex - fromIndex) {
+            if (fromIndex == 0 && toIndex == c.size()) {
+                return new ArrayList<>(c);
+            } else {
+                final List<T> res = new ArrayList<>(toIndex - fromIndex);
+                final Iterator<? extends T> iter = c.iterator();
+                T e = null;
+
+                for (int i = 0; i < toIndex && iter.hasNext(); i++) {
+                    e = iter.next();
+
+                    if (i < fromIndex) {
+                        continue;
+                    }
+
+                    res.add(e);
+                }
+
+                return res;
+            }
         }
 
-        if (n >= toIndex - fromIndex) {
-            final List<T> res = new ArrayList<>(toIndex - fromIndex);
+        final Comparator<? super T> comparator = cmp == null ? Comparators.NATURAL_ORDER : cmp;
+        final Queue<T> heap = new PriorityQueue<>(n, comparator);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            T e = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                if (heap.size() >= n) {
+                    if (comparator.compare(heap.peek(), e) < 0) {
+                        heap.poll();
+                        heap.add(e);
+                    }
+                } else {
+                    heap.offer(e);
+                }
+            }
+        } else {
             final Iterator<? extends T> iter = c.iterator();
             T e = null;
 
@@ -21998,13 +22234,77 @@ public final class N {
                     continue;
                 }
 
-                res.add(e);
+                if (heap.size() >= n) {
+                    if (comparator.compare(heap.peek(), e) < 0) {
+                        heap.poll();
+                        heap.add(e);
+                    }
+                } else {
+                    heap.offer(e);
+                }
             }
-
-            return res;
         }
 
-        final Comparator<Indexed<T>> pairCmp = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
+        return createList((T[]) heap.toArray(N.EMPTY_OBJECT_ARRAY));
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param a
+     * @param n
+     * @return
+     */
+    public static <T extends Comparable<T>> List<T> topp(final T[] a, final int n) {
+        return topp(a, n, N.NATURAL_ORDER);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param a
+     * @param n
+     * @param cmp
+     * @return
+     */
+    public static <T> List<T> topp(final T[] a, final int n, final Comparator<? super T> cmp) {
+        return topp(a, 0, a == null ? 0 : a.length, n, cmp);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param n
+     * @return
+     */
+    public static <T extends Comparable<T>> List<T> topp(final T[] a, final int fromIndex, final int toIndex, final int n) {
+        return topp(a, fromIndex, toIndex, n, N.NATURAL_ORDER);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param n
+     * @param cmp
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T> List<T> topp(final T[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+        N.checkArgNotNegative(n, "n");
+
+        if (n == 0) {
+            return new ArrayList<>();
+        } else if (n >= toIndex - fromIndex) {
+            return N.toList(a, fromIndex, toIndex);
+        }
+
+        final Comparator<Indexed<T>> comparator = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
             @Override
             public int compare(final Indexed<Comparable> o1, final Indexed<Comparable> o2) {
                 return N.compare(o1.value(), o2.value());
@@ -22016,30 +22316,150 @@ public final class N {
             }
         };
 
-        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
+        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, comparator);
+        Indexed<T> indexed = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            indexed = Indexed.of(a[i], i);
+
+            if (heap.size() >= n) {
+                if (comparator.compare(heap.peek(), indexed) < 0) {
+                    heap.poll();
+                    heap.add(indexed);
+                }
+            } else {
+                heap.offer(indexed);
+            }
+        }
+
+        final Indexed<T>[] arrayOfIndexed = heap.toArray(new Indexed[heap.size()]);
+
+        N.sort(arrayOfIndexed, new Comparator<Indexed<T>>() {
+            @Override
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return o1.index() - o2.index();
+            }
+        });
+
+        final List<T> res = new ArrayList<>(arrayOfIndexed.length);
+
+        for (int i = 0, len = arrayOfIndexed.length; i < len; i++) {
+            res.add(arrayOfIndexed[i].value());
+        }
+
+        return res;
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param c
+     * @param n
+     * @return
+     */
+    public static <T extends Comparable<T>> List<T> topp(final Collection<? extends T> c, final int n) {
+        return topp(c, n, null);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param c
+     * @param n
+     * @param cmp
+     * @return
+     */
+    public static <T> List<T> topp(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
+        return topp(c, 0, c == null ? 0 : c.size(), n, cmp);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param n
+     * @return
+     */
+    public static <T extends Comparable<T>> List<T> topp(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
+        return topp(c, fromIndex, toIndex, n, null);
+    }
+
+    /**
+     * The present order is kept in the result list.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param n
+     * @param cmp
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T> List<T> topp(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+        N.checkArgNotNegative(n, "n");
+
+        if (n == 0) {
+            return new ArrayList<>();
+        } else if (n >= toIndex - fromIndex) {
+            if (fromIndex == 0 && toIndex == c.size()) {
+                return new ArrayList<>(c);
+            } else {
+                final List<T> res = new ArrayList<>(toIndex - fromIndex);
+                final Iterator<? extends T> iter = c.iterator();
+                T e = null;
+
+                for (int i = 0; i < toIndex && iter.hasNext(); i++) {
+                    e = iter.next();
+
+                    if (i < fromIndex) {
+                        continue;
+                    }
+
+                    res.add(e);
+                }
+
+                return res;
+            }
+        }
+
+        final Comparator<Indexed<T>> comparator = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
+            @Override
+            public int compare(final Indexed<Comparable> o1, final Indexed<Comparable> o2) {
+                return N.compare(o1.value(), o2.value());
+            }
+        } : new Comparator<Indexed<T>>() {
+            @Override
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return cmp.compare(o1.value(), o2.value());
+            }
+        };
+
+        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, comparator);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            Indexed<T> pair = null;
+            Indexed<T> indexed = null;
             T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                pair = Indexed.of(e, i);
+                indexed = Indexed.of(e, i);
 
                 if (heap.size() >= n) {
-                    if (pairCmp.compare(heap.peek(), pair) < 0) {
+                    if (comparator.compare(heap.peek(), indexed) < 0) {
                         heap.poll();
-                        heap.add(pair);
+                        heap.add(indexed);
                     }
                 } else {
-                    heap.offer(pair);
+                    heap.offer(indexed);
                 }
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
-            Indexed<T> pair = null;
+            Indexed<T> indexed = null;
             T e = null;
 
             for (int i = 0; i < toIndex && iter.hasNext(); i++) {
@@ -22049,32 +22469,32 @@ public final class N {
                     continue;
                 }
 
-                pair = Indexed.of(e, i);
+                indexed = Indexed.of(e, i);
 
                 if (heap.size() >= n) {
-                    if (pairCmp.compare(heap.peek(), pair) < 0) {
+                    if (comparator.compare(heap.peek(), indexed) < 0) {
                         heap.poll();
-                        heap.add(pair);
+                        heap.add(indexed);
                     }
                 } else {
-                    heap.offer(pair);
+                    heap.offer(indexed);
                 }
             }
         }
 
-        final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
+        final Indexed<T>[] arrayOfIndexed = heap.toArray(new Indexed[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
+        N.sort(arrayOfIndexed, new Comparator<Indexed<T>>() {
             @Override
             public int compare(final Indexed<T> o1, final Indexed<T> o2) {
                 return o1.index() - o2.index();
             }
         });
 
-        final List<T> res = new ArrayList<>(arrayOfPair.length);
+        final List<T> res = new ArrayList<>(arrayOfIndexed.length);
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res.add(arrayOfPair[i].value());
+        for (int i = 0, len = arrayOfIndexed.length; i < len; i++) {
+            res.add(arrayOfIndexed[i].value());
         }
 
         return res;

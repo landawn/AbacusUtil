@@ -428,6 +428,46 @@ public final class JdbcUtil {
         }
     }
 
+    public static void close(final ResultSet rs, final boolean closeStatement) throws UncheckedSQLException {
+        close(rs, closeStatement, false);
+    }
+
+    /**
+     * 
+     * @param rs
+     * @param closeStatement 
+     * @param closeConnection
+     * @throws IllegalArgumentException if {@code closeStatement = false} while {@code closeConnection = true}.
+     * @throws UncheckedSQLException
+     */
+    public static void close(final ResultSet rs, final boolean closeStatement, final boolean closeConnection)
+            throws IllegalArgumentException, UncheckedSQLException {
+        if (closeConnection && closeStatement == false) {
+            throw new IllegalArgumentException("'closeStatement' can't be false while 'closeConnection' is true");
+        }
+
+        if (rs == null) {
+            return;
+        }
+
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            if (closeStatement || closeConnection) {
+                stmt = rs.getStatement();
+            }
+
+            if (closeConnection && stmt != null) {
+                conn = stmt.getConnection();
+            }
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        } finally {
+            close(rs, stmt, conn);
+        }
+    }
+
     public static void close(final Statement stmt) throws UncheckedSQLException {
         if (stmt != null) {
             try {
@@ -549,6 +589,44 @@ public final class JdbcUtil {
      */
     public static void closeQuietly(final ResultSet rs) {
         closeQuietly(rs, null, null);
+    }
+
+    public static void closeQuietly(final ResultSet rs, final boolean closeStatement) throws UncheckedSQLException {
+        closeQuietly(rs, closeStatement, false);
+    }
+
+    /**
+     * 
+     * @param rs
+     * @param closeStatement 
+     * @param closeConnection
+     * @throws IllegalArgumentException if {@code closeStatement = false} while {@code closeConnection = true}. 
+     */
+    public static void closeQuietly(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) throws IllegalArgumentException {
+        if (closeConnection && closeStatement == false) {
+            throw new IllegalArgumentException("'closeStatement' can't be false while 'closeConnection' is true");
+        }
+
+        if (rs == null) {
+            return;
+        }
+
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            if (closeStatement || closeConnection) {
+                stmt = rs.getStatement();
+            }
+
+            if (closeConnection && stmt != null) {
+                conn = stmt.getConnection();
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to get Statement or Connection by ResultSet", e);
+        } finally {
+            closeQuietly(rs, stmt, conn);
+        }
     }
 
     /**
