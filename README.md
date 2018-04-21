@@ -38,6 +38,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Charsets](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/Charsets.html),
 [Ascii](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/Ascii.html),
 [CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/CalendarUnit.html),
+[DateUtil](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/DateUtil.html),
 [NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/NamingPolicy.html),
 [Array](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/Array.html),
 [Wrapper](https://static.javadoc.io/com.landawn/abacus-util/1.2.6/com/landawn/abacus/util/Wrapper.html),
