@@ -932,6 +932,17 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public <R extends Collection<Short>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextShort());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Short> toMultiset() {
         final Multiset<Short> result = new Multiset<>();
 

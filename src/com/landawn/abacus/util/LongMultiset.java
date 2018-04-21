@@ -1453,7 +1453,7 @@ public final class LongMultiset<T> implements Iterable<T> {
 
     private static void checkOccurrences(final long occurrences) {
         if (occurrences < 0) {
-            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
+            throw new IllegalArgumentException("The specified 'occurrences' can not be negative");
         }
     }
 }

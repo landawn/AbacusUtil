@@ -21426,6 +21426,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21446,6 +21448,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21472,6 +21475,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final char[] a, final Try.CharPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21492,6 +21497,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21518,6 +21524,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final byte[] a, final Try.BytePredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21538,6 +21546,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21564,6 +21573,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final short[] a, final Try.ShortPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21584,6 +21595,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21610,6 +21622,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final int[] a, final Try.IntPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21630,6 +21644,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21656,6 +21671,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final long[] a, final Try.LongPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21676,6 +21693,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21702,6 +21720,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final float[] a, final Try.FloatPredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21722,6 +21742,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21748,6 +21769,8 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final double[] a, final Try.DoublePredicate<E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21768,6 +21791,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21794,6 +21818,8 @@ public final class N {
      * @return
      */
     public static <T, E extends Exception> int count(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21814,6 +21840,7 @@ public final class N {
      */
     public static <T, E extends Exception> int count(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21840,6 +21867,8 @@ public final class N {
      * @return
      */
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
+        N.requireNonNull(filter);
+
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -21861,6 +21890,7 @@ public final class N {
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.requireNonNull(filter);
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return 0;

@@ -1251,6 +1251,17 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public <R extends Collection<Float>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Float> toMultiset() {
         final Multiset<Float> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 

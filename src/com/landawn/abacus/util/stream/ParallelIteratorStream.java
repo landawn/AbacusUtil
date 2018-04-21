@@ -42,7 +42,6 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
@@ -2245,101 +2244,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Object[] toArray() {
-        return toArray(N.EMPTY_OBJECT_ARRAY);
-    }
-
-    @Override
     <A> A[] toArray(A[] a) {
         return elements.toArray(a);
-    }
-
-    @Override
-    public List<T> toList() {
-        final List<T> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<T>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<T> toSet() {
-        final Set<T> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<T>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<T> toMultiset() {
-        final Multiset<T> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
-        final Multiset<T> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<T> toLongMultiset() {
-        final LongMultiset<T> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
-        final LongMultiset<T> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
     }
 
     @Override

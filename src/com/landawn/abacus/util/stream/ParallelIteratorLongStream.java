@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,9 +29,7 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
@@ -605,104 +602,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public long[] toArray() {
-        return elements.toArray();
-    }
-
-    @Override
-    public LongList toLongList() {
-        return LongList.of(toArray());
-    }
-
-    @Override
-    public List<Long> toList() {
-        final List<Long> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Long>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Long> toSet() {
-        final Set<Long> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Long>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Long> toMultiset() {
-        final Multiset<Long> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
-        final Multiset<Long> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Long> toLongMultiset() {
-        final LongMultiset<Long> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
-        final LongMultiset<Long> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
     }
 
     @Override

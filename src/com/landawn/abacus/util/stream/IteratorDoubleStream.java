@@ -1122,6 +1122,17 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public <R extends Collection<Double>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextDouble());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Double> toMultiset() {
         final Multiset<Double> result = new Multiset<>();
 

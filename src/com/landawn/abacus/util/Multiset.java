@@ -1421,7 +1421,7 @@ public final class Multiset<T> implements Iterable<T> {
 
     private static void checkOccurrences(final int occurrences) {
         if (occurrences < 0) {
-            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
+            throw new IllegalArgumentException("The specified 'occurrences' can not be negative");
         }
     }
 }

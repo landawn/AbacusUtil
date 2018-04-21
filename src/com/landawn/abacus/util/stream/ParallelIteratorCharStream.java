@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,8 +29,6 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
@@ -526,104 +523,6 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public char[] toArray() {
-        return elements.toArray();
-    }
-
-    @Override
-    public CharList toCharList() {
-        return CharList.of(toArray());
-    }
-
-    @Override
-    public List<Character> toList() {
-        final List<Character> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Character>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Character> toSet() {
-        final Set<Character> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Character>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Character> toMultiset() {
-        final Multiset<Character> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
-        final Multiset<Character> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Character> toLongMultiset() {
-        final LongMultiset<Character> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
-        final LongMultiset<Character> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
     }
 
     @Override

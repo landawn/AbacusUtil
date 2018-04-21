@@ -2089,6 +2089,17 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <R extends Collection<T>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public <R extends Set<T>> R toSet(Supplier<R> supplier) {
         final R result = supplier.get();
 

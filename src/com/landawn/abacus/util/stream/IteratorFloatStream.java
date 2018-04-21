@@ -1118,6 +1118,17 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public <R extends Collection<Float>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextFloat());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Float> toMultiset() {
         final Multiset<Float> result = new Multiset<>();
 

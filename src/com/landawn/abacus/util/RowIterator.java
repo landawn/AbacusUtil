@@ -15,21 +15,14 @@
 package com.landawn.abacus.util;
 
 import java.io.Closeable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.exception.UncheckedSQLException;
-import com.landawn.abacus.logging.Logger;
-import com.landawn.abacus.logging.LoggerFactory;
 
 /**
  * 
@@ -38,8 +31,6 @@ import com.landawn.abacus.logging.LoggerFactory;
  * @author Haiyang Li
  */
 public final class RowIterator implements Iterator<Object[]>, Closeable {
-    private static final Logger logger = LoggerFactory.getLogger(RowIterator.class);
-
     private final ResultSet rs;
     private final long count;
     private final ResultSetMetaData metaData;
@@ -65,6 +56,10 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
             throw new IllegalArgumentException("ResultSet must not be null");
         }
 
+        if (closeConnection && closeStatement == false) {
+            throw new IllegalArgumentException("'closeStatement' can't be false while 'closeConnection' is true");
+        }
+
         this.rs = rs;
         this.count = count;
 
@@ -83,30 +78,6 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
 
     ResultSet resultSet() {
         return rs;
-    }
-
-    public static RowIterator of(final ResultSet rs, final boolean closeStatement, final boolean closeConnection) throws UncheckedSQLException {
-        return new RowIterator(rs, closeStatement, closeConnection);
-    }
-
-    public static RowIterator of(final ResultSet rs, final long offset, final long count, final boolean closeStatement, final boolean closeConnection)
-            throws UncheckedSQLException {
-        return new RowIterator(rs, offset, count, closeStatement, closeConnection);
-    }
-
-    public static List<RowIterator> of(final Collection<ResultSet> c, final boolean closeStatement, final boolean closeConnection)
-            throws UncheckedSQLException {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        final List<RowIterator> result = new ArrayList<>(c.size());
-
-        for (ResultSet e : c) {
-            result.add(new RowIterator(e, closeStatement, closeConnection));
-        }
-
-        return result;
     }
 
     public int getColumnCount() {
@@ -179,17 +150,7 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
 
         isClosed = true;
 
-        Connection conn = null;
-        Statement stmt = null;
-
-        try {
-            stmt = rs.getStatement();
-            conn = stmt.getConnection();
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            closeQuietly(rs, stmt, conn);
-        }
+        JdbcUtil.closeQuietly(rs, closeStatement, closeConnection);
     }
 
     /**
@@ -202,39 +163,5 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
     @Deprecated
     public void remove() {
         throw new UnsupportedOperationException("Remove unsupported on LineIterator");
-    }
-
-    private void closeQuietly(final ResultSet rs, final Statement stmt, final Connection conn) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (Throwable e) {
-                logger.error("Failed to close ResultSet", e);
-            }
-        }
-
-        if (stmt != null && closeStatement) {
-            if (stmt instanceof PreparedStatement) {
-                try {
-                    ((PreparedStatement) stmt).clearParameters();
-                } catch (Throwable e) {
-                    logger.error("Failed to clear parameters", e);
-                }
-            }
-
-            try {
-                stmt.close();
-            } catch (Throwable e) {
-                logger.error("Failed to close Statement", e);
-            }
-        }
-
-        if (conn != null && closeConnection) {
-            try {
-                conn.close();
-            } catch (Throwable e) {
-                logger.error("Failed to close Connection", e);
-            }
-        }
     }
 }

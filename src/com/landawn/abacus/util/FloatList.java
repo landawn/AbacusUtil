@@ -333,6 +333,8 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         }
 
         N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+        N.fill(this.elementData, tmp.size(), size, 0f);
+        size = tmp.size;
 
         return true;
     }
@@ -407,7 +409,11 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     @Override
     @SafeVarargs
     public final void deleteAll(int... indices) {
-        N.deleteAll(elementData, indices);
+        final float[] tmp = N.deleteAll(elementData, indices);
+        N.copy(tmp, 0, elementData, 0, tmp.length);
+        N.fill(elementData, tmp.length, size, 0f);
+        size = tmp.length;
+
     }
 
     public int replaceAll(float oldVal, float newVal) {

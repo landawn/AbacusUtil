@@ -349,6 +349,8 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         }
 
         N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+        N.fill(this.elementData, tmp.size(), size, 0);
+        size = tmp.size;
 
         return true;
     }
@@ -423,7 +425,10 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
     @Override
     @SafeVarargs
     public final void deleteAll(int... indices) {
-        N.deleteAll(elementData, indices);
+        final long[] tmp = N.deleteAll(elementData, indices);
+        N.copy(tmp, 0, elementData, 0, tmp.length);
+        N.fill(elementData, tmp.length, size, 0);
+        size = tmp.length;
     }
 
     public int replaceAll(long oldVal, long newVal) {

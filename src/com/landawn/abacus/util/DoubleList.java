@@ -333,6 +333,8 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         }
 
         N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+        N.fill(this.elementData, tmp.size(), size, 0d);
+        size = tmp.size;
 
         return true;
     }
@@ -407,7 +409,10 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     @Override
     @SafeVarargs
     public final void deleteAll(int... indices) {
-        N.deleteAll(elementData, indices);
+        final double[] tmp = N.deleteAll(elementData, indices);
+        N.copy(tmp, 0, elementData, 0, tmp.length);
+        N.fill(elementData, tmp.length, size, 0d);
+        size = tmp.length;
     }
 
     public int replaceAll(double oldVal, double newVal) {

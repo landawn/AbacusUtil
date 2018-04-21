@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,8 +29,6 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -587,104 +584,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public int[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
-    }
-
-    @Override
-    public IntList toIntList() {
-        return IntList.of(N.copyOfRange(elements, fromIndex, toIndex));
-    }
-
-    @Override
-    public List<Integer> toList() {
-        final List<Integer> result = new ArrayList<>(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Integer>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Integer> toSet() {
-        final Set<Integer> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Integer>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Integer> toMultiset() {
-        final Multiset<Integer> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier) {
-        final Multiset<Integer> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Integer> toLongMultiset() {
-        final LongMultiset<Integer> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier) {
-        final LongMultiset<Integer> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
     }
 
     @Override

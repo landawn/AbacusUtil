@@ -1251,6 +1251,17 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public <R extends Collection<Double>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Double> toMultiset() {
         final Multiset<Double> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 

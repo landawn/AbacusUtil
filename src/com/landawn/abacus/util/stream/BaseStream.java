@@ -703,6 +703,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
 
     <R extends Set<T>> R toSet(Supplier<R> supplier);
 
+    <R extends Collection<T>> R toCollection(Supplier<R> supplier);
+
     Multiset<T> toMultiset();
 
     Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier);

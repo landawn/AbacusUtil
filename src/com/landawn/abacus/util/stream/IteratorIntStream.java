@@ -1406,6 +1406,17 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
+    public <R extends Collection<Integer>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextInt());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Integer> toMultiset() {
         final Multiset<Integer> result = new Multiset<>();
 

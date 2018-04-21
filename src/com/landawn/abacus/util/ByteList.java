@@ -351,6 +351,8 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         }
 
         N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+        N.fill(this.elementData, tmp.size(), size, (byte) 0);
+        size = tmp.size;
 
         return true;
     }
@@ -425,7 +427,10 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     @Override
     @SafeVarargs
     public final void deleteAll(int... indices) {
-        N.deleteAll(elementData, indices);
+        final byte[] tmp = N.deleteAll(elementData, indices);
+        N.copy(tmp, 0, elementData, 0, tmp.length);
+        N.fill(elementData, tmp.length, size, (byte) 0);
+        size = tmp.length;
     }
 
     public int replaceAll(byte oldVal, byte newVal) {

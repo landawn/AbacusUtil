@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -31,8 +30,6 @@ import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
@@ -706,104 +703,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public int[] toArray() {
-        return elements.toArray();
-    }
-
-    @Override
-    public IntList toIntList() {
-        return IntList.of(toArray());
-    }
-
-    @Override
-    public List<Integer> toList() {
-        final List<Integer> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Integer>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Integer> toSet() {
-        final Set<Integer> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Integer>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Integer> toMultiset() {
-        final Multiset<Integer> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier) {
-        final Multiset<Integer> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Integer> toLongMultiset() {
-        final LongMultiset<Integer> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier) {
-        final LongMultiset<Integer> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextInt());
-        }
-
-        return result;
     }
 
     @Override

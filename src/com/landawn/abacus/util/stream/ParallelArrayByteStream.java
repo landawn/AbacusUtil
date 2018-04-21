@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -29,8 +28,6 @@ import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -396,104 +393,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public byte[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
-    }
-
-    @Override
-    public ByteList toByteList() {
-        return ByteList.of(N.copyOfRange(elements, fromIndex, toIndex));
-    }
-
-    @Override
-    public List<Byte> toList() {
-        final List<Byte> result = new ArrayList<>(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Byte>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Byte>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier) {
-        final Multiset<Byte> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier) {
-        final LongMultiset<Byte> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
     }
 
     @Override

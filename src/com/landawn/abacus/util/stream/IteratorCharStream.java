@@ -920,6 +920,17 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
+    public <R extends Collection<Character>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextChar());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Character> toMultiset() {
         final Multiset<Character> result = new Multiset<>();
 

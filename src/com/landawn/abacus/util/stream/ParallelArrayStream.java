@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
@@ -56,7 +54,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -2948,11 +2945,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Object[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
-    }
-
-    @Override
     <A> A[] toArray(A[] a) {
         if (a.length < (toIndex - fromIndex)) {
             a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
@@ -2961,103 +2953,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         N.copy(elements, fromIndex, a, 0, toIndex - fromIndex);
 
         return a;
-    }
-
-    @Override
-    public <A> A[] toArray(IntFunction<A[]> generator) {
-        return toArray(generator.apply(toIndex - fromIndex));
-    }
-
-    @Override
-    public List<T> toList() {
-        if (fromIndex == 0 && toIndex == elements.length && elements.length > 9) {
-            return new ArrayList<>(Arrays.asList(elements));
-        }
-
-        final List<T> result = new ArrayList<>(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<T>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<T> toSet() {
-        final Set<T> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<T>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<T> toMultiset() {
-        final Multiset<T> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
-        final Multiset<T> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<T> toLongMultiset() {
-        final LongMultiset<T> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
-        final LongMultiset<T> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
     }
 
     @Override
@@ -3675,11 +3570,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         return sequential().kthLargest(k, comparator);
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

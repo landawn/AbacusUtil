@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -29,8 +28,6 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -396,104 +393,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public char[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
-    }
-
-    @Override
-    public CharList toCharList() {
-        return CharList.of(N.copyOfRange(elements, fromIndex, toIndex));
-    }
-
-    @Override
-    public List<Character> toList() {
-        final List<Character> result = new ArrayList<>(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Character>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Character> toSet() {
-        final Set<Character> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Character>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Character> toMultiset() {
-        final Multiset<Character> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
-        final Multiset<Character> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Character> toLongMultiset() {
-        final LongMultiset<Character> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
-        final LongMultiset<Character> result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
     }
 
     @Override

@@ -177,7 +177,7 @@ public final class SQLExecutor implements Closeable {
     static final ResultSetExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<RowIterator>() {
         @Override
         public RowIterator extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-            return RowIterator.of(rs, jdbcSettings.getOffset(), jdbcSettings.getCount(), true, true);
+            return new RowIterator(rs, jdbcSettings.getOffset(), jdbcSettings.getCount(), true, true);
         }
     };
 

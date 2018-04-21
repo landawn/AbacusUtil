@@ -1028,6 +1028,17 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public <R extends Collection<Short>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Short> toMultiset() {
         final Multiset<Short> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 

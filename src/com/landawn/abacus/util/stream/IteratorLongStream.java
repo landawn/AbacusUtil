@@ -1123,6 +1123,17 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
+    public <R extends Collection<Long>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextLong());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Long> toMultiset() {
         final Multiset<Long> result = new Multiset<>();
 

@@ -1588,6 +1588,17 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public <R extends Collection<Integer>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Integer> toMultiset() {
         final Multiset<Integer> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 

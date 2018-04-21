@@ -1252,6 +1252,17 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public <R extends Collection<Long>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Long> toMultiset() {
         final Multiset<Long> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 

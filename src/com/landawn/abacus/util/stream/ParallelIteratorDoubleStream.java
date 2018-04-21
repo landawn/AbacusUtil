@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -31,8 +30,6 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
@@ -604,104 +601,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public double[] toArray() {
-        return elements.toArray();
-    }
-
-    @Override
-    public DoubleList toDoubleList() {
-        return DoubleList.of(toArray());
-    }
-
-    @Override
-    public List<Double> toList() {
-        final List<Double> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Double>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Double> toSet() {
-        final Set<Double> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Double>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Double> toMultiset() {
-        final Multiset<Double> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Double> toMultiset(Supplier<? extends Multiset<Double>> supplier) {
-        final Multiset<Double> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Double> toLongMultiset() {
-        final LongMultiset<Double> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Double> toLongMultiset(Supplier<? extends LongMultiset<Double>> supplier) {
-        final LongMultiset<Double> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextDouble());
-        }
-
-        return result;
     }
 
     @Override

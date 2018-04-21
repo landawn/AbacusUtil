@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -30,8 +29,6 @@ import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
-import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
@@ -526,104 +523,6 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         }
 
         complette(futureList, eHolder, (E) null);
-    }
-
-    @Override
-    public byte[] toArray() {
-        return elements.toArray();
-    }
-
-    @Override
-    public ByteList toByteList() {
-        return ByteList.of(toArray());
-    }
-
-    @Override
-    public List<Byte> toList() {
-        final List<Byte> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends List<Byte>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Byte>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier) {
-        final Multiset<Byte> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier) {
-        final LongMultiset<Byte> result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
     }
 
     @Override

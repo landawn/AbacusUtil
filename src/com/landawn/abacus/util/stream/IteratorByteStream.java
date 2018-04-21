@@ -921,6 +921,17 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public <R extends Collection<Byte>> R toCollection(Supplier<R> supplier) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.nextByte());
+        }
+
+        return result;
+    }
+
+    @Override
     public Multiset<Byte> toMultiset() {
         final Multiset<Byte> result = new Multiset<>();
 
