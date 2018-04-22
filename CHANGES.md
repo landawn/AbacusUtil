@@ -1,3 +1,12 @@
+### 1.2.7
+ 
+* Add `Optional/OptionalInt.orElseThrow()`.
+
+* Add `Optional/Nullable.toImmutableList/toImmutableSet`. 
+
+* Improvements and bug fix.
+
+
 ### 1.2.6
  
 * Add `Comparators.comparingIgnoreCase(final Function<? super T, String> keyExtractor)`.
