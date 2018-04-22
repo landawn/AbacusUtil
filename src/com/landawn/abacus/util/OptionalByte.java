@@ -127,12 +127,8 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      *
      * @see OptionalByte#isPresent()
      */
-    public byte get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public byte get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -261,6 +257,20 @@ public final class OptionalByte implements Comparable<OptionalByte> {
             return value;
         } else {
             throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public byte orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
         }
     }
 

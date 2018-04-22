@@ -127,12 +127,8 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      *
      * @see OptionalFloat#isPresent()
      */
-    public float get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public float get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -261,6 +257,20 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
             return value;
         } else {
             throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public float orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
         }
     }
 

@@ -9711,6 +9711,23 @@ public final class N {
     }
 
     /**
+     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgNotNegative(final double arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
      * Ensures the truth of an expression involving the state of the calling instance, but not
      * involving any parameters to the calling method.
      *

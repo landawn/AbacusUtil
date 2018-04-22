@@ -127,12 +127,8 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      *
      * @see OptionalChar#isPresent()
      */
-    public char get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public char get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -261,6 +257,20 @@ public final class OptionalChar implements Comparable<OptionalChar> {
             return value;
         } else {
             throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public char orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
         }
     }
 

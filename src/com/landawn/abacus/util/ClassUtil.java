@@ -768,7 +768,7 @@ public final class ClassUtil {
                     if (tmp.substring(0, tmp.length() / 2).equals(tmp.substring(tmp.length() / 2 + 1))) {
                         sb.append(N.reverse(tmp.substring(0, tmp.length() / 2)));
                     } else {
-                        sb.append(tmp);
+                        sb.append(N.reverse(tmp));
                     }
 
                     i++;
@@ -1567,7 +1567,8 @@ public final class ClassUtil {
         Method setMethod = internalGetDeclaredMethod(clazz, SET + propName, getMethod.getReturnType());
 
         return ((setMethod != null) && (void.class.equals(setMethod.getReturnType()) || setMethod.getDeclaringClass().equals(setMethod.getReturnType())))
-                ? setMethod : null;
+                ? setMethod
+                : null;
     }
 
     private static <T> Map<String, String> getPublicStaticStringFields(final Class<T> cls) {

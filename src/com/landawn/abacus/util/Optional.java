@@ -141,12 +141,8 @@ public final class Optional<T> {
      *
      * @see Optional#isPresent()
      */
-    public T get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public T get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -417,6 +413,20 @@ public final class Optional<T> {
         }
     }
 
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public T orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
+    }
+
     public Stream<T> stream() {
         return isPresent() ? Stream.of(value) : Stream.<T> empty();
     }
@@ -441,6 +451,24 @@ public final class Optional<T> {
      */
     public Set<T> toSet() {
         return isPresent() ? N.asSet(value) : new HashSet<T>();
+    }
+
+    /**
+     * Returns a {@code ImmutableList} with the value if it presents, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public ImmutableList<T> toImmutableList() {
+        return isPresent() ? ImmutableList.of(value) : ImmutableList.<T> empty();
+    }
+
+    /**
+     * Returns a {@code ImmutableSet} with the value if it presents, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public ImmutableSet<T> toImmutableSet() {
+        return isPresent() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
     }
 
     /**

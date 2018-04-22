@@ -72,12 +72,8 @@ abstract class Any<T> {
      *
      * @see Any#isPresent()
      */
-    public T get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public T get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -538,6 +534,20 @@ abstract class Any<T> {
     }
 
     /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public T orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
+    }
+
+    /**
      * 
      * @return an empty stream if it's not present.
      */
@@ -587,6 +597,42 @@ abstract class Any<T> {
      */
     public Set<T> toSetIfNotNull() {
         return isNotNull() ? N.asSet(value) : new HashSet<T>();
+    }
+
+    /**
+     * Returns a {@code ImmutableList} with the value if it presents, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public ImmutableList<T> toImmutableList() {
+        return isPresent() ? ImmutableList.of(value) : ImmutableList.<T> empty();
+    }
+
+    /**
+     * Returns a {@code ImmutableList} with the value if it presents, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public ImmutableList<T> toImmutableListIfNotNull() {
+        return isNotNull() ? ImmutableList.of(value) : ImmutableList.<T> empty();
+    }
+
+    /**
+     * Returns a {@code ImmutableSet} with the value if it presents, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public ImmutableSet<T> toImmutableSet() {
+        return isPresent() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
+    }
+
+    /**
+     * Returns a {@code ImmutableSet} with the value if it presents, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public ImmutableSet<T> toImmutableSetIfNotNull() {
+        return isNotNull() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
     }
 
     /**

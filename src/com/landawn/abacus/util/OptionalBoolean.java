@@ -127,12 +127,8 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      *
      * @see OptionalBoolean#isPresent()
      */
-    public boolean get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public boolean get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -268,14 +264,19 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         }
     }
 
-    //    /**
-    //     * Return the value if present, otherwise return {@code false}.
-    //     *
-    //     * @return the value, if present, otherwise {@code false}
-    //     */
-    //    public boolean orFalse() {
-    //        return isPresent() ? value : false;
-    //    }
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public boolean orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
+    }
 
     @Override
     public int compareTo(OptionalBoolean optional) {

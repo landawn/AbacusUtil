@@ -61,18 +61,15 @@ public final class Futures {
             final Try.Function<? super Tuple4<CompletableFuture<T1>, CompletableFuture<T2>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
         final List<CompletableFuture<?>> cfs = Arrays.asList(cf1, cf2);
 
-        return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
-            @SuppressWarnings("rawtypes")
+        return zip(cfs, new Try.Function<List<CompletableFuture<?>>, R, Exception>() {
             @Override
-            public R apply(Collection<? extends CompletableFuture<?>> c) throws Exception {
-                return zipFunctionForGet.apply((CompletableFuture<T1>) ((List) c).get(0), (CompletableFuture<T2>) ((List) c).get(1));
+            public R apply(List<CompletableFuture<?>> c) throws Exception {
+                return zipFunctionForGet.apply((CompletableFuture<T1>) c.get(0), (CompletableFuture<T2>) c.get(1));
             }
-        }, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
-            @SuppressWarnings("rawtypes")
+        }, new Try.Function<Tuple3<List<CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
             @Override
-            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
-                return zipFunctionTimeoutGet
-                        .apply(Tuple.of((CompletableFuture<T1>) ((List) t._1).get(0), (CompletableFuture<T2>) ((List) t._1).get(1), t._2, t._3));
+            public R apply(Tuple3<List<CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionTimeoutGet.apply(Tuple.of((CompletableFuture<T1>) t._1.get(0), (CompletableFuture<T2>) t._1.get(1), t._2, t._3));
             }
         });
     }
@@ -93,19 +90,16 @@ public final class Futures {
             final Try.Function<? super Tuple5<CompletableFuture<T1>, CompletableFuture<T2>, CompletableFuture<T3>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
         final List<CompletableFuture<?>> cfs = Arrays.asList(cf1, cf2, cf3);
 
-        return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
-            @SuppressWarnings("rawtypes")
+        return zip(cfs, new Try.Function<List<CompletableFuture<?>>, R, Exception>() {
             @Override
-            public R apply(Collection<? extends CompletableFuture<?>> c) throws Exception {
-                return zipFunctionForGet.apply((CompletableFuture<T1>) ((List) c).get(0), (CompletableFuture<T2>) ((List) c).get(1),
-                        (CompletableFuture<T3>) ((List) c).get(2));
+            public R apply(List<CompletableFuture<?>> c) throws Exception {
+                return zipFunctionForGet.apply((CompletableFuture<T1>) c.get(0), (CompletableFuture<T2>) c.get(1), (CompletableFuture<T3>) c.get(2));
             }
-        }, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
-            @SuppressWarnings("rawtypes")
+        }, new Try.Function<Tuple3<List<CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
             @Override
-            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
-                return zipFunctionTimeoutGet.apply(Tuple.of((CompletableFuture<T1>) ((List) t._1).get(0), (CompletableFuture<T2>) ((List) t._1).get(1),
-                        (CompletableFuture<T3>) ((List) t._1).get(2), t._2, t._3));
+            public R apply(Tuple3<List<CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionTimeoutGet.apply(
+                        Tuple.of((CompletableFuture<T1>) t._1.get(0), (CompletableFuture<T2>) t._1.get(1), (CompletableFuture<T3>) t._1.get(2), t._2, t._3));
             }
         });
     }

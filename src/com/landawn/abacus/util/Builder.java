@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -224,6 +225,10 @@ public class Builder<T> {
      */
     public <E extends Exception> Optional<T> filter(final Try.Predicate<? super T, E> predicate) throws E {
         return predicate.test(val) ? Optional.of(val) : Optional.<T> empty();
+    }
+
+    public Stream<T> stream() {
+        return Stream.of(val);
     }
 
     //    /**

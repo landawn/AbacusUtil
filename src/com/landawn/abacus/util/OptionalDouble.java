@@ -131,12 +131,8 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      *
      * @see OptionalDouble#isPresent()
      */
-    public double get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public double get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -265,6 +261,20 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
             return value;
         } else {
             throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public double orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
         }
     }
 

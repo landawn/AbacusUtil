@@ -131,12 +131,8 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      *
      * @see OptionalLong#isPresent()
      */
-    public long get() {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
+    public long get() throws NoSuchElementException {
+        return orElseThrow();
     }
 
     /**
@@ -265,6 +261,20 @@ public final class OptionalLong implements Comparable<OptionalLong> {
             return value;
         } else {
             throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public long orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
         }
     }
 

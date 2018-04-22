@@ -40,7 +40,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
     private static final long serialVersionUID = 1587163916L;
 
     /** The mutable value. */
-    private volatile double value;
+    private double value;
 
     /**
      * Constructs a new MutableDouble with the default value of zero.

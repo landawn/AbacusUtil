@@ -287,13 +287,13 @@ public final class DynamoDBExecutor implements Closeable {
             return N.newEmptyDataSet();
         }
 
+        final int rowCount = N.min(count, items.size() - offset);
         final Set<String> columnNames = new LinkedHashSet<>();
 
-        for (int i = offset, to = items.size(); i < to && count > 0; i++, count--) {
+        for (int i = offset, to = offset + rowCount; i < to; i++) {
             columnNames.addAll(items.get(i).keySet());
         }
 
-        final int rowCount = N.min(count, items.size() - offset);
         final int columnCount = columnNames.size();
         final List<String> columnNameList = new ArrayList<>(columnNames);
         final List<List<Object>> columnList = new ArrayList<>(columnCount);
@@ -302,11 +302,11 @@ public final class DynamoDBExecutor implements Closeable {
             columnList.add(new ArrayList<>(rowCount));
         }
 
-        for (int i = offset, to = items.size(); i < to && count > 0; i++, count--) {
+        for (int i = offset, to = offset + rowCount; i < to; i++) {
             final Map<String, AttributeValue> item = items.get(i);
 
             for (int j = 0; j < columnCount; j++) {
-                columnList.get(j).add(toValue(item.get(columnList.get(j))));
+                columnList.get(j).add(toValue(item.get(columnNameList.get(j))));
             }
         }
 

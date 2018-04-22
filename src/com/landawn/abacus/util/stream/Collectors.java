@@ -3911,7 +3911,7 @@ public class Collectors {
      * @apiNote
      * It is common for either the key or the value to be the input elements.
      * In this case, the utility method
-     * {@link java.util.function.Function#identity()} may be helpful.
+     * {@link Function#identity()} may be helpful.
      * For example, the following produces a {@code Map} mapping
      * students to their grade point average:
      * <pre>{@code
@@ -4203,7 +4203,7 @@ public class Collectors {
      * @apiNote
      * It is common for either the key or the value to be the input elements.
      * In this case, the utility method
-     * {@link java.util.function.Function#identity()} may be helpful.
+     * {@link Function#identity()} may be helpful.
      * For example, the following produces a {@code Map} mapping
      * students to their grade point average:
      * <pre>{@code

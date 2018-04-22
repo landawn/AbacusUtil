@@ -516,12 +516,14 @@ public class Difference<L, R> {
             } else if (N.isNullOrEmpty(map2)) {
                 leftOnly.putAll(map1);
             } else {
+                Object key1 = null;
                 V2 val2 = null;
                 for (Entry<K1, V1> entry1 : map1.entrySet()) {
-                    val2 = map2.get(entry1.getKey());
+                    key1 = entry1.getKey();
+                    val2 = map2.get(key1);
 
                     if (val2 == null) {
-                        if (map2.containsKey(entry1.getKey())) {
+                        if (map2.containsKey(key1)) {
                             if (entry1.getValue() == null) {
                                 common.put(entry1.getKey(), entry1.getValue());
                             } else {
