@@ -2177,7 +2177,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Set<T> toSet() {
-        final Set<T> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<T> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -2210,7 +2210,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset() {
-        final Multiset<T> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<T> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -2232,7 +2232,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset() {
-        final LongMultiset<T> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -2346,20 +2346,12 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Nullable<T> first() {
-        if (fromIndex == toIndex) {
-            return Nullable.empty();
-        }
-
-        return Nullable.of(elements[fromIndex]);
+        return fromIndex < toIndex ? Nullable.of(elements[fromIndex]) : Nullable.<T> empty();
     }
 
     @Override
     public Nullable<T> last() {
-        if (fromIndex == toIndex) {
-            return Nullable.empty();
-        }
-
-        return Nullable.of(elements[toIndex - 1]);
+        return fromIndex < toIndex ? Nullable.of(elements[toIndex - 1]) : Nullable.<T> empty();
     }
 
     @Override

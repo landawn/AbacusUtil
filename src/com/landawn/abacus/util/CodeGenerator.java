@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -315,14 +314,14 @@ public final class CodeGenerator {
     }
 
     public static void database2EntityDefinitionXml(final Database database, final File entityDefinitionXml, final Map<String, String> entityDefAttrs) {
-        Map<String, String> newEntityNames = new HashMap<>();
-        Map<String, String> newPropNames = new HashMap<>();
+        Map<String, String> newEntityNames = new LinkedHashMap<>();
+        Map<String, String> newPropNames = new LinkedHashMap<>();
         database2EntityDefinitionXml(database, entityDefinitionXml, entityDefAttrs, newEntityNames, newPropNames, null);
     }
 
     public static void database2EntityDefinitionXml(final Database database, final File entityDefinitionXml, final Map<String, String> entityDefAttrs,
             final Map<String, String> newEntityNames, final Map<String, String> newPropNames, final Map<String, Set<String>> excludedeEntityPropNames) {
-        Map<String, Map<String, String>> newEntityPropNames = new HashMap<>();
+        Map<String, Map<String, String>> newEntityPropNames = new LinkedHashMap<>();
         Collection<Table> tables = database.getTableList();
 
         for (Table table : tables) {
@@ -344,7 +343,7 @@ public final class CodeGenerator {
             tableName2EntityName = ClassUtil.getDeclaredMethod(CodeGenerator.class, TABLE_NAME2ENTITY_NAME, String.class);
         }
 
-        Map<String, Method> entityColumnName2PropName = new HashMap<>();
+        Map<String, Method> entityColumnName2PropName = new LinkedHashMap<>();
         Collection<Table> tables = database.getTableList();
 
         for (Table table : tables) {
@@ -365,19 +364,19 @@ public final class CodeGenerator {
         }
 
         if (newEntityNames == null) {
-            newEntityNames = new HashMap<>();
+            newEntityNames = new LinkedHashMap<>();
         }
 
         if (entityColumnName2PropName == null) {
-            entityColumnName2PropName = new HashMap<>();
+            entityColumnName2PropName = new LinkedHashMap<>();
         }
 
         if (newEntityPropNames == null) {
-            newEntityPropNames = new HashMap<>();
+            newEntityPropNames = new LinkedHashMap<>();
         }
 
         if (excludedeEntityPropNames == null) {
-            excludedeEntityPropNames = new HashMap<>();
+            excludedeEntityPropNames = new LinkedHashMap<>();
         }
 
         Document doc = XMLUtil.createDOMParser(true, true).newDocument();
@@ -411,7 +410,7 @@ public final class CodeGenerator {
         }
 
         Map<String, Element> existedEntityEleList = getEntityElementList(existedDoc);
-        Set<String> entityNameList = new HashSet<>();
+        Set<String> entityNameList = new LinkedHashSet<>();
         Collection<Table> tables = database.getTableList();
 
         for (Table table : tables) {
@@ -497,13 +496,13 @@ public final class CodeGenerator {
         Element entityNode = null;
 
         if (newPropNames == null) {
-            newPropNames = new HashMap<>();
+            newPropNames = new LinkedHashMap<>();
         }
 
         if (excludedPropNames == null) {
-            excludedPropNames = new HashSet<>();
+            excludedPropNames = new LinkedHashSet<>();
         } else {
-            Set<String> tempList = new HashSet<>(excludedPropNames);
+            Set<String> tempList = new LinkedHashSet<>(excludedPropNames);
 
             for (String propName : excludedPropNames) {
                 tempList.add(propName.toUpperCase());
@@ -653,7 +652,7 @@ public final class CodeGenerator {
     }
 
     private static Map<String, Element> getEntityElementList(final Document doc) {
-        Map<String, Element> result = new HashMap<>();
+        Map<String, Element> result = new LinkedHashMap<>();
 
         if (doc != null) {
             List<Element> entityDefElementList = XMLUtil.getElementsByTagName(doc.getDocumentElement(), EntityDefEle.ENTITY_DEF);
@@ -731,7 +730,7 @@ public final class CodeGenerator {
         Map<String, Class<?>> entityExtendedClasses = null;
 
         if (extendedClass != null) {
-            entityExtendedClasses = new HashMap<>();
+            entityExtendedClasses = new LinkedHashMap<>();
             for (EntityDefinition entityDef : entityDefinitionFactory.getDefinitionList()) {
                 entityExtendedClasses.put(entityDef.getName(), extendedClass);
             }
@@ -740,7 +739,7 @@ public final class CodeGenerator {
         Map<String, List<Class<?>>> entityImplementedInterfaces = null;
 
         if (N.notNullOrEmpty(implementedInterfaces)) {
-            entityImplementedInterfaces = new HashMap<>();
+            entityImplementedInterfaces = new LinkedHashMap<>();
             for (EntityDefinition entityDef : entityDefinitionFactory.getDefinitionList()) {
                 entityImplementedInterfaces.put(entityDef.getName(), implementedInterfaces);
             }
@@ -813,11 +812,11 @@ public final class CodeGenerator {
         }
 
         if (entityExtendedClasses == null) {
-            entityExtendedClasses = new HashMap<>();
+            entityExtendedClasses = new LinkedHashMap<>();
         }
 
         if (entityImplementedInterfaces == null) {
-            entityImplementedInterfaces = new HashMap<>();
+            entityImplementedInterfaces = new LinkedHashMap<>();
         }
 
         final Class<?> utilClass = utilClassForHashEqualsToString == null ? Objects.class : utilClassForHashEqualsToString;
@@ -996,7 +995,7 @@ public final class CodeGenerator {
                 }
             }
 
-            Map<String, List<String>> annotationLinesMapper = new HashMap<>();
+            Map<String, List<String>> annotationLinesMapper = new LinkedHashMap<>();
             Set<Class<?>> annotationImportClasses = new LinkedHashSet<>();
 
             if (classFile.exists()) {
@@ -2084,7 +2083,7 @@ public final class CodeGenerator {
         }
 
         if (ignoreFieldNames == null) {
-            ignoreFieldNames = new HashSet<>();
+            ignoreFieldNames = new LinkedHashSet<>();
         }
 
         final String simpleClassName = cls.getSimpleName();
@@ -2293,7 +2292,7 @@ public final class CodeGenerator {
             IOUtil.writeLines(clsSourceFile, newLines);
 
             // Add annotation back.
-            Map<String, Set<String>> annoMap = new HashMap<>();
+            Map<String, Set<String>> annoMap = new LinkedHashMap<>();
             for (int i = 0, len = lines.size(); i < len; i++) {
                 String line = lines.get(i);
                 if (line.trim().startsWith("@")) {
@@ -2421,7 +2420,7 @@ public final class CodeGenerator {
     //            Set<String> ignoreFieldNames, final Map<String, String> fieldName2MethodName, final ParentPropertyMode parentPropertyModeForHashEquals,
     //            final ParentPropertyMode parentPropertyModeForToString) {
     //        if (ignoreFieldNames == null) {
-    //            ignoreFieldNames = new HashSet<>();
+    //            ignoreFieldNames = new LinkedHashSet<>();
     //        }
     //
     //        final Map<String, Type<?>> fieldTypes = new LinkedHashMap<>();
@@ -2462,7 +2461,7 @@ public final class CodeGenerator {
         }
 
         if (fieldName2MethodName == null) {
-            fieldName2MethodName = new HashMap<>();
+            fieldName2MethodName = new LinkedHashMap<>();
         }
 
         final String utilClassName = utilClass.getSimpleName();

@@ -437,16 +437,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public OptionalByte first() {
-        return fromIndex < toIndex ? OptionalByte.of(elements[fromIndex]) : OptionalByte.empty();
-    }
-
-    @Override
-    public OptionalByte last() {
-        return fromIndex < toIndex ? OptionalByte.of(elements[toIndex - 1]) : OptionalByte.empty();
-    }
-
-    @Override
     public byte reduce(final byte identity, final ByteBinaryOperator op) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, op);
@@ -842,19 +832,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public OptionalByte kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (k > toIndex - fromIndex) {
-            return OptionalByte.empty();
-        } else if (sorted) {
-            return OptionalByte.of(elements[toIndex - k]);
-        }
-
-        return OptionalByte.of(N.kthLargest(elements, fromIndex, toIndex, k));
-    }
-
-    @Override
     public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
@@ -906,11 +883,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         return OptionalDouble.of(sum() / toIndex - fromIndex);
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

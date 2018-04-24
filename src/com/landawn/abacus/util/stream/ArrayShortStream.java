@@ -1007,7 +1007,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Set<Short> toSet() {
-        final Set<Short> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Short> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1040,7 +1040,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
-        final Multiset<Short> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Short> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1062,7 +1062,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
-        final LongMultiset<Short> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Short> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

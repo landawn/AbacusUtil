@@ -412,6 +412,92 @@ public final class Iterators {
         }
     }
 
+    public static <T, E extends Exception> void forEachPair(final Iterator<T> iter, final Try.BiConsumer<? super T, ? super T, E> action) throws E {
+        forEachPair(iter, action, 1);
+    }
+
+    public static <T, E extends Exception> void forEachPair(final Iterator<T> iter, final Try.BiConsumer<? super T, ? super T, E> action, final int increment)
+            throws E {
+        N.requireNonNull(action);
+        final int windowSize = 2;
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        if (iter == null) {
+            return;
+        }
+
+        final T NONE = (T) N.NULL_MASK;
+        T prev = NONE;
+
+        while (iter.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && iter.hasNext()) {
+                    iter.next();
+                }
+
+                if (iter.hasNext() == false) {
+                    break;
+                }
+
+                prev = NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev == NONE ? iter.next() : prev, (prev = (iter.hasNext() ? iter.next() : null)));
+            } else {
+                action.accept(iter.next(), (prev = (iter.hasNext() ? iter.next() : null)));
+            }
+        }
+    }
+
+    public static <T, E extends Exception> void forEachTriple(final Iterator<T> iter, final Try.TriConsumer<? super T, ? super T, ? super T, E> action)
+            throws E {
+        forEachTriple(iter, action, 1);
+    }
+
+    public static <T, E extends Exception> void forEachTriple(final Iterator<T> iter, final Try.TriConsumer<? super T, ? super T, ? super T, E> action,
+            final int increment) throws E {
+        N.requireNonNull(action);
+        final int windowSize = 3;
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        if (iter == null) {
+            return;
+        }
+
+        final T NONE = (T) N.NULL_MASK;
+        T prev = NONE;
+        T prev2 = NONE;
+
+        while (iter.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && iter.hasNext()) {
+                    iter.next();
+                }
+
+                if (iter.hasNext() == false) {
+                    break;
+                }
+
+                prev = NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev2 == NONE ? iter.next() : prev2, (prev2 = (prev == NONE ? (iter.hasNext() ? iter.next() : null) : prev)),
+                        (prev = (iter.hasNext() ? iter.next() : null)));
+            } else if (increment == 2) {
+                action.accept(prev == NONE ? iter.next() : prev, (prev2 = (iter.hasNext() ? iter.next() : null)),
+                        (prev = (iter.hasNext() ? iter.next() : null)));
+            } else {
+                action.accept(iter.next(), (prev2 = (iter.hasNext() ? iter.next() : null)), (prev = (iter.hasNext() ? iter.next() : null)));
+            }
+        }
+    }
+
     public static <T> ObjIterator<T> repeat(final T e, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 

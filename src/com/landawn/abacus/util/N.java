@@ -992,7 +992,27 @@ public final class N {
     }
 
     public static int initHashCapacity(final int size) {
-        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : MAX_ARRAY_SIZE;
+        N.checkArgNotNegative(size, "size");
+
+        if (size == 0) {
+            return 0;
+        }
+
+        int res = size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : MAX_ARRAY_SIZE;
+
+        switch (res / 64) {
+            case 0:
+                return res;
+
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                return 64;
+
+            default:
+                return 128;
+        }
     }
 
     public static <T> ArrayList<T> newArrayList() {
@@ -1753,7 +1773,7 @@ public final class N {
             return new HashSet<>();
         }
 
-        final Set<T> result = new HashSet<>(N.min(64, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<T> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(a[i]);
@@ -1803,7 +1823,7 @@ public final class N {
             return new LinkedHashMap<>();
         }
 
-        return newMap(new LinkedHashMap<String, Object>(initHashCapacity(a.length / 2)), a);
+        return newMap(new LinkedHashMap<String, Object>(N.initHashCapacity(a.length / 2)), a);
     }
 
     @SuppressWarnings("unchecked")
@@ -1908,7 +1928,7 @@ public final class N {
             return new HashMap<>();
         }
 
-        return newMap(new HashMap<K, V>(initHashCapacity(a.length / 2)), a);
+        return newMap(new HashMap<K, V>(N.initHashCapacity(a.length / 2)), a);
     }
 
     public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1) {
@@ -1984,7 +2004,7 @@ public final class N {
             return new LinkedHashMap<>();
         }
 
-        return newMap(new LinkedHashMap<K, V>(initHashCapacity(a.length / 2)), a);
+        return newMap(new LinkedHashMap<K, V>(N.initHashCapacity(a.length / 2)), a);
     }
 
     /**
@@ -2034,7 +2054,7 @@ public final class N {
             return new HashSet<>();
         }
 
-        final Set<T> set = new HashSet<>(initHashCapacity(a.length));
+        final Set<T> set = new HashSet<>(N.initHashCapacity(a.length));
 
         for (T e : a) {
             set.add(e);
@@ -2049,7 +2069,7 @@ public final class N {
             return new LinkedHashSet<>();
         }
 
-        final LinkedHashSet<T> set = new LinkedHashSet<>(initHashCapacity(a.length));
+        final LinkedHashSet<T> set = new LinkedHashSet<>(N.initHashCapacity(a.length));
 
         for (T e : a) {
             set.add(e);
@@ -29044,7 +29064,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Character> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Character> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29088,7 +29108,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Byte> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Byte> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29132,7 +29152,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Short> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Short> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29176,7 +29196,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Integer> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Integer> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29220,7 +29240,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Long> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Long> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29264,7 +29284,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Float> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Float> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29308,7 +29328,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Double> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Double> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -29352,7 +29372,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Object> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
+            final Set<Object> set = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(hashKey(a[i])) == false) {
@@ -29389,7 +29409,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Object> set = new HashSet<>(min(9, initHashCapacity(c.size())));
+            final Set<Object> set = new HashSet<>(N.initHashCapacity(c.size()));
 
             for (Object e : c) {
                 if (set.add(hashKey(e)) == false) {
@@ -33327,6 +33347,87 @@ public final class N {
             }
         }
     }
+
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalBoolean nullable(Boolean value) {
+    //        return OptionalBoolean.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalChar nullable(Character value) {
+    //        return OptionalChar.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalByte nullable(Byte value) {
+    //        return OptionalByte.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalShort nullable(Short value) {
+    //        return OptionalShort.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalInt nullable(Integer value) {
+    //        return OptionalInt.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalLong nullable(Long value) {
+    //        return OptionalLong.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalFloat nullable(Float value) {
+    //        return OptionalFloat.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static OptionalDouble nullable(Double value) {
+    //        return OptionalDouble.ofNullable(value);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param value
+    //     * @return
+    //     */
+    //    public static <T> Optional<T> nullable(T value) {
+    //        return Optional.ofNullable(value);
+    //    }
 
     /**
      * 

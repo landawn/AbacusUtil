@@ -988,7 +988,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Byte> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1021,7 +1021,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Byte> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1043,7 +1043,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Byte> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

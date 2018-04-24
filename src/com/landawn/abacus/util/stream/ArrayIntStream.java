@@ -1567,7 +1567,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Set<Integer> toSet() {
-        final Set<Integer> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Integer> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1600,7 +1600,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Multiset<Integer> toMultiset() {
-        final Multiset<Integer> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Integer> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1622,7 +1622,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public LongMultiset<Integer> toLongMultiset() {
-        final LongMultiset<Integer> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Integer> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

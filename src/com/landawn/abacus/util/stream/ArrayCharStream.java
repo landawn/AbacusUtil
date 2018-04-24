@@ -988,7 +988,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Set<Character> toSet() {
-        final Set<Character> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Character> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1021,7 +1021,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset() {
-        final Multiset<Character> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Character> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1043,7 +1043,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset() {
-        final LongMultiset<Character> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Character> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

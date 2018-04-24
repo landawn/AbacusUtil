@@ -52,6 +52,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBiPredicate;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
@@ -854,7 +855,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
-    public static FloatStream iterate(final Supplier<Boolean> hasNext, final FloatSupplier next) {
+    public static FloatStream iterate(final BooleanSupplier hasNext, final FloatSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -864,7 +865,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -882,7 +883,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
-    public static FloatStream iterate(final float seed, final Supplier<Boolean> hasNext, final FloatUnaryOperator f) {
+    public static FloatStream iterate(final float seed, final BooleanSupplier hasNext, final FloatUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -894,7 +895,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

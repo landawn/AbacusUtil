@@ -70,6 +70,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
@@ -1150,9 +1151,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                         return Pair.of(t, u);
                     }
-                }).append(Stream.iterate(new Supplier<Boolean>() {
+                }).append(Stream.iterate(new BooleanSupplier() {
                     @Override
-                    public Boolean get() {
+                    public boolean getAsBoolean() {
                         return joined.isFalse();
                     }
                 }, new Supplier<Pair<T, U>>() {
@@ -1221,9 +1222,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                         return Pair.of(t, u);
                     }
-                }).append(Stream.iterate(new Supplier<Boolean>() {
+                }).append(Stream.iterate(new BooleanSupplier() {
                     @Override
-                    public Boolean get() {
+                    public boolean getAsBoolean() {
                         return joined.isFalse();
                     }
                 }, new Supplier<Pair<T, U>>() {

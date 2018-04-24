@@ -1230,7 +1230,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Set<Float> toSet() {
-        final Set<Float> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Float> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1263,7 +1263,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Multiset<Float> toMultiset() {
-        final Multiset<Float> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Float> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1285,7 +1285,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public LongMultiset<Float> toLongMultiset() {
-        final LongMultiset<Float> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Float> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

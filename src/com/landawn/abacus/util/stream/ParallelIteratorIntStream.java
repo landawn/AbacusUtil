@@ -1026,19 +1026,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public OptionalInt kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalInt.empty();
-        }
-
-        final Nullable<Integer> optional = boxed().kthLargest(k, INT_COMPARATOR);
-
-        return optional.isPresent() ? OptionalInt.of(optional.get()) : OptionalInt.empty();
-    }
-
-    @Override
     public long sum() {
         long result = 0;
 

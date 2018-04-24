@@ -56,6 +56,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBiPredicate;
@@ -1102,7 +1103,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final Supplier<Boolean> hasNext, final LongSupplier next) {
+    public static LongStream iterate(final BooleanSupplier hasNext, final LongSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -1112,7 +1113,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -1130,7 +1131,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final long seed, final Supplier<Boolean> hasNext, final LongUnaryOperator f) {
+    public static LongStream iterate(final long seed, final BooleanSupplier hasNext, final LongUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -1142,7 +1143,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

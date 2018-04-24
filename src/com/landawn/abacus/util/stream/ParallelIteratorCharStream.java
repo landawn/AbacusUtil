@@ -846,19 +846,6 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public OptionalChar kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        }
-
-        final Nullable<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
-
-        return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
-    }
-
-    @Override
     public long sum() {
         long result = 0;
 

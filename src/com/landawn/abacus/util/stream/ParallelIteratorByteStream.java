@@ -846,19 +846,6 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     @Override
-    public OptionalByte kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        }
-
-        final Nullable<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
-
-        return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
-    }
-
-    @Override
     public long sum() {
         long result = 0;
 

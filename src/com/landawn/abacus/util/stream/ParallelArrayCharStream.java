@@ -437,16 +437,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public OptionalChar first() {
-        return fromIndex < toIndex ? OptionalChar.of(elements[fromIndex]) : OptionalChar.empty();
-    }
-
-    @Override
-    public OptionalChar last() {
-        return fromIndex < toIndex ? OptionalChar.of(elements[toIndex - 1]) : OptionalChar.empty();
-    }
-
-    @Override
     public char reduce(final char identity, final CharBinaryOperator op) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, op);
@@ -842,19 +832,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public OptionalChar kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (k > toIndex - fromIndex) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            return OptionalChar.of(elements[toIndex - k]);
-        }
-
-        return OptionalChar.of(N.kthLargest(elements, fromIndex, toIndex, k));
-    }
-
-    @Override
     public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
@@ -906,11 +883,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         return OptionalDouble.of(sum() / toIndex - fromIndex);
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

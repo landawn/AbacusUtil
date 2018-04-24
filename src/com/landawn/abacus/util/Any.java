@@ -491,6 +491,20 @@ abstract class Any<T> {
     }
 
     /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public T orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
+    }
+
+    /**
      * Return the value is not null, otherwise return {@code other}.
      *
      * @param other the value to be returned if not present or null, may be null
@@ -539,7 +553,7 @@ abstract class Any<T> {
      * @return
      * @throws NoSuchElementException - if no value is present
      */
-    public T orElseThrow() throws NoSuchElementException {
+    public T orThrowIfNull() throws NoSuchElementException {
         if (isPresent()) {
             return value;
         } else {

@@ -525,16 +525,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public OptionalFloat first() {
-        return fromIndex < toIndex ? OptionalFloat.of(elements[fromIndex]) : OptionalFloat.empty();
-    }
-
-    @Override
-    public OptionalFloat last() {
-        return fromIndex < toIndex ? OptionalFloat.of(elements[toIndex - 1]) : OptionalFloat.empty();
-    }
-
-    @Override
     public float reduce(final float identity, final FloatBinaryOperator op) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, op);
@@ -930,19 +920,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public OptionalFloat kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (k > toIndex - fromIndex) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements[toIndex - k]);
-        }
-
-        return OptionalFloat.of(N.kthLargest(elements, fromIndex, toIndex, k));
-    }
-
-    @Override
     public double sum() {
         if (fromIndex == toIndex) {
             return 0d;
@@ -1092,11 +1069,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
         }
 
         return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

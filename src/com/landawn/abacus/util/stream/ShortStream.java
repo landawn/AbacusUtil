@@ -52,6 +52,7 @@ import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.ShortBiFunction;
@@ -944,7 +945,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
-    public static ShortStream iterate(final Supplier<Boolean> hasNext, final ShortSupplier next) {
+    public static ShortStream iterate(final BooleanSupplier hasNext, final ShortSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -954,7 +955,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -972,7 +973,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
-    public static ShortStream iterate(final short seed, final Supplier<Boolean> hasNext, final ShortUnaryOperator f) {
+    public static ShortStream iterate(final short seed, final BooleanSupplier hasNext, final ShortUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -984,7 +985,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

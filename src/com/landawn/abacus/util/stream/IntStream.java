@@ -53,6 +53,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
@@ -1324,7 +1325,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         }
     }
 
-    public static IntStream iterate(final Supplier<Boolean> hasNext, final IntSupplier next) {
+    public static IntStream iterate(final BooleanSupplier hasNext, final IntSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -1334,7 +1335,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -1352,7 +1353,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
-    public static IntStream iterate(final int seed, final Supplier<Boolean> hasNext, final IntUnaryOperator f) {
+    public static IntStream iterate(final int seed, final BooleanSupplier hasNext, final IntUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -1364,7 +1365,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

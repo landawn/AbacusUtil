@@ -523,16 +523,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public OptionalDouble first() {
-        return fromIndex < toIndex ? OptionalDouble.of(elements[fromIndex]) : OptionalDouble.empty();
-    }
-
-    @Override
-    public OptionalDouble last() {
-        return fromIndex < toIndex ? OptionalDouble.of(elements[toIndex - 1]) : OptionalDouble.empty();
-    }
-
-    @Override
     public double reduce(final double identity, final DoubleBinaryOperator op) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, op);
@@ -928,19 +918,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public OptionalDouble kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (k > toIndex - fromIndex) {
-            return OptionalDouble.empty();
-        } else if (sorted) {
-            return OptionalDouble.of(elements[toIndex - k]);
-        }
-
-        return OptionalDouble.of(N.kthLargest(elements, fromIndex, toIndex, k));
-    }
-
-    @Override
     public double sum() {
         if (fromIndex == toIndex) {
             return 0d;
@@ -1090,11 +1067,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
         }
 
         return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

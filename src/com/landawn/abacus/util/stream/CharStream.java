@@ -51,6 +51,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBiPredicate;
 import com.landawn.abacus.util.function.CharBinaryOperator;
@@ -1021,7 +1022,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream iterate(final Supplier<Boolean> hasNext, final CharSupplier next) {
+    public static CharStream iterate(final BooleanSupplier hasNext, final CharSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -1031,7 +1032,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -1049,7 +1050,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream iterate(final char seed, final Supplier<Boolean> hasNext, final CharUnaryOperator f) {
+    public static CharStream iterate(final char seed, final BooleanSupplier hasNext, final CharUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -1061,7 +1062,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

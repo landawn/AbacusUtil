@@ -52,6 +52,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBiPredicate;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
@@ -944,7 +945,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final Supplier<Boolean> hasNext, final DoubleSupplier next) {
+    public static DoubleStream iterate(final BooleanSupplier hasNext, final DoubleSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -954,7 +955,7 @@ public abstract class DoubleStream
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -972,7 +973,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final double seed, final Supplier<Boolean> hasNext, final DoubleUnaryOperator f) {
+    public static DoubleStream iterate(final double seed, final BooleanSupplier hasNext, final DoubleUnaryOperator f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -984,7 +985,7 @@ public abstract class DoubleStream
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

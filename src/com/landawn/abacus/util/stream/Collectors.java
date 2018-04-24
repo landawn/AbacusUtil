@@ -1063,7 +1063,7 @@ public class Collectors {
         final Supplier<Set<T>> supplier = new Supplier<Set<T>>() {
             @Override
             public Set<T> get() {
-                return new HashSet<T>(N.initHashCapacity(N.min(256, atMostSize)));
+                return new HashSet<T>(N.initHashCapacity(atMostSize));
             }
         };
 

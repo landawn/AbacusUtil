@@ -4,6 +4,12 @@
 
 * Add `Optional/Nullable.toImmutableList/toImmutableSet`. 
 
+* Add `Iterators.forEachPair/forEachTriple`.
+
+* Refactoring: replace `Seq/IntList/BooleanList/ByteList/.../DoubleList.toMap(...Supplier<M> mapFactory)` with `IntFunction<M>`.
+
+* Refactoring: replace `Supplier<Boolean>` with `BooleanSupplier`.
+
 * Improvements and bug fix.
 
 

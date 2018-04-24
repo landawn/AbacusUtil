@@ -1567,8 +1567,7 @@ public final class ClassUtil {
         Method setMethod = internalGetDeclaredMethod(clazz, SET + propName, getMethod.getReturnType());
 
         return ((setMethod != null) && (void.class.equals(setMethod.getReturnType()) || setMethod.getDeclaringClass().equals(setMethod.getReturnType())))
-                ? setMethod
-                : null;
+                ? setMethod : null;
     }
 
     private static <T> Map<String, String> getPublicStaticStringFields(final Class<T> cls) {
@@ -1836,7 +1835,7 @@ public final class ClassUtil {
             List<Method> inlinePropGetMethodQueue = null;
 
             if (inlinePropGetMethodMap == null) {
-                inlinePropGetMethodMap = new ObjectPool<>(N.initHashCapacity(ClassUtil.getPropGetMethodList(cls).size()));
+                inlinePropGetMethodMap = new ObjectPool<>(ClassUtil.getPropGetMethodList(cls).size());
                 entityInlinePropGetMethodPool.put(cls, inlinePropGetMethodMap);
             } else {
                 inlinePropGetMethodQueue = inlinePropGetMethodMap.get(propName);
@@ -1927,7 +1926,7 @@ public final class ClassUtil {
                 List<Method> inlinePropSetMethodQueue = null;
 
                 if (inlinePropSetMethodMap == null) {
-                    inlinePropSetMethodMap = new ObjectPool<>(N.initHashCapacity(ClassUtil.getPropGetMethodList(cls).size()));
+                    inlinePropSetMethodMap = new ObjectPool<>(ClassUtil.getPropGetMethodList(cls).size());
                     entityInlinePropSetMethodPool.put(cls, inlinePropSetMethodMap);
                 } else {
                     inlinePropSetMethodQueue = inlinePropSetMethodMap.get(propName);

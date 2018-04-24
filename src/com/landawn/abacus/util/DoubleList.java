@@ -1330,7 +1330,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     public <R extends Set<Double>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
@@ -1343,7 +1343,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     public Multiset<Double> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Double>> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Multiset<Double> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
+        final Multiset<Double> multiset = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
@@ -1354,13 +1354,13 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
 
     public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
             Try.DoubleFunction<? extends V, E2> valueMapper) throws E, E2 {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
-            Try.DoubleFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+            Try.DoubleFunction<? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
         final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
@@ -1368,14 +1368,14 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
 
     public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
             Try.DoubleFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
-            Try.DoubleFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
-        final M result = mapFactory.get();
+            Try.DoubleFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, IntFunction<M> mapFactory) throws E, E2, E3 {
+        final M result = mapFactory.apply(size);
 
         for (int i = 0; i < size; i++) {
             N.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
@@ -1385,14 +1385,14 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     public <K, A, D, E extends Exception> Map<K, D> toMap(Try.DoubleFunction<? extends K, E> classifier, Collector<Double, A, D> downstream) throws E {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+        final IntFunction<Map<K, D>> mapFactory = Fn.Factory.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.DoubleFunction<? extends K, E> classifier,
-            final Collector<Double, A, D> downstream, final Supplier<M> mapFactory) throws E {
-        final M result = mapFactory.get();
+            final Collector<Double, A, D> downstream, final IntFunction<M> mapFactory) throws E {
+        final M result = mapFactory.apply(size);
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Double> downstreamAccumulator = downstream.accumulator();
         final Map<K, A> intermediate = (Map<K, A>) result;

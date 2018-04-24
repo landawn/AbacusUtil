@@ -526,16 +526,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public OptionalLong first() {
-        return fromIndex < toIndex ? OptionalLong.of(elements[fromIndex]) : OptionalLong.empty();
-    }
-
-    @Override
-    public OptionalLong last() {
-        return fromIndex < toIndex ? OptionalLong.of(elements[toIndex - 1]) : OptionalLong.empty();
-    }
-
-    @Override
     public long reduce(final long identity, final LongBinaryOperator op) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, op);
@@ -931,19 +921,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public OptionalLong kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (k > toIndex - fromIndex) {
-            return OptionalLong.empty();
-        } else if (sorted) {
-            return OptionalLong.of(elements[toIndex - k]);
-        }
-
-        return OptionalLong.of(N.kthLargest(elements, fromIndex, toIndex, k));
-    }
-
-    @Override
     public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
@@ -995,11 +972,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
         }
 
         return OptionalDouble.of(sum() / toIndex - fromIndex);
-    }
-
-    @Override
-    public long count() {
-        return toIndex - fromIndex;
     }
 
     @Override

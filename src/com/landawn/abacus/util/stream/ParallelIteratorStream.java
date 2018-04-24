@@ -2737,11 +2737,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
-        return sequential().kthLargest(k, comparator);
-    }
-
-    @Override
     public long count() {
         return elements.count();
     }

@@ -3009,24 +3009,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Nullable<T> first() {
-        if (fromIndex == toIndex) {
-            return Nullable.empty();
-        }
-
-        return Nullable.of(elements[fromIndex]);
-    }
-
-    @Override
-    public Nullable<T> last() {
-        if (fromIndex == toIndex) {
-            return Nullable.empty();
-        }
-
-        return Nullable.of(elements[toIndex - 1]);
-    }
-
-    @Override
     public T reduce(final T identity, final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(identity, accumulator);
@@ -3565,11 +3547,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
 
         return collect(Collectors.maxBy(comparator));
-    }
-
-    @Override
-    public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
-        return sequential().kthLargest(k, comparator);
     }
 
     @Override

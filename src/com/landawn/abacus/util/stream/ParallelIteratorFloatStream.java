@@ -925,19 +925,6 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public OptionalFloat kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        }
-
-        final Nullable<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
-
-        return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
-    }
-
-    @Override
     public double sum() {
         return sequential().sum();
     }

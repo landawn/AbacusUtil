@@ -857,19 +857,6 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public OptionalShort kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalShort.empty();
-        }
-
-        final Nullable<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
-
-        return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
-    }
-
-    @Override
     public long sum() {
         long result = 0;
 

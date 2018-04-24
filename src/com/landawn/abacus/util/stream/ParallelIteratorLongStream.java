@@ -925,19 +925,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public OptionalLong kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        }
-
-        final Nullable<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
-
-        return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
-    }
-
-    @Override
     public long sum() {
         long result = 0;
 

@@ -97,6 +97,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteNFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
@@ -2807,7 +2808,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    public static <T> Stream<T> iterate(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {
+    public static <T> Stream<T> iterate(final BooleanSupplier hasNext, final Supplier<? extends T> next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
@@ -2817,7 +2818,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;
@@ -2851,7 +2852,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param f
      * @return
      */
-    public static <T> Stream<T> iterate(final T seed, final Supplier<Boolean> hasNext, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T seed, final BooleanSupplier hasNext, final UnaryOperator<T> f) {
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
@@ -2862,7 +2863,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false) {
-                    hasNextVal = hasNext.get().booleanValue();
+                    hasNextVal = hasNext.getAsBoolean();
                 }
 
                 return hasNextVal;

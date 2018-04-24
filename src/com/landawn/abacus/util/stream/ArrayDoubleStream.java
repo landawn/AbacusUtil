@@ -1230,7 +1230,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Set<Double> toSet() {
-        final Set<Double> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Double> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1263,7 +1263,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Multiset<Double> toMultiset() {
-        final Multiset<Double> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Double> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1285,7 +1285,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongMultiset<Double> toLongMultiset() {
-        final LongMultiset<Double> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Double> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

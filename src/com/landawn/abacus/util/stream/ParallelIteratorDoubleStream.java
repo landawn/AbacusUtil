@@ -924,19 +924,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public OptionalDouble kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
-
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        final Nullable<Double> optional = boxed().kthLargest(k, DOUBLE_COMPARATOR);
-
-        return optional.isPresent() ? OptionalDouble.of(optional.get()) : OptionalDouble.empty();
-    }
-
-    @Override
     public double sum() {
         return sequential().sum();
     }

@@ -1231,7 +1231,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Set<Long> toSet() {
-        final Set<Long> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Set<Long> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1264,7 +1264,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset() {
-        final Multiset<Long> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final Multiset<Long> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1286,7 +1286,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset() {
-        final LongMultiset<Long> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
+        final LongMultiset<Long> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
