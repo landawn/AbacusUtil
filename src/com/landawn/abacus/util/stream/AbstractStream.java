@@ -126,7 +126,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> remove(final long n, final Consumer<? super T> action) {
+    public Stream<T> skip(final long n, final Consumer<? super T> action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -136,7 +136,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new Predicate<T>() {
+            return dropWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
                     return cnt.getAndDecrement() > 0;
@@ -145,7 +145,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new Predicate<T>() {
+            return dropWhile(new Predicate<T>() {
 
                 @Override
                 public boolean test(T value) {
@@ -217,7 +217,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> removeWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
+    public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -950,7 +950,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Map<Boolean, List<T>> partitionTo(Predicate<? super T> predicate) {
-        return collect(Collectors.partitioningBy(predicate));
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return partitionTo(predicate, downstream);
     }
 
     @Override
@@ -1526,57 +1528,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        final Iterator<T> iter = this.iterator();
-        final List<T> list = new ArrayList<>();
-
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.next());
-        }
-
-        final Stream<T>[] a = new Stream[] { new ArrayStream<>(toArray(list), 0, list.size(), sorted, cmp, null),
-                new IteratorStream<>(iter, sorted, cmp, null) };
-
-        return newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<Stream<T>> splitBy(Predicate<? super T> where) {
-        N.requireNonNull(where);
-
-        final Iterator<T> iter = this.iterator();
-        final List<T> list = new ArrayList<>();
-        T next = null;
-        Stream<T> s = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = Stream.of(next);
-
-                break;
-            }
-        }
-
-        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.toArray(), sorted, cmp, null), new IteratorStream<>(iter, sorted, cmp, null) };
-
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorStream<>(a[1].prepend(s).iterator(), sorted, cmp, null);
-            } else {
-                a[1] = a[1].prepend(s);
-            }
-        }
-
-        return this.newStream(a, false, null);
-    }
-
-    @Override
     public Stream<List<T>> slidingToList(int windowSize) {
         return slidingToList(windowSize, 1);
     }
@@ -1647,79 +1598,316 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> reversed() {
-        final T[] tmp = (T[]) toArray();
+    public Stream<Stream<T>> splitAt(final int n) {
+        N.checkArgNotNegative(n, "n");
 
-        return newStream(new ObjIteratorEx<T>() {
-            private int cursor = tmp.length;
+        return newStream(new ObjIteratorEx<Stream<T>>() {
+            private Stream<T>[] a = null;
+            private int cursor = 0;
 
             @Override
             public boolean hasNext() {
+                init();
+
+                return cursor < 2;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final Iterator<T> iter = AbstractStream.this.iteratorEx();
+                    final List<T> list = new ArrayList<>();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.next());
+                    }
+
+                    a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), 0, list.size(), sorted, cmp, null),
+                            new IteratorStream<T>(iter, sorted, cmp, null) };
+                }
+            }
+
+        }, false, null);
+    }
+
+    @Override
+    public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
+        N.requireNonNull(where);
+
+        return newStream(new ObjIteratorEx<Stream<T>>() {
+            private Stream<T>[] a = null;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                init();
+
+                return cursor < 2;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final Iterator<T> iter = AbstractStream.this.iteratorEx();
+                    final List<T> list = new ArrayList<>();
+                    T next = null;
+                    Stream<T> s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.next();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = Stream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), 0, list.size(), sorted, cmp, null),
+                            new IteratorStream<T>(iter, sorted, cmp, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorStream<T>(a[1].prepend(s).iteratorEx(), sorted, cmp, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
+    }
+
+    @Override
+    public Stream<T> reversed() {
+        return newStream(new ObjIteratorEx<T>() {
+            private boolean initialized = false;
+            private T[] aar;
+            private int cursor;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public T next() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
-            public <A> A[] toArray(A[] a) {
-                a = a.length >= cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), cursor);
-
-                for (int i = 0, len = a.length; i < len; i++) {
-                    a[i] = (A) tmp[cursor - i - 1];
+            public Object[] toArray() {
+                if (initialized == false) {
+                    init();
                 }
 
+                final Object[] a = new Object[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                if (initialized == false) {
+                    init();
+                }
+
+                a = a.length >= cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), cursor);
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = (A) aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = (T[]) AbstractStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<T> shuffled(final Random rnd) {
+        return lazyLoad(new Function<Object[], Object[]>() {
+            @Override
+            public Object[] apply(final Object[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false, null);
     }
 
     @Override
-    public Stream<T> shuffled() {
-        final T[] a = (T[]) toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false, null);
+    public Stream<T> rotated(final int distance) {
+        return lazyLoad(new Function<Object[], Object[]>() {
+            @Override
+            public Object[] apply(final Object[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false, null);
     }
 
     @Override
-    public Stream<T> shuffled(final Random rnd) {
-        final T[] a = (T[]) toArray();
-
-        N.shuffle(a, rnd);
-
-        return newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<T> rotated(int distance) {
-        final T[] a = (T[]) toArray();
-
-        N.rotate(a, distance);
-
-        return newStream(a, false, null);
+    public Stream<T> sorted() {
+        return sorted(NATURAL_COMPARATOR);
     }
 
     @Override
     public Stream<T> reverseSorted() {
-        return sorted(Fn.reversedOrder());
+        return sorted(REVERSED_COMPARATOR);
+    }
+
+    @Override
+    public Stream<T> sorted(final Comparator<? super T> comparator) {
+        final Comparator<? super T> cmp = comparator == null ? NATURAL_COMPARATOR : comparator;
+
+        if (sorted && cmp == this.cmp) {
+            return this;
+        }
+
+        return lazyLoad(new Function<Object[], Object[]>() {
+            @Override
+            public Object[] apply(final Object[] a) {
+                if (isParallel()) {
+                    N.parallelSort((T[]) a, cmp);
+                } else {
+                    N.sort((T[]) a, cmp);
+                }
+
+                return a;
+            }
+        }, true, cmp);
+    }
+
+    private Stream<T> lazyLoad(final Function<Object[], Object[]> op, final boolean sorted, final Comparator<? super T> cmp) {
+        return newStream(new ObjIteratorEx<T>() {
+            private boolean initialized = false;
+            private T[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public T next() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                if (initialized == false) {
+                    init();
+                }
+
+                a = a.length >= (len - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (len - cursor));
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = (A) aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = (T[]) op.apply(AbstractStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted, cmp);
     }
 
     @Override
@@ -1861,12 +2049,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<List<T>> orderedPermutations() {
-        return orderedPermutations(OBJECT_COMPARATOR);
+        return orderedPermutations(NATURAL_COMPARATOR);
     }
 
     @Override
     public Stream<List<T>> orderedPermutations(Comparator<? super T> comparator) {
-        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? NATURAL_COMPARATOR : comparator);
 
         return newStream(iter, false, null);
     }
@@ -2095,21 +2283,24 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public long persist(File file, Function<? super T, String> toLine) {
+    public <E extends Exception> long persist(File file, Try.Function<? super T, String, E> toLine) throws E {
         Writer writer = null;
 
         try {
             writer = new FileWriter(file);
-            return persist(writer, toLine);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+
+        try {
+            return persist(writer, toLine);
         } finally {
             IOUtil.close(writer);
         }
     }
 
     @Override
-    public long persist(OutputStream os, Function<? super T, String> toLine) {
+    public <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E {
         final BufferedWriter bw = ObjectFactory.createBufferedWriter(os);
 
         try {
@@ -2120,7 +2311,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public long persist(Writer writer, Function<? super T, String> toLine) {
+    public <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E {
         final Iterator<T> iter = iterator();
         final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : ObjectFactory.createBufferedWriter(writer);
         long cnt = 0;

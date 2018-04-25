@@ -34,8 +34,8 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.Multimap;
@@ -2581,20 +2581,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
-        N.requireNonNull(where);
-
-        final Nullable<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
-            @Override
-            public boolean test(Indexed<T> indexed) {
-                return !where.test(indexed.value());
-            }
-        });
-
-        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
-    }
-
-    @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
@@ -2626,7 +2612,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> top(int n) {
-        return top(n, OBJECT_COMPARATOR);
+        return top(n, NATURAL_COMPARATOR);
     }
 
     @Override
@@ -2657,22 +2643,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             return new ParallelIteratorStream<>(c.iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
-    }
-
-    @Override
-    public Stream<T> sorted() {
-        return sorted(OBJECT_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> sorted(Comparator<? super T> comparator) {
-        if (sorted && isSameComparator(comparator, cmp)) {
-            return this;
-        }
-
-        final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a, comparator);
-        return new ParallelArrayStream<>(a, 0, a.length, true, comparator, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2956,17 +2926,105 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
+            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyExtractor, valueMapper, mapFactory);
         }
+
+        // return collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
 
         //    final M res = mapFactory.get();
         //    res.putAll(collect(Collectors.toConcurrentMap(keyExtractor, valueMapper, mergeFunction)));
         //    return res;
 
-        return collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<M>> futureList = new ArrayList<>(threadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        if (splitor == Splitor.ARRAY) {
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+
+            for (int i = 0; i < threadNum; i++) {
+                final int sliceIndex = i;
+
+                futureList.add(asyncExecutor.execute(new Callable<M>() {
+                    @Override
+                    public M call() {
+                        int cursor = fromIndex + sliceIndex * sliceSize;
+                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+
+                        M map = mapFactory.get();
+
+                        try {
+                            while (cursor < to && eHolder.value() == null) {
+                                Collectors.merge(map, keyExtractor.apply(elements[cursor]), valueMapper.apply(elements[cursor]), mergeFunction);
+                                cursor++;
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < threadNum; i++) {
+                futureList.add(asyncExecutor.execute(new Callable<M>() {
+
+                    @Override
+                    public M call() {
+                        M map = mapFactory.get();
+                        T next = null;
+
+                        try {
+                            while (eHolder.value() == null) {
+                                synchronized (elements) {
+                                    if (cursor.intValue() < toIndex) {
+                                        next = elements[cursor.getAndIncrement()];
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                Collectors.merge(map, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        M res = null;
+
+        try {
+            for (CompletableFuture<M> future : futureList) {
+                if (res == null) {
+                    res = future.get();
+                } else {
+                    final M m = future.get();
+
+                    for (Map.Entry<K, U> entry : m.entrySet()) {
+                        Collectors.merge(res, entry.getKey(), entry.getValue(), mergeFunction);
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+
+        return res;
     }
 
     @Override
@@ -2976,25 +3034,154 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return sequential().toMap(classifier, downstream, mapFactory);
         }
 
+        // return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+
         //    final M res = mapFactory.get();
         //    res.putAll(collect(Collectors.groupingByConcurrent(classifier, downstream)));
         //    return res;
 
-        return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+        final Function<A, D> downstreamFinisher = downstream.finisher();
+
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Map<K, A>>> futureList = new ArrayList<>(threadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        if (splitor == Splitor.ARRAY) {
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+
+            for (int i = 0; i < threadNum; i++) {
+                final int sliceIndex = i;
+
+                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
+                    @Override
+                    public Map<K, A> call() {
+                        int cursor = fromIndex + sliceIndex * sliceSize;
+                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+
+                        @SuppressWarnings("rawtypes")
+                        Map<K, A> map = (Map) mapFactory.get();
+                        K key = null;
+                        A value = null;
+
+                        try {
+                            while (cursor < to && eHolder.value() == null) {
+                                key = N.requireNonNull(classifier.apply(elements[cursor]), "element cannot be mapped to a null key");
+
+                                value = map.get(key);
+
+                                if (value == null) {
+                                    value = downstreamSupplier.get();
+                                    map.put(key, value);
+                                }
+
+                                downstreamAccumulator.accept(value, elements[cursor]);
+
+                                cursor++;
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < threadNum; i++) {
+                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
+
+                    @Override
+                    public Map<K, A> call() {
+                        @SuppressWarnings("rawtypes")
+                        Map<K, A> map = (Map) mapFactory.get();
+                        K key = null;
+                        A value = null;
+                        T next = null;
+
+                        try {
+                            while (eHolder.value() == null) {
+                                synchronized (elements) {
+                                    if (cursor.intValue() < toIndex) {
+                                        next = elements[cursor.getAndIncrement()];
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                key = N.requireNonNull(classifier.apply(next), "element cannot be mapped to a null key");
+                                value = map.get(key);
+
+                                if (value == null) {
+                                    value = downstreamSupplier.get();
+                                    map.put(key, value);
+                                }
+
+                                downstreamAccumulator.accept(value, next);
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        Map<K, A> intermediate = null;
+
+        try {
+            for (CompletableFuture<Map<K, A>> future : futureList) {
+                if (intermediate == null) {
+                    intermediate = future.get();
+                } else {
+                    final Map<K, A> m = future.get();
+                    K key = null;
+
+                    for (Map.Entry<K, A> entry : m.entrySet()) {
+                        key = entry.getKey();
+
+                        if (intermediate.containsKey(key)) {
+                            intermediate.put(key, downstreamCombiner.apply(intermediate.get(key), m.get(key)));
+                        } else {
+                            intermediate.put(key, m.get(key));
+                        }
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstreamFinisher.apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return (M) intermediate;
     }
 
     @Override
-    public <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
-        return toMap(classifier, Collectors.mapping(valueMapper, downstream), mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
         }
+
+        // return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
 
         //    final M res = mapFactory.get();
         //    final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyExtractor, Collectors.mapping(valueMapper, Collectors.<U> toList())));
@@ -3005,7 +3192,114 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         //
         //    return res;
 
-        return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<M>> futureList = new ArrayList<>(threadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        if (splitor == Splitor.ARRAY) {
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+
+            for (int i = 0; i < threadNum; i++) {
+                final int sliceIndex = i;
+
+                futureList.add(asyncExecutor.execute(new Callable<M>() {
+                    @Override
+                    public M call() {
+                        int cursor = fromIndex + sliceIndex * sliceSize;
+                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+
+                        M map = mapFactory.get();
+
+                        try {
+                            while (cursor < to && eHolder.value() == null) {
+                                map.put(keyExtractor.apply(elements[cursor]), valueMapper.apply(elements[cursor]));
+                                cursor++;
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < threadNum; i++) {
+                futureList.add(asyncExecutor.execute(new Callable<M>() {
+
+                    @Override
+                    public M call() {
+                        M map = mapFactory.get();
+                        T next = null;
+
+                        try {
+                            while (eHolder.value() == null) {
+                                synchronized (elements) {
+                                    if (cursor.intValue() < toIndex) {
+                                        next = elements[cursor.getAndIncrement()];
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                map.put(keyExtractor.apply(next), valueMapper.apply(next));
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e);
+                        }
+
+                        return map;
+                    }
+                }));
+            }
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        M res = null;
+
+        try {
+            for (CompletableFuture<M> future : futureList) {
+                if (res == null) {
+                    res = future.get();
+                } else {
+                    final M m = future.get();
+
+                    for (Map.Entry<K, V> entry : m.entrySet()) {
+                        res.putAll(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+
+        return res;
+    }
+
+    @Override
+    public <A, D> Map<Boolean, D> partitionTo(final Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
+        final Function<T, Boolean> keyExtractor = new Function<T, Boolean>() {
+            @Override
+            public Boolean apply(T t) {
+                return predicate.test(t);
+            }
+        };
+
+        final Supplier<Map<Boolean, D>> mapFactory = Fn.Suppliers.ofMap();
+        final Map<Boolean, D> map = toMap(keyExtractor, downstream, mapFactory);
+
+        if (map.containsKey(Boolean.TRUE) == false) {
+            map.put(Boolean.TRUE, downstream.finisher().apply(downstream.supplier().get()));
+        } else if (map.containsKey(Boolean.FALSE) == false) {
+            map.put(Boolean.FALSE, downstream.finisher().apply(downstream.supplier().get()));
+        }
+
+        return map;
     }
 
     @Override
@@ -3531,7 +3825,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return Nullable.of(elements[fromIndex]);
         }
 
-        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
 
         return collect(Collectors.minBy(comparator));
     }
@@ -3544,7 +3838,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return Nullable.of(elements[toIndex - 1]);
         }
 
-        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
 
         return collect(Collectors.maxBy(comparator));
     }

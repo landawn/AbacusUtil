@@ -1252,7 +1252,7 @@ public final class N {
     }
 
     public static <K, E> ListMultimap<K, E> newListLinkedMultimap(final int initialCapacity) {
-        return new ListMultimap<>(new LinkedHashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
+        return new ListMultimap<>(new LinkedHashMap<K, List<E>>(initialCapacity), ArrayList.class);
     }
 
     public static <K, E> ListMultimap<K, E> newListLinkedMultimap(final Map<? extends K, ? extends E> m) {
@@ -1306,7 +1306,7 @@ public final class N {
     }
 
     public static <K, E> SetMultimap<K, E> newSetLinkedMultimap(final int initialCapacity) {
-        return new SetMultimap<>(new LinkedHashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
+        return new SetMultimap<>(new LinkedHashMap<K, Set<E>>(initialCapacity), HashSet.class);
     }
 
     public static <K, E> SetMultimap<K, E> newSetLinkedMultimap(final Map<? extends K, ? extends E> m) {

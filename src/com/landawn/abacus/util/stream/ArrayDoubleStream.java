@@ -981,23 +981,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleStream> splitBy(DoublePredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1117,17 +1100,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayDoubleStream(a, true, closeHandlers);
-    }
-
-    @Override
     public DoubleStream peek(final DoubleConsumer action) {
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             int cursor = fromIndex;
@@ -1218,30 +1190,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <R extends List<Double>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Double> toSet() {
         final Set<Double> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Double>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1498,7 +1448,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             public double[] toArray() {
                 final double[] a = new double[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

@@ -31,6 +31,8 @@ import java.util.Random;
 import java.util.Set;
 
 import com.landawn.abacus.util.ImmutableIterator;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -118,22 +120,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
-     * after removing and consuming the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     * 
-     * @param n
-     * @param consumer
-     * @return
-     */
-    S remove(long n, C consumer);
-
-    S removeIf(P predicate);
-
-    S removeIf(P predicate, C consumer);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
      * after removing and consuming until the specified <code>predicate</code> return false.
      * If there is no more elements then an empty stream will be returned.
      * 
@@ -141,7 +127,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param consumer
      * @return 
      */
-    S removeWhile(P predicate, C consumer);
+    S dropWhile(P predicate, C consumer);
+
+    S removeIf(P predicate);
+
+    S removeIf(P predicate, C consumer);
 
     /**
      * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -459,6 +449,18 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S skip(long n);
 
     /**
+     * Returns a stream consisting of the remaining elements of this stream
+     * after removing and consuming the first {@code n} elements of the stream.
+     * If this stream contains fewer than {@code n} elements then an
+     * empty stream will be returned.
+     * 
+     * @param n
+     * @param consumer
+     * @return
+     */
+    S skip(long n, C consumer);
+
+    /**
      * Returns a stream consisting of the elements of this stream, truncated
      * to be no longer than {@code maxSize} in length.
      *
@@ -697,11 +699,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
 
     List<T> toList();
 
-    <R extends List<T>> R toList(Supplier<R> supplier);
-
     Set<T> toSet();
 
-    <R extends Set<T>> R toSet(Supplier<R> supplier);
+    ImmutableList<T> toImmutableList();
+
+    ImmutableSet<T> toImmutableSet();
 
     <R extends Collection<T>> R toCollection(Supplier<R> supplier);
 

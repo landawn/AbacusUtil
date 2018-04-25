@@ -689,79 +689,6 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new IteratorShortStream(new ShortIteratorEx() {
-            short[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public short nextShort() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public short[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.sort(a);
-            }
-        }, true, closeHandlers);
-    }
-
-    @Override
     public ShortStream peek(final ShortConsumer action) {
         return new IteratorShortStream(new ShortIteratorEx() {
             @Override
@@ -899,30 +826,8 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <R extends List<Short>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Short> toSet() {
         final Set<Short> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Short>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextShort());

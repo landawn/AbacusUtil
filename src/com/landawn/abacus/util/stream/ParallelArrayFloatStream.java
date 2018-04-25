@@ -28,12 +28,10 @@ import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Pair;
@@ -321,20 +319,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public Stream<FloatStream> splitBy(final FloatPredicate where) {
-        N.requireNonNull(where);
-
-        final Nullable<IndexedFloat> first = indexed().findFirst(new Predicate<IndexedFloat>() {
-            @Override
-            public boolean test(IndexedFloat indexed) {
-                return !where.test(indexed.value());
-            }
-        });
-
-        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
-    }
-
-    @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<FloatStream>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
@@ -363,17 +347,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             final float[] a = N.top(elements, fromIndex, toIndex, n, comparator);
             return new ParallelArrayFloatStream(a, 0, a.length, sorted, maxThreadNum, splitor, closeHandlers);
         }
-    }
-
-    @Override
-    public FloatStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final float[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ParallelArrayFloatStream(a, 0, a.length, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

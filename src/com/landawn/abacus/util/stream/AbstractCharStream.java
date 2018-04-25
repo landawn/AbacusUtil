@@ -79,7 +79,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream remove(final long n, final CharConsumer action) {
+    public CharStream skip(final long n, final CharConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -89,7 +89,7 @@ abstract class AbstractCharStream extends CharStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new CharPredicate() {
+            return dropWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractCharStream extends CharStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new CharPredicate() {
+            return dropWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
                     return cnt.getAndDecrement() > 0;
@@ -138,7 +138,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream removeWhile(final CharPredicate predicate, final CharConsumer action) {
+    public CharStream dropWhile(final CharPredicate predicate, final CharConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -311,11 +311,6 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream reverseSorted() {
-        return sorted().reversed();
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
@@ -456,123 +451,365 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<CharStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final CharIterator iter = this.iteratorEx();
-        final CharList list = new CharList();
+        return newStream(new ObjIteratorEx<CharStream>() {
+            private CharStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextChar());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final CharIterator iter = AbstractCharStream.this.iteratorEx();
+                    final CharList list = new CharList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextChar());
+                    }
+
+                    a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<CharStream> splitBy(CharPredicate where) {
+    public Stream<CharStream> splitBy(final CharPredicate where) {
         N.requireNonNull(where);
 
-        final CharIterator iter = this.iteratorEx();
-        final CharList list = new CharList();
-        char next = 0;
-        CharStream s = null;
+        return newStream(new ObjIteratorEx<CharStream>() {
+            private CharStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextChar();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = CharStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorCharStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final CharIterator iter = AbstractCharStream.this.iteratorEx();
+                    final CharList list = new CharList();
+                    char next = 0;
+                    CharStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextChar();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = CharStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorCharStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public CharStream reversed() {
-        final char[] tmp = toArray();
-
         return newStream(new CharIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private char[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public char nextChar() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public char[] toArray() {
-                final char[] a = new char[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final char[] a = new char[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractCharStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public CharStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<char[], char[]>() {
+            @Override
+            public char[] apply(final char[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public CharStream shuffled() {
-        final char[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public CharStream rotated(final int distance) {
+        return lazyLoad(new Function<char[], char[]>() {
+            @Override
+            public char[] apply(final char[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public CharStream shuffled(final Random rnd) {
-        final char[] a = toArray();
+    public CharStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<char[], char[]>() {
+            @Override
+            public char[] apply(final char[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public CharStream rotated(int distance) {
-        final char[] a = toArray();
+    public CharStream reverseSorted() {
+        return newStream(new CharIteratorEx() {
+            private boolean initialized = false;
+            private char[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public char nextChar() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public char[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final char[] a = new char[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractCharStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private CharStream lazyLoad(final Function<char[], char[]> op, final boolean sorted) {
+        return newStream(new CharIteratorEx() {
+            private boolean initialized = false;
+            private char[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public char[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final char[] a = new char[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractCharStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

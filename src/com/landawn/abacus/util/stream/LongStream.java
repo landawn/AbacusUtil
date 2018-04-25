@@ -279,8 +279,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract LongStream top(final int n, Comparator<? super Long> comparator);
 
-    // public abstract LongStream parallelSorted();
-
     public abstract LongList toLongList();
 
     /**

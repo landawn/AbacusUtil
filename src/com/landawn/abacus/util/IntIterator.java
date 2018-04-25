@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.IntStream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
         }
 
         return list;
+    }
+
+    public IntStream stream() {
+        return IntStream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.IntConsumer<E> action) throws E {

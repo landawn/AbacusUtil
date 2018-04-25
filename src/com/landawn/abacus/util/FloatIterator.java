@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.FloatStream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
         }
 
         return list;
+    }
+
+    public FloatStream stream() {
+        return FloatStream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.FloatConsumer<E> action) throws E {

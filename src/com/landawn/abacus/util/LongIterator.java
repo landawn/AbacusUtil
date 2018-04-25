@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.LongStream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
         }
 
         return list;
+    }
+
+    public LongStream stream() {
+        return LongStream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.LongConsumer<E> action) throws E {

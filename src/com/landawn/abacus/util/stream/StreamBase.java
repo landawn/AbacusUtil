@@ -40,6 +40,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -48,6 +49,8 @@ import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.IndexedChar;
@@ -127,6 +130,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     static final Splitor DEFAULT_SPLITOR = Splitor.ITERATOR;
     static final Random RAND = new SecureRandom();
 
+    @SuppressWarnings("rawtypes")
+    static final Comparator NATURAL_COMPARATOR = Comparators.naturalOrder();
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator REVERSED_COMPARATOR = Comparators.reversedOrder();
+
     static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
         @Override
         public int compare(Character o1, Character o2) {
@@ -176,67 +185,59 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     };
 
-    @SuppressWarnings("rawtypes")
-    static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
-        @Override
-        public int compare(final Comparable a, final Comparable b) {
-            return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
-        }
-    };
-
     static final Comparator<IndexedByte> INDEXED_BYTE_COMPARATOR = new Comparator<IndexedByte>() {
         @Override
         public int compare(IndexedByte a, IndexedByte b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedChar> INDEXED_CHAR_COMPARATOR = new Comparator<IndexedChar>() {
         @Override
         public int compare(IndexedChar a, IndexedChar b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedShort> INDEXED_SHORT_COMPARATOR = new Comparator<IndexedShort>() {
         @Override
         public int compare(IndexedShort a, IndexedShort b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedInt> INDEXED_INT_COMPARATOR = new Comparator<IndexedInt>() {
         @Override
         public int compare(IndexedInt a, IndexedInt b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedLong> INDEXED_LONG_COMPARATOR = new Comparator<IndexedLong>() {
         @Override
         public int compare(IndexedLong a, IndexedLong b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedFloat> INDEXED_FLOAT_COMPARATOR = new Comparator<IndexedFloat>() {
         @Override
         public int compare(IndexedFloat a, IndexedFloat b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<IndexedDouble> INDEXED_DOUBLE_COMPARATOR = new Comparator<IndexedDouble>() {
         @Override
         public int compare(IndexedDouble a, IndexedDouble b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
     static final Comparator<Indexed<?>> INDEXED_COMPARATOR = new Comparator<Indexed<?>>() {
         @Override
         public int compare(Indexed<?> a, Indexed<?> b) {
-            return N.compare(a.index(), b.index());
+            return N.compare(a.longIndex(), b.longIndex());
         }
     };
 
@@ -250,7 +251,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         defaultComparator.put(long.class, LONG_COMPARATOR);
         defaultComparator.put(float.class, FLOAT_COMPARATOR);
         defaultComparator.put(double.class, DOUBLE_COMPARATOR);
-        defaultComparator.put(Object.class, OBJECT_COMPARATOR);
+        defaultComparator.put(Object.class, NATURAL_COMPARATOR);
     }
 
     static final Map<Class<?>, Integer> clsNum = new BiMap<>();
@@ -489,6 +490,21 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     @Override
     public Stream<PL> slidingToList(int windowSize) {
         return slidingToList(windowSize, 1);
+    }
+
+    @Override
+    public S shuffled() {
+        return shuffled(RAND);
+    }
+
+    @Override
+    public ImmutableList<T> toImmutableList() {
+        return ImmutableList.of(toList());
+    }
+
+    @Override
+    public ImmutableSet<T> toImmutableSet() {
+        return ImmutableSet.of(toSet());
     }
 
     @Override
@@ -850,7 +866,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         } else if (b == null) {
             return defaultComparator.containsValue(a);
         } else {
-            return (a == OBJECT_COMPARATOR && defaultComparator.containsValue(b)) || (b == OBJECT_COMPARATOR && defaultComparator.containsValue(a));
+            return (a == NATURAL_COMPARATOR && defaultComparator.containsValue(b)) || (b == NATURAL_COMPARATOR && defaultComparator.containsValue(a));
         }
     }
 

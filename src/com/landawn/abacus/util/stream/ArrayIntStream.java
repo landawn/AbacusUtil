@@ -1318,23 +1318,6 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Stream<IntStream> splitBy(IntPredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<IntStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1454,17 +1437,6 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final int[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayIntStream(a, true, closeHandlers);
-    }
-
-    @Override
     public IntStream peek(final IntConsumer action) {
         return new IteratorIntStream(new IntIteratorEx() {
             int cursor = fromIndex;
@@ -1555,30 +1527,8 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <R extends List<Integer>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Integer> toSet() {
         final Set<Integer> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Integer>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1849,7 +1799,7 @@ class ArrayIntStream extends AbstractIntStream {
             public int[] toArray() {
                 final int[] a = new int[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

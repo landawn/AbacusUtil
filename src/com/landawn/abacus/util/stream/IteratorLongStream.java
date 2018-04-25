@@ -880,79 +880,6 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new IteratorLongStream(new LongIteratorEx() {
-            long[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public long nextLong() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.sort(a);
-            }
-        }, true, closeHandlers);
-    }
-
-    @Override
     public LongStream peek(final LongConsumer action) {
         return new IteratorLongStream(new LongIteratorEx() {
             @Override
@@ -1090,30 +1017,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <R extends List<Long>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Long> toSet() {
         final Set<Long> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Long>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextLong());

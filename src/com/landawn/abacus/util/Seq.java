@@ -862,6 +862,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.filter(coll, filter);
     }
 
+    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, IntFunction<C> supplier) throws E {
+        return N.filter(coll, filter, supplier);
+    }
+
     public <E extends Exception> List<T> filter(Try.Predicate<? super T, E> filter, final int max) throws E {
         return N.filter(coll, filter, max);
     }
@@ -2025,28 +2029,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return coll == null ? new ArrayList<T>() : new ArrayList<T>(coll);
     }
 
-    public <R extends List<T>> R toList(final IntFunction<R> supplier) {
-        final R result = supplier.apply(size());
-
-        if (N.notNullOrEmpty(coll)) {
-            result.addAll(coll);
-        }
-
-        return result;
-    }
-
     public Set<T> toSet() {
         return coll == null ? new HashSet<T>() : new HashSet<T>(coll);
-    }
-
-    public <R extends Set<T>> R toSet(final IntFunction<R> supplier) {
-        final R result = supplier.apply(size());
-
-        if (N.notNullOrEmpty(coll)) {
-            result.addAll(coll);
-        }
-
-        return result;
     }
 
     public <C extends Collection<T>> C toCollection(final IntFunction<C> supplier) {

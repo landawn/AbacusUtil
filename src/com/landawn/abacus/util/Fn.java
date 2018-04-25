@@ -1345,6 +1345,10 @@ public final class Fn extends Comparators {
         return Collectors.toImmutableSet();
     }
 
+    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<C> collectionFactory) {
+        return Collectors.toCollection(collectionFactory);
+    }
+
     /**
      * 
      * @return

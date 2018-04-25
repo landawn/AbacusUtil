@@ -981,23 +981,6 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatStream> splitBy(FloatPredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1117,17 +1100,6 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final float[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayFloatStream(a, true, closeHandlers);
-    }
-
-    @Override
     public FloatStream peek(final FloatConsumer action) {
         return new IteratorFloatStream(new FloatIteratorEx() {
             int cursor = fromIndex;
@@ -1218,30 +1190,8 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <R extends List<Float>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Float> toSet() {
         final Set<Float> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Float>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1498,7 +1448,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             public float[] toArray() {
                 final float[] a = new float[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

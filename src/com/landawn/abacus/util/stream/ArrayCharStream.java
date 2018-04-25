@@ -757,23 +757,6 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharStream> splitBy(CharPredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<CharStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -875,17 +858,6 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayCharStream(a, true, closeHandlers);
-    }
-
-    @Override
     public CharStream peek(final CharConsumer action) {
         return new IteratorCharStream(new CharIteratorEx() {
             int cursor = fromIndex;
@@ -976,30 +948,8 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <R extends List<Character>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Character> toSet() {
         final Set<Character> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Character>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1270,7 +1220,7 @@ class ArrayCharStream extends AbstractCharStream {
             public char[] toArray() {
                 final char[] a = new char[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

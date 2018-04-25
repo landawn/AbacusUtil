@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -34,7 +33,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
@@ -319,53 +317,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public Stream<LongStream> splitBy(final LongPredicate where) {
-        N.requireNonNull(where);
-
-        final List<IndexedLong> testedElements = new ArrayList<>();
-
-        final Nullable<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
-            @Override
-            public boolean test(IndexedLong indexed) {
-                synchronized (testedElements) {
-                    testedElements.add(indexed);
-                }
-
-                return !where.test(indexed.value());
-            }
-        });
-
-        N.sort(testedElements, INDEXED_LONG_COMPARATOR);
-
-        final int n = first.isPresent() ? (int) first.get().index() : testedElements.size();
-
-        final LongList list1 = new LongList(n);
-        final LongList list2 = new LongList(testedElements.size() - n);
-
-        for (int i = 0; i < n; i++) {
-            list1.add(testedElements.get(i).value());
-        }
-
-        for (int i = n, size = testedElements.size(); i < size; i++) {
-            list2.add(testedElements.get(i).value());
-        }
-
-        final LongStream[] a = new LongStream[2];
-        a[0] = new ArrayLongStream(list1.array(), sorted, null);
-        a[1] = new IteratorLongStream(elements, sorted, null);
-
-        if (N.notNullOrEmpty(list2)) {
-            if (sorted) {
-                a[1] = new IteratorLongStream(a[1].prepend(list2.stream()).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(list2.stream());
-            }
-        }
-
-        return new ParallelArrayStream<>(a, 0, a.length, false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
@@ -383,79 +334,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     @Override
     public LongStream top(int n, Comparator<? super Long> comparator) {
         return new ParallelIteratorLongStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public LongStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new ParallelIteratorLongStream(new LongIteratorEx() {
-            long[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public long nextLong() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.parallelSort(a);
-            }
-        }, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

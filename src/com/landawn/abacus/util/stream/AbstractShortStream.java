@@ -79,7 +79,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream remove(final long n, final ShortConsumer action) {
+    public ShortStream skip(final long n, final ShortConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -89,7 +89,7 @@ abstract class AbstractShortStream extends ShortStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new ShortPredicate() {
+            return dropWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractShortStream extends ShortStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new ShortPredicate() {
+            return dropWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
                     return cnt.getAndDecrement() > 0;
@@ -138,7 +138,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream removeWhile(final ShortPredicate predicate, final ShortConsumer action) {
+    public ShortStream dropWhile(final ShortPredicate predicate, final ShortConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -311,11 +311,6 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream reverseSorted() {
-        return sorted().reversed();
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
@@ -456,123 +451,365 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final ShortIterator iter = this.iteratorEx();
-        final ShortList list = new ShortList();
+        return newStream(new ObjIteratorEx<ShortStream>() {
+            private ShortStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextShort());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public ShortStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final ShortIterator iter = AbstractShortStream.this.iteratorEx();
+                    final ShortList list = new ShortList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextShort());
+                    }
+
+                    a = new ShortStream[] { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<ShortStream> splitBy(ShortPredicate where) {
+    public Stream<ShortStream> splitBy(final ShortPredicate where) {
         N.requireNonNull(where);
 
-        final ShortIterator iter = this.iteratorEx();
-        final ShortList list = new ShortList();
-        short next = 0;
-        ShortStream s = null;
+        return newStream(new ObjIteratorEx<ShortStream>() {
+            private ShortStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextShort();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = ShortStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
+            @Override
+            public ShortStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorShortStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final ShortIterator iter = AbstractShortStream.this.iteratorEx();
+                    final ShortList list = new ShortList();
+                    short next = 0;
+                    ShortStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextShort();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = ShortStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new ShortStream[] { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorShortStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public ShortStream reversed() {
-        final short[] tmp = toArray();
-
         return newStream(new ShortIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private short[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public short nextShort() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public short[] toArray() {
-                final short[] a = new short[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final short[] a = new short[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractShortStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public ShortStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<short[], short[]>() {
+            @Override
+            public short[] apply(final short[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public ShortStream shuffled() {
-        final short[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public ShortStream rotated(final int distance) {
+        return lazyLoad(new Function<short[], short[]>() {
+            @Override
+            public short[] apply(final short[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public ShortStream shuffled(final Random rnd) {
-        final short[] a = toArray();
+    public ShortStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<short[], short[]>() {
+            @Override
+            public short[] apply(final short[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public ShortStream rotated(int distance) {
-        final short[] a = toArray();
+    public ShortStream reverseSorted() {
+        return newStream(new ShortIteratorEx() {
+            private boolean initialized = false;
+            private short[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public short nextShort() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public short[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final short[] a = new short[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractShortStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private ShortStream lazyLoad(final Function<short[], short[]> op, final boolean sorted) {
+        return newStream(new ShortIteratorEx() {
+            private boolean initialized = false;
+            private short[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public short[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final short[] a = new short[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractShortStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

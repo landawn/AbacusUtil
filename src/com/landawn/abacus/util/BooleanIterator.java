@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.Stream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
         }
 
         return list;
+    }
+
+    public Stream<Boolean> stream() {
+        return Stream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.BooleanConsumer<E> action) throws E {

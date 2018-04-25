@@ -1842,23 +1842,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> splitBy(Predicate<? super T> where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1961,7 +1944,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(int n) {
-        return top(n, OBJECT_COMPARATOR);
+        return top(n, NATURAL_COMPARATOR);
     }
 
     @Override
@@ -1994,22 +1977,6 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             return new IteratorStream<>(c.iterator(), sorted, cmp, closeHandlers);
         }
-    }
-
-    @Override
-    public Stream<T> sorted() {
-        return sorted(OBJECT_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> sorted(Comparator<? super T> comparator) {
-        if (sorted && isSameComparator(comparator, cmp)) {
-            return this;
-        }
-
-        final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a, comparator);
-        return new ArrayStream<>(a, true, comparator, closeHandlers);
     }
 
     @Override
@@ -2165,30 +2132,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R extends List<T>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<T> toSet() {
         final Set<T> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<T>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -2270,6 +2215,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final Function<A, D> downstreamFinisher = downstream.finisher();
         final Map<K, A> intermediate = (Map<K, A>) result;
         K key = null;
         A v = null;
@@ -2289,41 +2235,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
             @Override
             public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
-
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
-                }
-            }
-
-            downstreamAccumulator.accept(v, valueMapper.apply(elements[i]));
-        }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
+                return (A) downstreamFinisher.apply(v);
             }
         };
 

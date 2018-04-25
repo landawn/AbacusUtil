@@ -982,23 +982,6 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Stream<LongStream> splitBy(LongPredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1118,17 +1101,6 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final long[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayLongStream(a, true, closeHandlers);
-    }
-
-    @Override
     public LongStream peek(final LongConsumer action) {
         return new IteratorLongStream(new LongIteratorEx() {
             int cursor = fromIndex;
@@ -1219,30 +1191,8 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <R extends List<Long>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Long> toSet() {
         final Set<Long> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Long>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1513,7 +1463,7 @@ class ArrayLongStream extends AbstractLongStream {
             public long[] toArray() {
                 final long[] a = new long[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

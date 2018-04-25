@@ -80,7 +80,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream remove(final long n, final FloatConsumer action) {
+    public FloatStream skip(final long n, final FloatConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -90,7 +90,7 @@ abstract class AbstractFloatStream extends FloatStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new FloatPredicate() {
+            return dropWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -99,7 +99,7 @@ abstract class AbstractFloatStream extends FloatStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new FloatPredicate() {
+            return dropWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -139,7 +139,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream removeWhile(final FloatPredicate predicate, final FloatConsumer action) {
+    public FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -309,11 +309,6 @@ abstract class AbstractFloatStream extends FloatStream {
                 return (res = accumulator.apply(res, iter.nextFloat()));
             }
         }, false);
-    }
-
-    @Override
-    public FloatStream reverseSorted() {
-        return sorted().reversed();
     }
 
     @Override
@@ -521,123 +516,365 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final FloatIterator iter = this.iteratorEx();
-        final FloatList list = new FloatList();
+        return newStream(new ObjIteratorEx<FloatStream>() {
+            private FloatStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextFloat());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public FloatStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final FloatIterator iter = AbstractFloatStream.this.iteratorEx();
+                    final FloatList list = new FloatList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextFloat());
+                    }
+
+                    a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<FloatStream> splitBy(FloatPredicate where) {
+    public Stream<FloatStream> splitBy(final FloatPredicate where) {
         N.requireNonNull(where);
 
-        final FloatIterator iter = this.iteratorEx();
-        final FloatList list = new FloatList();
-        float next = 0;
-        FloatStream s = null;
+        return newStream(new ObjIteratorEx<FloatStream>() {
+            private FloatStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextFloat();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = FloatStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
+            @Override
+            public FloatStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorFloatStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final FloatIterator iter = AbstractFloatStream.this.iteratorEx();
+                    final FloatList list = new FloatList();
+                    float next = 0;
+                    FloatStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextFloat();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = FloatStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorFloatStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public FloatStream reversed() {
-        final float[] tmp = toArray();
-
         return newStream(new FloatIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private float[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public float nextFloat() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public float[] toArray() {
-                final float[] a = new float[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final float[] a = new float[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractFloatStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public FloatStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<float[], float[]>() {
+            @Override
+            public float[] apply(final float[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public FloatStream shuffled() {
-        final float[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public FloatStream rotated(final int distance) {
+        return lazyLoad(new Function<float[], float[]>() {
+            @Override
+            public float[] apply(final float[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public FloatStream shuffled(final Random rnd) {
-        final float[] a = toArray();
+    public FloatStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<float[], float[]>() {
+            @Override
+            public float[] apply(final float[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public FloatStream rotated(int distance) {
-        final float[] a = toArray();
+    public FloatStream reverseSorted() {
+        return newStream(new FloatIteratorEx() {
+            private boolean initialized = false;
+            private float[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public float[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final float[] a = new float[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractFloatStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private FloatStream lazyLoad(final Function<float[], float[]> op, final boolean sorted) {
+        return newStream(new FloatIteratorEx() {
+            private boolean initialized = false;
+            private float[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public float[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final float[] a = new float[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractFloatStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

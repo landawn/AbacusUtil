@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.ShortStream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
         }
 
         return list;
+    }
+
+    public ShortStream stream() {
+        return ShortStream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.ShortConsumer<E> action) throws E {

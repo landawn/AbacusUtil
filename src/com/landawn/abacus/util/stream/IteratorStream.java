@@ -1629,7 +1629,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(int n) {
-        return top(n, OBJECT_COMPARATOR);
+        return top(n, NATURAL_COMPARATOR);
     }
 
     @Override
@@ -1750,98 +1750,6 @@ class IteratorStream<T> extends AbstractStream<T> {
                 toIndex = a.length;
             }
         }, sorted, cmp, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> sorted() {
-        return sorted(OBJECT_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> sorted(final Comparator<? super T> comparator) {
-        if (sorted && isSameComparator(comparator, cmp)) {
-            return this;
-        }
-
-        return new IteratorStream<>(new ObjIteratorEx<T>() {
-            T[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public T next() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public <A> A[] toArray(A[] b) {
-                if (a == null) {
-                    sort();
-                }
-
-                if (b.getClass().equals(a.getClass()) && b.length < toIndex - cursor) {
-                    if (cursor == 0) {
-                        return (A[]) a;
-                    } else {
-                        return (A[]) N.copyOfRange(a, cursor, toIndex);
-                    }
-                } else {
-                    if (b.length < toIndex - cursor) {
-                        b = N.newArray(b.getClass().getComponentType(), toIndex - cursor);
-                    }
-
-                    N.copy(a, cursor, b, 0, toIndex - cursor);
-
-                    return b;
-                }
-            }
-
-            private void sort() {
-                a = (T[]) elements.toArray(N.EMPTY_OBJECT_ARRAY);
-                toIndex = a.length;
-
-                if (comparator == null) {
-                    N.sort(a);
-                } else {
-                    N.sort(a, comparator);
-                }
-            }
-        }, true, comparator, closeHandlers);
     }
 
     @Override
@@ -2067,17 +1975,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R extends List<T>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<T> toSet() {
         final Set<T> result = new HashSet<>();
 
@@ -2090,17 +1987,6 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R extends Collection<T>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<T>> R toSet(Supplier<R> supplier) {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
@@ -2190,42 +2076,6 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
 
             downstreamAccumulator.accept(v, element);
-        }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        T element = null;
-
-        while (elements.hasNext()) {
-            element = elements.next();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
-
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
-                }
-            }
-
-            downstreamAccumulator.accept(v, valueMapper.apply(element));
         }
 
         final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -2423,7 +2273,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return Nullable.of(elements.next());
         }
 
-        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
         T candidate = elements.next();
         T next = null;
 
@@ -2451,7 +2301,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return Nullable.of(next);
         }
 
-        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
         T candidate = elements.next();
         T next = null;
 
@@ -2485,7 +2335,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return queue.size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(queue.peek());
         }
 
-        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
         final Queue<T> queue = new PriorityQueue<>(k, comparator);
         T e = null;
 

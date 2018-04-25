@@ -286,8 +286,6 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract FloatStream top(final int n, Comparator<? super Float> comparator);
 
-    // public abstract FloatStream parallelSorted();
-
     public abstract FloatList toFloatList();
 
     /**

@@ -10,6 +10,10 @@
 
 * Refactoring: replace `Supplier<Boolean>` with `BooleanSupplier`.
 
+* Refactoring: replace `toList/toSet(supplier)` with `toCollection(supplier)`.
+
+* Refactoring: rename `Stream.removeWhile/remove` to `Stream.dropWhile/skip`.
+
 * Improvements and bug fix.
 
 

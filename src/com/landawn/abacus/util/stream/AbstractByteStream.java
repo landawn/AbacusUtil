@@ -79,7 +79,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream remove(final long n, final ByteConsumer action) {
+    public ByteStream skip(final long n, final ByteConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -89,7 +89,7 @@ abstract class AbstractByteStream extends ByteStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new BytePredicate() {
+            return dropWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractByteStream extends ByteStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new BytePredicate() {
+            return dropWhile(new BytePredicate() {
 
                 @Override
                 public boolean test(byte value) {
@@ -140,7 +140,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream removeWhile(final BytePredicate predicate, final ByteConsumer action) {
+    public ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -313,11 +313,6 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream reverseSorted() {
-        return sorted().reversed();
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
@@ -458,123 +453,365 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final ByteIterator iter = this.iteratorEx();
-        final ByteList list = new ByteList();
+        return newStream(new ObjIteratorEx<ByteStream>() {
+            private ByteStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextByte());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public ByteStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final ByteIterator iter = AbstractByteStream.this.iteratorEx();
+                    final ByteList list = new ByteList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextByte());
+                    }
+
+                    a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<ByteStream> splitBy(BytePredicate where) {
+    public Stream<ByteStream> splitBy(final BytePredicate where) {
         N.requireNonNull(where);
 
-        final ByteIterator iter = this.iteratorEx();
-        final ByteList list = new ByteList();
-        byte next = 0;
-        ByteStream s = null;
+        return newStream(new ObjIteratorEx<ByteStream>() {
+            private ByteStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextByte();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = ByteStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
+            @Override
+            public ByteStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorByteStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final ByteIterator iter = AbstractByteStream.this.iteratorEx();
+                    final ByteList list = new ByteList();
+                    byte next = 0;
+                    ByteStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextByte();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = ByteStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorByteStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public ByteStream reversed() {
-        final byte[] tmp = toArray();
-
         return newStream(new ByteIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private byte[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public byte nextByte() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public byte[] toArray() {
-                final byte[] a = new byte[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final byte[] a = new byte[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractByteStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public ByteStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<byte[], byte[]>() {
+            @Override
+            public byte[] apply(final byte[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public ByteStream shuffled() {
-        final byte[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public ByteStream rotated(final int distance) {
+        return lazyLoad(new Function<byte[], byte[]>() {
+            @Override
+            public byte[] apply(final byte[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public ByteStream shuffled(final Random rnd) {
-        final byte[] a = toArray();
+    public ByteStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<byte[], byte[]>() {
+            @Override
+            public byte[] apply(final byte[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public ByteStream rotated(int distance) {
-        final byte[] a = toArray();
+    public ByteStream reverseSorted() {
+        return newStream(new ByteIteratorEx() {
+            private boolean initialized = false;
+            private byte[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public byte[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final byte[] a = new byte[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractByteStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private ByteStream lazyLoad(final Function<byte[], byte[]> op, final boolean sorted) {
+        return newStream(new ByteIteratorEx() {
+            private boolean initialized = false;
+            private byte[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public byte[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final byte[] a = new byte[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractByteStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

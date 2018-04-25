@@ -677,79 +677,6 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new IteratorByteStream(new ByteIteratorEx() {
-            byte[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public byte nextByte() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public byte[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.sort(a);
-            }
-        }, true, closeHandlers);
-    }
-
-    @Override
     public ByteStream peek(final ByteConsumer action) {
         return new IteratorByteStream(new ByteIteratorEx() {
             @Override
@@ -888,30 +815,8 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <R extends List<Byte>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Byte> toSet() {
         final Set<Byte> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Byte>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextByte());

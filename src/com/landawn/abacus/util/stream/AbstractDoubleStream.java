@@ -79,7 +79,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream remove(final long n, final DoubleConsumer action) {
+    public DoubleStream skip(final long n, final DoubleConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -89,7 +89,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new DoublePredicate() {
+            return dropWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new DoublePredicate() {
+            return dropWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -138,7 +138,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream removeWhile(final DoublePredicate predicate, final DoubleConsumer action) {
+    public DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -308,11 +308,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 return (res = accumulator.apply(res, iter.nextDouble()));
             }
         }, false);
-    }
-
-    @Override
-    public DoubleStream reverseSorted() {
-        return sorted().reversed();
     }
 
     @Override
@@ -520,123 +515,365 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final DoubleIterator iter = this.iteratorEx();
-        final DoubleList list = new DoubleList();
+        return newStream(new ObjIteratorEx<DoubleStream>() {
+            private DoubleStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextDouble());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public DoubleStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final DoubleIterator iter = AbstractDoubleStream.this.iteratorEx();
+                    final DoubleList list = new DoubleList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextDouble());
+                    }
+
+                    a = new DoubleStream[] { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<DoubleStream> splitBy(DoublePredicate where) {
+    public Stream<DoubleStream> splitBy(final DoublePredicate where) {
         N.requireNonNull(where);
 
-        final DoubleIterator iter = this.iteratorEx();
-        final DoubleList list = new DoubleList();
-        double next = 0;
-        DoubleStream s = null;
+        return newStream(new ObjIteratorEx<DoubleStream>() {
+            private DoubleStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextDouble();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = DoubleStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
+            @Override
+            public DoubleStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorDoubleStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final DoubleIterator iter = AbstractDoubleStream.this.iteratorEx();
+                    final DoubleList list = new DoubleList();
+                    double next = 0;
+                    DoubleStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextDouble();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = DoubleStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new DoubleStream[] { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorDoubleStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public DoubleStream reversed() {
-        final double[] tmp = toArray();
-
         return newStream(new DoubleIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private double[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public double nextDouble() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public double[] toArray() {
-                final double[] a = new double[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final double[] a = new double[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractDoubleStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public DoubleStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<double[], double[]>() {
+            @Override
+            public double[] apply(final double[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public DoubleStream shuffled() {
-        final double[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public DoubleStream rotated(final int distance) {
+        return lazyLoad(new Function<double[], double[]>() {
+            @Override
+            public double[] apply(final double[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public DoubleStream shuffled(final Random rnd) {
-        final double[] a = toArray();
+    public DoubleStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<double[], double[]>() {
+            @Override
+            public double[] apply(final double[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public DoubleStream rotated(int distance) {
-        final double[] a = toArray();
+    public DoubleStream reverseSorted() {
+        return newStream(new DoubleIteratorEx() {
+            private boolean initialized = false;
+            private double[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public double[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final double[] a = new double[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractDoubleStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private DoubleStream lazyLoad(final Function<double[], double[]> op, final boolean sorted) {
+        return newStream(new DoubleIteratorEx() {
+            private boolean initialized = false;
+            private double[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final double[] a = new double[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractDoubleStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

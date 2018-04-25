@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.stream.DoubleStream;
+
 /**
  * 
  * @since 0.8
@@ -103,6 +105,10 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
         }
 
         return list;
+    }
+
+    public DoubleStream stream() {
+        return DoubleStream.of(this);
     }
 
     public <E extends Exception> void forEachRemaining(Try.DoubleConsumer<E> action) throws E {

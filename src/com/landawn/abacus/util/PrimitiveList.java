@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -242,36 +243,22 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     }
 
     public List<B> toList(final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        final IntFunction<List<B>> supplier = createListSupplier();
-
-        return toList(fromIndex, toIndex, supplier);
+        return toCollection(fromIndex, toIndex, Fn.Factory.<B> ofList());
     }
-
-    public <R extends List<B>> R toList(final IntFunction<R> supplier) {
-        return toList(0, size(), supplier);
-    }
-
-    public abstract <R extends List<B>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
 
     public Set<B> toSet() {
         return toSet(0, size());
     }
 
     public Set<B> toSet(final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        final IntFunction<Set<B>> supplier = createSetSupplier();
-
-        return toSet(fromIndex, toIndex, supplier);
+        return toCollection(fromIndex, toIndex, Fn.Factory.<B> ofSet());
     }
 
-    public <R extends Set<B>> R toSet(final IntFunction<R> supplier) {
-        return toSet(0, size(), supplier);
+    public <C extends Collection<B>> C toCollection(final IntFunction<C> supplier) {
+        return toCollection(0, size(), supplier);
     }
 
-    public abstract <R extends Set<B>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
+    public abstract <C extends Collection<B>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier);
 
     public Multiset<B> toMultiset() {
         return toMultiset(0, size());

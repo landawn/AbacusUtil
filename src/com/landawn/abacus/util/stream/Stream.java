@@ -69,9 +69,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
-import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableMap;
-import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
@@ -249,7 +247,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Nullable<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
-    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, OBJECT_COMPARATOR, null);
+    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);
 
     Stream(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
         super(sorted, cmp, closeHandlers);
@@ -1043,14 +1041,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * element in this stream
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
-
-    public ImmutableList<T> toImmutableList() {
-        return ImmutableList.of(toList());
-    }
-
-    public ImmutableSet<T> toImmutableSet() {
-        return ImmutableSet.of(toSet());
-    }
 
     /**
      * 
@@ -1877,11 +1867,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final T valueForNoneA, final T2 valueForNoneB, final T3 valueForNoneC,
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
-    public abstract long persist(File file, Function<? super T, String> toLine);
+    public abstract <E extends Exception> long persist(File file, Try.Function<? super T, String, E> toLine) throws E;
 
-    public abstract long persist(OutputStream os, Function<? super T, String> toLine);
+    public abstract <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E;
 
-    public abstract long persist(Writer writer, Function<? super T, String> toLine);
+    public abstract <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E;
 
     public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
@@ -8415,7 +8405,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *
      */
     public static enum SOO {
-        SPLIT, SPLIT_TO_LIST, SPLIT_TO_SET, SPLIT_AT, SLIDING, //
+        SPLIT, SPLIT_TO_LIST, SPLIT_TO_SET, SPLIT_AT, SPLIT_BY, SLIDING, //
         INTERSECTION, DIFFERENCE, SYMMETRIC_DIFFERENCE, //
         REVERSED, SHUFFLED, ROTATED, DISTINCT, HAS_DUPLICATE, //
         APPEND, PREPEND, CACHED, INDEXED, SKIP, SKIP_LAST, LIMIT, STEP, //
@@ -8424,7 +8414,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         CARTESIAN_PRODUCT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN, //
         COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, FOR_EACH_WITH_RESULT, //
         COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
-        LAST, HEAD, HEAD_2, TAIL, TAIL_2, HEAD_AND_TAIL, HEAD_AND_TAIL_2, //
+        LAST, HEAD, HEADD, TAIL, TAILL, HEAD_AND_TAIL, HEAD_AND_TAILL, //
         TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
         BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
         PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST_FILE, ON_CLOSE, CLOSE;
@@ -8443,8 +8433,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         MAP, BI_MAP, TRI_MAP, SLIDING_MAP, MAP_TO_ENTRY, MAP_TO_, MAP_FIRST, MAP_FIRST_, MAP_LAST, MAP_LAST_, RANGE_MAP, //
         FLAT_MAP, FLAT_MAP_TO_, FLAT_ARRAY, FLAT_COLLECION, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
-        SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, TO_MAP, TO_MULTIMAP, //
+        SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
+        GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, PARTITION_BY, PARTITION_BY_TO_ENTRY, PARTITION_TO, TO_MAP, TO_MULTIMAP, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, FIND_ANY, //
         REDUCE, COLLECT, PERSIST_DB;
@@ -8460,7 +8450,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static enum LAIO {
         SORTED, SORTED_BY, REVERSE_SORTED, CACHED, REVERSED, SHUFFLED, ROTATED, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, //
-        HEAD_2, TAIL_2, HEAD_AND_TAIL_2;
+        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, //
+        HEADD, TAILL, HEAD_AND_TAILL;
     }
 }

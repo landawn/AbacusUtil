@@ -758,23 +758,6 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public Stream<ShortStream> splitBy(ShortPredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<ShortStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -894,17 +877,6 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final short[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayShortStream(a, true, closeHandlers);
-    }
-
-    @Override
     public ShortStream peek(final ShortConsumer action) {
         return new IteratorShortStream(new ShortIteratorEx() {
             int cursor = fromIndex;
@@ -995,30 +967,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <R extends List<Short>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Short> toSet() {
         final Set<Short> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Short>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1289,7 +1239,7 @@ class ArrayShortStream extends AbstractShortStream {
             public short[] toArray() {
                 final short[] a = new short[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

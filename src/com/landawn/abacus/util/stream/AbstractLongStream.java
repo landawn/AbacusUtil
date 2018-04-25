@@ -78,7 +78,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream remove(final long n, final LongConsumer action) {
+    public LongStream skip(final long n, final LongConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -88,7 +88,7 @@ abstract class AbstractLongStream extends LongStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new LongPredicate() {
+            return dropWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
                     return cnt.getAndDecrement() > 0;
@@ -97,7 +97,7 @@ abstract class AbstractLongStream extends LongStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new LongPredicate() {
+            return dropWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
                     return cnt.getAndDecrement() > 0;
@@ -137,7 +137,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream removeWhile(final LongPredicate predicate, final LongConsumer action) {
+    public LongStream dropWhile(final LongPredicate predicate, final LongConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -310,11 +310,6 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream reverseSorted() {
-        return sorted().reversed();
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
@@ -455,123 +450,365 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final LongIterator iter = this.iteratorEx();
-        final LongList list = new LongList();
+        return newStream(new ObjIteratorEx<LongStream>() {
+            private LongStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextLong());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public LongStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final LongIterator iter = AbstractLongStream.this.iteratorEx();
+                    final LongList list = new LongList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextLong());
+                    }
+
+                    a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<LongStream> splitBy(LongPredicate where) {
+    public Stream<LongStream> splitBy(final LongPredicate where) {
         N.requireNonNull(where);
 
-        final LongIterator iter = this.iteratorEx();
-        final LongList list = new LongList();
-        long next = 0;
-        LongStream s = null;
+        return newStream(new ObjIteratorEx<LongStream>() {
+            private LongStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextLong();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = LongStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
+            @Override
+            public LongStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorLongStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final LongIterator iter = AbstractLongStream.this.iteratorEx();
+                    final LongList list = new LongList();
+                    long next = 0;
+                    LongStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextLong();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = LongStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorLongStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public LongStream reversed() {
-        final long[] tmp = toArray();
-
         return newStream(new LongIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private long[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public long nextLong() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public long[] toArray() {
-                final long[] a = new long[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final long[] a = new long[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractLongStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public LongStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<long[], long[]>() {
+            @Override
+            public long[] apply(final long[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public LongStream shuffled() {
-        final long[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public LongStream rotated(final int distance) {
+        return lazyLoad(new Function<long[], long[]>() {
+            @Override
+            public long[] apply(final long[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public LongStream shuffled(final Random rnd) {
-        final long[] a = toArray();
+    public LongStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<long[], long[]>() {
+            @Override
+            public long[] apply(final long[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public LongStream rotated(int distance) {
-        final long[] a = toArray();
+    public LongStream reverseSorted() {
+        return newStream(new LongIteratorEx() {
+            private boolean initialized = false;
+            private long[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public long nextLong() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public long[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final long[] a = new long[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractLongStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private LongStream lazyLoad(final Function<long[], long[]> op, final boolean sorted) {
+        return newStream(new LongIteratorEx() {
+            private boolean initialized = false;
+            private long[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public long[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final long[] a = new long[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractLongStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

@@ -1325,29 +1325,16 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     @Override
-    public <R extends List<Float>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
+    public <C extends Collection<Float>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final R list = supplier.apply(toIndex - fromIndex);
+        final C c = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            list.add(elementData[i]);
+            c.add(elementData[i]);
         }
 
-        return list;
-    }
-
-    @Override
-    public <R extends Set<Float>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        final R set = supplier.apply(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            set.add(elementData[i]);
-        }
-
-        return set;
+        return c;
     }
 
     @Override

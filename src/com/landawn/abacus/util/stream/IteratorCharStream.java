@@ -677,79 +677,6 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new IteratorCharStream(new CharIteratorEx() {
-            char[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public char nextChar() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public char[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.sort(a);
-            }
-        }, true, closeHandlers);
-    }
-
-    @Override
     public CharStream peek(final CharConsumer action) {
         return new IteratorCharStream(new CharIteratorEx() {
             @Override
@@ -887,30 +814,8 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <R extends List<Character>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Character> toSet() {
         final Set<Character> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Character>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextChar());

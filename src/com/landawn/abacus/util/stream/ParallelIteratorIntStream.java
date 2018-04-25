@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
@@ -34,7 +33,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
@@ -420,53 +418,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public Stream<IntStream> splitBy(final IntPredicate where) {
-        N.requireNonNull(where);
-
-        final List<IndexedInt> testedElements = new ArrayList<>();
-
-        final Nullable<IndexedInt> first = indexed().findFirst(new Predicate<IndexedInt>() {
-            @Override
-            public boolean test(IndexedInt indexed) {
-                synchronized (testedElements) {
-                    testedElements.add(indexed);
-                }
-
-                return !where.test(indexed.value());
-            }
-        });
-
-        N.sort(testedElements, INDEXED_INT_COMPARATOR);
-
-        final int n = first.isPresent() ? (int) first.get().index() : testedElements.size();
-
-        final IntList list1 = new IntList(n);
-        final IntList list2 = new IntList(testedElements.size() - n);
-
-        for (int i = 0; i < n; i++) {
-            list1.add(testedElements.get(i).value());
-        }
-
-        for (int i = n, size = testedElements.size(); i < size; i++) {
-            list2.add(testedElements.get(i).value());
-        }
-
-        final IntStream[] a = new IntStream[2];
-        a[0] = new ArrayIntStream(list1.array(), sorted, null);
-        a[1] = new IteratorIntStream(elements, sorted, null);
-
-        if (N.notNullOrEmpty(list2)) {
-            if (sorted) {
-                a[1] = new IteratorIntStream(a[1].prepend(list2.stream()).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(list2.stream());
-            }
-        }
-
-        return new ParallelArrayStream<>(a, 0, a.length, false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public Stream<IntStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
@@ -484,79 +435,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     @Override
     public IntStream top(int n, Comparator<? super Integer> comparator) {
         return new ParallelIteratorIntStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public IntStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        return new ParallelIteratorIntStream(new IntIteratorEx() {
-            int[] a = null;
-            int toIndex = 0;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    sort();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public int nextInt() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    sort();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    sort();
-                }
-
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public int[] toArray() {
-                if (a == null) {
-                    sort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, toIndex);
-                }
-            }
-
-            private void sort() {
-                a = elements.toArray();
-                toIndex = a.length;
-
-                N.parallelSort(a);
-            }
-        }, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

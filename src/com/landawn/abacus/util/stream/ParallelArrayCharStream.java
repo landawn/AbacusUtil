@@ -27,12 +27,10 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
@@ -240,32 +238,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public Stream<CharStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        final CharStream[] a = new CharStream[2];
-        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? CharStream.empty() : new ArrayCharStream(elements, fromIndex, middleIndex, sorted, null);
-        a[1] = middleIndex == toIndex ? CharStream.empty() : new ArrayCharStream(elements, middleIndex, toIndex, sorted, null);
-
-        return new ParallelArrayStream<>(a, 0, a.length, false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<CharStream> splitBy(final CharPredicate where) {
-        N.requireNonNull(where);
-
-        final Nullable<IndexedChar> first = indexed().findFirst(new Predicate<IndexedChar>() {
-            @Override
-            public boolean test(IndexedChar indexed) {
-                return !where.test(indexed.value());
-            }
-        });
-
-        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
-    }
-
-    @Override
     public Stream<CharStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<CharStream>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
@@ -275,17 +247,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
         return new ParallelIteratorStream<CharList>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
-    }
-
-    @Override
-    public CharStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ParallelArrayCharStream(a, 0, a.length, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

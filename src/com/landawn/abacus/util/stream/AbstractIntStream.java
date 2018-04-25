@@ -79,7 +79,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream remove(final long n, final IntConsumer action) {
+    public IntStream skip(final long n, final IntConsumer action) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
@@ -89,7 +89,7 @@ abstract class AbstractIntStream extends IntStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return removeWhile(new IntPredicate() {
+            return dropWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractIntStream extends IntStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return removeWhile(new IntPredicate() {
+            return dropWhile(new IntPredicate() {
 
                 @Override
                 public boolean test(int value) {
@@ -140,7 +140,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream removeWhile(final IntPredicate predicate, final IntConsumer action) {
+    public IntStream dropWhile(final IntPredicate predicate, final IntConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -313,11 +313,6 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream reverseSorted() {
-        return sorted().reversed();
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
@@ -458,123 +453,365 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Stream<IntStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
-        final IntIterator iter = this.iteratorEx();
-        final IntList list = new IntList();
+        return newStream(new ObjIteratorEx<IntStream>() {
+            private IntStream[] a = null;
+            private int cursor = 0;
 
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.nextInt());
-        }
+            @Override
+            public boolean hasNext() {
+                init();
 
-        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
+                return cursor < 2;
+            }
 
-        return this.newStream(a, false, null);
+            @Override
+            public IntStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            private void init() {
+                if (a == null) {
+                    final IntIterator iter = AbstractIntStream.this.iteratorEx();
+                    final IntList list = new IntList();
+
+                    while (list.size() < n && iter.hasNext()) {
+                        list.add(iter.nextInt());
+                    }
+
+                    a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
-    public Stream<IntStream> splitBy(IntPredicate where) {
+    public Stream<IntStream> splitBy(final IntPredicate where) {
         N.requireNonNull(where);
 
-        final IntIterator iter = this.iteratorEx();
-        final IntList list = new IntList();
-        int next = 0;
-        IntStream s = null;
+        return newStream(new ObjIteratorEx<IntStream>() {
+            private IntStream[] a = null;
+            private int cursor = 0;
 
-        while (iter.hasNext()) {
-            next = iter.nextInt();
+            @Override
+            public boolean hasNext() {
+                init();
 
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                s = IntStream.of(next);
-
-                break;
+                return cursor < 2;
             }
-        }
 
-        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
+            @Override
+            public IntStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
 
-        if (s != null) {
-            if (sorted) {
-                a[1] = new IteratorIntStream(a[1].prepend(s).iteratorEx(), sorted, null);
-            } else {
-                a[1] = a[1].prepend(s);
+                return a[cursor++];
             }
-        }
 
-        return this.newStream(a, false, null);
+            private void init() {
+                if (a == null) {
+                    final IntIterator iter = AbstractIntStream.this.iteratorEx();
+                    final IntList list = new IntList();
+                    int next = 0;
+                    IntStream s = null;
+
+                    while (iter.hasNext()) {
+                        next = iter.nextInt();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            s = IntStream.of(next);
+
+                            break;
+                        }
+                    }
+
+                    a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
+
+                    if (s != null) {
+                        if (sorted) {
+                            a[1] = new IteratorIntStream(a[1].prepend(s).iteratorEx(), sorted, null);
+                        } else {
+                            a[1] = a[1].prepend(s);
+                        }
+                    }
+                }
+            }
+
+        }, false, null);
     }
 
     @Override
     public IntStream reversed() {
-        final int[] tmp = toArray();
-
         return newStream(new IntIteratorEx() {
-            private int cursor = tmp.length;
+            private boolean initialized = false;
+            private int[] aar;
+            private int cursor;
 
             @Override
             public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor > 0;
             }
 
             @Override
             public int nextInt() {
+                if (initialized == false) {
+                    init();
+                }
+
                 if (cursor <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                return tmp[--cursor];
+                return aar[--cursor];
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor;
             }
 
             @Override
             public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n < cursor ? cursor - (int) n : 0;
             }
 
             @Override
             public int[] toArray() {
-                final int[] a = new int[cursor];
-
-                for (int i = 0, len = tmp.length; i < len; i++) {
-                    a[i] = tmp[cursor - i - 1];
+                if (initialized == false) {
+                    init();
                 }
 
+                final int[] a = new int[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractIntStream.this.toArray();
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public IntStream shuffled(final Random rnd) {
+        return lazyLoad(new Function<int[], int[]>() {
+            @Override
+            public int[] apply(final int[] a) {
+                N.shuffle(a, rnd);
                 return a;
             }
         }, false);
     }
 
     @Override
-    public IntStream shuffled() {
-        final int[] a = toArray();
-
-        N.shuffle(a);
-
-        return newStream(a, false);
+    public IntStream rotated(final int distance) {
+        return lazyLoad(new Function<int[], int[]>() {
+            @Override
+            public int[] apply(final int[] a) {
+                N.rotate(a, distance);
+                return a;
+            }
+        }, false);
     }
 
     @Override
-    public IntStream shuffled(final Random rnd) {
-        final int[] a = toArray();
+    public IntStream sorted() {
+        if (sorted) {
+            return this;
+        }
 
-        N.shuffle(a, rnd);
+        return lazyLoad(new Function<int[], int[]>() {
+            @Override
+            public int[] apply(final int[] a) {
+                if (isParallel()) {
+                    N.parallelSort(a);
+                } else {
+                    N.sort(a);
+                }
 
-        return newStream(a, false);
+                return a;
+            }
+        }, true);
     }
 
     @Override
-    public IntStream rotated(int distance) {
-        final int[] a = toArray();
+    public IntStream reverseSorted() {
+        return newStream(new IntIteratorEx() {
+            private boolean initialized = false;
+            private int[] aar;
+            private int cursor;
 
-        N.rotate(a, distance);
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
 
-        return newStream(a, false);
+                return cursor > 0;
+            }
+
+            @Override
+            public int nextInt() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[--cursor];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public int[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final int[] a = new int[cursor];
+
+                for (int i = 0; i < cursor; i++) {
+                    a[i] = aar[cursor - i - 1];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractIntStream.this.toArray();
+
+                    if (isParallel()) {
+                        N.parallelSort(aar);
+                    } else {
+                        N.sort(aar);
+                    }
+
+                    cursor = aar.length;
+                }
+            }
+        }, false);
+    }
+
+    private IntStream lazyLoad(final Function<int[], int[]> op, final boolean sorted) {
+        return newStream(new IntIteratorEx() {
+            private boolean initialized = false;
+            private int[] aar;
+            private int cursor = 0;
+            private int len;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final int[] a = new int[len - cursor];
+
+                for (int i = cursor; i < len; i++) {
+                    a[i - cursor] = aar[i];
+                }
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = op.apply(AbstractIntStream.this.toArray());
+                    len = aar.length;
+                }
+            }
+        }, sorted);
     }
 
     @Override

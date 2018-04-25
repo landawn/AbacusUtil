@@ -47,6 +47,87 @@ public final class Iterators {
         // singleton.
     }
 
+    public static boolean contains(final Iterator<?> iter, final Object objToFind) {
+        if (iter == null) {
+            return false;
+        }
+
+        while (iter.hasNext()) {
+            if (N.equals(iter.next(), objToFind)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static long indexOf(final Iterator<?> iter, final Object objToFind) {
+        if (iter == null) {
+            return N.INDEX_NOT_FOUND;
+        }
+
+        long index = 0;
+
+        while (iter.hasNext()) {
+            if (N.equals(iter.next(), objToFind)) {
+                return index;
+            }
+
+            index++;
+        }
+
+        return N.INDEX_NOT_FOUND;
+    }
+
+    public static long occurrencesOf(final Iterator<?> iter, final Object objToFind) {
+        if (iter == null) {
+            return 0;
+        }
+
+        long occurrences = 0;
+
+        while (iter.hasNext()) {
+            if (N.equals(iter.next(), objToFind)) {
+                occurrences++;
+            }
+        }
+
+        return occurrences;
+    }
+
+    public static long count(final Iterator<?> iter) {
+        if (iter == null) {
+            return 0;
+        }
+
+        long res = 0;
+
+        while (iter.hasNext()) {
+            iter.next();
+            res++;
+        }
+
+        return res;
+    }
+
+    public static <T> long count(final Iterator<T> iter, final Predicate<? super T> filter) {
+        N.requireNonNull(filter);
+
+        if (iter == null) {
+            return 0;
+        }
+
+        long res = 0;
+
+        while (iter.hasNext()) {
+            if (filter.test(iter.next())) {
+                res++;
+            }
+        }
+
+        return res;
+    }
+
     public static <T> List<T> toList(final Iterator<? extends T> iter) {
         if (iter == null) {
             return new ArrayList<>();
@@ -1557,6 +1638,24 @@ public final class Iterators {
                 return next;
             }
         };
+    }
+
+    public static <T> Nullable<T> get(final Iterator<T> iter, int index) {
+        N.checkArgNotNegative(index, "index");
+
+        if (iter == null) {
+            return Nullable.empty();
+        }
+
+        while (iter.hasNext()) {
+            if (index-- == 0) {
+                return Nullable.of(iter.next());
+            } else {
+                iter.next();
+            }
+        }
+
+        return Nullable.empty();
     }
 
     public static <T> Nullable<T> first(final Iterator<T> iter) {

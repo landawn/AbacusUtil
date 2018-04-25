@@ -27,12 +27,10 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
@@ -252,20 +250,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public Stream<ByteStream> splitBy(final BytePredicate where) {
-        N.requireNonNull(where);
-
-        final Nullable<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
-            @Override
-            public boolean test(IndexedByte indexed) {
-                return !where.test(indexed.value());
-            }
-        });
-
-        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
-    }
-
-    @Override
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<ByteStream>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
@@ -275,17 +259,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         return new ParallelIteratorStream<ByteList>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
-    }
-
-    @Override
-    public ByteStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final byte[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ParallelArrayByteStream(a, 0, a.length, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

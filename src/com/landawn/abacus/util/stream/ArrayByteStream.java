@@ -757,23 +757,6 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteStream> splitBy(BytePredicate where) {
-        N.requireNonNull(where);
-
-        int n = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (where.test(elements[i])) {
-                n++;
-            } else {
-                break;
-            }
-        }
-
-        return splitAt(n);
-    }
-
-    @Override
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -875,17 +858,6 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final byte[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.sort(a);
-        return new ArrayByteStream(a, true, closeHandlers);
-    }
-
-    @Override
     public ByteStream peek(final ByteConsumer action) {
         return new IteratorByteStream(new ByteIteratorEx() {
             int cursor = fromIndex;
@@ -976,30 +948,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <R extends List<Byte>> R toList(Supplier<R> supplier) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
     public Set<Byte> toSet() {
         final Set<Byte> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R extends Set<Byte>> R toSet(Supplier<R> supplier) {
-        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1270,7 +1220,7 @@ class ArrayByteStream extends AbstractByteStream {
             public byte[] toArray() {
                 final byte[] a = new byte[cursor - fromIndex];
 
-                for (int i = 0, len = a.length; i < len; i++) {
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
                     a[i] = elements[cursor - i - 1];
                 }
 

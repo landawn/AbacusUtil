@@ -26,14 +26,12 @@ import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
@@ -321,20 +319,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public Stream<LongStream> splitBy(final LongPredicate where) {
-        N.requireNonNull(where);
-
-        final Nullable<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
-            @Override
-            public boolean test(IndexedLong indexed) {
-                return !where.test(indexed.value());
-            }
-        });
-
-        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
-    }
-
-    @Override
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<LongStream>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
@@ -363,17 +347,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             final long[] a = N.top(elements, fromIndex, toIndex, n, comparator);
             return new ParallelArrayLongStream(a, 0, a.length, sorted, maxThreadNum, splitor, closeHandlers);
         }
-    }
-
-    @Override
-    public LongStream sorted() {
-        if (sorted) {
-            return this;
-        }
-
-        final long[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ParallelArrayLongStream(a, 0, a.length, true, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
