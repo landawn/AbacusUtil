@@ -16,6 +16,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -84,6 +85,18 @@ public interface ShortPredicate extends Try.ShortPredicate<RuntimeException> {
 
     @Override
     boolean test(short value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static ShortPredicate of(final ShortPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     default ShortPredicate negate() {
         return (t) -> !test(t);

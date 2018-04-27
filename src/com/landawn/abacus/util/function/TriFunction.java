@@ -37,6 +37,12 @@ public interface TriFunction<A, B, C, R> extends Try.TriFunction<A, B, C, R, Run
         return (a, b, c) -> after.apply(apply(a, b, c));
     }
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param func
+     * @return
+     */
     public static <A, B, C, R> TriFunction<A, B, C, R> of(final TriFunction<A, B, C, R> func) {
         N.requireNonNull(func);
 

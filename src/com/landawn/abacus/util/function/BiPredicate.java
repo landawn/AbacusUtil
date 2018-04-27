@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -27,6 +28,18 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>,
 
     @Override
     boolean test(T t, U u);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static <T, U> BiPredicate<T, U> of(final BiPredicate<T, U> predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     static <T, U> BiPredicate<T, U> alwaysTrue() {
         return Fn.BiPredicates.alwaysTrue();

@@ -14040,8 +14040,8 @@ public final class N {
                 result.add(c.get(j));
             }
         } else {
-            final T[] a = (T[]) c.toArray();
-            result = createList(N.copyOfRange(a, from, to, step));
+            final T[] a = (T[]) c.subList(from, to).toArray();
+            result = createList(N.copyOfRange(a, 0, a.length, step));
         }
 
         return result;

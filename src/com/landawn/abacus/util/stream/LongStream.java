@@ -1044,7 +1044,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream repeat(final long element, final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return empty();

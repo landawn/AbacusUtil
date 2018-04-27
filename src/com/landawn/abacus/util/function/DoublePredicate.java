@@ -83,6 +83,18 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Try
     @Override
     boolean test(double value);
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static DoublePredicate of(final DoublePredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
+
     static DoublePredicate equal(double targetDouble) {
         return value -> value == targetDouble;
     }

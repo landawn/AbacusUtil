@@ -8,6 +8,12 @@ public interface Runnable extends java.lang.Runnable, Try.Runnable<RuntimeExcept
     @Override
     void run();
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param runnable
+     * @return
+     */
     public static Runnable of(final Runnable runnable) {
         N.requireNonNull(runnable);
 

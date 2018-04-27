@@ -95,33 +95,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     static final int CORE_THREAD_POOL_SIZE = 64;
 
-    static final AsyncExecutor asyncExecutor;
-
-    static {
-        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 0L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(1));
-
-        asyncExecutor = new AsyncExecutor(threadPoolExecutor) {
-            @Override
-            public CompletableFuture<Void> execute(final Runnable command) {
-                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
-                //    }
-
-                return super.execute(command);
-            }
-
-            @Override
-            public <T> CompletableFuture<T> execute(final Callable<T> command) {
-                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
-                //    }
-
-                return super.execute(command);
-            }
-        };
-    }
-
     static final int DEFAULT_MAX_THREAD_NUM = IOUtil.CPU_CORES;
     static final int DEFAULT_READING_THREAD_NUM = 8;
 
@@ -275,7 +248,32 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         clsNum.put(FloatList.class, idx++);
         clsNum.put(DoubleList.class, idx++); // 15
     }
+    static final AsyncExecutor asyncExecutor;
 
+    static {
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 0L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(1));
+
+        asyncExecutor = new AsyncExecutor(threadPoolExecutor) {
+            @Override
+            public CompletableFuture<Void> execute(final Runnable command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+
+            @Override
+            public <T> CompletableFuture<T> execute(final Callable<T> command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+        };
+    }
     @SuppressWarnings("rawtypes")
     static final BinaryOperator reducingCombiner = new BinaryOperator() {
         @Override

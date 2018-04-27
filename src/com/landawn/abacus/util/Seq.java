@@ -2630,7 +2630,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public ObjIterator<T> iterator() {
         return coll == null ? ObjIterator.<T> empty() : new ObjIterator<T>() {
             private final Iterator<T> iter = coll.iterator();
 

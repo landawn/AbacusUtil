@@ -30,6 +30,12 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Try.F
         return Fn.identity();
     }
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param func
+     * @return
+     */
     public static <T, R> Function<T, R> of(final Function<T, R> func) {
         N.requireNonNull(func);
 

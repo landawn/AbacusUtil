@@ -80,31 +80,29 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream skip(final long n, final DoubleConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final DoublePredicate filter = isParallel() ? new DoublePredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new DoublePredicate() {
-                @Override
-                public boolean test(double value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(double value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new DoublePredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new DoublePredicate() {
-                @Override
-                public boolean test(double value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        }
+            @Override
+            public boolean test(double value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
+
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -240,7 +238,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
         final DoubleIteratorEx iter = iteratorEx();
 
-        return this.newStream(new DoubleIteratorEx() {
+        return newStream(new DoubleIteratorEx() {
             private boolean hasNext = false;
             private double next = 0;
 
@@ -270,7 +268,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public DoubleStream scan(final DoubleBiFunction<Double> accumulator) {
         final DoubleIteratorEx iter = iteratorEx();
 
-        return this.newStream(new DoubleIteratorEx() {
+        return newStream(new DoubleIteratorEx() {
             private double res = 0;
             private boolean isFirst = true;
 
@@ -295,7 +293,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator) {
         final DoubleIteratorEx iter = iteratorEx();
 
-        return this.newStream(new DoubleIteratorEx() {
+        return newStream(new DoubleIteratorEx() {
             private double res = seed;
 
             @Override
@@ -696,13 +694,82 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream rotated(final int distance) {
-        return lazyLoad(new Function<double[], double[]>() {
+        return newStream(new DoubleIteratorEx() {
+            private boolean initialized = false;
+            private double[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public double[] apply(final double[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public double[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final double[] a = new double[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractDoubleStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -982,6 +1049,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

@@ -80,31 +80,29 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream skip(final long n, final CharConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final CharPredicate filter = isParallel() ? new CharPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new CharPredicate() {
-                @Override
-                public boolean test(char value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(char value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new CharPredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new CharPredicate() {
-                @Override
-                public boolean test(char value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        }
+            @Override
+            public boolean test(char value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
+
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -240,7 +238,7 @@ abstract class AbstractCharStream extends CharStream {
     public CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction) {
         final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private boolean hasNext = false;
             private char next = 0;
 
@@ -270,7 +268,7 @@ abstract class AbstractCharStream extends CharStream {
     public CharStream scan(final CharBiFunction<Character> accumulator) {
         final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private char res = 0;
             private boolean isFirst = true;
 
@@ -295,7 +293,7 @@ abstract class AbstractCharStream extends CharStream {
     public CharStream scan(final char seed, final CharBiFunction<Character> accumulator) {
         final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private char res = seed;
 
             @Override
@@ -632,13 +630,82 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream rotated(final int distance) {
-        return lazyLoad(new Function<char[], char[]>() {
+        return newStream(new CharIteratorEx() {
+            private boolean initialized = false;
+            private char[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public char[] apply(final char[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public char[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final char[] a = new char[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractCharStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -917,6 +984,6 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

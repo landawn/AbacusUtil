@@ -39,6 +39,12 @@ public interface TriConsumer<A, B, C> extends Try.TriConsumer<A, B, C, RuntimeEx
         };
     }
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param triConsumer
+     * @return
+     */
     public static <A, B, C> TriConsumer<A, B, C> of(final TriConsumer<A, B, C> triConsumer) {
         N.requireNonNull(triConsumer);
 

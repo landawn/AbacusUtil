@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -82,6 +83,18 @@ public interface IntPredicate extends java.util.function.IntPredicate, Try.IntPr
 
     @Override
     boolean test(int value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static IntPredicate of(final IntPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     static IntPredicate equal(int targetInt) {
         return value -> value == targetInt;

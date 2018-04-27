@@ -5,6 +5,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
@@ -67,6 +68,18 @@ public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
 
     @Override
     boolean test(byte value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static BytePredicate of(final BytePredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     default BytePredicate negate() {
         return (t) -> !test(t);

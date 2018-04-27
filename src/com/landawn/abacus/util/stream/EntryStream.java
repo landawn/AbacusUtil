@@ -577,34 +577,19 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public EntryStream<K, V> sortedByInt(final ToIntFunction<? super Map.Entry<K, V>> keyExtractor) {
-        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
-            @Override
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return N.compare(keyExtractor.applyAsInt(o1), keyExtractor.applyAsInt(o2));
-            }
-        };
+        final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingInt(keyExtractor);
 
         return sorted(comparator);
     }
 
     public EntryStream<K, V> sortedByLong(final ToLongFunction<? super Map.Entry<K, V>> keyExtractor) {
-        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
-            @Override
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return N.compare(keyExtractor.applyAsLong(o1), keyExtractor.applyAsLong(o2));
-            }
-        };
+        final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingLong(keyExtractor);
 
         return sorted(comparator);
     }
 
     public EntryStream<K, V> sortedByDouble(final ToDoubleFunction<? super Map.Entry<K, V>> keyExtractor) {
-        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
-            @Override
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return N.compare(keyExtractor.applyAsDouble(o1), keyExtractor.applyAsDouble(o2));
-            }
-        };
+        final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingDouble(keyExtractor);
 
         return sorted(comparator);
     }

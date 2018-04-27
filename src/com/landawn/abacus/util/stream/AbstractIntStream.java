@@ -80,33 +80,29 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream skip(final long n, final IntConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final IntPredicate filter = isParallel() ? new IntPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new IntPredicate() {
-                @Override
-                public boolean test(int value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(int value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new IntPredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
 
-                @Override
-                public boolean test(int value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-
-            }, action);
-        }
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -242,7 +238,7 @@ abstract class AbstractIntStream extends IntStream {
     public IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
         final IntIteratorEx iter = iteratorEx();
 
-        return this.newStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             private boolean hasNext = false;
             private int next = 0;
 
@@ -272,7 +268,7 @@ abstract class AbstractIntStream extends IntStream {
     public IntStream scan(final IntBiFunction<Integer> accumulator) {
         final IntIteratorEx iter = iteratorEx();
 
-        return this.newStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             private int res = 0;
             private boolean isFirst = true;
 
@@ -297,7 +293,7 @@ abstract class AbstractIntStream extends IntStream {
     public IntStream scan(final int seed, final IntBiFunction<Integer> accumulator) {
         final IntIteratorEx iter = iteratorEx();
 
-        return this.newStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             private int res = seed;
 
             @Override
@@ -634,13 +630,82 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream rotated(final int distance) {
-        return lazyLoad(new Function<int[], int[]>() {
+        return newStream(new IntIteratorEx() {
+            private boolean initialized = false;
+            private int[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public int[] apply(final int[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public int[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final int[] a = new int[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractIntStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -919,6 +984,6 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

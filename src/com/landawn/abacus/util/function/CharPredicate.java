@@ -16,6 +16,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -56,6 +57,18 @@ public interface CharPredicate extends Try.CharPredicate<RuntimeException> {
 
     @Override
     boolean test(char value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static CharPredicate of(final CharPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     default CharPredicate negate() {
         return (t) -> !test(t);

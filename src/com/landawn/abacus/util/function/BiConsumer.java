@@ -29,6 +29,12 @@ import com.landawn.abacus.util.Try;
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U>, Try.BiConsumer<T, U, RuntimeException> {
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param biConsumer
+     * @return
+     */
     public static <T, U> BiConsumer<T, U> of(final BiConsumer<T, U> biConsumer) {
         N.requireNonNull(biConsumer);
 

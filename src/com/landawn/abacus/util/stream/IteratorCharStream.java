@@ -14,9 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,7 @@ import java.util.Set;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -98,7 +97,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream filter(final CharPredicate predicate) {
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private boolean hasNext = false;
             private char next = 0;
 
@@ -128,12 +127,12 @@ class IteratorCharStream extends AbstractCharStream {
 
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public CharStream takeWhile(final CharPredicate predicate) {
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private char next = 0;
@@ -164,12 +163,12 @@ class IteratorCharStream extends AbstractCharStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public CharStream dropWhile(final CharPredicate predicate) {
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private boolean hasNext = false;
             private char next = 0;
             private boolean dropped = false;
@@ -208,12 +207,12 @@ class IteratorCharStream extends AbstractCharStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public CharStream map(final CharUnaryOperator mapper) {
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -233,12 +232,12 @@ class IteratorCharStream extends AbstractCharStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public IntStream mapToInt(final CharToIntFunction mapper) {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -258,12 +257,12 @@ class IteratorCharStream extends AbstractCharStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final CharFunction<? extends U> mapper) {
-        return new IteratorStream<>(new ObjIteratorEx<U>() {
+        return newStream(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -283,7 +282,7 @@ class IteratorCharStream extends AbstractCharStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -491,7 +490,7 @@ class IteratorCharStream extends AbstractCharStream {
     public Stream<CharList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
-        return new IteratorStream<>(new ObjIteratorEx<CharList>() {
+        return newStream(new ObjIteratorEx<CharList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -522,12 +521,12 @@ class IteratorCharStream extends AbstractCharStream {
             public void skip(long n) {
                 elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<CharList> splitToList(final CharPredicate predicate) {
-        return new IteratorStream<>(new ObjIteratorEx<CharList>() {
+        return newStream(new ObjIteratorEx<CharList>() {
             private char next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -566,12 +565,12 @@ class IteratorCharStream extends AbstractCharStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public <U> Stream<CharList> splitToList(final U seed, final BiPredicate<? super Character, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<>(new ObjIteratorEx<CharList>() {
+        return newStream(new ObjIteratorEx<CharList>() {
             private char next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -614,14 +613,14 @@ class IteratorCharStream extends AbstractCharStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ObjIteratorEx<CharList>() {
+        return newStream(new ObjIteratorEx<CharList>() {
             private CharList prev = null;
 
             @Override
@@ -673,12 +672,12 @@ class IteratorCharStream extends AbstractCharStream {
                 return prev = result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public CharStream peek(final CharConsumer action) {
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -690,14 +689,14 @@ class IteratorCharStream extends AbstractCharStream {
                 action.accept(next);
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public CharStream limit(final long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+        N.checkArgNotNegative(maxSize, "maxSize");
 
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private long cnt = 0;
 
             @Override
@@ -719,18 +718,18 @@ class IteratorCharStream extends AbstractCharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public CharStream skip(final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        return new IteratorCharStream(new CharIteratorEx() {
+        return newStream(new CharIteratorEx() {
             private boolean skipped = false;
 
             @Override
@@ -782,7 +781,7 @@ class IteratorCharStream extends AbstractCharStream {
 
                 return elements.toArray();
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
@@ -799,29 +798,17 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharList toCharList() {
-        return CharList.of(toArray());
+        return elements.toList();
     }
 
     @Override
     public List<Character> toList() {
-        final List<Character> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Character> ofList());
     }
 
     @Override
     public Set<Character> toSet() {
-        final Set<Character> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Character> ofSet());
     }
 
     @Override
@@ -837,13 +824,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset() {
-        final Multiset<Character> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
+        return toMultiset(Fn.Suppliers.<Character> ofMultiset());
     }
 
     @Override
@@ -859,13 +840,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset() {
-        final LongMultiset<Character> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
-        }
-
-        return result;
+        return toLongMultiset(Fn.Suppliers.<Character> ofLongMultiset());
     }
 
     @Override
@@ -1185,7 +1160,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1205,7 +1180,7 @@ class IteratorCharStream extends AbstractCharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override

@@ -86,6 +86,18 @@ public interface FloatPredicate extends Try.FloatPredicate<RuntimeException> {
     @Override
     boolean test(float value);
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static FloatPredicate of(final FloatPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
+
     default FloatPredicate negate() {
         return (t) -> !test(t);
     }

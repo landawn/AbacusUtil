@@ -977,6 +977,36 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * Returns the specified instance.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <T> Predicate<T> test(final Predicate<T> predicate) {
+        return predicate;
+    }
+
+    /**
+     * Returns the specified instance.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <T, U> BiPredicate<T, U> test(final BiPredicate<T, U> predicate) {
+        return predicate;
+    }
+
+    /**
+     * Returns the specified instance.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <A, B, C> TriPredicate<A, B, C> test(final TriPredicate<A, B, C> predicate) {
+        return predicate;
+    }
+
     public static <K, V> Consumer<Map.Entry<K, V>> acceptByKey(final Consumer<? super K> consumer) {
         return new Consumer<Map.Entry<K, V>>() {
             @Override
@@ -2217,6 +2247,42 @@ public final class Fn extends Comparators {
         public static <K, E> IntFunction<SetMultimap<K, E>> ofSetMultimap() {
             return (IntFunction) SET_MULTIMAP_FACTORY;
         }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static IntFunction<ImmutableList<?>> ofImmutableList() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static IntFunction<ImmutableSet<?>> ofImmutableSet() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static IntFunction<ImmutableMap<?, ?>> ofImmutableMap() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public static final class Suppliers {
@@ -2738,6 +2804,42 @@ public final class Fn extends Comparators {
 
         public static Supplier<StringBuilder> ofStringBuilder() {
             return STRING_BUILDER;
+        }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static Supplier<ImmutableList<?>> ofImmutableList() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static Supplier<ImmutableSet<?>> ofImmutableSet() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Won't work.
+         * 
+         * @return
+         * @throws UnsupportedOperationException
+         * 
+         */
+        @Deprecated
+        public static Supplier<ImmutableMap<?, ?>> ofImmutableMap() {
+            throw new UnsupportedOperationException();
         }
     }
 

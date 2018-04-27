@@ -102,15 +102,6 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
             }
 
             @Override
-            public Object[] toArray() {
-                final Object[] res = new Object[toIndex - cursor];
-
-                N.copy(a, cursor, res, 0, res.length);
-
-                return res;
-            }
-
-            @Override
             public <A> A[] toArray(A[] output) {
                 if (output.length < toIndex - cursor) {
                     output = N.copyOf(output, toIndex - cursor);

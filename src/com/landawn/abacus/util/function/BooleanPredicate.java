@@ -16,6 +16,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -56,6 +57,18 @@ public interface BooleanPredicate extends Try.BooleanPredicate<RuntimeException>
 
     @Override
     boolean test(boolean value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static BooleanPredicate of(final BooleanPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     default BooleanPredicate negate() {
         return (t) -> !test(t);

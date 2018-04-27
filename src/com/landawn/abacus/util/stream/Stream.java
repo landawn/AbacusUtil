@@ -259,6 +259,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
@@ -267,6 +268,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
@@ -275,11 +277,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -291,7 +290,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param consumer
      * @return {@link #dropWhile(Object, BiPredicate)}
      */
-    public abstract <U> Stream<T> removeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
+    @ParallelSupported
+    public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
+
+    @ParallelSupported
+    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    @ParallelSupported
+    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
 
     /**
      * Returns a stream consisting of the elements in this stream which are
@@ -300,6 +306,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param targetType
      * @return
      */
+    @ParallelSupported
     public <U> Stream<U> select(Class<U> targetType) {
         return (Stream<U>) filter(Fn.instanceOf(targetType));
     }
@@ -317,8 +324,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *               function to apply to each element
      * @return the new stream
      */
+    @ParallelSupported
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
 
+    @ParallelSupported
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
     //    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);
@@ -359,6 +368,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     //     */
     //    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
 
     /**
@@ -368,10 +378,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment);
 
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment, boolean ignoreNotPaired);
 
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper);
 
     /**
@@ -381,8 +394,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment);
 
+    @ParallelSupported
     public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment, boolean ignoreNotPaired);
 
     /**
@@ -415,20 +430,28 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      * @see #collapse(BiPredicate, BinaryOperator)
      */
+    @SequentialOnly
     public abstract <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper);
 
+    @ParallelSupported
     public abstract Stream<T> mapFirst(Function<? super T, ? extends T> mapperForFirst);
 
+    @ParallelSupported
     public abstract <R> Stream<R> mapFirstOrElse(Function<? super T, ? extends R> mapperForFirst, Function<? super T, ? extends R> mapperForElse);
 
+    @ParallelSupported
     public abstract Stream<T> mapLast(Function<? super T, ? extends T> mapperForLast);
 
+    @ParallelSupported
     public abstract <R> Stream<R> mapLastOrElse(Function<? super T, ? extends R> mapperForLast, Function<? super T, ? extends R> mapperForElse);
 
+    @ParallelSupported
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract ByteStream mapToByte(ToByteFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract ShortStream mapToShort(ToShortFunction<? super T> mapper);
 
     /**
@@ -443,6 +466,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *               function to apply to each element
      * @return the new stream
      */
+    @ParallelSupported
     public abstract IntStream mapToInt(ToIntFunction<? super T> mapper);
 
     /**
@@ -457,8 +481,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *               function to apply to each element
      * @return the new stream
      */
+    @ParallelSupported
     public abstract LongStream mapToLong(ToLongFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract FloatStream mapToFloat(ToFloatFunction<? super T> mapper);
 
     /**
@@ -473,12 +499,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *               function to apply to each element
      * @return the new stream
      */
+    @ParallelSupported
     public abstract DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper);
 
     // public abstract <K, V> EntryStream<K, V> mapToEntry();
 
+    @ParallelSupported
     public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, ? extends Map.Entry<K, V>> mapper);
 
+    @ParallelSupported
     public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
     /**
@@ -520,22 +549,31 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *               of new values
      * @return the new stream
      */
+    @ParallelSupported
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
+    @ParallelSupported
     public abstract <U, R> Stream<R> flatMap(U seed, BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper);
 
+    @ParallelSupported
     public abstract <R> Stream<R> flattMap(Function<? super T, ? extends Collection<? extends R>> mapper);
 
+    @ParallelSupported
     public abstract <U, R> Stream<R> flattMap(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
 
+    @ParallelSupported
     public abstract <R> Stream<R> flatMapp(Function<? super T, R[]> mapper);
 
+    @ParallelSupported
     public abstract <U, R> Stream<R> flatMapp(U seed, BiFunction<? super T, ? super U, R[]> mapper);
 
+    @ParallelSupported
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
+    @ParallelSupported
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
 
+    @ParallelSupported
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
 
     /**
@@ -556,6 +594,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      * @see #flatMap(Function)
      */
+    @ParallelSupported
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
 
     /**
@@ -576,8 +615,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      * @see #flatMap(Function)
      */
+    @ParallelSupported
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
+    @ParallelSupported
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
     /**
@@ -598,12 +639,16 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      * @see #flatMap(Function)
      */
+    @ParallelSupported
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
+    @ParallelSupported
     public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
 
+    @ParallelSupported
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
+    @ParallelSupported
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
 
     /**
@@ -613,6 +658,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
+    @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
 
     /**
@@ -623,23 +669,30 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             Supplier<Map<K, List<U>>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
+    @ParallelSupported
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream);
 
+    @ParallelSupported
     public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
+    @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
@@ -649,6 +702,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate)
      */
+    @ParallelSupported
     public abstract Stream<Map.Entry<Boolean, List<T>>> partitionBy(final Predicate<? super T> predicate);
 
     /**
@@ -658,10 +712,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate, Collector)
      */
+    @ParallelSupported
     public abstract <A, D> Stream<Map.Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
+    @ParallelSupported
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
 
+    @ParallelSupported
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
 
     /**
@@ -671,6 +728,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
+    @ParallelSupported
     public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
 
     /**
@@ -681,23 +739,30 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             Supplier<Map<K, List<U>>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
+    @ParallelSupported
     public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream);
 
+    @ParallelSupported
     public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
 
+    @ParallelSupported
     public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
+    @ParallelSupported
     public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
@@ -707,6 +772,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate)
      */
+    @ParallelSupported
     public abstract EntryStream<Boolean, List<T>> partitionByToEntry(final Predicate<? super T> predicate);
 
     /**
@@ -716,40 +782,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate, Collector)
      */
+    @ParallelSupported
     public abstract <A, D> EntryStream<Boolean, D> partitionByToEntry(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
-
-    /**
-     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<Set<T>> splitToSet(int size);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToSet(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @return
-     */
-    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
@@ -762,6 +796,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction);
 
     /**
@@ -775,6 +810,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param collector
      * @return
      */
+    @SequentialOnly
     public abstract <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector);
 
     /**
@@ -798,6 +834,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator);
 
     /**
@@ -825,7 +862,43 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator);
+
+    /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param size
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<Set<T>> splitToSet(int size);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToSet(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @param seedUpdate
+     * @return
+     */
+    @SequentialOnly
+    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>
@@ -837,17 +910,16 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param delimiter
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> intersperse(T delimiter);
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
+     * Distinct by the value mapped from <code>keyExtractor</code> 
      * 
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
+    @ParallelSupported
     public abstract Stream<T> distinctBy(Function<? super T, ?> keyExtractor);
 
     /**
@@ -858,6 +930,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> top(int n);
 
     /**
@@ -868,6 +941,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param comparator
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> top(int n, Comparator<? super T> comparator);
 
     /**
@@ -885,17 +959,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *                   {@code Comparator} to be used to compare stream elements
      * @return the new stream
      */
+    @ParallelSupported
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
+    @ParallelSupported
     public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyExtractor);
 
+    @ParallelSupported
     public abstract Stream<T> sortedByInt(ToIntFunction<? super T> keyExtractor);
 
+    @ParallelSupported
     public abstract Stream<T> sortedByLong(ToLongFunction<? super T> keyExtractor);
 
+    @ParallelSupported
     public abstract Stream<T> sortedByDouble(ToDoubleFunction<? super T> keyExtractor);
 
+    @ParallelSupported
     public abstract <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E;
 
     /**
@@ -909,9 +989,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
+    @SequentialOnly
     public abstract <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
             final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2;
 
+    @ParallelSupported
     public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E;
 
     /**
@@ -921,8 +1003,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
+    @ParallelSupported
     public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action) throws E;
 
     /**
@@ -932,21 +1016,29 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
+    @ParallelSupported
     public abstract <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> boolean anyMatch(Try.Predicate<? super T, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> boolean allMatch(Try.Predicate<? super T, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> boolean noneMatch(Try.Predicate<? super T, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> Nullable<T> findFirst(Try.Predicate<? super T, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <E extends Exception> Nullable<T> findLast(Try.Predicate<? super T, E> predicate) throws E;
 
+    @SequentialOnly
     public abstract <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(Try.Predicate<? super T, E> predicateForFirst,
             Try.Predicate<? super T, E2> predicateForLast) throws E, E2;
 
+    @ParallelSupported
     public abstract <E extends Exception> Nullable<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
@@ -957,6 +1049,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U, E extends Exception> Nullable<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
@@ -967,6 +1060,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U, E extends Exception> Nullable<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
@@ -977,6 +1071,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
+    @ParallelSupported
     public abstract <U, E extends Exception> Nullable<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
@@ -988,6 +1083,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
+    @SequentialOnly
     public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final U seed,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
@@ -1000,17 +1096,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
+    @SequentialOnly
     public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
+    @ParallelSupported
     public abstract <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
+    @ParallelSupported
     public abstract <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
+    @SequentialOnly
     public abstract boolean containsAll(T... a);
 
+    @SequentialOnly
     public abstract boolean containsAll(Collection<? extends T> c);
 
     /**
@@ -1040,6 +1142,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * from the array generator is not a supertype of the runtime type of every
      * element in this stream
      */
+    @SequentialOnly
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
     /**
@@ -1049,6 +1152,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function)
      */
+    @ParallelSupported
     public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         return ImmutableMap.of(toMap(keyExtractor, valueMapper));
     }
@@ -1061,6 +1165,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function)
      */
+    @ParallelSupported
     public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
         return ImmutableMap.of(toMap(keyExtractor, valueMapper, mergeFunction));
@@ -1073,6 +1178,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function)
      */
+    @ParallelSupported
     public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
@@ -1083,6 +1189,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
+    @ParallelSupported
     public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction);
 
@@ -1094,6 +1201,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
 
@@ -1106,6 +1214,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
@@ -1116,6 +1225,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
+    @ParallelSupported
     public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
     /**
@@ -1126,6 +1236,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
+    @ParallelSupported
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory);
 
@@ -1137,6 +1248,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
+    @ParallelSupported
     public abstract <K, U, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             final Collector<? super U, A, D> downstream);
 
@@ -1149,6 +1261,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory);
 
@@ -1158,6 +1271,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function)
      */
+    @ParallelSupported
     public abstract <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> classifier);
 
     /**
@@ -1167,8 +1281,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, M extends Map<K, List<T>>> M groupTo(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory);
 
+    @ParallelSupported
     public abstract <K, U> Map<K, List<U>> groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
@@ -1179,6 +1295,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
 
@@ -1188,6 +1305,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate)
      */
+    @ParallelSupported
     public abstract Map<Boolean, List<T>> partitionTo(final Predicate<? super T> predicate);
 
     /**
@@ -1197,6 +1315,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#partitioningBy(Predicate, Collector)
      */
+    @ParallelSupported
     public abstract <A, D> Map<Boolean, D> partitionTo(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
     /**
@@ -1205,6 +1324,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
+    @ParallelSupported
     public abstract <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor);
 
     /**
@@ -1214,6 +1334,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Supplier<M> mapFactory);
 
@@ -1224,6 +1345,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
+    @ParallelSupported
     public abstract <K, U> ListMultimap<K, U> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
@@ -1234,21 +1356,25 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
+    @ParallelSupported
     public abstract <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
 
+    @SequentialOnly
     public abstract Matrix<T> toMatrix(Class<T> type);
 
     /**
      * 
      * @return
      */
+    @SequentialOnly
     public abstract DataSet toDataSet();
 
     /**
      * @param isFirstHeader
      * @return
      */
+    @SequentialOnly
     public abstract DataSet toDataSet(boolean isFirstHeader);
 
     /**
@@ -1256,6 +1382,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param columnNames it can be null or empty if this is Map or entity stream.
      * @return
      */
+    @SequentialOnly
     public abstract DataSet toDataSet(final List<String> columnNames);
 
     /**
@@ -1307,6 +1434,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *                    function for combining two values
      * @return the result of the reduction
      */
+    @ParallelSupported
     public abstract T reduce(T identity, BinaryOperator<T> accumulator);
 
     /**
@@ -1346,6 +1474,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see #min(Comparator)
      * @see #max(Comparator)
      */
+    @ParallelSupported
     public abstract Nullable<T> reduce(BinaryOperator<T> accumulator);
 
     /**
@@ -1395,6 +1524,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see #reduce(BinaryOperator)
      * @see #reduce(Object, BinaryOperator)
      */
+    @ParallelSupported
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
@@ -1408,6 +1538,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
      */
+    @ParallelSupported
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 
     /**
@@ -1461,6 +1592,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *                    compatible with the accumulator function
      * @return the result of the reduction
      */
+    @ParallelSupported
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     /**
@@ -1473,6 +1605,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
      */
+    @ParallelSupported
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator);
 
     /**
@@ -1527,16 +1660,22 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see #collect(Supplier, BiConsumer, BiConsumer)
      * @see Collectors
      */
+    @ParallelSupported
     public abstract <R, A> R collect(Collector<? super T, A, R> collector);
 
+    @ParallelSupported
     public abstract <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector);
 
+    @ParallelSupported
     public abstract <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> finisher);
 
+    @ParallelSupported
     public abstract <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> finisher);
 
+    @SequentialOnly
     public abstract <R> R toListAndThen(Function<? super List<T>, R> func);
 
+    @SequentialOnly
     public abstract <R> R toSetAndThen(Function<? super Set<T>, R> func);
 
     /**
@@ -1545,6 +1684,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
+    @SequentialOnly
     public abstract Nullable<T> head();
 
     /**
@@ -1553,6 +1693,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> tail();
 
     /**
@@ -1564,6 +1705,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> headd();
 
     /**
@@ -1575,8 +1717,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
+    @SequentialOnly
     public abstract Nullable<T> taill();
 
+    @SequentialOnly
     public abstract Pair<Nullable<T>, Stream<T>> headAndTail();
 
     /**
@@ -1586,6 +1730,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
+    @SequentialOnly
     public abstract Pair<Stream<T>, Nullable<T>> headAndTaill();
 
     /**
@@ -1595,6 +1740,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> last(int n);
 
     /**
@@ -1607,6 +1753,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> skipLast(int n);
 
     /**
@@ -1622,9 +1769,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return an {@code Optional} describing the minimum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
+    @ParallelSupported
     public abstract Nullable<T> min(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
+    @ParallelSupported
     public Nullable<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
@@ -1645,9 +1794,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return an {@code Optional} describing the maximum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
+    @ParallelSupported
     public abstract Nullable<T> max(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
+    @ParallelSupported
     public Nullable<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
@@ -1660,37 +1811,52 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param comparator
      * @return Nullable.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
+    @ParallelSupported
     public abstract Nullable<T> kthLargest(int k, Comparator<? super T> comparator);
 
+    @ParallelSupported
     public abstract int sumInt(ToIntFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract long sumLong(ToLongFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract double sumDouble(ToDoubleFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract OptionalDouble averageInt(ToIntFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract OptionalDouble averageLong(ToLongFunction<? super T> mapper);
 
+    @ParallelSupported
     public abstract OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper);
 
+    @SequentialOnly
     public abstract Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator);
 
+    @SequentialOnly
     public abstract Stream<List<T>> combinations();
 
+    @SequentialOnly
     public abstract Stream<List<T>> combinations(int len);
 
+    @SequentialOnly
     public abstract Stream<List<T>> permutations();
 
+    @SequentialOnly
     public abstract Stream<List<T>> orderedPermutations();
 
+    @SequentialOnly
     public abstract Stream<List<T>> orderedPermutations(Comparator<? super T> comparator);
 
+    @SequentialOnly
     @SafeVarargs
     public final Stream<List<T>> cartesianProduct(Collection<? extends T>... cs) {
         return cartesianProduct(Arrays.asList(cs));
     }
 
+    @SequentialOnly
     public abstract Stream<List<T>> cartesianProduct(Collection<? extends Collection<? extends T>> cs);
 
     /**
@@ -1703,6 +1869,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> innerJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
 
     /**
@@ -1714,6 +1881,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> innerJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
 
     /**
@@ -1726,6 +1894,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> fullJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
 
     /**
@@ -1736,6 +1905,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> fullJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
 
     /**
@@ -1748,6 +1918,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> leftJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
 
     /**
@@ -1758,6 +1929,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> leftJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
 
     /**
@@ -1770,6 +1942,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> rightJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
 
     /**
@@ -1780,10 +1953,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
+    @ParallelSupported
     public abstract <U> Stream<Pair<T, U>> rightJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
 
+    @SequentialOnly
     public abstract boolean hasDuplicates();
 
+    @SequentialOnly
     public abstract Stream<T> skipNull();
 
     /**
@@ -1794,6 +1970,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see IntList#intersection(IntList)
      */
+    @ParallelSupported
     public abstract Stream<T> intersection(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
@@ -1804,9 +1981,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see IntList#difference(IntList)
      */
+    @ParallelSupported
     public abstract Stream<T> difference(Function<? super T, ?> mapper, Collection<?> c);
 
     @SafeVarargs
+    @SequentialOnly
     public final Stream<T> append(T... a) {
         if (N.isNullOrEmpty(a)) {
             return this;
@@ -1815,9 +1994,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return append(Arrays.asList(a));
     }
 
+    @SequentialOnly
     public abstract Stream<T> append(Collection<? extends T> c);
 
     @SafeVarargs
+    @SequentialOnly
     public final Stream<T> prepend(T... a) {
         if (N.isNullOrEmpty(a)) {
             return this;
@@ -1826,6 +2007,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return prepend(Arrays.asList(a));
     }
 
+    @SequentialOnly
     public abstract Stream<T> prepend(Collection<? extends T> c);
 
     /**
@@ -1837,8 +2019,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param generator
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> cached(IntFunction<T[]> generator);
 
+    @SequentialOnly
     public abstract Stream<T> queued();
 
     /**
@@ -1847,6 +2031,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize Default value is 8
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> queued(int queueSize);
 
     /**
@@ -1855,32 +2040,44 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
+    @SequentialOnly
     public abstract Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector);
 
+    @SequentialOnly
     public abstract <T2, R> Stream<R> zipWith(final Stream<T2> b, final BiFunction<? super T, ? super T2, R> zipFunction);
 
+    @SequentialOnly
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
+    @SequentialOnly
     public abstract <T2, R> Stream<R> zipWith(final Stream<T2> b, final T valueForNoneA, final T2 valueForNoneB,
             final BiFunction<? super T, ? super T2, R> zipFunction);
 
+    @SequentialOnly
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final T valueForNoneA, final T2 valueForNoneB, final T3 valueForNoneC,
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
+    @SequentialOnly
     public abstract <E extends Exception> long persist(File file, Try.Function<? super T, String, E> toLine) throws E;
 
+    @SequentialOnly
     public abstract <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E;
 
+    @SequentialOnly
     public abstract <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E;
 
+    @SequentialOnly
     public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
+    @SequentialOnly
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
+    @SequentialOnly
     public abstract java.util.stream.Stream<T> toJdkStream();
 
+    @SequentialOnly
     @Override
     public ObjIterator<T> iterator() {
         return iteratorEx();
@@ -1888,6 +2085,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     abstract ObjIteratorEx<T> iteratorEx();
 
+    @SequentialOnly
     @Override
     public <R> R __(Function<? super Stream<T>, R> transfer) {
         return transfer.apply(this);
@@ -1909,6 +2107,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param valueMapper
      * @return
      */
+    @SequentialOnly
     @Beta
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
@@ -2750,7 +2949,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static <T> Stream<T> repeat(final T element, final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return empty();
@@ -8410,14 +8609,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         REVERSED, SHUFFLED, ROTATED, DISTINCT, HAS_DUPLICATE, //
         APPEND, PREPEND, CACHED, INDEXED, SKIP, SKIP_LAST, LIMIT, STEP, //
         QUEUED, MERGE, ZIP_WITH, PERSIST_FILE_OUTPUT_STREAM_WRITE, //
-        COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, //
-        CARTESIAN_PRODUCT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN, //
+        COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, CARTESIAN_PRODUCT, //
         COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, FOR_EACH_WITH_RESULT, //
         COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
         LAST, HEAD, HEADD, TAIL, TAILL, HEAD_AND_TAIL, HEAD_AND_TAILL, //
         TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
         BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
-        PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST_FILE, ON_CLOSE, CLOSE;
+        PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST, ON_CLOSE, CLOSE;
     }
 
     /**
@@ -8437,7 +8635,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, PARTITION_BY, PARTITION_BY_TO_ENTRY, PARTITION_TO, TO_MAP, TO_MULTIMAP, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, FIND_ANY, //
-        REDUCE, COLLECT, PERSIST_DB;
+        REDUCE, COLLECT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN;
     }
 
     /**

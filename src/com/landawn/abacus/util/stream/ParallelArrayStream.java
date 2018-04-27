@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -27,7 +25,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -50,7 +47,6 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -89,7 +85,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().filter(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
+            return super.filter(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -184,7 +180,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().takeWhile(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
+            return super.takeWhile(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -236,7 +232,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().dropWhile(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
+            return super.dropWhile(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -309,7 +305,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().map(mapper).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+            return super.map(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -631,93 +627,12 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
-        N.requireNonNull(mapperForFirst);
-
-        if (fromIndex == toIndex) {
-            return this;
-        } else if (toIndex - fromIndex == 1) {
-            return map(mapperForFirst);
-        } else {
-            final Iterator<T> iter = new ObjIteratorEx<T>() {
-                private int cursor = fromIndex;
-
-                @Override
-                public boolean hasNext() {
-                    return cursor < toIndex;
-                }
-
-                @Override
-                public T next() {
-                    if (cursor >= toIndex) {
-                        throw new NoSuchElementException();
-                    }
-
-                    if (cursor == fromIndex) {
-                        return mapperForFirst.apply(elements[cursor++]);
-                    } else {
-                        return elements[cursor++];
-                    }
-                }
-
-                //                @Override
-                //                public long count() {
-                //                    return toIndex - cursor;
-                //                }
-                //
-                //                @Override
-                //                public void skip(long n) {
-                //                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-                //                }
-
-                @Override
-                public long count() {
-                    if (hasNext()) {
-                        next();
-                        return toIndex - cursor + 1;
-                    }
-
-                    return 0;
-                }
-
-                @Override
-                public void skip(long n) {
-                    if (hasNext()) {
-                        next();
-                        n -= 1;
-                        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-                    }
-                }
-
-                @Override
-                public <A> A[] toArray(A[] a) {
-                    a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
-
-                    for (int i = 0, len = toIndex - cursor; i < len; i++) {
-                        if (cursor == fromIndex) {
-                            a[i] = (A) mapperForFirst.apply(elements[cursor++]);
-                        } else {
-                            a[i] = (A) elements[cursor++];
-                        }
-                    }
-
-                    return a;
-                }
-            };
-
-            return new ParallelIteratorStream<>(iter, false, null, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @SuppressWarnings("resource")
-    @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
         N.requireNonNull(mapperForFirst);
         N.requireNonNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapFirstOrElse(mapperForFirst, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
-                    closeHandlers);
+            return super.mapFirstOrElse(mapperForFirst, mapperForElse);
         }
 
         if (fromIndex == toIndex) {
@@ -728,73 +643,10 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
             final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
 
-            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers).map(mapperForElse2)
-                    .prepend(new ArrayStream<>(elements, fromIndex, fromIndex + 1).map(mapperForFirst2));
+            return skip(1).map(mapperForElse2).prepend(Stream.of(elements[fromIndex]).map(mapperForFirst2));
         }
     }
 
-    @Override
-    public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
-        N.requireNonNull(mapperForLast);
-
-        if (fromIndex == toIndex) {
-            return this;
-        } else if (toIndex - fromIndex == 1) {
-            return map(mapperForLast);
-        } else {
-            final Iterator<T> iter = new ObjIteratorEx<T>() {
-                private int last = toIndex - 1;
-                private int cursor = fromIndex;
-
-                @Override
-                public boolean hasNext() {
-                    return cursor < toIndex;
-                }
-
-                @Override
-                public T next() {
-                    if (cursor >= toIndex) {
-                        throw new NoSuchElementException();
-                    }
-
-                    if (cursor == last) {
-                        return mapperForLast.apply(elements[cursor++]);
-                    } else {
-                        return elements[cursor++];
-                    }
-                }
-
-                //                @Override
-                //                public long count() {
-                //                    return toIndex - cursor;
-                //                }
-                //
-                //                @Override
-                //                public void skip(long n) {
-                //                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-                //                }
-
-                @Override
-                public <A> A[] toArray(A[] a) {
-                    a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
-
-                    for (int i = 0, len = toIndex - cursor; i < len; i++) {
-                        if (cursor == last) {
-                            a[i] = (A) mapperForLast.apply(elements[cursor++]);
-                        } else {
-                            a[i] = (A) elements[cursor++];
-                        }
-                    }
-
-                    return a;
-                }
-            };
-
-            return new ParallelIteratorStream<>(iter, false, null, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @SuppressWarnings("resource")
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
         N.requireNonNull(mapperForLast);
@@ -813,15 +665,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final Function<T, R> mapperForLast2 = (Function<T, R>) mapperForLast;
             final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
 
-            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers).map(mapperForElse2)
-                    .append(new ArrayStream<>(elements, toIndex - 1, toIndex).map(mapperForLast2));
+            return limit(toIndex - fromIndex - 1).map(mapperForElse2).append(Stream.of(elements[toIndex - 1]).map(mapperForLast2));
         }
     }
 
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToChar(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -893,7 +744,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToByte(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -965,7 +816,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToShort(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -1037,7 +888,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToInt(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -1109,7 +960,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToLong(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -1181,7 +1032,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToFloat(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -1253,7 +1104,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToDouble(mapper);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -2538,59 +2389,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        return new ParallelIteratorStream<>(sequential().split(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<List<T>> splitToList(final int size) {
-        return new ParallelIteratorStream<>(sequential().splitToList(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<Set<T>> splitToSet(final int size) {
-        return new ParallelIteratorStream<>(sequential().splitToSet(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new ParallelIteratorStream<>(sequential().splitToList(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor,
-                closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new ParallelIteratorStream<>(sequential().splitToSet(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<Stream<T>> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        final Stream<T>[] a = new Stream[2];
-        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, fromIndex, middleIndex, sorted, cmp, null);
-        a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, middleIndex, toIndex, sorted, cmp, null);
-
-        return new ParallelArrayStream<>(a, 0, a.length, false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().distinctBy(keyExtractor).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
@@ -2648,7 +2446,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().peek(action).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+            return super.peek(action);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -2722,7 +2520,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> limit(long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+        N.checkArgNotNegative(maxSize, "maxSize");
 
         if (maxSize >= toIndex - fromIndex) {
             return this;
@@ -2733,7 +2531,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> skip(long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
@@ -2749,7 +2547,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
         if (maxThreadNum <= 1) {
-            sequential().forEach(action);
+            super.forEach(action);
             return;
         }
 
@@ -2826,7 +2624,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
-            sequential().forEachPair(action, increment);
+            super.forEachPair(action, increment);
             return;
         }
 
@@ -2871,7 +2669,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
-            sequential().forEachTriple(action, increment);
+            super.forEachTriple(action, increment);
             return;
         }
 
@@ -2929,7 +2727,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(keyExtractor, valueMapper, mapFactory);
+            return super.toMap(keyExtractor, valueMapper, mapFactory);
         }
 
         // return collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
@@ -3031,7 +2829,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(classifier, downstream, mapFactory);
+            return super.toMap(classifier, downstream, mapFactory);
         }
 
         // return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
@@ -3178,7 +2976,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
+            return super.toMultimap(keyExtractor, valueMapper, mapFactory);
         }
 
         // return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
@@ -3305,7 +3103,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public T reduce(final T identity, final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
-            return sequential().reduce(identity, accumulator);
+            return super.reduce(identity, accumulator);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -3395,7 +3193,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Nullable<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
-            return sequential().reduce(accumulator);
+            return super.reduce(accumulator);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -3502,7 +3300,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator, final BinaryOperator<U> combiner) {
         if (maxThreadNum <= 1) {
-            return sequential().reduce(identity, accumulator, combiner);
+            return super.reduce(identity, accumulator, combiner);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -3594,7 +3392,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator, final BiConsumer<R, R> combiner) {
         if (maxThreadNum <= 1) {
-            return sequential().collect(supplier, accumulator, combiner);
+            return super.collect(supplier, accumulator, combiner);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -3797,7 +3595,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (toIndex - fromIndex <= n) {
             return this;
@@ -3808,7 +3606,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> skipLast(int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
@@ -3844,14 +3642,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> reversed() {
-        return new ParallelIteratorStream<>(sequential().reversed().iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().anyMatch(predicate);
+            return super.anyMatch(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -3926,7 +3719,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().allMatch(predicate);
+            return super.allMatch(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -4001,7 +3794,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().noneMatch(predicate);
+            return super.noneMatch(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -4076,7 +3869,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findFirst(predicate);
+            return super.findFirst(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -4166,7 +3959,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findLast(predicate);
+            return super.findLast(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -4256,7 +4049,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findAny(predicate);
+            return super.findAny(predicate);
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -4382,16 +4175,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> cached() {
-        return this;
-    }
-
-    @Override
-    public Stream<T> queued(int queueSize) {
-        return this;
-    }
-
-    @Override
     public Stream<T> append(Stream<T> stream) {
         return new ParallelIteratorStream<>(Stream.concat(this, stream), false, null, maxThreadNum, splitor, closeHandlers);
     }
@@ -4428,114 +4211,114 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                 splitor, closeHandlers);
     }
 
-    @Override
-    public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
-        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
-                batchInterval);
-
-        if (maxThreadNum <= 1) {
-            return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
-        }
-
-        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final AtomicLong result = new AtomicLong();
-
-        if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
-
-            for (int i = 0; i < threadNum; i++) {
-                final int sliceIndex = i;
-
-                futureList.add(asyncExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        int cursor = fromIndex + sliceIndex * sliceSize;
-                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                        long cnt = 0;
-
-                        try {
-                            while (cursor < to && eHolder.value() == null) {
-                                stmtSetter.accept(stmt, elements[cursor++]);
-                                stmt.addBatch();
-
-                                if ((++cnt % batchSize) == 0) {
-                                    stmt.executeBatch();
-                                    stmt.clearBatch();
-
-                                    if (batchInterval > 0) {
-                                        N.sleep(batchInterval);
-                                    }
-                                }
-                            }
-
-                            if ((cnt % batchSize) > 0) {
-                                stmt.executeBatch();
-                                stmt.clearBatch();
-                            }
-
-                            result.addAndGet(cnt);
-                        } catch (Throwable e) {
-                            setError(eHolder, e);
-                        }
-                    }
-                }));
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        long cnt = 0;
-                        T next = null;
-
-                        try {
-                            while (eHolder.value() == null) {
-                                synchronized (elements) {
-                                    if (cursor.intValue() < toIndex) {
-                                        next = elements[cursor.getAndIncrement()];
-                                    } else {
-                                        break;
-                                    }
-                                }
-
-                                stmtSetter.accept(stmt, next);
-                                stmt.addBatch();
-
-                                if ((++cnt % batchSize) == 0) {
-                                    stmt.executeBatch();
-                                    stmt.clearBatch();
-
-                                    if (batchInterval > 0) {
-                                        N.sleep(batchInterval);
-                                    }
-                                }
-                            }
-
-                            if ((cnt % batchSize) > 0) {
-                                stmt.executeBatch();
-                                stmt.clearBatch();
-                            }
-
-                            result.addAndGet(cnt);
-                        } catch (Throwable e) {
-                            setError(eHolder, e);
-                        }
-                    }
-
-                }));
-            }
-        }
-
-        complete(futureList, eHolder);
-
-        return result.longValue();
-    }
+    //    @Override
+    //    public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
+    //            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+    //        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+    //                batchInterval);
+    //
+    //        if (maxThreadNum <= 1) {
+    //            return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
+    //        }
+    //
+    //        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+    //        final Holder<Throwable> eHolder = new Holder<>();
+    //        final AtomicLong result = new AtomicLong();
+    //
+    //        if (splitor == Splitor.ARRAY) {
+    //            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                final int sliceIndex = i;
+    //
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
+    //                    @Override
+    //                    public void run() {
+    //                        int cursor = fromIndex + sliceIndex * sliceSize;
+    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+    //                        long cnt = 0;
+    //
+    //                        try {
+    //                            while (cursor < to && eHolder.value() == null) {
+    //                                stmtSetter.accept(stmt, elements[cursor++]);
+    //                                stmt.addBatch();
+    //
+    //                                if ((++cnt % batchSize) == 0) {
+    //                                    stmt.executeBatch();
+    //                                    stmt.clearBatch();
+    //
+    //                                    if (batchInterval > 0) {
+    //                                        N.sleep(batchInterval);
+    //                                    }
+    //                                }
+    //                            }
+    //
+    //                            if ((cnt % batchSize) > 0) {
+    //                                stmt.executeBatch();
+    //                                stmt.clearBatch();
+    //                            }
+    //
+    //                            result.addAndGet(cnt);
+    //                        } catch (Throwable e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //                    }
+    //                }));
+    //            }
+    //        } else {
+    //            final MutableInt cursor = MutableInt.of(fromIndex);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
+    //
+    //                    @Override
+    //                    public void run() {
+    //                        long cnt = 0;
+    //                        T next = null;
+    //
+    //                        try {
+    //                            while (eHolder.value() == null) {
+    //                                synchronized (elements) {
+    //                                    if (cursor.intValue() < toIndex) {
+    //                                        next = elements[cursor.getAndIncrement()];
+    //                                    } else {
+    //                                        break;
+    //                                    }
+    //                                }
+    //
+    //                                stmtSetter.accept(stmt, next);
+    //                                stmt.addBatch();
+    //
+    //                                if ((++cnt % batchSize) == 0) {
+    //                                    stmt.executeBatch();
+    //                                    stmt.clearBatch();
+    //
+    //                                    if (batchInterval > 0) {
+    //                                        N.sleep(batchInterval);
+    //                                    }
+    //                                }
+    //                            }
+    //
+    //                            if ((cnt % batchSize) > 0) {
+    //                                stmt.executeBatch();
+    //                                stmt.clearBatch();
+    //                            }
+    //
+    //                            result.addAndGet(cnt);
+    //                        } catch (Throwable e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //                    }
+    //
+    //                }));
+    //            }
+    //        }
+    //
+    //        complete(futureList, eHolder);
+    //
+    //        return result.longValue();
+    //    }
 
     @Override
     public boolean isParallel() {

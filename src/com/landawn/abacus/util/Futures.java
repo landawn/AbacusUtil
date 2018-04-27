@@ -503,23 +503,23 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static <T> Iterator<T> iterate(final CompletableFuture<? extends T>... cfs) {
+    public static <T> ObjIterator<T> iterate(final CompletableFuture<? extends T>... cfs) {
         return iterate02(Arrays.asList(cfs));
     }
 
-    public static <T> Iterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    public static <T> ObjIterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate02(cfs);
     }
 
-    public static <T> Iterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
+    public static <T> ObjIterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
         return iterate02(cfs, timeout, unit);
     }
 
-    private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    private static <T> ObjIterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate02(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
+    private static <T> ObjIterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
         return new ObjIterator<T>() {
             private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeout, unit);
 
@@ -540,24 +540,24 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static <T> Iterator<Pair<T, Exception>> iteratte(final CompletableFuture<? extends T>... cfs) {
+    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final CompletableFuture<? extends T>... cfs) {
         return iterate22(Arrays.asList(cfs));
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs);
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
             final TimeUnit unit) {
         return iterate22(cfs, timeout, unit);
     }
 
-    private static <T> Iterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    private static <T> ObjIterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static <T> Iterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+    private static <T> ObjIterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
             final TimeUnit unit) {
         final ExecutorService executor = Executors.newFixedThreadPool(cfs.size());
         final BlockingQueue<Pair<T, Exception>> queue = new ArrayBlockingQueue<>(cfs.size());

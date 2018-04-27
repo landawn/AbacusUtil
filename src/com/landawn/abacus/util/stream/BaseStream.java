@@ -96,6 +96,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *                  should be included
      * @return the new stream
      */
+    @ParallelSupported
     S filter(P predicate);
 
     /**
@@ -106,6 +107,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param predicate
      * @return
      */
+    @ParallelSupported
     S takeWhile(P predicate);
 
     /**
@@ -116,21 +118,26 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param predicate
      * @return
      */
+    @ParallelSupported
     S dropWhile(P predicate);
 
     /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after removing and consuming until the specified <code>predicate</code> return false.
-     * If there is no more elements then an empty stream will be returned.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
+     * 
+     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
+     * 
      * 
      * @param predicate
      * @param consumer
      * @return 
      */
+    @ParallelSupported
     S dropWhile(P predicate, C consumer);
 
+    @ParallelSupported
     S removeIf(P predicate);
 
+    @ParallelSupported
     S removeIf(P predicate, C consumer);
 
     /**
@@ -139,6 +146,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param size
      * @return
      */
+    @SequentialOnly
     Stream<S> split(int size);
 
     /**
@@ -150,6 +158,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param size
      * @return
      */
+    @SequentialOnly
     public abstract Stream<PL> splitToList(int size);
 
     /**
@@ -163,6 +172,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param predicate
      * @return
      */
+    @SequentialOnly
     Stream<S> split(final P predicate);
 
     /**
@@ -175,6 +185,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param predicate
      * @return
      */
+    @SequentialOnly
     Stream<PL> splitToList(final P predicate);
 
     /**
@@ -196,6 +207,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param seedUpdate
      * @return
      */
+    @SequentialOnly
     <U> Stream<S> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
@@ -217,18 +229,22 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param seedUpdate
      * @return
      */
+    @SequentialOnly
     <U> Stream<PL> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
-     * Split the stream into two pieces at <code>where</code>
+     * Split the stream into two pieces at <code>where</code>.
+     * The first piece will be loaded into memory.
      * 
      * @param where
      * @return
      */
+    @SequentialOnly
     Stream<S> splitAt(int where);
 
     /**
      * Split the stream into two pieces at <code>where</code> turns to {@code false}
+     * The first piece will be loaded into memory.
      * 
      * <pre>
      * <code>
@@ -239,6 +255,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param where
      * @return
      */
+    @ParallelSupported
     Stream<S> splitBy(P where);
 
     /**
@@ -247,6 +264,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
+    @SequentialOnly
     Stream<S> sliding(int windowSize);
 
     /**
@@ -255,6 +273,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
+    @SequentialOnly
     Stream<PL> slidingToList(int windowSize);
 
     /**
@@ -287,6 +306,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param increment
      * @return
      */
+    @SequentialOnly
     Stream<S> sliding(int windowSize, int increment);
 
     /**
@@ -296,6 +316,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
+    @SequentialOnly
     Stream<PL> slidingToList(int windowSize, int increment);
 
     /**
@@ -306,6 +327,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see IntList#intersection(IntList)
      */
+    @SequentialOnly
     S intersection(Collection<?> c);
 
     /**
@@ -316,6 +338,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see IntList#difference(IntList)
      */
+    @SequentialOnly
     S difference(Collection<?> c);
 
     /**
@@ -326,6 +349,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see IntList#symmetricDifference(IntList)
      */
+    @SequentialOnly
     S symmetricDifference(Collection<T> c);
 
     /**
@@ -334,6 +358,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     Optional<Map<Percentage, T>> percentiles();
 
     /**
@@ -343,6 +368,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     S reversed();
 
     /**
@@ -352,6 +378,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     S shuffled();
 
     /**
@@ -361,6 +388,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     S shuffled(Random rnd);
 
     /**
@@ -370,6 +398,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     S rotated(int distance);
 
     /**
@@ -380,6 +409,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return the new stream
      */
+    @SequentialOnly
     S distinct();
 
     /**
@@ -391,12 +421,16 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return the new stream
      */
+    @ParallelSupported
     S sorted();
 
+    @ParallelSupported
     S reverseSorted();
 
+    @SequentialOnly
     S append(S s);
 
+    @SequentialOnly
     S prepend(S stream);
 
     /**
@@ -405,6 +439,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     S cached();
 
     /**
@@ -413,10 +448,13 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
+    @SequentialOnly
     Stream<IT> indexed();
 
+    @SequentialOnly
     String join(CharSequence delimiter);
 
+    @SequentialOnly
     String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
 
     /**
@@ -446,6 +484,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
+    @SequentialOnly
     S skip(long n);
 
     /**
@@ -458,6 +497,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param consumer
      * @return
      */
+    @ParallelSupported
     S skip(long n, C consumer);
 
     /**
@@ -485,8 +525,10 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
+    @SequentialOnly
     S limit(long maxSize);
 
+    @SequentialOnly
     S step(long step);
 
     /**
@@ -501,6 +543,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return the count of elements in this stream
      */
+    @SequentialOnly
     long count();
 
     /**
@@ -532,6 +575,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *                 they are consumed from the stream
      * @return this stream or a new stream with same elements.
      */
+    @ParallelSupported
     S peek(C action);
 
     /**
@@ -541,6 +585,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #peek(Object)
      */
+    @ParallelSupported
     S carry(C action);
 
     //    /**
@@ -683,8 +728,10 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     //     */
     //    OT findAny(P predicate);
 
+    @SequentialOnly
     OT first();
 
+    @SequentialOnly
     OT last();
 
     /**
@@ -695,24 +742,34 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return an array containing the elements of this stream
      */
+    @SequentialOnly
     A toArray();
 
+    @SequentialOnly
     List<T> toList();
 
+    @SequentialOnly
     Set<T> toSet();
 
+    @SequentialOnly
     ImmutableList<T> toImmutableList();
 
+    @SequentialOnly
     ImmutableSet<T> toImmutableSet();
 
+    @SequentialOnly
     <R extends Collection<T>> R toCollection(Supplier<R> supplier);
 
+    @SequentialOnly
     Multiset<T> toMultiset();
 
+    @SequentialOnly
     Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier);
 
+    @SequentialOnly
     LongMultiset<T> toLongMultiset();
 
+    @SequentialOnly
     LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier);
 
     /**
@@ -720,10 +777,88 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return the element iterator for this stream
      */
-
+    @SequentialOnly
     ImmutableIterator<T> iterator();
 
+    @SequentialOnly
     void println();
+
+    @SequentialOnly
+    <R> R __(Function<? super S, R> transfer);
+
+    //    /**
+    //     * Short-cut for s.parallel().__(op).sequential().
+    //     * 
+    //     * @param op
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
+    //
+    //    /**
+    //     * 
+    //     * Short-cut for s.parallel(maxThreadNum).__(op).sequential().
+    //     * 
+    //     * @param maxThreadNum
+    //     * @param op
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
+
+    @SequentialOnly
+    Try<S> tried();
+
+    //    /**
+    //     * Short-cut for s.parallel().__(op).sequential().
+    //     * 
+    //     * @param op
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
+    //
+    //    /**
+    //     * 
+    //     * Short-cut for s.parallel(maxThreadNum).__(op).sequential().
+    //     * 
+    //     * @param maxThreadNum
+    //     * @param op
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
+
+    /**
+     * Returns an equivalent stream with an additional close handler.  Close
+     * handlers are run when the {@link #close()} method
+     * is called on the stream, and are executed in the order they were
+     * added.  All close handlers are run, even if earlier close handlers throw
+     * exceptions.  If any close handler throws an exception, the first
+     * exception thrown will be relayed to the caller of {@code close()}, with
+     * any remaining exceptions added to that exception as suppressed exceptions
+     * (unless one of the remaining exceptions is the same exception as the
+     * first exception, since an exception cannot suppress itself.)  May
+     * return itself.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param closeHandler A task to execute when the stream is closed
+     * @return a stream with a handler that is run if the stream is closed
+     */
+    @SequentialOnly
+    S onClose(Runnable closeHandler);
+
+    /**
+     * Closes this stream, causing all close handlers for this stream pipeline
+     * to be called.
+     *
+     * @see AutoCloseable#close()
+     */
+    @SequentialOnly
+    @Override
+    void close();
 
     /**
      * Returns whether this stream, if a terminal operation were to be executed,
@@ -969,8 +1104,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     S splitor(Splitor splitor);
 
-    <R> R __(Function<? super S, R> transfer);
-
     //    /**
     //     * Short-cut for s.parallel().__(op).sequential().
     //     * 
@@ -990,37 +1123,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     //     */
     //    @SuppressWarnings("rawtypes")
     //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
-
-    Try<S> tried();
-
-    /**
-     * Returns an equivalent stream with an additional close handler.  Close
-     * handlers are run when the {@link #close()} method
-     * is called on the stream, and are executed in the order they were
-     * added.  All close handlers are run, even if earlier close handlers throw
-     * exceptions.  If any close handler throws an exception, the first
-     * exception thrown will be relayed to the caller of {@code close()}, with
-     * any remaining exceptions added to that exception as suppressed exceptions
-     * (unless one of the remaining exceptions is the same exception as the
-     * first exception, since an exception cannot suppress itself.)  May
-     * return itself.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param closeHandler A task to execute when the stream is closed
-     * @return a stream with a handler that is run if the stream is closed
-     */
-    S onClose(Runnable closeHandler);
-
-    /**
-     * Closes this stream, causing all close handlers for this stream pipeline
-     * to be called.
-     *
-     * @see AutoCloseable#close()
-     */
-    @Override
-    void close();
 
     public static enum Splitor {
         ARRAY, ITERATOR;

@@ -29,6 +29,18 @@ public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predi
     @Override
     boolean test(T value);
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static <T> Predicate<T> of(final Predicate<T> predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
+
     static <T> Predicate<T> alwaysTrue() {
         return Fn.alwaysTrue();
     }

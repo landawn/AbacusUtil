@@ -29,7 +29,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public abstract class ObjIterator<E> extends ImmutableIterator<E> {
+public abstract class ObjIterator<T> extends ImmutableIterator<T> {
     @SuppressWarnings("rawtypes")
     private static final ObjIterator EMPTY = new ObjIterator() {
         @Override
@@ -99,15 +99,6 @@ public abstract class ObjIterator<E> extends ImmutableIterator<E> {
             }
 
             @Override
-            public Object[] toArray() {
-                final Object[] res = new Object[toIndex - cursor];
-
-                N.copy(a, cursor, res, 0, res.length);
-
-                return res;
-            }
-
-            @Override
             public <A> A[] toArray(A[] output) {
                 if (output.length < toIndex - cursor) {
                     output = N.copyOf(output, toIndex - cursor);
@@ -153,8 +144,8 @@ public abstract class ObjIterator<E> extends ImmutableIterator<E> {
         return toList().toArray(a);
     }
 
-    public List<E> toList() {
-        final List<E> list = new ArrayList<>();
+    public List<T> toList() {
+        final List<T> list = new ArrayList<>();
 
         while (hasNext()) {
             list.add(next());
@@ -163,7 +154,7 @@ public abstract class ObjIterator<E> extends ImmutableIterator<E> {
         return list;
     }
 
-    public Stream<E> stream() {
+    public Stream<T> stream() {
         return Stream.of(this);
     }
 }

@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -82,6 +83,18 @@ public interface LongPredicate extends java.util.function.LongPredicate, Try.Lon
 
     @Override
     boolean test(long value);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static LongPredicate of(final LongPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     static LongPredicate equal(long targetLong) {
         return value -> value == targetLong;

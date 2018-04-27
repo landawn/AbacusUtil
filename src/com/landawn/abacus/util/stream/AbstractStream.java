@@ -44,6 +44,7 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
+import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
@@ -127,33 +128,29 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> skip(final long n, final Consumer<? super T> action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final Predicate<T> filter = isParallel() ? new Predicate<T>() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new Predicate<T>() {
-                @Override
-                public boolean test(T value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(T value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new Predicate<T>() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
 
-                @Override
-                public boolean test(T value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-
-            }, action);
-        }
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -235,7 +232,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> removeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -457,36 +454,21 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> sortedByInt(final ToIntFunction<? super T> keyExtractor) {
-        final Comparator<? super T> comparator = new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return N.compare(keyExtractor.applyAsInt(o1), keyExtractor.applyAsInt(o2));
-            }
-        };
+        final Comparator<? super T> comparator = Comparators.comparingInt(keyExtractor);
 
         return sorted(comparator);
     }
 
     @Override
     public Stream<T> sortedByLong(final ToLongFunction<? super T> keyExtractor) {
-        final Comparator<? super T> comparator = new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return N.compare(keyExtractor.applyAsLong(o1), keyExtractor.applyAsLong(o2));
-            }
-        };
+        final Comparator<? super T> comparator = Comparators.comparingLong(keyExtractor);
 
         return sorted(comparator);
     }
 
     @Override
     public Stream<T> sortedByDouble(final ToDoubleFunction<? super T> keyExtractor) {
-        final Comparator<? super T> comparator = new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return N.compare(keyExtractor.applyAsDouble(o1), keyExtractor.applyAsDouble(o2));
-            }
-        };
+        final Comparator<? super T> comparator = Comparators.comparingDouble(keyExtractor);
 
         return sorted(comparator);
     }
@@ -548,7 +530,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return this.newStream(new ObjIteratorEx<T>() {
+        return newStream(new ObjIteratorEx<T>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -581,7 +563,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Function<A, R> finisher = collector.finisher();
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return this.newStream(new ObjIteratorEx<R>() {
+        return newStream(new ObjIteratorEx<R>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -612,7 +594,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return this.newStream(new ObjIteratorEx<T>() {
+        return newStream(new ObjIteratorEx<T>() {
             private T res = null;
             private boolean isFirst = true;
 
@@ -637,7 +619,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return this.newStream(new ObjIteratorEx<R>() {
+        return newStream(new ObjIteratorEx<R>() {
             private R res = seed;
 
             @Override
@@ -962,32 +944,17 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor) {
-        return toMultimap(keyExtractor, new Function<T, T>() {
-            @Override
-            public T apply(T t) {
-                return t;
-            }
-        });
+        return toMultimap(keyExtractor, Fn.<T> identity());
     }
 
     @Override
     public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<M> mapFactory) {
-        return toMultimap(keyExtractor, new Function<T, T>() {
-            @Override
-            public T apply(T t) {
-                return t;
-            }
-        }, mapFactory);
+        return toMultimap(keyExtractor, Fn.<T> identity(), mapFactory);
     }
 
     @Override
     public <K, U> ListMultimap<K, U> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(keyExtractor, valueMapper, new Supplier<ListMultimap<K, U>>() {
-            @Override
-            public ListMultimap<K, U> get() {
-                return N.newListMultimap();
-            }
-        });
+        return toMultimap(keyExtractor, valueMapper, Fn.Suppliers.<K, U> ofListMultimap());
     }
 
     @Override
@@ -1745,21 +1712,6 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public Object[] toArray() {
-                if (initialized == false) {
-                    init();
-                }
-
-                final Object[] a = new Object[cursor];
-
-                for (int i = 0; i < cursor; i++) {
-                    a[i] = aar[cursor - i - 1];
-                }
-
-                return a;
-            }
-
-            @Override
             public <A> A[] toArray(A[] a) {
                 if (initialized == false) {
                     init();
@@ -1797,13 +1749,82 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> rotated(final int distance) {
-        return lazyLoad(new Function<Object[], Object[]>() {
+        return newStream(new ObjIteratorEx<T>() {
+            private boolean initialized = false;
+            private T[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public Object[] apply(final Object[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                if (initialized == false) {
+                    init();
+                }
+
+                a = a.length >= len - cnt ? a : (A[]) N.newArray(a.getClass().getComponentType(), len - cnt);
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = (A) aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false, null);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = (T[]) AbstractStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted, distance == 0 ? cmp : null);
     }
 
     @Override
@@ -2329,6 +2350,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 ObjectFactory.recycle(bw);
             }
         }
+
         return cnt;
     }
 

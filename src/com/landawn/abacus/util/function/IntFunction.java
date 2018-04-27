@@ -44,6 +44,9 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn.Factory;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableMap;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
@@ -250,5 +253,41 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R>, Try.I
 
     public static <K, E> IntFunction<SetMultimap<K, E>> ofSetMultimap() {
         return Factory.ofSetMultimap();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static IntFunction<ImmutableList<?>> ofImmutableList() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static IntFunction<ImmutableSet<?>> ofImmutableSet() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static IntFunction<ImmutableMap<?, ?>> ofImmutableMap() {
+        throw new UnsupportedOperationException();
     }
 }

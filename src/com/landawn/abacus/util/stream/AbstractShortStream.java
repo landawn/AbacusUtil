@@ -80,31 +80,29 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream skip(final long n, final ShortConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final ShortPredicate filter = isParallel() ? new ShortPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new ShortPredicate() {
-                @Override
-                public boolean test(short value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(short value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new ShortPredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new ShortPredicate() {
-                @Override
-                public boolean test(short value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        }
+            @Override
+            public boolean test(short value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
+
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -240,7 +238,7 @@ abstract class AbstractShortStream extends ShortStream {
     public ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
         final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
 
@@ -270,7 +268,7 @@ abstract class AbstractShortStream extends ShortStream {
     public ShortStream scan(final ShortBiFunction<Short> accumulator) {
         final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private short res = 0;
             private boolean isFirst = true;
 
@@ -295,7 +293,7 @@ abstract class AbstractShortStream extends ShortStream {
     public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator) {
         final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private short res = seed;
 
             @Override
@@ -632,13 +630,82 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream rotated(final int distance) {
-        return lazyLoad(new Function<short[], short[]>() {
+        return newStream(new ShortIteratorEx() {
+            private boolean initialized = false;
+            private short[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public short[] apply(final short[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public short[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final short[] a = new short[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractShortStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -918,6 +985,6 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

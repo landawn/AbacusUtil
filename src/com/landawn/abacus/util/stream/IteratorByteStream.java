@@ -14,9 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,7 @@ import java.util.Set;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -98,7 +97,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream filter(final BytePredicate predicate) {
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private boolean hasNext = false;
             private byte next = 0;
 
@@ -128,12 +127,12 @@ class IteratorByteStream extends AbstractByteStream {
 
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private byte next = 0;
@@ -164,12 +163,12 @@ class IteratorByteStream extends AbstractByteStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private boolean hasNext = false;
             private byte next = 0;
             private boolean dropped = false;
@@ -208,12 +207,12 @@ class IteratorByteStream extends AbstractByteStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -233,12 +232,12 @@ class IteratorByteStream extends AbstractByteStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -258,12 +257,12 @@ class IteratorByteStream extends AbstractByteStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        return new IteratorStream<>(new ObjIteratorEx<U>() {
+        return newStream(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -283,7 +282,7 @@ class IteratorByteStream extends AbstractByteStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -491,7 +490,7 @@ class IteratorByteStream extends AbstractByteStream {
     public Stream<ByteList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
-        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
+        return newStream(new ObjIteratorEx<ByteList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -522,12 +521,12 @@ class IteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
+        return newStream(new ObjIteratorEx<ByteList>() {
             private byte next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -566,12 +565,12 @@ class IteratorByteStream extends AbstractByteStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public <U> Stream<ByteList> splitToList(final U seed, final BiPredicate<? super Byte, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
+        return newStream(new ObjIteratorEx<ByteList>() {
             private byte next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -614,14 +613,14 @@ class IteratorByteStream extends AbstractByteStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
+        return newStream(new ObjIteratorEx<ByteList>() {
             private ByteList prev = null;
 
             @Override
@@ -673,12 +672,12 @@ class IteratorByteStream extends AbstractByteStream {
                 return prev = result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public ByteStream peek(final ByteConsumer action) {
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -691,14 +690,14 @@ class IteratorByteStream extends AbstractByteStream {
                 action.accept(next);
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ByteStream limit(final long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+        N.checkArgNotNegative(maxSize, "maxSize");
 
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private long cnt = 0;
 
             @Override
@@ -720,18 +719,18 @@ class IteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ByteStream skip(final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
-            return empty();
+            return this;
         }
 
-        return new IteratorByteStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private boolean skipped = false;
 
             @Override
@@ -783,7 +782,7 @@ class IteratorByteStream extends AbstractByteStream {
 
                 return elements.toArray();
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
@@ -800,29 +799,17 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteList toByteList() {
-        return ByteList.of(toArray());
+        return elements.toList();
     }
 
     @Override
     public List<Byte> toList() {
-        final List<Byte> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Byte> ofList());
     }
 
     @Override
     public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Byte> ofSet());
     }
 
     @Override
@@ -838,13 +825,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
+        return toMultiset(Fn.Suppliers.<Byte> ofMultiset());
     }
 
     @Override
@@ -860,13 +841,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
-        }
-
-        return result;
+        return toLongMultiset(Fn.Suppliers.<Byte> ofLongMultiset());
     }
 
     @Override
@@ -1186,7 +1161,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1206,7 +1181,7 @@ class IteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override

@@ -79,31 +79,29 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream skip(final long n, final LongConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final LongPredicate filter = isParallel() ? new LongPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new LongPredicate() {
-                @Override
-                public boolean test(long value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(long value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new LongPredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new LongPredicate() {
-                @Override
-                public boolean test(long value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        }
+            @Override
+            public boolean test(long value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
+
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -239,7 +237,7 @@ abstract class AbstractLongStream extends LongStream {
     public LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
         final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new LongIteratorEx() {
+        return newStream(new LongIteratorEx() {
             private boolean hasNext = false;
             private long next = 0;
 
@@ -269,7 +267,7 @@ abstract class AbstractLongStream extends LongStream {
     public LongStream scan(final LongBiFunction<Long> accumulator) {
         final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new LongIteratorEx() {
+        return newStream(new LongIteratorEx() {
             private long res = 0;
             private boolean isFirst = true;
 
@@ -294,7 +292,7 @@ abstract class AbstractLongStream extends LongStream {
     public LongStream scan(final long seed, final LongBiFunction<Long> accumulator) {
         final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new LongIteratorEx() {
+        return newStream(new LongIteratorEx() {
             private long res = seed;
 
             @Override
@@ -631,13 +629,82 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream rotated(final int distance) {
-        return lazyLoad(new Function<long[], long[]>() {
+        return newStream(new LongIteratorEx() {
+            private boolean initialized = false;
+            private long[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public long[] apply(final long[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public long[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final long[] a = new long[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractLongStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -916,6 +983,6 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

@@ -92,7 +92,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -120,12 +120,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -153,12 +153,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -193,12 +193,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -235,12 +235,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -277,12 +277,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        return new IteratorStream<>(new ObjIteratorEx<U>() {
+        return newStream(new ObjIteratorEx<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -319,7 +319,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -530,7 +530,7 @@ class ArrayShortStream extends AbstractShortStream {
     public Stream<ShortStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortStream>() {
+        return newStream(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -558,14 +558,14 @@ class ArrayShortStream extends AbstractShortStream {
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -593,12 +593,12 @@ class ArrayShortStream extends AbstractShortStream {
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortStream> split(final ShortPredicate predicate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortStream>() {
+        return newStream(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -628,12 +628,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return new ArrayShortStream(elements, from, cursor, sorted, null);
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -664,12 +664,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return new ShortList(N.copyOfRange(elements, from, cursor));
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public <U> Stream<ShortStream> split(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortStream>() {
+        return newStream(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -703,12 +703,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return new ArrayShortStream(elements, from, cursor, sorted, null);
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public <U> Stream<ShortList> splitToList(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -742,26 +742,26 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return new ShortList(N.copyOfRange(elements, from, cursor));
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortStream> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         final ShortStream[] a = new ShortStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, sorted, null);
         a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, sorted, null);
 
-        return new ArrayStream<>(a, closeHandlers);
+        return newStream(a, false, null);
     }
 
     @Override
     public Stream<ShortStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortStream>() {
+        return newStream(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -805,14 +805,14 @@ class ArrayShortStream extends AbstractShortStream {
                     }
                 }
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -855,7 +855,7 @@ class ArrayShortStream extends AbstractShortStream {
                     }
                 }
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -878,7 +878,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -909,12 +909,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream limit(long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+        N.checkArgNotNegative(maxSize, "maxSize");
 
         if (maxSize >= toIndex - fromIndex) {
             return this;
@@ -925,7 +925,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream skip(long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
@@ -1209,7 +1209,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream reversed() {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private int cursor = toIndex;
 
             @Override
@@ -1245,7 +1245,66 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers);
+        }, false);
+    }
+
+    @Override
+    public ShortStream rotated(final int distance) {
+        if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
+            return this;
+        }
+
+        return newStream(new ShortIteratorEx() {
+            private final int len = toIndex - fromIndex;
+            private int start;
+            private int cnt = 0;
+
+            {
+
+                start = distance % len;
+
+                if (start < 0) {
+                    start += len;
+                }
+
+                start = len - start;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return cnt < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[((start + cnt++) % len) + fromIndex];
+            }
+
+            @Override
+            public long count() {
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] a = new short[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = elements[((start + i) % len) + fromIndex];
+                }
+
+                return a;
+            }
+        }, false);
     }
 
     @Override
@@ -1316,7 +1375,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             private int cursor = fromIndex;
 
             @Override
@@ -1353,7 +1412,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override

@@ -32,6 +32,12 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
     @Override
     R apply(T t, U u);
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param func
+     * @return
+     */
     public static <T, U, R> BiFunction<T, U, R> of(final BiFunction<T, U, R> func) {
         N.requireNonNull(func);
 

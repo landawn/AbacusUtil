@@ -14,16 +14,15 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -100,7 +99,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
 
@@ -130,12 +129,12 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private short next = 0;
@@ -166,12 +165,12 @@ class IteratorShortStream extends AbstractShortStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
             private boolean dropped = false;
@@ -210,12 +209,12 @@ class IteratorShortStream extends AbstractShortStream {
                 return next;
             }
 
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -235,12 +234,12 @@ class IteratorShortStream extends AbstractShortStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -260,12 +259,12 @@ class IteratorShortStream extends AbstractShortStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        return new IteratorStream<>(new ObjIteratorEx<U>() {
+        return newStream(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -285,7 +284,7 @@ class IteratorShortStream extends AbstractShortStream {
             //            public void skip(long n) {
             //                elements.skip(n);
             //            }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -493,7 +492,7 @@ class IteratorShortStream extends AbstractShortStream {
     public Stream<ShortList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -524,12 +523,12 @@ class IteratorShortStream extends AbstractShortStream {
             public void skip(long n) {
                 elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -568,12 +567,12 @@ class IteratorShortStream extends AbstractShortStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public <U> Stream<ShortList> splitToList(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -616,14 +615,14 @@ class IteratorShortStream extends AbstractShortStream {
                 return result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
+        return newStream(new ObjIteratorEx<ShortList>() {
             private ShortList prev = null;
 
             @Override
@@ -675,7 +674,7 @@ class IteratorShortStream extends AbstractShortStream {
                 return prev = result;
             }
 
-        }, closeHandlers);
+        }, false, null);
     }
 
     @Override
@@ -690,7 +689,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -702,14 +701,14 @@ class IteratorShortStream extends AbstractShortStream {
                 action.accept(next);
                 return next;
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream limit(final long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+        N.checkArgNotNegative(maxSize, "maxSize");
 
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private long cnt = 0;
 
             @Override
@@ -731,18 +730,18 @@ class IteratorShortStream extends AbstractShortStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
     public ShortStream skip(final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        return new IteratorShortStream(new ShortIteratorEx() {
+        return newStream(new ShortIteratorEx() {
             private boolean skipped = false;
 
             @Override
@@ -794,7 +793,7 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return elements.toArray();
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override
@@ -811,29 +810,17 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortList toShortList() {
-        return ShortList.of(toArray());
+        return elements.toList();
     }
 
     @Override
     public List<Short> toList() {
-        final List<Short> result = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Short> ofList());
     }
 
     @Override
     public Set<Short> toSet() {
-        final Set<Short> result = new HashSet<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
+        return toCollection(Fn.Suppliers.<Short> ofSet());
     }
 
     @Override
@@ -849,13 +836,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
-        final Multiset<Short> result = new Multiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
+        return toMultiset(Fn.Suppliers.<Short> ofMultiset());
     }
 
     @Override
@@ -871,13 +852,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
-        final LongMultiset<Short> result = new LongMultiset<>();
-
-        while (elements.hasNext()) {
-            result.add(elements.nextShort());
-        }
-
-        return result;
+        return toLongMultiset(Fn.Suppliers.<Short> ofLongMultiset());
     }
 
     @Override
@@ -1197,7 +1172,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new IntIteratorEx() {
+        return newStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1217,7 +1192,7 @@ class IteratorShortStream extends AbstractShortStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, sorted);
     }
 
     @Override

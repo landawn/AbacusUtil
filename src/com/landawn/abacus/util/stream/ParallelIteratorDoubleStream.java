@@ -19,14 +19,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
@@ -37,7 +35,6 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiFunction;
@@ -93,7 +90,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream filter(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().filter(predicate).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
+            return super.filter(predicate);
         }
 
         final Stream<Double> stream = boxed().filter(new Predicate<Double>() {
@@ -109,7 +106,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream takeWhile(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().takeWhile(predicate).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
+            return super.takeWhile(predicate);
         }
 
         final Stream<Double> stream = boxed().takeWhile(new Predicate<Double>() {
@@ -125,7 +122,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream dropWhile(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().dropWhile(predicate).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
+            return super.dropWhile(predicate);
         }
 
         final Stream<Double> stream = boxed().dropWhile(new Predicate<Double>() {
@@ -141,7 +138,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream map(final DoubleUnaryOperator mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().map(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.map(mapper);
         }
 
         final DoubleStream stream = boxed().mapToDouble(new ToDoubleFunction<Double>() {
@@ -157,7 +154,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public IntStream mapToInt(final DoubleToIntFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToInt(mapper);
         }
 
         final IntStream stream = boxed().mapToInt(new ToIntFunction<Double>() {
@@ -173,7 +170,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public LongStream mapToLong(final DoubleToLongFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToLong(mapper);
         }
 
         final LongStream stream = boxed().mapToLong(new ToLongFunction<Double>() {
@@ -189,7 +186,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public FloatStream mapToFloat(final DoubleToFloatFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.mapToFloat(mapper);
         }
 
         final FloatStream stream = boxed().mapToFloat(new ToFloatFunction<Double>() {
@@ -205,7 +202,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapToObj(mapper).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+            return super.mapToObj(mapper);
         }
 
         return boxed().map(new Function<Double, U>() {
@@ -295,37 +292,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public Stream<DoubleStream> split(final int size) {
-        return new ParallelIteratorStream<>(sequential().split(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<DoubleList> splitToList(final int size) {
-        return new ParallelIteratorStream<>(sequential().splitToList(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<DoubleStream> split(final U seed, final BiPredicate<? super Double, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<DoubleList> splitToList(final U seed, final BiPredicate<? super Double, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return new ParallelIteratorStream<>(sequential().splitToList(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor,
-                closeHandlers);
-    }
-
-    @Override
-    public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<DoubleList> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public DoubleStream top(int n) {
         return top(n, DOUBLE_COMPARATOR);
     }
@@ -338,7 +304,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().peek(action).iteratorEx(), false, maxThreadNum, splitor, closeHandlers);
+            return super.peek(action);
         }
 
         final DoubleStream stream = boxed().peek(new Consumer<Double>() {
@@ -352,101 +318,9 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public DoubleStream limit(final long maxSize) {
-        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
-
-        return new ParallelIteratorDoubleStream(new DoubleIteratorEx() {
-            private long cnt = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cnt < maxSize && elements.hasNext();
-            }
-
-            @Override
-            public double nextDouble() {
-                if (cnt >= maxSize) {
-                    throw new NoSuchElementException();
-                }
-
-                cnt++;
-                return elements.nextDouble();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
-        }, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public DoubleStream skip(final long n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        if (n == 0) {
-            return this;
-        }
-
-        return new ParallelIteratorDoubleStream(new DoubleIteratorEx() {
-            private boolean skipped = false;
-
-            @Override
-            public boolean hasNext() {
-                if (skipped == false) {
-                    elements.skip(n);
-                    skipped = true;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public double nextDouble() {
-                if (skipped == false) {
-                    elements.skip(n);
-                    skipped = true;
-                }
-
-                return elements.nextDouble();
-            }
-
-            @Override
-            public long count() {
-                if (skipped == false) {
-                    elements.skip(n);
-                    skipped = true;
-                }
-
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n2) {
-                if (skipped == false) {
-                    elements.skip(n);
-                    skipped = true;
-                }
-
-                elements.skip(n2);
-            }
-
-            @Override
-            public double[] toArray() {
-                if (skipped == false) {
-                    elements.skip(n);
-                    skipped = true;
-                }
-
-                return elements.toArray();
-            }
-        }, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
         if (maxThreadNum <= 1) {
-            sequential().forEach(action);
+            super.forEach(action);
             return;
         }
 
@@ -485,7 +359,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyExtractor, final DoubleFunction<? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+            return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
 
         final Function<? super Double, ? extends K> keyExtractor2 = new Function<Double, K>() {
@@ -509,7 +383,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(classifier, downstream, mapFactory);
+            return super.toMap(classifier, downstream, mapFactory);
         }
 
         final Function<? super Double, ? extends K> classifier2 = new Function<Double, K>() {
@@ -525,7 +399,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public double reduce(final double identity, final DoubleBinaryOperator op) {
         if (maxThreadNum <= 1) {
-            return sequential().reduce(identity, op);
+            return super.reduce(identity, op);
         }
 
         final List<CompletableFuture<Double>> futureList = new ArrayList<>(maxThreadNum);
@@ -583,7 +457,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
         if (maxThreadNum <= 1) {
-            return sequential().reduce(accumulator);
+            return super.reduce(accumulator);
         }
 
         final List<CompletableFuture<Double>> futureList = new ArrayList<>(maxThreadNum);
@@ -654,7 +528,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjDoubleConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
         if (maxThreadNum <= 1) {
-            return sequential().collect(supplier, accumulator, combiner);
+            return super.collect(supplier, accumulator, combiner);
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
@@ -824,7 +698,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().anyMatch(predicate);
+            return super.anyMatch(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
@@ -867,7 +741,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().allMatch(predicate);
+            return super.allMatch(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
@@ -910,7 +784,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().noneMatch(predicate);
+            return super.noneMatch(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
@@ -953,7 +827,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findFirst(predicate);
+            return super.findFirst(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
@@ -1003,7 +877,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findLast(predicate);
+            return super.findLast(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
@@ -1051,7 +925,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
-            return sequential().findAny(predicate);
+            return super.findAny(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);

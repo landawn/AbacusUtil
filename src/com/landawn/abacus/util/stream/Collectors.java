@@ -88,6 +88,8 @@ import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
+import com.landawn.abacus.util.Tuple.Tuple4;
+import com.landawn.abacus.util.Tuple.Tuple5;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1266,7 +1268,7 @@ public class Collectors {
      * @throws UnsupportedOperationException it's used in parallel stream.
      */
     public static <T> Collector<T, ?, List<T>> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
             private volatile boolean isCalled = false;
@@ -4556,61 +4558,89 @@ public class Collectors {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T, A1, A2, A3, A4, R1, R2, R3, R4> Collector<T, Tuple4<A1, A2, A3, A4>, Tuple4<R1, R2, R3, R4>> combine(
+            final Collector<? super T, A1, R1> collector1, final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3,
+            final Collector<? super T, A4, R4> collector4) {
+        final List<Collector<? super T, ?, ?>> collectors = (List) N.asList(collector1, collector2, collector3, collector4);
+
+        final Function<List<?>, Tuple4<A1, A2, A3, A4>> func = new Function<List<?>, Tuple4<A1, A2, A3, A4>>() {
+            @Override
+            public Tuple4<A1, A2, A3, A4> apply(List<?> t) {
+                return Tuple4.from(t);
+            }
+        };
+
+        return (Collector) collectingAndThen(combine(collectors), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> Collector<T, Tuple5<A1, A2, A3, A4, A5>, Tuple5<R1, R2, R3, R4, R5>> combine(
+            final Collector<? super T, A1, R1> collector1, final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3,
+            final Collector<? super T, A4, R4> collector4, final Collector<? super T, A5, R5> collector5) {
+
+        final List<Collector<? super T, ?, ?>> collectors = (List) N.asList(collector1, collector2, collector3, collector4, collector5);
+
+        final Function<List<?>, Tuple5<A1, A2, A3, A4, A5>> func = new Function<List<?>, Tuple5<A1, A2, A3, A4, A5>>() {
+            @Override
+            public Tuple5<A1, A2, A3, A4, A5> apply(List<?> t) {
+                return Tuple5.from(t);
+            }
+        };
+
+        return (Collector) collectingAndThen(combine(collectors), func);
+    }
+
     /**
      * 
      * @param collectors
      * @return
      * @see Tuple#from(Collection)
      */
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, List<?>> combine(final Collection<Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
-        @SuppressWarnings("rawtypes")
-        final Collection<Collector<T, Object, Object>> tmp = (Collection) collectors;
+        final int len = collectors.size();
+        final Collector<T, Object, Object>[] cs = collectors.toArray(new Collector[len]);
 
-        final Supplier<List<?>> supplier = new Supplier<List<?>>() {
+        final Supplier<List<Object>> supplier = new Supplier<List<Object>>() {
             @Override
             public List<Object> get() {
-                final List<Object> res = new ArrayList<>(tmp.size());
+                final List<Object> res = new ArrayList<>(len);
 
-                for (Collector<T, Object, Object> collector : tmp) {
-                    res.add(collector.supplier().get());
+                for (int i = 0; i < len; i++) {
+                    res.add(cs[i].supplier().get());
                 }
 
                 return res;
             }
         };
 
-        final BiConsumer<List<?>, T> accumulator = new BiConsumer<List<?>, T>() {
+        final BiConsumer<List<Object>, T> accumulator = new BiConsumer<List<Object>, T>() {
             @Override
-            public void accept(List<?> acct, T e) {
-                final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                for (Object a : acct) {
-                    iter.next().accumulator().accept(a, e);
+            public void accept(List<Object> acct, T e) {
+                for (int i = 0; i < len; i++) {
+                    cs[i].accumulator().accept(acct.get(i), e);
                 }
             }
         };
 
-        final BinaryOperator<List<?>> combiner = new BinaryOperator<List<?>>() {
+        final BinaryOperator<List<Object>> combiner = new BinaryOperator<List<Object>>() {
             @Override
-            public List<Object> apply(List<?> t, List<?> u) {
-                final List<Object> res = new ArrayList<>(tmp.size());
-                final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                for (int i = 0, len = t.size(); i < len; i++) {
-                    res.add(iter.next().combiner().apply(t.get(i), u.get(i)));
+            public List<Object> apply(List<Object> t, List<Object> u) {
+                for (int i = 0; i < len; i++) {
+                    t.set(i, cs[i].combiner().apply(t.get(i), u.get(i)));
                 }
 
-                return res;
+                return t;
             }
         };
 
-        final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-        Collection<Collector.Characteristics> common = iter.next().characteristics();
+        Collection<Collector.Characteristics> common = cs[0].characteristics();
 
-        while (N.notNullOrEmpty(common) && iter.hasNext()) {
-            common = N.intersection(common, iter.next().characteristics());
+        for (int i = 1; i < len && N.notNullOrEmpty(common); i++) {
+            common = N.intersection(common, cs[i].characteristics());
         }
 
         final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
@@ -4618,21 +4648,18 @@ public class Collectors {
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
         } else {
-            final Function<List<?>, List<?>> finisher = new Function<List<?>, List<?>>() {
+            final Function<List<Object>, List<Object>> finisher = new Function<List<Object>, List<Object>>() {
                 @Override
-                public List<?> apply(List<?> t) {
-                    final List<Object> res = new ArrayList<>(tmp.size());
-                    final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                    for (Object a : t) {
-                        res.add(iter.next().finisher().apply(a));
+                public List<Object> apply(List<Object> t) {
+                    for (int i = 0; i < len; i++) {
+                        t.set(i, cs[i].finisher().apply(t.get(i)));
                     }
 
-                    return res;
+                    return t;
                 }
             };
 
-            return new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
+            return (Collector) new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
         }
     }
 
@@ -4669,8 +4696,8 @@ public class Collectors {
             }
         };
 
-        List<Collector.Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
@@ -4725,13 +4752,13 @@ public class Collectors {
             }
         };
 
-        List<Collector.Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
 
         if (N.notNullOrEmpty(common)) {
             common = N.intersection(common, collector3.characteristics());
         }
 
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
@@ -4747,83 +4774,109 @@ public class Collectors {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T, A1, A2, A3, A4, R1, R2, R3, R4> Collector<T, Tuple4<A1, A2, A3, A4>, Tuple4<R1, R2, R3, R4>> combine(
+            final java.util.stream.Collector<? super T, A1, R1> collector1, final java.util.stream.Collector<? super T, A2, R2> collector2,
+            final java.util.stream.Collector<? super T, A3, R3> collector3, final java.util.stream.Collector<? super T, A4, R4> collector4) {
+        final List<java.util.stream.Collector<? super T, ?, ?>> collectors = (List) N.asList(collector1, collector2, collector3, collector4);
+
+        final Function<List<?>, Tuple4<A1, A2, A3, A4>> func = new Function<List<?>, Tuple4<A1, A2, A3, A4>>() {
+            @Override
+            public Tuple4<A1, A2, A3, A4> apply(List<?> t) {
+                return Tuple4.from(t);
+            }
+        };
+
+        return (Collector) collectingAndThen(combinee(collectors), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> Collector<T, Tuple5<A1, A2, A3, A4, A5>, Tuple5<R1, R2, R3, R4, R5>> combine(
+            final java.util.stream.Collector<? super T, A1, R1> collector1, final java.util.stream.Collector<? super T, A2, R2> collector2,
+            final java.util.stream.Collector<? super T, A3, R3> collector3, final java.util.stream.Collector<? super T, A4, R4> collector4,
+            final java.util.stream.Collector<? super T, A5, R5> collector5) {
+
+        final List<java.util.stream.Collector<? super T, ?, ?>> collectors = (List) N.asList(collector1, collector2, collector3, collector4, collector5);
+
+        final Function<List<?>, Tuple5<A1, A2, A3, A4, A5>> func = new Function<List<?>, Tuple5<A1, A2, A3, A4, A5>>() {
+            @Override
+            public Tuple5<A1, A2, A3, A4, A5> apply(List<?> t) {
+                return Tuple5.from(t);
+            }
+        };
+
+        return (Collector) collectingAndThen(combinee(collectors), func);
+    }
+
     /**
      * 
      * @param collectors
      * @return
      * @see Tuple#from(Collection)
      */
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, List<?>> combinee(final Collection<java.util.stream.Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
-        @SuppressWarnings("rawtypes")
-        final Collection<Collector<T, Object, Object>> tmp = (Collection) collectors;
+        final int len = collectors.size();
+        final java.util.stream.Collector<T, Object, Object>[] cs = collectors.toArray(new java.util.stream.Collector[len]);
 
-        final Supplier<List<?>> supplier = new Supplier<List<?>>() {
+        final Supplier<List<Object>> supplier = new Supplier<List<Object>>() {
             @Override
             public List<Object> get() {
-                final List<Object> res = new ArrayList<>(tmp.size());
+                final List<Object> res = new ArrayList<>(len);
 
-                for (Collector<T, Object, Object> collector : tmp) {
-                    res.add(collector.supplier().get());
+                for (int i = 0; i < len; i++) {
+                    res.add(cs[i].supplier().get());
                 }
 
                 return res;
             }
         };
 
-        final BiConsumer<List<?>, T> accumulator = new BiConsumer<List<?>, T>() {
+        final BiConsumer<List<Object>, T> accumulator = new BiConsumer<List<Object>, T>() {
             @Override
-            public void accept(List<?> acct, T e) {
-                final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                for (Object a : acct) {
-                    iter.next().accumulator().accept(a, e);
+            public void accept(List<Object> acct, T e) {
+                for (int i = 0; i < len; i++) {
+                    cs[i].accumulator().accept(acct.get(i), e);
                 }
             }
         };
 
-        final BinaryOperator<List<?>> combiner = new BinaryOperator<List<?>>() {
+        final BinaryOperator<List<Object>> combiner = new BinaryOperator<List<Object>>() {
             @Override
-            public List<Object> apply(List<?> t, List<?> u) {
-                final List<Object> res = new ArrayList<>(tmp.size());
-                final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                for (int i = 0, len = t.size(); i < len; i++) {
-                    res.add(iter.next().combiner().apply(t.get(i), u.get(i)));
+            public List<Object> apply(List<Object> t, List<Object> u) {
+                for (int i = 0; i < len; i++) {
+                    t.set(i, cs[i].combiner().apply(t.get(i), u.get(i)));
                 }
 
-                return res;
+                return t;
             }
         };
 
-        final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-        Collection<Collector.Characteristics> common = iter.next().characteristics();
+        Collection<Characteristics> common = cs[0].characteristics();
 
-        while (N.notNullOrEmpty(common) && iter.hasNext()) {
-            common = N.intersection(common, iter.next().characteristics());
+        for (int i = 1; i < len && N.notNullOrEmpty(common); i++) {
+            common = N.intersection(common, cs[i].characteristics());
         }
 
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
         } else {
-            final Function<List<?>, List<?>> finisher = new Function<List<?>, List<?>>() {
+            final Function<List<Object>, List<Object>> finisher = new Function<List<Object>, List<Object>>() {
                 @Override
-                public List<?> apply(List<?> t) {
-                    final List<Object> res = new ArrayList<>(tmp.size());
-                    final Iterator<Collector<T, Object, Object>> iter = tmp.iterator();
-
-                    for (Object a : t) {
-                        res.add(iter.next().finisher().apply(a));
+                public List<Object> apply(List<Object> t) {
+                    for (int i = 0; i < len; i++) {
+                        t.set(i, cs[i].finisher().apply(t.get(i)));
                     }
 
-                    return res;
+                    return t;
                 }
             };
 
-            return new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
+            return (Collector) new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
         }
     }
 

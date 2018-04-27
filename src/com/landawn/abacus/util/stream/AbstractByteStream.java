@@ -80,33 +80,29 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream skip(final long n, final ByteConsumer action) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return this;
         }
 
-        if (this.isParallel()) {
+        final BytePredicate filter = isParallel() ? new BytePredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new BytePredicate() {
-                @Override
-                public boolean test(byte value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-            }, action);
-        } else {
+            @Override
+            public boolean test(byte value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        } : new BytePredicate() {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return cnt.getAndDecrement() > 0;
+            }
+        };
 
-                @Override
-                public boolean test(byte value) {
-                    return cnt.getAndDecrement() > 0;
-                }
-
-            }, action);
-        }
+        return dropWhile(filter, action);
     }
 
     @Override
@@ -242,7 +238,7 @@ abstract class AbstractByteStream extends ByteStream {
     public ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction) {
         final ByteIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private boolean hasNext = false;
             private byte next = 0;
 
@@ -272,7 +268,7 @@ abstract class AbstractByteStream extends ByteStream {
     public ByteStream scan(final ByteBiFunction<Byte> accumulator) {
         final ByteIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private byte res = 0;
             private boolean isFirst = true;
 
@@ -297,7 +293,7 @@ abstract class AbstractByteStream extends ByteStream {
     public ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator) {
         final ByteIteratorEx iter = iteratorEx();
 
-        return this.newStream(new ByteIteratorEx() {
+        return newStream(new ByteIteratorEx() {
             private byte res = seed;
 
             @Override
@@ -634,13 +630,82 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream rotated(final int distance) {
-        return lazyLoad(new Function<byte[], byte[]>() {
+        return newStream(new ByteIteratorEx() {
+            private boolean initialized = false;
+            private byte[] aar;
+            private int len;
+            private int start;
+            private int cnt = 0;
+
             @Override
-            public byte[] apply(final byte[] a) {
-                N.rotate(a, distance);
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cnt < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[(start + cnt++) % len];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cnt;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cnt = n < len - cnt ? cnt + (int) n : len;
+            }
+
+            @Override
+            public byte[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final byte[] a = new byte[len - cnt];
+
+                for (int i = cnt; i < len; i++) {
+                    a[i - cnt] = aar[(start + i) % len];
+                }
+
                 return a;
             }
-        }, false);
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = AbstractByteStream.this.toArray();
+                    len = aar.length;
+
+                    if (len > 0) {
+                        start = distance % len;
+
+                        if (start < 0) {
+                            start += len;
+                        }
+
+                        start = len - start;
+                    }
+                }
+            }
+        }, distance == 0 && sorted);
     }
 
     @Override
@@ -919,6 +984,6 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream cached() {
-        return this.newStream(toArray(), sorted);
+        return newStream(toArray(), sorted);
     }
 }

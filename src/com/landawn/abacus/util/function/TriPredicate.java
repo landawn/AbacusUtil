@@ -17,6 +17,7 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -28,6 +29,18 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
 
     @Override
     boolean test(A a, B b, C c);
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static <A, B, C> TriPredicate<A, B, C> of(final TriPredicate<A, B, C> predicate) {
+        N.requireNonNull(predicate);
+
+        return predicate;
+    }
 
     default TriPredicate<A, B, C> negate() {
         return (a, b, c) -> !test(a, b, c);

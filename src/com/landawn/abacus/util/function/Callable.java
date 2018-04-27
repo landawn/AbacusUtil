@@ -8,6 +8,12 @@ public interface Callable<R> extends java.util.concurrent.Callable<R>, Try.Calla
     @Override
     R call();
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param callable
+     * @return
+     */
     public static <R> Callable<R> of(final Callable<R> callable) {
         N.requireNonNull(callable);
 

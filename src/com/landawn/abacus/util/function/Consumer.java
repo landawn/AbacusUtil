@@ -28,6 +28,12 @@ public interface Consumer<T> extends java.util.function.Consumer<T>, Try.Consume
     @Override
     void accept(T t);
 
+    /**
+     * Returns the specified instance
+     * 
+     * @param consumer
+     * @return
+     */
     public static <T> Consumer<T> of(final Consumer<T> consumer) {
         N.requireNonNull(consumer);
 

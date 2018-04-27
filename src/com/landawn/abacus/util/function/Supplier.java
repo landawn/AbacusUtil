@@ -42,6 +42,9 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn.Suppliers;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableMap;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
@@ -196,5 +199,41 @@ public interface Supplier<T> extends java.util.function.Supplier<T>, Try.Supplie
 
     public static Supplier<StringBuilder> ofStringBuilder() {
         return Suppliers.ofStringBuilder();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static Supplier<ImmutableList<?>> ofImmutableList() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static Supplier<ImmutableSet<?>> ofImmutableSet() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Won't work.
+     * 
+     * @return
+     * @throws UnsupportedOperationException
+     * 
+     */
+    @Deprecated
+    public static Supplier<ImmutableMap<?, ?>> ofImmutableMap() {
+        throw new UnsupportedOperationException();
     }
 }
