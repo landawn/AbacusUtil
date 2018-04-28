@@ -78,6 +78,16 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final LongFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new LongFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(long t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public LongStream skip(final long n, final LongConsumer action) {
         N.checkArgNotNegative(n, "n");
 

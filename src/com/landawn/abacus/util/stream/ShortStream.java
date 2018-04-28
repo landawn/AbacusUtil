@@ -171,6 +171,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     public abstract <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper);
 
+    public abstract <T> Stream<T> flattMapToObj(ShortFunction<? extends Collection<T>> mapper);
+
     public abstract ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction);
 
     /**

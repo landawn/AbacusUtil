@@ -79,6 +79,16 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final ByteFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new ByteFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(byte t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ByteStream skip(final long n, final ByteConsumer action) {
         N.checkArgNotNegative(n, "n");
 

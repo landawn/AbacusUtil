@@ -1,3 +1,10 @@
+### 1.2.8
+ 
+* Add `ByteStream/.../DoubleStream/.flattMapToObj`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.7
  
 * Add `Optional/OptionalInt.orElseThrow()`.

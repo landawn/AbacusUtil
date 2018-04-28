@@ -79,6 +79,16 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final CharFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new CharFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(char t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public CharStream skip(final long n, final CharConsumer action) {
         N.checkArgNotNegative(n, "n");
 

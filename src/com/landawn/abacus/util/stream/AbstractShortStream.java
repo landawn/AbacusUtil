@@ -79,6 +79,16 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final ShortFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new ShortFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(short t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ShortStream skip(final long n, final ShortConsumer action) {
         N.checkArgNotNegative(n, "n");
 

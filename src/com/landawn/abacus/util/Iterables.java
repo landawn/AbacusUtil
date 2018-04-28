@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 /**
+ * It's an extension and wrapper for Google Guava.
  * 
  * @since 1.2.7
  * 

@@ -209,6 +209,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
 
+    public abstract <T> Stream<T> flattMapToObj(LongFunction<? extends Collection<T>> mapper);
+
     public abstract LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction);
 
     /**

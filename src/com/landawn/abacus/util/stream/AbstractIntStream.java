@@ -79,6 +79,16 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final IntFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new IntFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(int t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public IntStream skip(final long n, final IntConsumer action) {
         N.checkArgNotNegative(n, "n");
 

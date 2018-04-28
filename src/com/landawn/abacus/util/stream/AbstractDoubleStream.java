@@ -79,6 +79,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final DoubleFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new DoubleFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(double t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public DoubleStream skip(final long n, final DoubleConsumer action) {
         N.checkArgNotNegative(n, "n");
 

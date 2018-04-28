@@ -170,6 +170,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper);
 
+    public abstract <T> Stream<T> flattMapToObj(ByteFunction<? extends Collection<T>> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.

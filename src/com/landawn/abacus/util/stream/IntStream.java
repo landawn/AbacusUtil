@@ -221,6 +221,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract <T> Stream<T> flatMapToObj(IntFunction<? extends Stream<T>> mapper);
 
+    public abstract <T> Stream<T> flattMapToObj(IntFunction<? extends Collection<T>> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.

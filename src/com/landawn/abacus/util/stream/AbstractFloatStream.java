@@ -80,6 +80,16 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public <T> Stream<T> flattMapToObj(final FloatFunction<? extends Collection<T>> mapper) {
+        return flatMapToObj(new FloatFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(float t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public FloatStream skip(final long n, final FloatConsumer action) {
         N.checkArgNotNegative(n, "n");
 

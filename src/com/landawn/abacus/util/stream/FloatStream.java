@@ -205,6 +205,8 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     public abstract <T> Stream<T> flatMapToObj(FloatFunction<? extends Stream<T>> mapper);
 
+    public abstract <T> Stream<T> flattMapToObj(FloatFunction<? extends Collection<T>> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
