@@ -76,7 +76,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.filter(predicate);
         }
 
@@ -92,7 +92,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.takeWhile(predicate);
         }
 
@@ -108,7 +108,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.dropWhile(predicate);
         }
 
@@ -124,7 +124,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.map(mapper);
         }
 
@@ -140,7 +140,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToInt(mapper);
         }
 
@@ -156,7 +156,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToObj(mapper);
         }
 
@@ -170,7 +170,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorShortStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -186,7 +186,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -202,7 +202,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, null);
         }
 
@@ -241,7 +241,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
         }
 
@@ -284,7 +284,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEach(action);
             return;
         }
@@ -350,7 +350,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(final ShortFunction<? extends K> keyExtractor, final ShortFunction<? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
 
@@ -374,7 +374,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(classifier, downstream, mapFactory);
         }
 
@@ -390,7 +390,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public short reduce(final short identity, final ShortBinaryOperator op) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(identity, op);
         }
 
@@ -479,7 +479,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public OptionalShort reduce(final ShortBinaryOperator accumulator) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(accumulator);
         }
 
@@ -585,7 +585,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjShortConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
 
@@ -696,7 +696,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[fromIndex]);
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return OptionalShort.of(N.min(elements, fromIndex, toIndex));
         }
 
@@ -743,7 +743,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - 1]);
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return OptionalShort.of(N.max(elements, fromIndex, toIndex));
         }
 
@@ -787,7 +787,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return sum(elements, fromIndex, toIndex);
         }
 
@@ -841,7 +841,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     public ShortSummaryStatistics summarize() {
         if (fromIndex == toIndex) {
             return new ShortSummaryStatistics();
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.summarize();
         }
 
@@ -891,7 +891,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.anyMatch(predicate);
         }
 
@@ -964,7 +964,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.allMatch(predicate);
         }
 
@@ -1037,7 +1037,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.noneMatch(predicate);
         }
 
@@ -1110,7 +1110,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findFirst(predicate);
         }
 
@@ -1198,7 +1198,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findLast(predicate);
         }
 
@@ -1286,7 +1286,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findAny(predicate);
         }
 

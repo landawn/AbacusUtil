@@ -84,7 +84,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.filter(predicate);
         }
 
@@ -179,7 +179,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.takeWhile(predicate);
         }
 
@@ -231,7 +231,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.dropWhile(predicate);
         }
 
@@ -304,7 +304,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.map(mapper);
         }
 
@@ -376,7 +376,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     //    @Override
     //    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-    //        if (maxThreadNum <= 1) {
+    //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
     //            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     //        }
     //
@@ -453,7 +453,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     //
     //    @Override
     //    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-    //        if (maxThreadNum <= 1) {
+    //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
     //            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     //        }
     //
@@ -533,7 +533,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
@@ -580,7 +580,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
@@ -631,7 +631,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         N.requireNonNull(mapperForFirst);
         N.requireNonNull(mapperForElse);
 
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapFirstOrElse(mapperForFirst, mapperForElse);
         }
 
@@ -652,7 +652,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         N.requireNonNull(mapperForLast);
         N.requireNonNull(mapperForElse);
 
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
                     closeHandlers);
         }
@@ -671,7 +671,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToChar(mapper);
         }
 
@@ -743,7 +743,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToByte(mapper);
         }
 
@@ -815,7 +815,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToShort(mapper);
         }
 
@@ -887,7 +887,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToInt(mapper);
         }
 
@@ -959,7 +959,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToLong(mapper);
         }
 
@@ -1031,7 +1031,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToFloat(mapper);
         }
 
@@ -1103,7 +1103,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToDouble(mapper);
         }
 
@@ -1175,7 +1175,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMap(mapper), false, null, maxThreadNum, splitor, null);
         }
 
@@ -1326,7 +1326,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorCharStream(sequential().flatMapToChar(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -1478,7 +1478,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorByteStream(sequential().flatMapToByte(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -1630,7 +1630,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorShortStream(sequential().flatMapToShort(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -1782,7 +1782,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -1934,7 +1934,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -2086,7 +2086,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorFloatStream(sequential().flatMapToFloat(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -2238,7 +2238,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -2390,7 +2390,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().distinctBy(keyExtractor).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
@@ -2445,7 +2445,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
         }
 
@@ -2546,7 +2546,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEach(action);
             return;
         }
@@ -2623,7 +2623,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEachPair(action, increment);
             return;
         }
@@ -2668,7 +2668,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEachTriple(action, increment);
             return;
         }
@@ -2726,7 +2726,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mapFactory);
         }
 
@@ -2828,7 +2828,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(classifier, downstream, mapFactory);
         }
 
@@ -2975,7 +2975,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMultimap(keyExtractor, valueMapper, mapFactory);
         }
 
@@ -3102,7 +3102,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public T reduce(final T identity, final BinaryOperator<T> accumulator) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(identity, accumulator);
         }
 
@@ -3192,7 +3192,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Nullable<T> reduce(final BinaryOperator<T> accumulator) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(accumulator);
         }
 
@@ -3299,7 +3299,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator, final BinaryOperator<U> combiner) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(identity, accumulator, combiner);
         }
 
@@ -3391,7 +3391,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator, final BiConsumer<R, R> combiner) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
 
@@ -3643,7 +3643,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.anyMatch(predicate);
         }
 
@@ -3718,7 +3718,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.allMatch(predicate);
         }
 
@@ -3793,7 +3793,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.noneMatch(predicate);
         }
 
@@ -3868,7 +3868,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findFirst(predicate);
         }
 
@@ -3958,7 +3958,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findLast(predicate);
         }
 
@@ -4048,7 +4048,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findAny(predicate);
         }
 
@@ -4136,7 +4136,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> intersection(final Function<? super T, ?> mapper, final Collection<?> c) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
@@ -4156,7 +4156,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> difference(final Function<? super T, ?> mapper, final Collection<?> c) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
@@ -4217,7 +4217,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     //        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
     //                batchInterval);
     //
-    //        if (maxThreadNum <= 1) {
+    //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
     //            return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
     //        }
     //

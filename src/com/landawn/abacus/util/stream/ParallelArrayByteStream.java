@@ -74,7 +74,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream filter(final BytePredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.filter(predicate);
         }
 
@@ -90,7 +90,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.takeWhile(predicate);
         }
 
@@ -106,7 +106,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.dropWhile(predicate);
         }
 
@@ -122,7 +122,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.map(mapper);
         }
 
@@ -138,7 +138,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToInt(mapper);
         }
 
@@ -154,7 +154,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToObj(mapper);
         }
 
@@ -168,7 +168,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorByteStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -184,7 +184,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, null);
         }
 
@@ -200,7 +200,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final ByteFunction<? extends Stream<T>> mapper) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, null);
         }
 
@@ -214,7 +214,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public ByteStream peek(final ByteConsumer action) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
         }
 
@@ -256,7 +256,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ByteConsumer<E> action) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEach(action);
             return;
         }
@@ -322,7 +322,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(final ByteFunction<? extends K> keyExtractor, final ByteFunction<? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
 
@@ -346,7 +346,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(classifier, downstream, mapFactory);
         }
 
@@ -362,7 +362,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public byte reduce(final byte identity, final ByteBinaryOperator op) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(identity, op);
         }
 
@@ -451,7 +451,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public OptionalByte reduce(final ByteBinaryOperator accumulator) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(accumulator);
         }
 
@@ -575,7 +575,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjByteConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
 
@@ -668,7 +668,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[fromIndex]);
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return OptionalByte.of(N.min(elements, fromIndex, toIndex));
         }
 
@@ -715,7 +715,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[toIndex - 1]);
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return OptionalByte.of(N.max(elements, fromIndex, toIndex));
         }
 
@@ -759,7 +759,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return sum(elements, fromIndex, toIndex);
         }
 
@@ -813,7 +813,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     public ByteSummaryStatistics summarize() {
         if (fromIndex == toIndex) {
             return new ByteSummaryStatistics();
-        } else if (maxThreadNum <= 1) {
+        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.summarize();
         }
 
@@ -863,7 +863,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.anyMatch(predicate);
         }
 
@@ -936,7 +936,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.allMatch(predicate);
         }
 
@@ -1009,7 +1009,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.noneMatch(predicate);
         }
 
@@ -1082,7 +1082,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findFirst(predicate);
         }
 
@@ -1170,7 +1170,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findLast(predicate);
         }
 
@@ -1258,7 +1258,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findAny(predicate);
         }
 
