@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0028)http://jdbi.org/archive.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+
+
+<title>AbacusUtil</title>
+
+<script type="text/javascript" src="./css/ga.js"></script>
+<script type="text/javascript">
+	if (top.location != self.location)
+		top.location.replace(self.location);
+</script>
+
+<link href="./css/css" rel="stylesheet" type="text/css"></link>
+<link href="./css/css(1)" rel="stylesheet" type="text/css"></link>
+<link rel="stylesheet" href="./css/syntax.css" type="text/css"></link>
+<link rel="stylesheet" href="./css/screen.css" type="text/css"></link>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-65247258-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+</head>
+<body>
+	<div id="site">
+		<h1>
+			<a href="./index.html">AbacusUtil</a> <span id="navigation"> <a href="./docs.html">Docs</a> | <a href="./download.html">Download</a>
+				| <a href="./api-docs/index.html">Javadoc</a> | <a href="./faq.html">FAQ</a> | <a href="./community.html">Community</a>
+			</span>
+		</h1>
+	</div>
+
+	<div id="content">
+
+		<div id="page">
+
+			<h1>DynamoDBExecutor</h1>
+			<p>
+				<a href="./DynamoDBExecutor_view.html">DynamoDBExecutor</a> is a wrapper of DynamoDB Java client.
+				Just like SQLExecutor, it makes things much easier to operate data with DynamoDB by the straight support of Entity/String,
+				and almost all the java basic types: boolean...double...String...Date...Calendar....
+				Rather than introducing something new or different, DynamoDBExecutor is created to make things simpler.	Here is a simple sample:
+			</p>
+<!-- HTML generated using hilite.me --><div style="background: #f8f8f8; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">test_crud</span><span style="color: #666666">()</span> <span style="color: #666666">{</span>
+    Account account <span style="color: #666666">=</span> createAccount<span style="color: #666666">();</span>
+
+    <span style="color: #408080; font-style: italic">// create</span>
+    dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">putItem</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">,</span> toItem<span style="color: #666666">(</span>account<span style="color: #666666">));</span>
+
+    <span style="color: #408080; font-style: italic">// read</span>
+    Map<span style="color: #666666">&lt;</span>String<span style="color: #666666">,</span> AttributeValue<span style="color: #666666">&gt;</span> key <span style="color: #666666">=</span> asKey<span style="color: #666666">(</span><span style="color: #BA2121">&quot;id&quot;</span><span style="color: #666666">,</span> account<span style="color: #666666">.</span><span style="color: #7D9029">getId</span><span style="color: #666666">());</span>
+    Account dbAccount <span style="color: #666666">=</span> dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">getItem</span><span style="color: #666666">(</span>Account<span style="color: #666666">.</span><span style="color: #7D9029">class</span><span style="color: #666666">,</span> <span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">,</span> key<span style="color: #666666">);</span>
+    N<span style="color: #666666">.</span><span style="color: #7D9029">println</span><span style="color: #666666">(</span>dbAccount<span style="color: #666666">);</span>
+
+    <span style="color: #408080; font-style: italic">// query</span>
+    QueryRequest queryRequest <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> QueryRequest<span style="color: #666666">(</span><span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">).</span><span style="color: #7D9029">withKeyConditions</span><span style="color: #666666">(</span>Filters<span style="color: #666666">.</span><span style="color: #7D9029">eq</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;id&quot;</span><span style="color: #666666">,</span> <span style="color: #BA2121">&quot;abc123&quot;</span><span style="color: #666666">));</span>
+    List<span style="color: #666666">&lt;</span>Account<span style="color: #666666">&gt;</span> accounts <span style="color: #666666">=</span> dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">query</span><span style="color: #666666">(</span>Account<span style="color: #666666">.</span><span style="color: #7D9029">class</span><span style="color: #666666">,</span> queryRequest<span style="color: #666666">);</span>
+    N<span style="color: #666666">.</span><span style="color: #7D9029">println</span><span style="color: #666666">(</span>accounts<span style="color: #666666">);</span>
+
+    <span style="color: #408080; font-style: italic">// update</span>
+    dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">updateItem</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">,</span> key<span style="color: #666666">,</span> asUpdateItem<span style="color: #666666">(</span><span style="color: #BA2121">&quot;firstName&quot;</span><span style="color: #666666">,</span> <span style="color: #BA2121">&quot;newFirstName&quot;</span><span style="color: #666666">));</span>
+
+    <span style="color: #408080; font-style: italic">// delete</span>
+    dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">deleteItem</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">,</span> key<span style="color: #666666">);</span>
+<span style="color: #666666">}</span>
+</pre></div>
+
+
+		<p></p>
+		<p>Try it now. Here are the steps: </p>
+		<ul>
+			<li>Prepare AWS account for DynamoDB access if you don't have it yet.</li>
+		
+		
+			<p></p>
+			<li>Design your Model/Entity classes.  
+			Generally manipulating data with Model/Entity is more convenient, comparing to the Item/AttributeValue classes provided by DynamoDB client.
+			</li>
+			
+			<p></p>
+			<li>Generate the Model/entity objects by <a href="./code-generation.html">Code Generation</a>.</li>
+			
+			<p></p>
+			<li>You will be ready to operate data by Entity directly.
+			</li>
+			
+			<p></p>
+			<li>Download the sample project <a href="./download.html">HelloAbacusUtil</a>.
+			</li>		
+
+		</div>
+	</div>
+</body>
+
+</html>
