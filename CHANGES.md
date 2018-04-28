@@ -12,7 +12,7 @@
 
 * Refactoring: replace `toList/toSet(supplier)` with `toCollection(supplier)`.
 
-* Refactoring: rename `Stream.removeWhile/remove` to `Stream.dropWhile/skip`.
+* Refactoring: rename `Stream.removeWhile/remove(n, action)` to `Stream.dropWhile/skip(n, action)`.
 
 * Improvements and bug fix.
 

@@ -8060,7 +8060,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable list that is empty.
+     * Returns an empty {@code List} that is immutable.
      * 
      * @return
      * @see Collections#emptyList()
@@ -8070,7 +8070,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable set that is empty.
+     * Returns an empty {@code Set} that is immutable.
      * 
      * @return
      * @see Collections#emptySet()
@@ -8080,7 +8080,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable <code>SortedSet</code> that is empty.
+     * Returns an empty {@code SortedSet} that is immutable.
      * 
      * @return
      * @see Collections#emptySortedSet()
@@ -8090,7 +8090,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable <code>NavigableSet</code> that is empty.
+     * Returns an empty {@code emptyNavigableSet} that is immutable.
      * 
      * @return
      * @see Collections#emptyNavigableSet()
@@ -8100,7 +8100,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable map that is empty.
+     * Returns an empty {@code Map} that is immutable.
      * 
      * @return
      * @see Collections#emptyMap()
@@ -8110,7 +8110,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable <code>SortedMap</code> that is empty.
+     * Returns an empty {@code SortedMap} that is immutable.
      * 
      * @return
      * @see Collections#emptySortedMap()
@@ -8120,7 +8120,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable <code>NavigableMap</code> that is empty.
+     * Returns an empty {@code NavigableMap} that is immutable.
      * 
      * @return
      * @see Collections#emptyNavigableMap()
@@ -8130,7 +8130,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable iterator that has no elements
+     * Returns an empty {@code Iterator} that is immutable.
      * 
      * @return
      * @see Collections#emptyIterator()
@@ -8140,7 +8140,7 @@ public final class N {
     }
 
     /**
-     * Returns an immutable list iterator that has no elements
+     * Returns an empty {@code ListIterator} that is immutable.
      * 
      * @return
      * @see Collections#emptyListIterator()
