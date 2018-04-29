@@ -7,7 +7,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 ## Features:
 
-* Most daily used APIs: [IOUtil][], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
+* Most daily used APIs: [IOUtil][docs/IOUtil.gif], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
 
 * Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][] and [Seq][].
 
@@ -135,135 +135,8 @@ compile 'com.landawn:abacus-android-se:1.2.7'
 [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 
-## Usage:
+## [User Guide](https://github.com/landawn/AbacusUtil/wiki)
 
-### Benchmark test by [Profiler][]:
-
-One line: Easy, Simple and Accurate by running the test multiple rounds:
-```java
-Profiler.run(threadNum, loopNum, roundNum, "addByStream", () -> addByStream()).printResult();
-
-public void addByStream() {
-    assertEquals(499500, IntStream.range(1, 1000).reduce(0, (s, i) -> s += i));
-}
-
-```
-And result:
-```
-========================================================================================================================
-(unit: milliseconds)
-threadNum=1; loops=30000
-totalElapsedTime: 60.736
-
-<method name>,  |avg time|, |min time|, |max time|, |0.01% >=|, |0.1% >=|,  |1% >=|,    |10% >=|,   |20% >=|,   |50% >=|,   |80% >=|,   |90% >=|,   |99% >=|,   |99.9% >=|, |99.99% >=|
-addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.007,      0.003,      0.003,      0.001,      0.001,      0.001,      0.001,      0.001,      0.001,      
-========================================================================================================================
-```
-### The most simple [HttpClient][]:
-
-```java
-HttpClient.of("https://api.github.com/octocat").get()
-```
-
-### [CodeGenerator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/CodeGenerator.html) for entity classes with getter/setter methods. Here are the at least benefits of generating code by tool:
-
-1. Productivity: generate tens, even hundreds of lines of code by couple of lines of codes in one minute.
-
-2. Maintainability: It's easy and simple to add/remove fields or change types of fields. And all the codes follow the same format.
-
-3. Bug free. No test is required for the auto-generated codes and no test coverage is counted. 
-
-```java
-// Prepare the class with fields first:
-public class Account {
-    private String firstName;
-    private String lastName;
-    private Date birthdate;
-    private Map<String, List<Date>> attrs;
-}
-
-// Then just two lines to generate the mostly beautiful and well-formatted entity class:
-final File srcDir = new File("./src");
-CodeGenerator.writeClassMethod(srcDir, Account.class);
-```
-OR:
-
-```java
-String packageName = "com.x.y";
-
-Map<String, Object> fields = N.asLinkedHashMap("firstName", String.class, "lastName", String.class, "birthdate", Date.class, "attrs", "Map<String, List<java.sql.Date>>");
-CodeGenerator.generateEntity(srcDir, packageName, "Account", fields);
-```
-
-### A quick/fast way to/from JSON/XML.
-```java
-String json = N.toJSON(account); // {"firstName":"Jack", "lastName":"Do", "birthDate":1495815803177}
-
-Account account2 = N.fromJSON(Account.class, json);
-assertEquals(account, account2);
-
-String xml = N.toXML(account); // <account><firstName>Jack</firstName><lastName>Do</lastName><birthDate>1495815803177</birthDate></account>
-Account account3 = N.fromXML(Account.class, xml);
-assertEquals(account, account3);
-```
-
-More see: [Parser](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/parser/Parser.html), [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/parser/ParserFactory.html)
-
-### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
-A simple CRUD(create/read/update/delete) sample by SQLExecutor
-
-```java
-final DataSource ds = JdbcUtil.createDataSource(...); // Refer to: .\schema\DataSource.xsd
-final SQLExecutor sqlExecutor = new SQLExecutor(ds);
-Account account = createAccount();
-// create
-String sql_insert = NE.insert("gui", "firstName", "lastName", "lastUpdateTime").into(Account.class).sql();
-sqlExecutor.insert(sql_insert, account);
-// read
-String sql_selectByGUI = NE.selectFrom(Account.class).where(L.eq("gui")).sql();
-Account dbAccount = sqlExecutor.queryForEntity(Account.class, sql_selectByGUI, account);
-// update
-String sql_updateByLastName = NE.update(Account.class).set("firstName").where(L.eq("lastName")).sql();
-dbAccount.setFirstName("newFirstName");
-sqlExecutor.update(sql_updateByLastName, dbAccount);
-// delete
-String sql_deleteByFirstName = NE.deleteFrom(Account.class).where(L.eq("firstName)).sql();
-sqlExecutor.update(sql_deleteByFirstName, dbAccount);
-```
-
-### NoSQL: [MongoDB][MongoDBExecutor]/[Cassandra][CassandraExecutor]/[Couchbase][CouchbaseExecutor]...
-A simple CRUD(create/read/update/delete) sample for MongoDB:
-```java
-// create
-collExecutor.insert(account);
-// read
-Account dbAccount = collExecutor.get(Account.class, account.getId());
-// update
-dbAccount.setFirstName("newFirstName");
-collExecutor.update(dbAccount.getId(), N.asMap(FIRST_NAME, dbAccount.getFirstName()));
-// delete
-collExecutor.delete(dbAccount.getId());
-// check
-assertFalse(collExecutor.exists(dbAccount.getId()));
-```
-
-### Programming in Android with [retrolambda](https://github.com/orfjackal/retrolambda)
-
-```java
-Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
-    TPExecutor.execute(() -> searchService.search(s, ...))
-        .thenRunOnUI((resp, error) -> {
-            if (error != null) {
-                // handle the error case.
-            }
-            
-            // do other stuffs to display the search result.            
-        });
-});
-
-// Get 'firstName' and 'lastName' of user with 'id' = 1.             
-sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
-```
 
 [IOUtil]: https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/IOUtil.html
 [Multiset]: https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Multiset.html
