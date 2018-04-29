@@ -7,7 +7,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 ## Features:
 
-* Most daily used APIs: [IOUtil](docs/IOUtil.gif), [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
+* Most daily used APIs: [IOUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IOUtil_view.html), [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
 
 * Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][] and [Seq][].
 
