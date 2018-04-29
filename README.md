@@ -7,7 +7,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 ## Features:
 
-* Most daily used APIs: [IOUtil][docs/IOUtil.gif], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
+* Most daily used APIs: [IOUtil](docs/IOUtil.gif), [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
 
 * Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][] and [Seq][].
 
@@ -135,7 +135,8 @@ compile 'com.landawn:abacus-android-se:1.2.7'
 [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 
-## [User Guide](https://github.com/landawn/AbacusUtil/wiki)
+## User Guide
+Please refer to [wiki](https://github.com/landawn/AbacusUtil/wiki).
 
 
 [IOUtil]: https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/IOUtil.html
