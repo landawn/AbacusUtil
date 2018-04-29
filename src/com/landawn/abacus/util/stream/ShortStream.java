@@ -35,6 +35,7 @@ import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.MutableInt;
@@ -630,6 +631,18 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                 return ShortStream.of(t);
             }
         });
+    }
+
+    public static ShortStream of(final Short[] a) {
+        return Stream.of(a).mapToShort(Fn.unboxS());
+    }
+
+    public static ShortStream of(final Short[] a, final int startIndex, final int endIndex) {
+        return Stream.of(a, startIndex, endIndex).mapToShort(Fn.unboxS());
+    }
+
+    public static ShortStream of(final Collection<Short> c) {
+        return Stream.of(c).mapToShort(Fn.unboxS());
     }
 
     public static ShortStream of(final ShortIterator iterator) {

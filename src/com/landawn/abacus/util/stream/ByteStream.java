@@ -38,6 +38,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.MutableInt;
@@ -605,10 +606,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         return N.isNullOrEmpty(a) ? empty() : new ArrayByteStream(a);
     }
 
-    public static ByteStream of(final ByteIterator iterator) {
-        return iterator == null ? empty() : new IteratorByteStream(iterator);
-    }
-
     public static ByteStream of(final byte[] a, final int startIndex, final int endIndex) {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayByteStream(a, startIndex, endIndex);
     }
@@ -629,6 +626,22 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                 return ByteStream.of(t);
             }
         });
+    }
+
+    public static ByteStream of(final Byte[] a) {
+        return Stream.of(a).mapToByte(Fn.unboxB());
+    }
+
+    public static ByteStream of(final Byte[] a, final int startIndex, final int endIndex) {
+        return Stream.of(a, startIndex, endIndex).mapToByte(Fn.unboxB());
+    }
+
+    public static ByteStream of(final Collection<Byte> c) {
+        return Stream.of(c).mapToByte(Fn.unboxB());
+    }
+
+    public static ByteStream of(final ByteIterator iterator) {
+        return iterator == null ? empty() : new IteratorByteStream(iterator);
     }
 
     /**

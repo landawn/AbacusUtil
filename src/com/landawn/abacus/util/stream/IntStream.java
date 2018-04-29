@@ -36,6 +36,7 @@ import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
@@ -743,6 +744,18 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
                 return IntStream.of(t);
             }
         });
+    }
+
+    public static IntStream of(final Integer[] a) {
+        return Stream.of(a).mapToInt(Fn.unboxI());
+    }
+
+    public static IntStream of(final Integer[] a, final int startIndex, final int endIndex) {
+        return Stream.of(a, startIndex, endIndex).mapToInt(Fn.unboxI());
+    }
+
+    public static IntStream of(final Collection<Integer> c) {
+        return Stream.of(c).mapToInt(Fn.unboxI());
     }
 
     public static IntStream of(final IntIterator iterator) {
