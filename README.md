@@ -29,7 +29,15 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [HttpClient](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/HttpClient_view.html), 
 [Sheet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Sheet_view.html)...
 
-* Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][] and [Seq][].
+* Primitive List: [BooleanList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanList_view.html), 
+[CharList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharList_view.html), 
+[ByteList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteList_view.html), 
+[ShortList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortList_view.html), 
+[IntList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntList_view.html), 
+[LongList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongList_view.html), 
+[FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html),
+[DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html) and 
+[Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html).
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
 
