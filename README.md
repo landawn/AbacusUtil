@@ -10,6 +10,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 * Most daily used APIs: [N](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/N_view.html), 
 [IOUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IOUtil_view.html), 
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
+[LongMultiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMultiset_view.html), 
 [Multimap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multimap_view.html), 
 [BiMap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BiMap_view.html), 
 [ImmutableList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableList_view.html), 
