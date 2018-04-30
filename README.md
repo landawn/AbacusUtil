@@ -40,7 +40,19 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html) and 
 [Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html).
 
-* Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
+* Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
+[BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
+[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html),  
+[EntryStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EntryStream_view.html), 
+[CharStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharStream_view.html), 
+[ByteStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteStream_view.html), 
+[ShortStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortStream_view.html), 
+[IntStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntStream_view.html), 
+[LongStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongStream_view.html), 
+[FloatStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatStream_view.html), 
+[DoubleStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleStream_view.html), 
+[Fn](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fn_view.html) and more 
+[Collectors](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Collectors_view.html).
 
 * Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][Futures_Android], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
