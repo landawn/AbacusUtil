@@ -8,6 +8,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 ## Features:
 
 * Most daily used APIs: [N](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/N_view.html), 
+[Array](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Array_view.html), 
 [Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html), 
 [Iterators](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Iterators_view.html),
 [Maps](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Maps_view.html), 
@@ -163,7 +164,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Ascii](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Ascii.html),
 [CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/CalendarUnit.html),
 [NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/NamingPolicy.html),
-[Array](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Array.html),
 [Wrapper](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Wrapper.html),
 [ArrayHashSet](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ArrayHashSet.html),
 [ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ArrayHashMap.html),
