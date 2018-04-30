@@ -40,8 +40,20 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [ShortList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortList_view.html), 
 [IntList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntList_view.html), 
 [LongList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongList_view.html), 
-[FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html),
+[FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html), 
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
+
+* Optional: [OptionalBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalBoolean_view.html), 
+[OptionalChar](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalChar_view.html), 
+[OptionalByte](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalByte_view.html), 
+[OptionalShort](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalShort_view.html), 
+[OptionalInt](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalInt_view.html), 
+[OptionalLong](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalLong_view.html), 
+[OptionalFloat](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalFloat_view.html), 
+[OptionalDouble](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalDouble_view.html), 
+[Optional](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Optional_view.html), 
+[Nullable](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Nullable_view.html) and 
+[Any](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Any_view.html).
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
@@ -91,11 +103,11 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [KryoParser](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/KryoParser_view.html)...
 
 * Matrix: 
+[AbstractMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/AbstractMatrix_view.html).
 [Matrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Matrix_view.html), 
 [IntMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntMatrix_view.html), 
 [LongMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMatrix_view.html), 
-[DoubleMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleMatrix_view.html) ... and 
-[AbstractMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/KryoParser_view.html).
+[DoubleMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleMatrix_view.html)...
 
 * More: [RemoteExecutor](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/RemoteExecutor.html),
 [If](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/If.html),
@@ -123,12 +135,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [BooleanIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/BooleanIterator.html)
 ...
 [DoubleIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/DoubleIterator.html),
-[ObjIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ObjIterator.html),
-[Nullable](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Nullable.html),
-[Optional](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Optional.html),
-[OptionalBoolean](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/OptionalBoolean.html)
-...
-[OptionalDouble](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/OptionalDouble.html),
+[ObjIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ObjIterator.html),,
 [Base64](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Base64.html),
 [Clazz](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Clazz.html),
 [ClassUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ClassUtil.html),
