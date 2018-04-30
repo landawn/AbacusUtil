@@ -42,7 +42,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
-[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html),  
+[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html), 
 [EntryStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EntryStream_view.html), 
 [CharStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharStream_view.html), 
 [ByteStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteStream_view.html), 
@@ -54,7 +54,16 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Fn](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fn_view.html) and more 
 [Collectors](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Collectors_view.html).
 
-* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][Futures_Android], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
+* Programming in Android: 
+[SQLiteExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLiteExecutor_view.html), 
+[SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
+[Async](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Async_Android_view.html), 
+[CompletableFuture](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CompletableFuture_Android_view.html), 
+[Futures](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Futures_Android_view.html), 
+[EventBus](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EventBus_view.html), 
+[Observer](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Observer_view.html), 
+[ObserverX](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ObserverX_view.html) and 
+[Fu](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fu_view.html)
 
 * SQL Builder/ORM: [SQLExecutor][], [Mapper](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/SQLExecutor.Mapper.html), [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
