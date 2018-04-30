@@ -57,7 +57,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [MutableShort](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableShort_view.html), 
 [MutableInt](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableInt_view.html), 
 [MutableLong](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableLong_view.html), 
-[MutableFloat](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableFloat_view.html) and  
+[MutableFloat](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableFloat_view.html) and 
 [MutableDouble](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableDouble_view.html).
 
 * Primitive List: 
@@ -232,4 +232,4 @@ compile 'com.landawn:abacus-android-se:1.2.7'
 
 
 ## User Guide
-Please refer to [wiki](https://github.com/landawn/AbacusUtil/wiki).
+Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki).
