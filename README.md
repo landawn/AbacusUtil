@@ -65,7 +65,13 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [ObserverX](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ObserverX_view.html) and 
 [Fu](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fu_view.html)
 
-* SQL Builder/ORM: [SQLExecutor][], [Mapper](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/SQLExecutor.Mapper.html), [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
+* SQL Builder/ORM: 
+[SQLExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLExecutor_view.html),, 
+[Mapper](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Mapper_view.html), 
+[SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
+[DataSet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DataSet_view.html), 
+[JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
+[CSVUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CSVUtil_view.html)...
 
 * ORMs for NoSQL: [MongoDBExecutor][], [CassandraExecutor][] with [CQLBuilder][], [CouchbaseExecutor][], [HBaseExecutor][], [DynamoDBExecutor][] and [Neo4jExecutor][]
 
