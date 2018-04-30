@@ -40,7 +40,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [ShortList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortList_view.html), 
 [IntList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntList_view.html), 
 [LongList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongList_view.html), 
-[FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html), 
+[FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html) and
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
 
 * Optional: [OptionalBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalBoolean_view.html), 
