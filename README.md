@@ -16,6 +16,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
 [LongMultiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMultiset_view.html), 
 [Multimap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multimap_view.html), 
+[Sheet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Sheet_view.html), 
 [BiMap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BiMap_view.html), 
 [ImmutableList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableList_view.html), 
 [ImmutableSet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableSet_view.html), 
@@ -27,7 +28,9 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Duration](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Duration_view.html), 
 [Fraction](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fraction_view.html), 
 [Splitter](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Splitter_view.html), 
-[Joiner](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Joiner_view.html), [Builder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Builder_view.html), 
+[Joiner](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Joiner_view.html), 
+[Builder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Builder_view.html), 
+[Holder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Holder_view.html), 
 [Difference](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Difference_view.html),
 [Comparators](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Comparators_view.html),
 [Chain](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Chain_view.html), 
@@ -36,13 +39,16 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Base64](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Base64_view.html), 
 [Hex](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Hex_view.html), 
 [DigestUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DigestUtil_view.html), 
-[Profiler](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Profiler_view.html), 
 [AsyncExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/AsyncExecutor_view.html), 
 [CompletableFuture](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CompletableFuture_view.html), 
-[Futures](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Futures_view.html), 
-[CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html), 
+[Futures](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Futures_view.html),  
 [HttpClient](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/HttpClient_view.html), 
-[Sheet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Sheet_view.html)...
+[If](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/If_view.html), 
+[Try](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Try_view.html), 
+[Retry](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Retry_view.html), 
+[Synchronized](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Synchronized_view.html), 
+[Profiler](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Profiler_view.html), 
+[CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html)...
 
 * Primitive List: [BooleanList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanList_view.html), 
 [CharList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharList_view.html), 
@@ -52,6 +58,19 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [LongList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongList_view.html), 
 [FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html) and
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
+
+* Primitive/Immutable Iterator: [BooleanIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanIterator_view.html), 
+[CharIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharIterator_view.html), 
+[ByteIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteIterator_view.html), 
+[ShortIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortIterator_view.html), 
+[IntIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntIterator_view.html), 
+[LongIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongIterator_view.html), 
+[FloatIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatIterator_view.html), 
+[DoubleIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleIterator_view.html),
+[ObjIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ObjIterator.html), 
+[ImmutableIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableIterator_view.html), 
+[LineIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleIterator_view.html) and 
+[RowIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LineIterator.html).
 
 * Optional: [OptionalBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalBoolean_view.html), 
 [OptionalChar](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalChar_view.html), 
@@ -120,10 +139,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [DoubleMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleMatrix_view.html)...
 
 * More: [RemoteExecutor](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/RemoteExecutor.html),
-[If](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/If.html),
-[Try](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Try.html),
-[Retry](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Retry.html),
-[Synchronized](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Synchronized.html),
 [ObjectPool](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/pool/ObjectPool.html),
 [KeyedObjectPool](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/pool/KeyedObjectPool.html),
 [SpyMemcached](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/cache/SpyMemcached.html),
@@ -139,13 +154,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Wrapper](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Wrapper.html),
 [ArrayHashSet](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ArrayHashSet.html),
 [ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ArrayHashMap.html),
-[Holder](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Holder.html),
-[LineIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/LineIterator.html),
-[RowIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/RowIterator.html),
-[BooleanIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/BooleanIterator.html)
-...
-[DoubleIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/DoubleIterator.html),
-[ObjIterator](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ObjIterator.html),
 [ClassUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/ClassUtil.html),
 [EscapeUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/EscapeUtil.html),
 [FilenameUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/FilenameUtil.html),
