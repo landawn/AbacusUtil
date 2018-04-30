@@ -50,7 +50,18 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Profiler](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Profiler_view.html), 
 [CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html)...
 
-* Primitive List: [BooleanList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanList_view.html), 
+* Primitive Mutable: 
+[MutableBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableBoolean_view.html), 
+[MutableChar](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableChar_view.html), 
+[MutableByte](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableByte_view.html), 
+[MutableShort](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableShort_view.html), 
+[MutableInt](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableInt_view.html), 
+[MutableLong](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableLong_view.html), 
+[MutableFloat](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableFloat_view.html) and  
+[MutableDouble](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableDouble_view.html).
+
+* Primitive List: 
+[BooleanList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanList_view.html), 
 [CharList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharList_view.html), 
 [ByteList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteList_view.html), 
 [ShortList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortList_view.html), 
@@ -59,7 +70,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html) and
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
 
-* Primitive/Immutable Iterator: [BooleanIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanIterator_view.html), 
+* Primitive/Immutable Iterator: 
+[BooleanIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanIterator_view.html), 
 [CharIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharIterator_view.html), 
 [ByteIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteIterator_view.html), 
 [ShortIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortIterator_view.html), 
@@ -72,7 +84,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [LineIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LineIterator_view.html) and 
 [RowIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RowIterator_view.html).
 
-* Optional: [OptionalBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalBoolean_view.html), 
+* Optional: 
+[OptionalBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalBoolean_view.html), 
 [OptionalChar](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalChar_view.html), 
 [OptionalByte](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalByte_view.html), 
 [OptionalShort](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalShort_view.html), 
@@ -164,9 +177,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [WSSecurityUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/WSSecurityUtil.html),
 [EmailUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/EmailUtil.html),
 [IEEE754rUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/IEEE754rUtil.html),
-[MutableBoolean](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/MutableBoolean.html)
-...
-[MutableDouble](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/MutableDouble.html),
 [Index](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Index.html),
 [Indexed](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Indexed.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/f.html),
