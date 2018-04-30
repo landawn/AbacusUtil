@@ -8,6 +8,10 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 ## Features:
 
 * Most daily used APIs: [N](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/N_view.html), 
+[Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html), 
+[Iterators](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Iterators_view.html),
+[Maps](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Maps_view.html), 
+[DateUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DateUtil_view.html), 
 [IOUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IOUtil_view.html), 
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
 [LongMultiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMultiset_view.html), 
@@ -37,8 +41,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [IntList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntList_view.html), 
 [LongList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongList_view.html), 
 [FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html),
-[DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html) and 
-[Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html).
+[DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
@@ -63,7 +66,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [EventBus](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EventBus_view.html), 
 [Observer](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Observer_view.html), 
 [ObserverX](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ObserverX_view.html) and 
-[Fu](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fu_view.html)
+[Fu](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fu_view.html).
 
 * SQL Builder/ORM: 
 [SQLExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLExecutor_view.html),, 
@@ -94,7 +97,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Charsets](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Charsets.html),
 [Ascii](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Ascii.html),
 [CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/CalendarUnit.html),
-[DateUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/DateUtil.html),
 [NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/NamingPolicy.html),
 [Array](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Array.html),
 [Wrapper](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Wrapper.html),
@@ -139,8 +141,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Maths](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Maths.html),
 [Comparators](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Comparators.html),
 [Chain](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Chain.html),
-[Iterators](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Iterators.html),
-[Maps](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Maps.html),
 [SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/SafeInitializer.html),
 [Stopwatch](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Stopwatch.html),
 [RateLimiter](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/RateLimiter.html),
