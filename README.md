@@ -153,8 +153,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [LongMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMatrix_view.html), 
 [DoubleMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleMatrix_view.html)...
 
-* [Remote Executor](https://github.com/landawn/AbacusUtil/wiki/Deploy-Once,-Run-Anytime):
-[RemoteExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RemoteExecutor_view.html),
+* [Deploy Once, Run Anytime](https://github.com/landawn/AbacusUtil/wiki/Deploy-Once,-Run-Anytime):
+[RemoteExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RemoteExecutor_view.html).
 
 * More: 
 [Charsets](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Charsets.html),
