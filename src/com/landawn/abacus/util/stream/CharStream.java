@@ -644,7 +644,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     @SuppressWarnings("deprecation")
     public static CharStream of(final CharSequence str, final int startIndex, final int endIndex) {
-        checkFromToIndex(startIndex, endIndex, str == null ? 0 : str.length());
+        N.checkFromToIndex(startIndex, endIndex, N.len(str));
 
         if (N.isNullOrEmpty(str)) {
             return empty();

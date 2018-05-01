@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.ShortSupplier;
 import com.landawn.abacus.util.stream.ShortStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
             @Override
             public ShortList toList() {
                 return ShortList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code ShortIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static ShortIterator generate(final ShortSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new ShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public short nextShort() {
+                return supplier.getAsShort();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static ShortIterator generate(final BooleanSupplier hasNext, final ShortSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new ShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public short nextShort() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsShort();
             }
         };
     }

@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.stream;
 
-import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +66,7 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
     }
 
     public static <T> ObjIteratorEx<T> of(final T[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return EMPTY;
@@ -124,7 +122,7 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
         };
     }
 
-    public static <T> ObjIteratorEx<T> of(final Collection<? extends T> c) {
+    public static <T> ObjIteratorEx<T> of(final Collection<T> c) {
         final Iterator<? extends T> iter = c.iterator();
 
         return new QueuedIterator<T>(c.size()) {
@@ -145,7 +143,7 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
         };
     }
 
-    public static <T> ObjIteratorEx<T> from(final Iterator<? extends T> iter) {
+    public static <T> ObjIteratorEx<T> of(final Iterator<T> iter) {
         if (iter instanceof ObjIteratorEx) {
             return ((ObjIteratorEx<T>) iter);
         }
@@ -166,6 +164,10 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
                 // Do nothing.
             }
         };
+    }
+
+    public static <T> ObjIteratorEx<T> of(final Iterable<T> iterable) {
+        return iterable == null ? ObjIteratorEx.<T> empty() : of(iterable.iterator());
     }
 
     @Override

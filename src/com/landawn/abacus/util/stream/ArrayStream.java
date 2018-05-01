@@ -93,7 +93,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             final Collection<Runnable> closeHandlers) {
         super(sorted, comparator, closeHandlers);
 
-        checkFromToIndex(fromIndex, toIndex, values.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(values));
 
         this.elements = values;
         this.fromIndex = fromIndex;

@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -43,6 +44,49 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
 
     public static BooleanIterator of(final boolean[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    /**
+     * Returns an infinite {@code BooleanIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static BooleanIterator generate(final BooleanSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new BooleanIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public boolean nextBoolean() {
+                return supplier.getAsBoolean();
+            }
+        };
+    }
+
+    public static BooleanIterator generate(final BooleanSupplier hasNext, final BooleanSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new BooleanIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public boolean nextBoolean() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsBoolean();
+            }
+        };
     }
 
     public static BooleanIterator of(final boolean[] a, final int fromIndex, final int toIndex) {

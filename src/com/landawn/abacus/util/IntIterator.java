@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.IntSupplier;
 import com.landawn.abacus.util.stream.IntStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
             @Override
             public IntList toList() {
                 return IntList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code IntIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static IntIterator generate(final IntSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new IntIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public int nextInt() {
+                return supplier.getAsInt();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static IntIterator generate(final BooleanSupplier hasNext, final IntSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new IntIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public int nextInt() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsInt();
             }
         };
     }

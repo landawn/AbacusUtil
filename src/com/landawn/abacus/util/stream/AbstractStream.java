@@ -439,6 +439,25 @@ abstract class AbstractStream<T> extends Stream<T> {
         return EntryStream.of(flatMap(mapper));
     }
 
+    //    @Override
+    //    public <V> EntryStream<T, V> flattMapToEntry(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
+    //        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
+    //            @Override
+    //            public Stream<Map.Entry<T, V>> apply(final T t) {
+    //                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
+    //                    @Override
+    //                    public Entry<T, V> apply(V v) {
+    //                        return Tuple.of(t, v);
+    //                    }
+    //                };
+    //
+    //                return Stream.of(flatValueMapper.apply(t)).map(entryMapper);
+    //            }
+    //        };
+    //
+    //        return flatMapToEntry(flatEntryMapper);
+    //    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public Stream<T> sortedBy(final Function<? super T, ? extends Comparable> keyExtractor) {
@@ -2213,6 +2232,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <C extends Collection<T>, R> R toCollectionAndThen(final Supplier<C> supplier, final Function<? super C, R> func) {
+        return func.apply(toCollection(supplier));
+    }
+
+    @Override
     public Pair<Nullable<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }
@@ -2441,4 +2465,29 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return mapToEntry(mapper);
     }
+
+    //    @Override
+    //    public <V> EntryStream<T, V> flatMapToEntryER(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
+    //        N.checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
+    //
+    //        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
+    //            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
+    //
+    //            @Override
+    //            public Stream<Map.Entry<T, V>> apply(final T t) {
+    //                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
+    //                    @Override
+    //                    public Entry<T, V> apply(V v) {
+    //                        entry.set(t, v);
+    //
+    //                        return entry;
+    //                    }
+    //                };
+    //
+    //                return Stream.of(flatValueMapper.apply(t)).map(entryMapper);
+    //            }
+    //        };
+    //
+    //        return flatMapToEntry(flatEntryMapper);
+    //    }
 }

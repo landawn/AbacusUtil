@@ -208,7 +208,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final R[] c = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -231,7 +231,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final R[][] c = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -254,7 +254,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final R[][][] c = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -269,7 +269,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[] c = new boolean[len];
 
         for (int i = 0; i < len; i++) {
@@ -284,7 +284,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][] c = new boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -299,7 +299,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][][] c = new boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -314,7 +314,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final char[] c = new char[len];
 
         for (int i = 0; i < len; i++) {
@@ -329,7 +329,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final char[][] c = new char[len][];
 
         for (int i = 0; i < len; i++) {
@@ -344,7 +344,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final char[][][] c = new char[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -359,7 +359,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[] c = new byte[len];
 
         for (int i = 0; i < len; i++) {
@@ -374,7 +374,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[][] c = new byte[len][];
 
         for (int i = 0; i < len; i++) {
@@ -389,7 +389,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[][][] c = new byte[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -404,7 +404,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final short[] c = new short[len];
 
         for (int i = 0; i < len; i++) {
@@ -419,7 +419,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final short[][] c = new short[len][];
 
         for (int i = 0; i < len; i++) {
@@ -434,7 +434,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final short[][][] c = new short[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -449,7 +449,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[] c = new int[len];
 
         for (int i = 0; i < len; i++) {
@@ -464,7 +464,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][] c = new int[len][];
 
         for (int i = 0; i < len; i++) {
@@ -479,7 +479,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][][] c = new int[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -494,7 +494,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] c = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -509,7 +509,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] c = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -524,7 +524,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] c = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -539,7 +539,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] c = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -554,7 +554,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] c = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -569,7 +569,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] c = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -584,7 +584,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] c = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -599,7 +599,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] c = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -614,7 +614,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] c = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -629,7 +629,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -644,7 +644,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -660,7 +660,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -675,7 +675,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -690,7 +690,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -705,7 +705,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -720,7 +720,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -735,7 +735,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -750,7 +750,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -765,7 +765,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -780,7 +780,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -795,7 +795,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -810,7 +810,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -825,7 +825,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -840,7 +840,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -855,7 +855,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -870,7 +870,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -885,7 +885,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -900,7 +900,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -915,7 +915,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -930,7 +930,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -945,7 +945,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[] result = N.newArray(cls, len);
 
         for (int i = 0; i < len; i++) {
@@ -960,7 +960,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -976,7 +976,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
 
         for (int i = 0; i < len; i++) {
@@ -992,8 +992,8 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[] zip(final Class<R> cls, final A[] a, final B[] b,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[] result = N.newArray(cls, N.min(lenA, lenB));
 
@@ -1011,16 +1011,16 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[] zip(final Class<R> cls, final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <A, B, R, E extends Exception> R[] zip(final int len, final Class<R> cls, final A[] a, final B[] b, final A valueForNoneA,
             final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[] result = N.newArray(cls, len);
 
@@ -1054,9 +1054,9 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[] zip(final Class<R> cls, final A[] a, final B[] b, final C[] c,
             final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[] result = N.newArray(cls, N.min(lenA, lenB, lenC));
 
@@ -1074,18 +1074,18 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[] zip(final Class<R> cls, final A[] a, final B[] b, final C[] c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), cls, a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <A, B, C, R, E extends Exception> R[] zip(final int len, final Class<R> cls, final A[] a, final B[] b, final C[] c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[] result = N.newArray(cls, len);
 
@@ -1108,8 +1108,8 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB));
 
@@ -1127,13 +1127,13 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <A, B, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b,
             final A valueForNoneA, final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
@@ -1167,9 +1167,9 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
             final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB, lenC));
 
@@ -1187,16 +1187,16 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), cls, a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), cls, a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 zipFunction);
     }
 
     private static <A, B, C, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
             final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
 
@@ -1221,8 +1221,8 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB));
 
@@ -1240,8 +1240,8 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB));
 
@@ -1269,9 +1269,9 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c,
             final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB, lenC));
 
@@ -1290,9 +1290,9 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB, lenC));
 
@@ -1323,7 +1323,7 @@ public final class f {
             return N.newArray(componentType, 0);
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][] result = N.newArray(componentType, len);
 
         for (int i = 0; i < len; i++) {
@@ -1340,7 +1340,7 @@ public final class f {
             return N.newArray(componentType, 0);
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final T[][][] result = N.newArray(componentType, len);
 
         for (int i = 0; i < len; i++) {
@@ -1366,7 +1366,7 @@ public final class f {
         } else if (a.length == 0) {
             N.println("[]");
         } else {
-            final int len = len(a);
+            final int len = N.len(a);
             for (int i = 0; i < len; i++) {
                 println(a[i]);
             }
@@ -1379,7 +1379,7 @@ public final class f {
         } else if (a.length == 0) {
             N.println("[]");
         } else {
-            final int len = len(a);
+            final int len = N.len(a);
             for (int i = 0; i < len; i++) {
                 if (i > 0) {
                     N.println(ARRAY_PRINT_SEPERATOR);
@@ -1390,24 +1390,12 @@ public final class f {
         }
     }
 
-    private static <T> int len(T[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static <T> int len(T[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static <T> int len(T[][][] a) {
-        return a == null ? 0 : a.length;
-    }
-
     private static <T> int maxLen(T[][] a) {
         if (a == null) {
             return 0;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         int maxLen = 0;
 
         for (int i = 0; i < len; i++) {
@@ -1590,8 +1578,8 @@ public final class f {
     }
 
     public static <E extends Exception> boolean[] zip(final boolean[] a, final boolean[] b, final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[] result = new boolean[N.min(lenA, lenB)];
 
@@ -1604,16 +1592,16 @@ public final class f {
 
     public static <E extends Exception> boolean[] zip(final boolean[] a, final boolean[] b, final boolean valueForNoneA, final boolean valueForNoneB,
             final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> boolean[] zip(final int len, final boolean[] a, final boolean[] b, final boolean valueForNoneA,
             final boolean valueForNoneB, final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[] result = new boolean[len];
 
@@ -1642,9 +1630,9 @@ public final class f {
 
     public static <E extends Exception> boolean[] zip(final boolean[] a, final boolean[] b, final boolean[] c,
             final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[] result = new boolean[N.min(lenA, lenB, lenC)];
 
@@ -1657,18 +1645,18 @@ public final class f {
 
     public static <E extends Exception> boolean[] zip(final boolean[] a, final boolean[] b, final boolean[] c, final boolean valueForNoneA,
             final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> boolean[] zip(final int len, final boolean[] a, final boolean[] b, final boolean[] c, final boolean valueForNoneA,
             final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[] result = new boolean[len];
 
@@ -1687,8 +1675,8 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final Try.BooleanBiFunction<Boolean, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[][] result = new boolean[N.min(lenA, lenB)][];
 
@@ -1701,13 +1689,13 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final boolean valueForNoneA, final boolean valueForNoneB,
             final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> boolean[][] zip(final int len, final int rowLen, final boolean[][] a, final boolean[][] b, final boolean valueForNoneA,
             final boolean valueForNoneB, final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[][] result = new boolean[len][];
 
@@ -1736,9 +1724,9 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final boolean[][] c,
             final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[][] result = new boolean[N.min(lenA, lenB, lenC)][];
 
@@ -1751,15 +1739,16 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final boolean[][] c, final boolean valueForNoneA,
             final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> boolean[][] zip(final int len, final int rowLen, final boolean[][] a, final boolean[][] b, final boolean[][] c,
             final boolean valueForNoneA, final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[][] result = new boolean[len][];
 
@@ -1779,8 +1768,8 @@ public final class f {
 
     public static <E extends Exception> boolean[][][] zip(final boolean[][][] a, final boolean[][][] b, final Try.BooleanBiFunction<Boolean, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[][][] result = new boolean[N.min(lenA, lenB)][][];
 
@@ -1793,8 +1782,8 @@ public final class f {
 
     public static <E extends Exception> boolean[][][] zip(final boolean[][][] a, final boolean[][][] b, final boolean valueForNoneA,
             final boolean valueForNoneB, final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final boolean[][][] result = new boolean[N.max(lenA, lenB)][][];
 
@@ -1817,9 +1806,9 @@ public final class f {
 
     public static <E extends Exception> boolean[][][] zip(final boolean[][][] a, final boolean[][][] b, final boolean[][][] c,
             final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[][][] result = new boolean[N.min(lenA, lenB, lenC)][][];
 
@@ -1832,9 +1821,9 @@ public final class f {
 
     public static <E extends Exception> boolean[][][] zip(final boolean[][][] a, final boolean[][][] b, final boolean[][][] c, final boolean valueForNoneA,
             final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final boolean[][][] result = new boolean[N.max(lenA, lenB, lenC)][][];
 
@@ -1858,7 +1847,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final Boolean[][] result = new Boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -1873,7 +1862,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final Boolean[][][] result = new Boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -1896,7 +1885,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][] result = new boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -1911,7 +1900,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][] result = new boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -1926,7 +1915,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][][] result = new boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -1941,7 +1930,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][][] result = new boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -1989,18 +1978,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(boolean[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(boolean[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(boolean[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(boolean[][] a) {
@@ -2311,8 +2288,8 @@ public final class f {
     }
 
     public static <E extends Exception> char[] zip(final char[] a, final char[] b, final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[] result = new char[N.min(lenA, lenB)];
 
@@ -2325,16 +2302,16 @@ public final class f {
 
     public static <E extends Exception> char[] zip(final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB,
             final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> char[] zip(final int len, final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB,
             final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[] result = new char[len];
 
@@ -2363,9 +2340,9 @@ public final class f {
 
     public static <E extends Exception> char[] zip(final char[] a, final char[] b, final char[] c, final Try.CharTriFunction<Character, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[] result = new char[N.min(lenA, lenB, lenC)];
 
@@ -2378,18 +2355,18 @@ public final class f {
 
     public static <E extends Exception> char[] zip(final char[] a, final char[] b, final char[] c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> char[] zip(final int len, final char[] a, final char[] b, final char[] c, final char valueForNoneA,
             final char valueForNoneB, final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[] result = new char[len];
 
@@ -2407,8 +2384,8 @@ public final class f {
     }
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[][] result = new char[N.min(lenA, lenB)][];
 
@@ -2421,13 +2398,13 @@ public final class f {
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final char valueForNoneA, final char valueForNoneB,
             final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> char[][] zip(final int len, final int rowLen, final char[][] a, final char[][] b, final char valueForNoneA,
             final char valueForNoneB, final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[][] result = new char[len][];
 
@@ -2456,9 +2433,9 @@ public final class f {
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final char[][] c, final Try.CharTriFunction<Character, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[][] result = new char[N.min(lenA, lenB, lenC)][];
 
@@ -2471,14 +2448,15 @@ public final class f {
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final char[][] c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> char[][] zip(final int len, final int rowLen, final char[][] a, final char[][] b, final char[][] c,
             final char valueForNoneA, final char valueForNoneB, final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[][] result = new char[len][];
 
@@ -2497,8 +2475,8 @@ public final class f {
     }
 
     public static <E extends Exception> char[][][] zip(final char[][][] a, final char[][][] b, final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[][][] result = new char[N.min(lenA, lenB)][][];
 
@@ -2511,8 +2489,8 @@ public final class f {
 
     public static <E extends Exception> char[][][] zip(final char[][][] a, final char[][][] b, final char valueForNoneA, final char valueForNoneB,
             final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final char[][][] result = new char[N.max(lenA, lenB)][][];
 
@@ -2535,9 +2513,9 @@ public final class f {
 
     public static <E extends Exception> char[][][] zip(final char[][][] a, final char[][][] b, final char[][][] c,
             final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[][][] result = new char[N.min(lenA, lenB, lenC)][][];
 
@@ -2550,9 +2528,9 @@ public final class f {
 
     public static <E extends Exception> char[][][] zip(final char[][][] a, final char[][][] b, final char[][][] c, final char valueForNoneA,
             final char valueForNoneB, final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final char[][][] result = new char[N.max(lenA, lenB, lenC)][][];
 
@@ -2707,18 +2685,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(char[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(char[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(char[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(char[][] a) {
@@ -3029,8 +2995,8 @@ public final class f {
     }
 
     public static byte[] add(final byte[] a, final byte[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -3042,15 +3008,15 @@ public final class f {
     }
 
     public static byte[] add(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[] add(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -3078,9 +3044,9 @@ public final class f {
     }
 
     public static byte[] add(final byte[] a, final byte[] b, final byte[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -3092,18 +3058,18 @@ public final class f {
     }
 
     public static byte[] add(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[] add(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -3121,8 +3087,8 @@ public final class f {
     }
 
     public static byte[][] add(final byte[][] a, final byte[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -3134,12 +3100,12 @@ public final class f {
     }
 
     public static byte[][] add(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -3167,9 +3133,9 @@ public final class f {
     }
 
     public static byte[][] add(final byte[][] a, final byte[][] b, final byte[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -3182,14 +3148,14 @@ public final class f {
 
     public static byte[][] add(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -3207,8 +3173,8 @@ public final class f {
     }
 
     public static byte[][][] add(final byte[][][] a, final byte[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -3220,8 +3186,8 @@ public final class f {
     }
 
     public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -3243,9 +3209,9 @@ public final class f {
     }
 
     public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -3258,9 +3224,9 @@ public final class f {
 
     public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -3276,8 +3242,8 @@ public final class f {
     }
 
     public static byte[] subtract(final byte[] a, final byte[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -3289,15 +3255,15 @@ public final class f {
     }
 
     public static byte[] subtract(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[] subtract(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -3325,9 +3291,9 @@ public final class f {
     }
 
     public static byte[] subtract(final byte[] a, final byte[] b, final byte[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -3340,18 +3306,18 @@ public final class f {
 
     public static byte[] subtract(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[] subtract(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -3369,8 +3335,8 @@ public final class f {
     }
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -3382,12 +3348,12 @@ public final class f {
     }
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -3415,9 +3381,9 @@ public final class f {
     }
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -3430,14 +3396,14 @@ public final class f {
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -3456,8 +3422,8 @@ public final class f {
     }
 
     public static byte[][][] subtract(final byte[][][] a, final byte[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -3469,8 +3435,8 @@ public final class f {
     }
 
     public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -3492,9 +3458,9 @@ public final class f {
     }
 
     public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -3507,9 +3473,9 @@ public final class f {
 
     public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -3525,8 +3491,8 @@ public final class f {
     }
 
     public static byte[] multipliedBy(final byte[] a, final byte[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -3538,15 +3504,15 @@ public final class f {
     }
 
     public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[] multipliedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -3574,9 +3540,9 @@ public final class f {
     }
 
     public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -3589,18 +3555,18 @@ public final class f {
 
     public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[] multipliedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -3618,8 +3584,8 @@ public final class f {
     }
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -3631,13 +3597,13 @@ public final class f {
     }
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA,
             final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -3665,9 +3631,9 @@ public final class f {
     }
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -3680,14 +3646,14 @@ public final class f {
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -3706,8 +3672,8 @@ public final class f {
     }
 
     public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -3719,8 +3685,8 @@ public final class f {
     }
 
     public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -3742,9 +3708,9 @@ public final class f {
     }
 
     public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -3757,9 +3723,9 @@ public final class f {
 
     public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -3775,8 +3741,8 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -3788,15 +3754,15 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -3824,9 +3790,9 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -3839,18 +3805,18 @@ public final class f {
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -3868,8 +3834,8 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -3881,12 +3847,12 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -3914,9 +3880,9 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -3929,14 +3895,14 @@ public final class f {
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -3955,8 +3921,8 @@ public final class f {
     }
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -3968,8 +3934,8 @@ public final class f {
     }
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -3991,9 +3957,9 @@ public final class f {
     }
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -4006,9 +3972,9 @@ public final class f {
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -4024,8 +3990,8 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -4037,16 +4003,16 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB,
             final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -4074,9 +4040,9 @@ public final class f {
     }
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -4089,18 +4055,18 @@ public final class f {
 
     public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC,
             final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -4119,8 +4085,8 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -4132,13 +4098,13 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB, final byte defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB,
             final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -4166,9 +4132,9 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -4181,15 +4147,15 @@ public final class f {
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final byte defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -4208,8 +4174,8 @@ public final class f {
     }
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -4222,8 +4188,8 @@ public final class f {
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB,
             final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -4245,9 +4211,9 @@ public final class f {
     }
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -4260,9 +4226,9 @@ public final class f {
 
     public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final byte defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -4279,8 +4245,8 @@ public final class f {
     }
 
     public static <E extends Exception> byte[] zip(final byte[] a, final byte[] b, final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[N.min(lenA, lenB)];
 
@@ -4293,16 +4259,16 @@ public final class f {
 
     public static <E extends Exception> byte[] zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB,
             final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> byte[] zip(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB,
             final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[] result = new byte[len];
 
@@ -4330,9 +4296,9 @@ public final class f {
     }
 
     public static <E extends Exception> byte[] zip(final byte[] a, final byte[] b, final byte[] c, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[N.min(lenA, lenB, lenC)];
 
@@ -4345,18 +4311,18 @@ public final class f {
 
     public static <E extends Exception> byte[] zip(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> byte[] zip(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[] result = new byte[len];
 
@@ -4374,8 +4340,8 @@ public final class f {
     }
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[N.min(lenA, lenB)][];
 
@@ -4388,13 +4354,13 @@ public final class f {
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB,
             final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> byte[][] zip(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA,
             final byte valueForNoneB, final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][] result = new byte[len][];
 
@@ -4423,9 +4389,9 @@ public final class f {
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final byte[][] c, final Try.ByteTriFunction<Byte, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
 
@@ -4438,14 +4404,15 @@ public final class f {
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> byte[][] zip(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c,
             final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][] result = new byte[len][];
 
@@ -4464,8 +4431,8 @@ public final class f {
     }
 
     public static <E extends Exception> byte[][][] zip(final byte[][][] a, final byte[][][] b, final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.min(lenA, lenB)][][];
 
@@ -4478,8 +4445,8 @@ public final class f {
 
     public static <E extends Exception> byte[][][] zip(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB,
             final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final byte[][][] result = new byte[N.max(lenA, lenB)][][];
 
@@ -4502,9 +4469,9 @@ public final class f {
 
     public static <E extends Exception> byte[][][] zip(final byte[][][] a, final byte[][][] b, final byte[][][] c,
             final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
 
@@ -4517,9 +4484,9 @@ public final class f {
 
     public static <E extends Exception> byte[][][] zip(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA,
             final byte valueForNoneB, final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
 
@@ -4674,18 +4641,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(byte[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(byte[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(byte[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(byte[][] a) {
@@ -4996,8 +4951,8 @@ public final class f {
     }
 
     public static short[] add(final short[] a, final short[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -5009,15 +4964,15 @@ public final class f {
     }
 
     public static short[] add(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[] add(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -5045,9 +5000,9 @@ public final class f {
     }
 
     public static short[] add(final short[] a, final short[] b, final short[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -5060,18 +5015,18 @@ public final class f {
 
     public static short[] add(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[] add(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -5089,8 +5044,8 @@ public final class f {
     }
 
     public static short[][] add(final short[][] a, final short[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -5102,12 +5057,12 @@ public final class f {
     }
 
     public static short[][] add(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -5135,9 +5090,9 @@ public final class f {
     }
 
     public static short[][] add(final short[][] a, final short[][] b, final short[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -5150,14 +5105,14 @@ public final class f {
 
     public static short[][] add(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -5175,8 +5130,8 @@ public final class f {
     }
 
     public static short[][][] add(final short[][][] a, final short[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -5188,8 +5143,8 @@ public final class f {
     }
 
     public static short[][][] add(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -5211,9 +5166,9 @@ public final class f {
     }
 
     public static short[][][] add(final short[][][] a, final short[][][] b, final short[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -5226,9 +5181,9 @@ public final class f {
 
     public static short[][][] add(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -5244,8 +5199,8 @@ public final class f {
     }
 
     public static short[] subtract(final short[] a, final short[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -5257,15 +5212,15 @@ public final class f {
     }
 
     public static short[] subtract(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[] subtract(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -5293,9 +5248,9 @@ public final class f {
     }
 
     public static short[] subtract(final short[] a, final short[] b, final short[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -5308,18 +5263,18 @@ public final class f {
 
     public static short[] subtract(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[] subtract(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -5337,8 +5292,8 @@ public final class f {
     }
 
     public static short[][] subtract(final short[][] a, final short[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -5350,13 +5305,13 @@ public final class f {
     }
 
     public static short[][] subtract(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
             final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -5384,9 +5339,9 @@ public final class f {
     }
 
     public static short[][] subtract(final short[][] a, final short[][] b, final short[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -5399,14 +5354,14 @@ public final class f {
 
     public static short[][] subtract(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -5425,8 +5380,8 @@ public final class f {
     }
 
     public static short[][][] subtract(final short[][][] a, final short[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -5438,8 +5393,8 @@ public final class f {
     }
 
     public static short[][][] subtract(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -5461,9 +5416,9 @@ public final class f {
     }
 
     public static short[][][] subtract(final short[][][] a, final short[][][] b, final short[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -5476,9 +5431,9 @@ public final class f {
 
     public static short[][][] subtract(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -5494,8 +5449,8 @@ public final class f {
     }
 
     public static short[] multipliedBy(final short[] a, final short[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -5507,15 +5462,15 @@ public final class f {
     }
 
     public static short[] multipliedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[] multipliedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -5543,9 +5498,9 @@ public final class f {
     }
 
     public static short[] multipliedBy(final short[] a, final short[] b, final short[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -5558,18 +5513,18 @@ public final class f {
 
     public static short[] multipliedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[] multipliedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -5587,8 +5542,8 @@ public final class f {
     }
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -5600,13 +5555,13 @@ public final class f {
     }
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
             final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -5634,9 +5589,9 @@ public final class f {
     }
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b, final short[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -5649,14 +5604,14 @@ public final class f {
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -5675,8 +5630,8 @@ public final class f {
     }
 
     public static short[][][] multipliedBy(final short[][][] a, final short[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -5688,8 +5643,8 @@ public final class f {
     }
 
     public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -5711,9 +5666,9 @@ public final class f {
     }
 
     public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -5726,9 +5681,9 @@ public final class f {
 
     public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -5744,8 +5699,8 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -5757,15 +5712,15 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[] dividedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -5793,9 +5748,9 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b, final short[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -5808,18 +5763,18 @@ public final class f {
 
     public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[] dividedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -5837,8 +5792,8 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -5850,13 +5805,13 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
             final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -5884,9 +5839,9 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -5899,14 +5854,14 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -5925,8 +5880,8 @@ public final class f {
     }
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -5938,8 +5893,8 @@ public final class f {
     }
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -5961,9 +5916,9 @@ public final class f {
     }
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -5976,9 +5931,9 @@ public final class f {
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -5994,8 +5949,8 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -6007,16 +5962,16 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static short[] dividedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
             final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -6044,9 +5999,9 @@ public final class f {
     }
 
     public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -6059,18 +6014,18 @@ public final class f {
 
     public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static short[] dividedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -6089,8 +6044,8 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -6103,13 +6058,13 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB,
             final short defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
             final short valueForNoneB, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -6137,9 +6092,9 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -6152,15 +6107,15 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final short defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -6179,8 +6134,8 @@ public final class f {
     }
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -6193,8 +6148,8 @@ public final class f {
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB,
             final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -6216,9 +6171,9 @@ public final class f {
     }
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -6231,9 +6186,9 @@ public final class f {
 
     public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final short defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -6250,8 +6205,8 @@ public final class f {
     }
 
     public static <E extends Exception> short[] zip(final short[] a, final short[] b, final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[N.min(lenA, lenB)];
 
@@ -6264,16 +6219,16 @@ public final class f {
 
     public static <E extends Exception> short[] zip(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
             final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> short[] zip(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
             final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[] result = new short[len];
 
@@ -6302,9 +6257,9 @@ public final class f {
 
     public static <E extends Exception> short[] zip(final short[] a, final short[] b, final short[] c, final Try.ShortTriFunction<Short, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[N.min(lenA, lenB, lenC)];
 
@@ -6317,18 +6272,18 @@ public final class f {
 
     public static <E extends Exception> short[] zip(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> short[] zip(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[] result = new short[len];
 
@@ -6346,8 +6301,8 @@ public final class f {
     }
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[N.min(lenA, lenB)][];
 
@@ -6360,13 +6315,13 @@ public final class f {
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB,
             final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> short[][] zip(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
             final short valueForNoneB, final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][] result = new short[len][];
 
@@ -6395,9 +6350,9 @@ public final class f {
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final short[][] c, final Try.ShortTriFunction<Short, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[N.min(lenA, lenB, lenC)][];
 
@@ -6410,14 +6365,15 @@ public final class f {
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> short[][] zip(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c,
             final short valueForNoneA, final short valueForNoneB, final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][] result = new short[len][];
 
@@ -6436,8 +6392,8 @@ public final class f {
     }
 
     public static <E extends Exception> short[][][] zip(final short[][][] a, final short[][][] b, final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.min(lenA, lenB)][][];
 
@@ -6450,8 +6406,8 @@ public final class f {
 
     public static <E extends Exception> short[][][] zip(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB,
             final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final short[][][] result = new short[N.max(lenA, lenB)][][];
 
@@ -6474,9 +6430,9 @@ public final class f {
 
     public static <E extends Exception> short[][][] zip(final short[][][] a, final short[][][] b, final short[][][] c,
             final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
 
@@ -6489,9 +6445,9 @@ public final class f {
 
     public static <E extends Exception> short[][][] zip(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
 
@@ -6646,18 +6602,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(short[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(short[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(short[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(short[][] a) {
@@ -6968,8 +6912,8 @@ public final class f {
     }
 
     public static int[] add(final int[] a, final int[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -6981,15 +6925,15 @@ public final class f {
     }
 
     public static int[] add(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[] add(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -7017,9 +6961,9 @@ public final class f {
     }
 
     public static int[] add(final int[] a, final int[] b, final int[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -7031,18 +6975,18 @@ public final class f {
     }
 
     public static int[] add(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[] add(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -7060,8 +7004,8 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -7073,12 +7017,12 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -7106,9 +7050,9 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b, final int[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -7120,14 +7064,14 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
             final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -7145,8 +7089,8 @@ public final class f {
     }
 
     public static int[][][] add(final int[][][] a, final int[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -7158,8 +7102,8 @@ public final class f {
     }
 
     public static int[][][] add(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -7181,9 +7125,9 @@ public final class f {
     }
 
     public static int[][][] add(final int[][][] a, final int[][][] b, final int[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -7196,9 +7140,9 @@ public final class f {
 
     public static int[][][] add(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -7214,8 +7158,8 @@ public final class f {
     }
 
     public static int[] subtract(final int[] a, final int[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -7227,15 +7171,15 @@ public final class f {
     }
 
     public static int[] subtract(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[] subtract(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -7263,9 +7207,9 @@ public final class f {
     }
 
     public static int[] subtract(final int[] a, final int[] b, final int[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -7277,18 +7221,18 @@ public final class f {
     }
 
     public static int[] subtract(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[] subtract(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -7306,8 +7250,8 @@ public final class f {
     }
 
     public static int[][] subtract(final int[][] a, final int[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -7319,12 +7263,12 @@ public final class f {
     }
 
     public static int[][] subtract(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -7352,9 +7296,9 @@ public final class f {
     }
 
     public static int[][] subtract(final int[][] a, final int[][] b, final int[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -7367,14 +7311,14 @@ public final class f {
 
     public static int[][] subtract(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
             final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -7393,8 +7337,8 @@ public final class f {
     }
 
     public static int[][][] subtract(final int[][][] a, final int[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -7406,8 +7350,8 @@ public final class f {
     }
 
     public static int[][][] subtract(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -7429,9 +7373,9 @@ public final class f {
     }
 
     public static int[][][] subtract(final int[][][] a, final int[][][] b, final int[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -7444,9 +7388,9 @@ public final class f {
 
     public static int[][][] subtract(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -7462,8 +7406,8 @@ public final class f {
     }
 
     public static int[] multipliedBy(final int[] a, final int[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -7475,15 +7419,15 @@ public final class f {
     }
 
     public static int[] multipliedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[] multipliedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -7511,9 +7455,9 @@ public final class f {
     }
 
     public static int[] multipliedBy(final int[] a, final int[] b, final int[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -7525,18 +7469,18 @@ public final class f {
     }
 
     public static int[] multipliedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[] multipliedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -7554,8 +7498,8 @@ public final class f {
     }
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -7567,12 +7511,12 @@ public final class f {
     }
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -7600,9 +7544,9 @@ public final class f {
     }
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b, final int[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -7615,14 +7559,14 @@ public final class f {
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
             final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -7641,8 +7585,8 @@ public final class f {
     }
 
     public static int[][][] multipliedBy(final int[][][] a, final int[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -7654,8 +7598,8 @@ public final class f {
     }
 
     public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -7677,9 +7621,9 @@ public final class f {
     }
 
     public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -7692,9 +7636,9 @@ public final class f {
 
     public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -7710,8 +7654,8 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -7723,15 +7667,15 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[] dividedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -7759,9 +7703,9 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -7773,18 +7717,18 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[] dividedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -7802,8 +7746,8 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -7815,12 +7759,12 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -7848,9 +7792,9 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -7863,14 +7807,14 @@ public final class f {
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
             final int valueForNoneB, final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -7889,8 +7833,8 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -7902,8 +7846,8 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -7925,9 +7869,9 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -7940,9 +7884,9 @@ public final class f {
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -7958,8 +7902,8 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -7971,16 +7915,16 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static int[] dividedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB,
             final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -8008,9 +7952,9 @@ public final class f {
     }
 
     public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -8023,18 +7967,18 @@ public final class f {
 
     public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
             final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static int[] dividedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -8053,8 +7997,8 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -8066,13 +8010,13 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB,
             final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -8100,9 +8044,9 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -8115,15 +8059,15 @@ public final class f {
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final int defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
             final int valueForNoneB, final int valueForNoneC, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -8142,8 +8086,8 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -8155,8 +8099,8 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -8178,9 +8122,9 @@ public final class f {
     }
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -8193,9 +8137,9 @@ public final class f {
 
     public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final int defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -8212,8 +8156,8 @@ public final class f {
     }
 
     public static <E extends Exception> int[] zip(final int[] a, final int[] b, final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[N.min(lenA, lenB)];
 
@@ -8226,16 +8170,16 @@ public final class f {
 
     public static <E extends Exception> int[] zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB,
             final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> int[] zip(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB,
             final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[] result = new int[len];
 
@@ -8263,9 +8207,9 @@ public final class f {
     }
 
     public static <E extends Exception> int[] zip(final int[] a, final int[] b, final int[] c, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[N.min(lenA, lenB, lenC)];
 
@@ -8278,18 +8222,18 @@ public final class f {
 
     public static <E extends Exception> int[] zip(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> int[] zip(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[] result = new int[len];
 
@@ -8307,8 +8251,8 @@ public final class f {
     }
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[N.min(lenA, lenB)][];
 
@@ -8321,13 +8265,13 @@ public final class f {
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB,
             final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> int[][] zip(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA,
             final int valueForNoneB, final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][] result = new int[len][];
 
@@ -8356,9 +8300,9 @@ public final class f {
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final int[][] c, final Try.IntTriFunction<Integer, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[N.min(lenA, lenB, lenC)][];
 
@@ -8371,14 +8315,15 @@ public final class f {
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> int[][] zip(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c,
             final int valueForNoneA, final int valueForNoneB, final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][] result = new int[len][];
 
@@ -8397,8 +8342,8 @@ public final class f {
     }
 
     public static <E extends Exception> int[][][] zip(final int[][][] a, final int[][][] b, final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.min(lenA, lenB)][][];
 
@@ -8411,8 +8356,8 @@ public final class f {
 
     public static <E extends Exception> int[][][] zip(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB,
             final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final int[][][] result = new int[N.max(lenA, lenB)][][];
 
@@ -8435,9 +8380,9 @@ public final class f {
 
     public static <E extends Exception> int[][][] zip(final int[][][] a, final int[][][] b, final int[][][] c, final Try.IntTriFunction<Integer, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
 
@@ -8450,9 +8395,9 @@ public final class f {
 
     public static <E extends Exception> int[][][] zip(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
 
@@ -8607,18 +8552,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(int[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(int[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(int[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(int[][] a) {
@@ -8929,8 +8862,8 @@ public final class f {
     }
 
     public static long[] add(final long[] a, final long[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -8942,15 +8875,15 @@ public final class f {
     }
 
     public static long[] add(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[] add(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -8978,9 +8911,9 @@ public final class f {
     }
 
     public static long[] add(final long[] a, final long[] b, final long[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -8992,18 +8925,18 @@ public final class f {
     }
 
     public static long[] add(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[] add(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -9021,8 +8954,8 @@ public final class f {
     }
 
     public static long[][] add(final long[][] a, final long[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -9034,12 +8967,12 @@ public final class f {
     }
 
     public static long[][] add(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -9067,9 +9000,9 @@ public final class f {
     }
 
     public static long[][] add(final long[][] a, final long[][] b, final long[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -9082,14 +9015,14 @@ public final class f {
 
     public static long[][] add(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -9107,8 +9040,8 @@ public final class f {
     }
 
     public static long[][][] add(final long[][][] a, final long[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -9120,8 +9053,8 @@ public final class f {
     }
 
     public static long[][][] add(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -9143,9 +9076,9 @@ public final class f {
     }
 
     public static long[][][] add(final long[][][] a, final long[][][] b, final long[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -9158,9 +9091,9 @@ public final class f {
 
     public static long[][][] add(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -9176,8 +9109,8 @@ public final class f {
     }
 
     public static long[] subtract(final long[] a, final long[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -9189,15 +9122,15 @@ public final class f {
     }
 
     public static long[] subtract(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[] subtract(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -9225,9 +9158,9 @@ public final class f {
     }
 
     public static long[] subtract(final long[] a, final long[] b, final long[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -9240,18 +9173,18 @@ public final class f {
 
     public static long[] subtract(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[] subtract(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -9269,8 +9202,8 @@ public final class f {
     }
 
     public static long[][] subtract(final long[][] a, final long[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -9282,12 +9215,12 @@ public final class f {
     }
 
     public static long[][] subtract(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -9315,9 +9248,9 @@ public final class f {
     }
 
     public static long[][] subtract(final long[][] a, final long[][] b, final long[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -9330,14 +9263,14 @@ public final class f {
 
     public static long[][] subtract(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -9356,8 +9289,8 @@ public final class f {
     }
 
     public static long[][][] subtract(final long[][][] a, final long[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -9369,8 +9302,8 @@ public final class f {
     }
 
     public static long[][][] subtract(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -9392,9 +9325,9 @@ public final class f {
     }
 
     public static long[][][] subtract(final long[][][] a, final long[][][] b, final long[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -9407,9 +9340,9 @@ public final class f {
 
     public static long[][][] subtract(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -9425,8 +9358,8 @@ public final class f {
     }
 
     public static long[] multipliedBy(final long[] a, final long[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -9438,15 +9371,15 @@ public final class f {
     }
 
     public static long[] multipliedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[] multipliedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -9474,9 +9407,9 @@ public final class f {
     }
 
     public static long[] multipliedBy(final long[] a, final long[] b, final long[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -9489,18 +9422,18 @@ public final class f {
 
     public static long[] multipliedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[] multipliedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -9518,8 +9451,8 @@ public final class f {
     }
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -9531,13 +9464,13 @@ public final class f {
     }
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA,
             final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -9565,9 +9498,9 @@ public final class f {
     }
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b, final long[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -9580,14 +9513,14 @@ public final class f {
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -9606,8 +9539,8 @@ public final class f {
     }
 
     public static long[][][] multipliedBy(final long[][][] a, final long[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -9619,8 +9552,8 @@ public final class f {
     }
 
     public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -9642,9 +9575,9 @@ public final class f {
     }
 
     public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -9657,9 +9590,9 @@ public final class f {
 
     public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -9675,8 +9608,8 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -9688,15 +9621,15 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[] dividedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -9724,9 +9657,9 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b, final long[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -9739,18 +9672,18 @@ public final class f {
 
     public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[] dividedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -9768,8 +9701,8 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -9781,12 +9714,12 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -9814,9 +9747,9 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -9829,14 +9762,14 @@ public final class f {
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -9855,8 +9788,8 @@ public final class f {
     }
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -9868,8 +9801,8 @@ public final class f {
     }
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -9891,9 +9824,9 @@ public final class f {
     }
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -9906,9 +9839,9 @@ public final class f {
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -9924,8 +9857,8 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -9937,16 +9870,16 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static long[] dividedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB,
             final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -9974,9 +9907,9 @@ public final class f {
     }
 
     public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -9989,18 +9922,18 @@ public final class f {
 
     public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC,
             final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static long[] dividedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -10019,8 +9952,8 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -10032,13 +9965,13 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB, final long defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB,
             final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -10066,9 +9999,9 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -10081,15 +10014,15 @@ public final class f {
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final long defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -10108,8 +10041,8 @@ public final class f {
     }
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -10122,8 +10055,8 @@ public final class f {
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB,
             final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -10145,9 +10078,9 @@ public final class f {
     }
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -10160,9 +10093,9 @@ public final class f {
 
     public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final long defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -10179,8 +10112,8 @@ public final class f {
     }
 
     public static <E extends Exception> long[] zip(final long[] a, final long[] b, final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[N.min(lenA, lenB)];
 
@@ -10193,16 +10126,16 @@ public final class f {
 
     public static <E extends Exception> long[] zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB,
             final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> long[] zip(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB,
             final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[] result = new long[len];
 
@@ -10230,9 +10163,9 @@ public final class f {
     }
 
     public static <E extends Exception> long[] zip(final long[] a, final long[] b, final long[] c, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[N.min(lenA, lenB, lenC)];
 
@@ -10245,18 +10178,18 @@ public final class f {
 
     public static <E extends Exception> long[] zip(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> long[] zip(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[] result = new long[len];
 
@@ -10274,8 +10207,8 @@ public final class f {
     }
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[N.min(lenA, lenB)][];
 
@@ -10288,13 +10221,13 @@ public final class f {
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB,
             final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> long[][] zip(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA,
             final long valueForNoneB, final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][] result = new long[len][];
 
@@ -10323,9 +10256,9 @@ public final class f {
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final long[][] c, final Try.LongTriFunction<Long, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[N.min(lenA, lenB, lenC)][];
 
@@ -10338,14 +10271,15 @@ public final class f {
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> long[][] zip(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c,
             final long valueForNoneA, final long valueForNoneB, final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][] result = new long[len][];
 
@@ -10364,8 +10298,8 @@ public final class f {
     }
 
     public static <E extends Exception> long[][][] zip(final long[][][] a, final long[][][] b, final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.min(lenA, lenB)][][];
 
@@ -10378,8 +10312,8 @@ public final class f {
 
     public static <E extends Exception> long[][][] zip(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB,
             final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final long[][][] result = new long[N.max(lenA, lenB)][][];
 
@@ -10402,9 +10336,9 @@ public final class f {
 
     public static <E extends Exception> long[][][] zip(final long[][][] a, final long[][][] b, final long[][][] c,
             final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
 
@@ -10417,9 +10351,9 @@ public final class f {
 
     public static <E extends Exception> long[][][] zip(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA,
             final long valueForNoneB, final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
 
@@ -10574,18 +10508,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(long[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(long[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(long[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(long[][] a) {
@@ -10896,8 +10818,8 @@ public final class f {
     }
 
     public static float[] add(final float[] a, final float[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -10909,15 +10831,15 @@ public final class f {
     }
 
     public static float[] add(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[] add(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -10945,9 +10867,9 @@ public final class f {
     }
 
     public static float[] add(final float[] a, final float[] b, final float[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -10960,18 +10882,18 @@ public final class f {
 
     public static float[] add(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[] add(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -10989,8 +10911,8 @@ public final class f {
     }
 
     public static float[][] add(final float[][] a, final float[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -11002,12 +10924,12 @@ public final class f {
     }
 
     public static float[][] add(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -11035,9 +10957,9 @@ public final class f {
     }
 
     public static float[][] add(final float[][] a, final float[][] b, final float[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -11050,14 +10972,14 @@ public final class f {
 
     public static float[][] add(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -11075,8 +10997,8 @@ public final class f {
     }
 
     public static float[][][] add(final float[][][] a, final float[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -11088,8 +11010,8 @@ public final class f {
     }
 
     public static float[][][] add(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -11111,9 +11033,9 @@ public final class f {
     }
 
     public static float[][][] add(final float[][][] a, final float[][][] b, final float[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -11126,9 +11048,9 @@ public final class f {
 
     public static float[][][] add(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -11144,8 +11066,8 @@ public final class f {
     }
 
     public static float[] subtract(final float[] a, final float[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -11157,15 +11079,15 @@ public final class f {
     }
 
     public static float[] subtract(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[] subtract(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -11193,9 +11115,9 @@ public final class f {
     }
 
     public static float[] subtract(final float[] a, final float[] b, final float[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -11208,18 +11130,18 @@ public final class f {
 
     public static float[] subtract(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[] subtract(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -11237,8 +11159,8 @@ public final class f {
     }
 
     public static float[][] subtract(final float[][] a, final float[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -11250,13 +11172,13 @@ public final class f {
     }
 
     public static float[][] subtract(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
             final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -11284,9 +11206,9 @@ public final class f {
     }
 
     public static float[][] subtract(final float[][] a, final float[][] b, final float[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -11299,14 +11221,14 @@ public final class f {
 
     public static float[][] subtract(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -11325,8 +11247,8 @@ public final class f {
     }
 
     public static float[][][] subtract(final float[][][] a, final float[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -11338,8 +11260,8 @@ public final class f {
     }
 
     public static float[][][] subtract(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -11361,9 +11283,9 @@ public final class f {
     }
 
     public static float[][][] subtract(final float[][][] a, final float[][][] b, final float[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -11376,9 +11298,9 @@ public final class f {
 
     public static float[][][] subtract(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -11394,8 +11316,8 @@ public final class f {
     }
 
     public static float[] multipliedBy(final float[] a, final float[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -11407,15 +11329,15 @@ public final class f {
     }
 
     public static float[] multipliedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[] multipliedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -11443,9 +11365,9 @@ public final class f {
     }
 
     public static float[] multipliedBy(final float[] a, final float[] b, final float[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -11458,18 +11380,18 @@ public final class f {
 
     public static float[] multipliedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[] multipliedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -11487,8 +11409,8 @@ public final class f {
     }
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -11500,13 +11422,13 @@ public final class f {
     }
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
             final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -11534,9 +11456,9 @@ public final class f {
     }
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b, final float[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -11549,14 +11471,14 @@ public final class f {
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -11575,8 +11497,8 @@ public final class f {
     }
 
     public static float[][][] multipliedBy(final float[][][] a, final float[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -11588,8 +11510,8 @@ public final class f {
     }
 
     public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -11611,9 +11533,9 @@ public final class f {
     }
 
     public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -11626,9 +11548,9 @@ public final class f {
 
     public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -11644,8 +11566,8 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -11657,15 +11579,15 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[] dividedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -11693,9 +11615,9 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b, final float[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -11708,18 +11630,18 @@ public final class f {
 
     public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[] dividedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -11737,8 +11659,8 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -11750,13 +11672,13 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
             final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -11784,9 +11706,9 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -11799,14 +11721,14 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -11825,8 +11747,8 @@ public final class f {
     }
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -11838,8 +11760,8 @@ public final class f {
     }
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -11861,9 +11783,9 @@ public final class f {
     }
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -11876,9 +11798,9 @@ public final class f {
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -11894,8 +11816,8 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -11907,16 +11829,16 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static float[] dividedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
             final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -11944,9 +11866,9 @@ public final class f {
     }
 
     public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -11959,18 +11881,18 @@ public final class f {
 
     public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static float[] dividedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -11989,8 +11911,8 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -12003,13 +11925,13 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB,
             final float defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
             final float valueForNoneB, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -12037,9 +11959,9 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -12052,15 +11974,15 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final float defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -12079,8 +12001,8 @@ public final class f {
     }
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -12093,8 +12015,8 @@ public final class f {
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB,
             final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -12116,9 +12038,9 @@ public final class f {
     }
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -12131,9 +12053,9 @@ public final class f {
 
     public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final float defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -12150,8 +12072,8 @@ public final class f {
     }
 
     public static <E extends Exception> float[] zip(final float[] a, final float[] b, final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[N.min(lenA, lenB)];
 
@@ -12164,16 +12086,16 @@ public final class f {
 
     public static <E extends Exception> float[] zip(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
             final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> float[] zip(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
             final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[] result = new float[len];
 
@@ -12202,9 +12124,9 @@ public final class f {
 
     public static <E extends Exception> float[] zip(final float[] a, final float[] b, final float[] c, final Try.FloatTriFunction<Float, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[N.min(lenA, lenB, lenC)];
 
@@ -12217,18 +12139,18 @@ public final class f {
 
     public static <E extends Exception> float[] zip(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> float[] zip(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[] result = new float[len];
 
@@ -12246,8 +12168,8 @@ public final class f {
     }
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[N.min(lenA, lenB)][];
 
@@ -12260,13 +12182,13 @@ public final class f {
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB,
             final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> float[][] zip(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
             final float valueForNoneB, final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][] result = new float[len][];
 
@@ -12295,9 +12217,9 @@ public final class f {
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final float[][] c, final Try.FloatTriFunction<Float, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[N.min(lenA, lenB, lenC)][];
 
@@ -12310,14 +12232,15 @@ public final class f {
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> float[][] zip(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c,
             final float valueForNoneA, final float valueForNoneB, final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][] result = new float[len][];
 
@@ -12336,8 +12259,8 @@ public final class f {
     }
 
     public static <E extends Exception> float[][][] zip(final float[][][] a, final float[][][] b, final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.min(lenA, lenB)][][];
 
@@ -12350,8 +12273,8 @@ public final class f {
 
     public static <E extends Exception> float[][][] zip(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB,
             final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final float[][][] result = new float[N.max(lenA, lenB)][][];
 
@@ -12374,9 +12297,9 @@ public final class f {
 
     public static <E extends Exception> float[][][] zip(final float[][][] a, final float[][][] b, final float[][][] c,
             final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
 
@@ -12389,9 +12312,9 @@ public final class f {
 
     public static <E extends Exception> float[][][] zip(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
 
@@ -12546,18 +12469,6 @@ public final class f {
                 println(a[i]);
             }
         }
-    }
-
-    private static int len(float[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(float[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(float[][][] a) {
-        return a == null ? 0 : a.length;
     }
 
     private static int maxLen(float[][] a) {
@@ -12868,8 +12779,8 @@ public final class f {
     }
 
     public static double[] add(final double[] a, final double[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -12881,15 +12792,15 @@ public final class f {
     }
 
     public static double[] add(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[] add(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -12917,9 +12828,9 @@ public final class f {
     }
 
     public static double[] add(final double[] a, final double[] b, final double[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -12932,18 +12843,18 @@ public final class f {
 
     public static double[] add(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[] add(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -12961,8 +12872,8 @@ public final class f {
     }
 
     public static double[][] add(final double[][] a, final double[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -12974,13 +12885,13 @@ public final class f {
     }
 
     public static double[][] add(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -13008,9 +12919,9 @@ public final class f {
     }
 
     public static double[][] add(final double[][] a, final double[][] b, final double[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -13023,14 +12934,14 @@ public final class f {
 
     public static double[][] add(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -13048,8 +12959,8 @@ public final class f {
     }
 
     public static double[][][] add(final double[][][] a, final double[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -13061,8 +12972,8 @@ public final class f {
     }
 
     public static double[][][] add(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -13084,9 +12995,9 @@ public final class f {
     }
 
     public static double[][][] add(final double[][][] a, final double[][][] b, final double[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -13099,9 +13010,9 @@ public final class f {
 
     public static double[][][] add(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -13117,8 +13028,8 @@ public final class f {
     }
 
     public static double[] subtract(final double[] a, final double[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -13130,15 +13041,15 @@ public final class f {
     }
 
     public static double[] subtract(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[] subtract(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -13166,9 +13077,9 @@ public final class f {
     }
 
     public static double[] subtract(final double[] a, final double[] b, final double[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -13181,18 +13092,18 @@ public final class f {
 
     public static double[] subtract(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[] subtract(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -13210,8 +13121,8 @@ public final class f {
     }
 
     public static double[][] subtract(final double[][] a, final double[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -13223,13 +13134,13 @@ public final class f {
     }
 
     public static double[][] subtract(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -13257,9 +13168,9 @@ public final class f {
     }
 
     public static double[][] subtract(final double[][] a, final double[][] b, final double[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -13272,14 +13183,14 @@ public final class f {
 
     public static double[][] subtract(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -13298,8 +13209,8 @@ public final class f {
     }
 
     public static double[][][] subtract(final double[][][] a, final double[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -13311,8 +13222,8 @@ public final class f {
     }
 
     public static double[][][] subtract(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -13334,9 +13245,9 @@ public final class f {
     }
 
     public static double[][][] subtract(final double[][][] a, final double[][][] b, final double[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -13349,9 +13260,9 @@ public final class f {
 
     public static double[][][] subtract(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -13367,8 +13278,8 @@ public final class f {
     }
 
     public static double[] multipliedBy(final double[] a, final double[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -13380,15 +13291,15 @@ public final class f {
     }
 
     public static double[] multipliedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[] multipliedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -13416,9 +13327,9 @@ public final class f {
     }
 
     public static double[] multipliedBy(final double[] a, final double[] b, final double[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -13431,18 +13342,18 @@ public final class f {
 
     public static double[] multipliedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[] multipliedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -13460,8 +13371,8 @@ public final class f {
     }
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -13473,13 +13384,13 @@ public final class f {
     }
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -13507,9 +13418,9 @@ public final class f {
     }
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b, final double[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -13522,14 +13433,14 @@ public final class f {
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c,
             final double valueForNoneA, final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -13548,8 +13459,8 @@ public final class f {
     }
 
     public static double[][][] multipliedBy(final double[][][] a, final double[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -13561,8 +13472,8 @@ public final class f {
     }
 
     public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -13584,9 +13495,9 @@ public final class f {
     }
 
     public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -13599,9 +13510,9 @@ public final class f {
 
     public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -13617,8 +13528,8 @@ public final class f {
     }
 
     public static double[] dividedBy(final double[] a, final double[] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -13630,15 +13541,15 @@ public final class f {
     }
 
     public static double[] dividedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[] dividedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -13666,9 +13577,9 @@ public final class f {
     }
 
     public static double[] dividedBy(final double[] a, final double[] b, final double[] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -13681,18 +13592,18 @@ public final class f {
 
     public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[] dividedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -13710,8 +13621,8 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -13723,13 +13634,13 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -13757,9 +13668,9 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -13772,14 +13683,14 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -13798,8 +13709,8 @@ public final class f {
     }
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -13811,8 +13722,8 @@ public final class f {
     }
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -13834,9 +13745,9 @@ public final class f {
     }
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -13849,9 +13760,9 @@ public final class f {
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -13867,8 +13778,8 @@ public final class f {
     }
 
     public static double[] dividedBy(final double[] a, final double[] b, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -13881,16 +13792,16 @@ public final class f {
 
     public static double[] dividedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static double[] dividedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -13918,9 +13829,9 @@ public final class f {
     }
 
     public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -13933,18 +13844,18 @@ public final class f {
 
     public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static double[] dividedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -13963,8 +13874,8 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -13977,13 +13888,13 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB,
             final double defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -14011,9 +13922,9 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -14026,15 +13937,15 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final double defaultValueForZero) {
-        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 defaultValueForZero);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -14053,8 +13964,8 @@ public final class f {
     }
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -14067,8 +13978,8 @@ public final class f {
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB,
             final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -14090,9 +14001,9 @@ public final class f {
     }
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -14105,9 +14016,9 @@ public final class f {
 
     public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -14124,8 +14035,8 @@ public final class f {
     }
 
     public static <E extends Exception> double[] zip(final double[] a, final double[] b, final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[N.min(lenA, lenB)];
 
@@ -14138,16 +14049,16 @@ public final class f {
 
     public static <E extends Exception> double[] zip(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         return zip(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> double[] zip(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[] result = new double[len];
 
@@ -14176,9 +14087,9 @@ public final class f {
 
     public static <E extends Exception> double[] zip(final double[] a, final double[] b, final double[] c, final Try.DoubleTriFunction<Double, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[N.min(lenA, lenB, lenC)];
 
@@ -14191,18 +14102,18 @@ public final class f {
 
     public static <E extends Exception> double[] zip(final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         return zip(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> double[] zip(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[] result = new double[len];
 
@@ -14220,8 +14131,8 @@ public final class f {
     }
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[N.min(lenA, lenB)][];
 
@@ -14234,13 +14145,13 @@ public final class f {
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB,
             final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> double[][] zip(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
             final double valueForNoneB, final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][] result = new double[len][];
 
@@ -14269,9 +14180,9 @@ public final class f {
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final double[][] c,
             final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[N.min(lenA, lenB, lenC)][];
 
@@ -14284,14 +14195,15 @@ public final class f {
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        return zip(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     private static <E extends Exception> double[][] zip(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c,
             final double valueForNoneA, final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][] result = new double[len][];
 
@@ -14311,8 +14223,8 @@ public final class f {
 
     public static <E extends Exception> double[][][] zip(final double[][][] a, final double[][][] b, final Try.DoubleBiFunction<Double, E> zipFunction)
             throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.min(lenA, lenB)][][];
 
@@ -14325,8 +14237,8 @@ public final class f {
 
     public static <E extends Exception> double[][][] zip(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB,
             final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
 
         final double[][][] result = new double[N.max(lenA, lenB)][][];
 
@@ -14349,9 +14261,9 @@ public final class f {
 
     public static <E extends Exception> double[][][] zip(final double[][][] a, final double[][][] b, final double[][][] c,
             final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
 
@@ -14364,9 +14276,9 @@ public final class f {
 
     public static <E extends Exception> double[][][] zip(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = N.len(a);
+        final int lenB = N.len(b);
+        final int lenC = N.len(c);
 
         final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
 
@@ -14523,18 +14435,6 @@ public final class f {
         }
     }
 
-    private static int len(double[] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(double[][] a) {
-        return a == null ? 0 : a.length;
-    }
-
-    private static int len(double[][][] a) {
-        return a == null ? 0 : a.length;
-    }
-
     private static int maxLen(double[][] a) {
         if (a == null) {
             return 0;
@@ -14555,7 +14455,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[] result = new boolean[len];
 
         for (int i = 0; i < len; i++) {
@@ -14570,7 +14470,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][] result = new boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14585,7 +14485,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][][] result = new boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14600,7 +14500,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[] result = new boolean[len];
 
         for (int i = 0; i < len; i++) {
@@ -14615,7 +14515,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][] result = new boolean[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14630,7 +14530,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final boolean[][][] result = new boolean[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14645,7 +14545,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[] result = new byte[len];
 
         for (int i = 0; i < len; i++) {
@@ -14660,7 +14560,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[][] result = new byte[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14675,7 +14575,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final byte[][][] result = new byte[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14690,7 +14590,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[] result = new int[len];
 
         for (int i = 0; i < len; i++) {
@@ -14705,7 +14605,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][] result = new int[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14720,7 +14620,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][][] result = new int[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14735,7 +14635,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[] result = new int[len];
 
         for (int i = 0; i < len; i++) {
@@ -14750,7 +14650,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][] result = new int[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14765,7 +14665,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][][] result = new int[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14780,7 +14680,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[] result = new int[len];
 
         for (int i = 0; i < len; i++) {
@@ -14795,7 +14695,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][] result = new int[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14810,7 +14710,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][][] result = new int[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14825,7 +14725,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[] result = new int[len];
 
         for (int i = 0; i < len; i++) {
@@ -14840,7 +14740,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][] result = new int[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14855,7 +14755,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final int[][][] result = new int[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14870,7 +14770,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] result = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -14885,7 +14785,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] result = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14900,7 +14800,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] result = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14915,7 +14815,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] result = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -14930,7 +14830,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] result = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14945,7 +14845,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] result = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -14960,7 +14860,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] result = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -14975,7 +14875,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] result = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -14990,7 +14890,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] result = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15005,7 +14905,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] result = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -15020,7 +14920,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] result = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15035,7 +14935,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] result = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15050,7 +14950,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[] result = new long[len];
 
         for (int i = 0; i < len; i++) {
@@ -15065,7 +14965,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][] result = new long[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15080,7 +14980,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final long[][][] result = new long[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15095,7 +14995,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] result = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -15110,7 +15010,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] result = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15125,7 +15025,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] result = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15140,7 +15040,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] result = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -15155,7 +15055,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] result = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15170,7 +15070,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] result = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15185,7 +15085,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] result = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -15200,7 +15100,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] result = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15215,7 +15115,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] result = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15230,7 +15130,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] result = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -15245,7 +15145,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] result = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15260,7 +15160,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] result = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15275,7 +15175,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[] result = new float[len];
 
         for (int i = 0; i < len; i++) {
@@ -15290,7 +15190,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][] result = new float[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15305,7 +15205,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final float[][][] result = new float[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15320,7 +15220,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15335,7 +15235,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15350,7 +15250,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15365,7 +15265,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15380,7 +15280,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15395,7 +15295,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15410,7 +15310,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15425,7 +15325,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15440,7 +15340,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15455,7 +15355,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15470,7 +15370,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15485,7 +15385,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15500,7 +15400,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15515,7 +15415,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15530,7 +15430,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {
@@ -15545,7 +15445,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[] result = new double[len];
 
         for (int i = 0; i < len; i++) {
@@ -15560,7 +15460,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][] result = new double[len][];
 
         for (int i = 0; i < len; i++) {
@@ -15575,7 +15475,7 @@ public final class f {
             return null;
         }
 
-        final int len = len(a);
+        final int len = N.len(a);
         final double[][][] result = new double[len][][];
 
         for (int i = 0; i < len; i++) {

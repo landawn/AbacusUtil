@@ -17,10 +17,13 @@
 package com.landawn.abacus.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -132,6 +135,63 @@ public abstract class ObjIterator<T> extends ImmutableIterator<T> {
             @Override
             public T next() {
                 return iter.next();
+            }
+        };
+    }
+
+    public static <T> ObjIterator<T> of(final Collection<T> iterable) {
+        return iterable == null ? ObjIterator.<T> empty() : of(iterable.iterator());
+    }
+
+    public static <T> ObjIterator<T> of(final Iterable<T> iterable) {
+        return iterable == null ? ObjIterator.<T> empty() : of(iterable.iterator());
+    }
+
+    /**
+     * Returns an infinite {@code ByteIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static <T> ObjIterator<T> generate(final Supplier<T> supplier) {
+        N.requireNonNull(supplier);
+
+        return new ObjIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public T next() {
+                return supplier.get();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new ObjIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.get();
             }
         };
     }

@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.FloatSupplier;
 import com.landawn.abacus.util.stream.FloatStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
             @Override
             public FloatList toList() {
                 return FloatList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code FloatIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static FloatIterator generate(final FloatSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new FloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public float nextFloat() {
+                return supplier.getAsFloat();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static FloatIterator generate(final BooleanSupplier hasNext, final FloatSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new FloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public float nextFloat() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsFloat();
             }
         };
     }

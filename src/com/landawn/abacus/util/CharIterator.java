@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.CharSupplier;
 import com.landawn.abacus.util.stream.CharStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
             @Override
             public CharList toList() {
                 return CharList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code CharIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static CharIterator generate(final CharSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new CharIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public char nextChar() {
+                return supplier.getAsChar();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static CharIterator generate(final BooleanSupplier hasNext, final CharSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new CharIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public char nextChar() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsChar();
             }
         };
     }

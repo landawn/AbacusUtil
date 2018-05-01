@@ -1750,7 +1750,10 @@ public final class Iterators {
         };
     }
 
-    public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> next) {
+    public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
         return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
@@ -1759,12 +1762,15 @@ public final class Iterators {
 
             @Override
             public T next() {
-                return next.get();
+                return supplier.get();
             }
         };
     }
 
-    public static <T, U> ObjIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> next) {
+    public static <T, U> ObjIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
         return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
@@ -1773,12 +1779,15 @@ public final class Iterators {
 
             @Override
             public T next() {
-                return next.apply(seed);
+                return supplier.apply(seed);
             }
         };
     }
 
-    public static <T, U> ObjIterator<T> generate(final U seed, final BiPredicate<? super U, T> hasNext, final BiFunction<? super U, T, T> next) {
+    public static <T, U> ObjIterator<T> generate(final U seed, final BiPredicate<? super U, T> hasNext, final BiFunction<? super U, T, T> supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
         return new ObjIterator<T>() {
             private T prev = null;
 
@@ -1789,7 +1798,7 @@ public final class Iterators {
 
             @Override
             public T next() {
-                return (prev = next.apply(seed, prev));
+                return (prev = supplier.apply(seed, prev));
             }
         };
     }

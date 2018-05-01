@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
             @Override
             public DoubleList toList() {
                 return DoubleList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code DoubleIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static DoubleIterator generate(final DoubleSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new DoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public double nextDouble() {
+                return supplier.getAsDouble();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static DoubleIterator generate(final BooleanSupplier hasNext, final DoubleSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new DoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public double nextDouble() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsDouble();
             }
         };
     }

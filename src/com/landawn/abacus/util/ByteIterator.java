@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.ByteSupplier;
 import com.landawn.abacus.util.stream.ByteStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
             @Override
             public ByteList toList() {
                 return ByteList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code ByteIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static ByteIterator generate(final ByteSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new ByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public byte nextByte() {
+                return supplier.getAsByte();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static ByteIterator generate(final BooleanSupplier hasNext, final ByteSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new ByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsByte();
             }
         };
     }

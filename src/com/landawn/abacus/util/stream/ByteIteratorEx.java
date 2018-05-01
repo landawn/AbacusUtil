@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.stream;
 
-import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -71,7 +69,7 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
     }
 
     public static ByteIteratorEx of(final byte[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return EMPTY;

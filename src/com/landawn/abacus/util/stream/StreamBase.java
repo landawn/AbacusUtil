@@ -868,10 +868,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void checkFromToIndex(int fromIndex, final int toIndex, int length) {
-        N.checkFromToIndex(fromIndex, toIndex, length);
-    }
-
     static int checkMaxThreadNum(int maxThreadNum) {
         //    if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
         //        throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);

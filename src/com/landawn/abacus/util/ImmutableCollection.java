@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+import com.landawn.abacus.util.stream.Stream;
+
 /**
  * 
  * @since 0.8
@@ -133,5 +135,9 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
     @Override
     public String toString() {
         return coll.toString();
+    }
+
+    public Stream<E> streamm() {
+        return Stream.of(coll);
     }
 }

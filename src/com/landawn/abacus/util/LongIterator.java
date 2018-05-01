@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.stream.LongStream;
 
 /**
@@ -77,6 +79,55 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
             @Override
             public LongList toList() {
                 return LongList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Returns an infinite {@code LongIterator}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static LongIterator generate(final LongSupplier supplier) {
+        N.requireNonNull(supplier);
+
+        return new LongIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public long nextLong() {
+                return supplier.getAsLong();
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param hasNext
+     * @param supplier
+     * @return
+     */
+    public static LongIterator generate(final BooleanSupplier hasNext, final LongSupplier supplier) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(supplier);
+
+        return new LongIterator() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public long nextLong() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return supplier.getAsLong();
             }
         };
     }

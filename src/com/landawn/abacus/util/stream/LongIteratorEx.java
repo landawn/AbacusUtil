@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.stream;
 
-import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -71,7 +69,7 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
     }
 
     public static LongIteratorEx of(final long[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return EMPTY;

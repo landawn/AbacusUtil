@@ -18,7 +18,6 @@ import java.io.Closeable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -30,7 +29,7 @@ import com.landawn.abacus.exception.UncheckedSQLException;
  * 
  * @author Haiyang Li
  */
-public final class RowIterator implements Iterator<Object[]>, Closeable {
+public final class RowIterator extends ImmutableIterator<Object[]> implements Closeable {
     private final ResultSet rs;
     private final long count;
     private final ResultSetMetaData metaData;
@@ -151,17 +150,5 @@ public final class RowIterator implements Iterator<Object[]>, Closeable {
         isClosed = true;
 
         JdbcUtil.closeQuietly(rs, closeStatement, closeConnection);
-    }
-
-    /**
-     * Unsupported.
-     *
-     * @throws UnsupportedOperationException always
-     * @Deprecated UnsupportedOperationException
-     */
-    @Override
-    @Deprecated
-    public void remove() {
-        throw new UnsupportedOperationException("Remove unsupported on LineIterator");
     }
 }

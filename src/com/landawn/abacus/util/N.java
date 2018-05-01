@@ -1632,7 +1632,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static Object[] toArray(final Collection<?> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_OBJECT_ARRAY;
@@ -1668,7 +1668,7 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Collection<T> c, final int fromIndex, final int toIndex, final A[] a) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (N.isNullOrEmpty(c)) {
             return a;
@@ -1704,7 +1704,7 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
 
         final A[] res = N.newArray(targetClass.getComponentType(), toIndex - fromIndex);
 
@@ -1741,7 +1741,7 @@ public final class N {
     }
 
     public static <T> List<T> toList(final T[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return new ArrayList<>();
@@ -1767,7 +1767,7 @@ public final class N {
     }
 
     public static <T> Set<T> toSet(final T[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return new HashSet<>();
@@ -1791,7 +1791,7 @@ public final class N {
     }
 
     public static <T, C extends Collection<T>> C toCollection(final T[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return supplier.apply(0);
@@ -7286,7 +7286,7 @@ public final class N {
     }
 
     public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7310,7 +7310,7 @@ public final class N {
     }
 
     public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7360,7 +7360,7 @@ public final class N {
     }
 
     public static String join(final char[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7384,7 +7384,7 @@ public final class N {
     }
 
     public static String join(final char[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7434,7 +7434,7 @@ public final class N {
     }
 
     public static String join(final byte[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7458,7 +7458,7 @@ public final class N {
     }
 
     public static String join(final byte[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7508,7 +7508,7 @@ public final class N {
     }
 
     public static String join(final short[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7532,7 +7532,7 @@ public final class N {
     }
 
     public static String join(final short[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7582,7 +7582,7 @@ public final class N {
     }
 
     public static String join(final int[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7606,7 +7606,7 @@ public final class N {
     }
 
     public static String join(final int[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7656,7 +7656,7 @@ public final class N {
     }
 
     public static String join(final long[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7680,7 +7680,7 @@ public final class N {
     }
 
     public static String join(final long[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7730,7 +7730,7 @@ public final class N {
     }
 
     public static String join(final float[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7754,7 +7754,7 @@ public final class N {
     }
 
     public static String join(final float[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7804,7 +7804,7 @@ public final class N {
     }
 
     public static String join(final double[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7828,7 +7828,7 @@ public final class N {
     }
 
     public static String join(final double[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7882,7 +7882,7 @@ public final class N {
     }
 
     public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7910,7 +7910,7 @@ public final class N {
     }
 
     public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -7964,7 +7964,7 @@ public final class N {
     }
 
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return N.EMPTY_STRING;
@@ -7999,7 +7999,7 @@ public final class N {
     }
 
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return N.EMPTY_STRING;
@@ -8325,6 +8325,126 @@ public final class N {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param s
+     * @return
+     */
+    public static int len(final CharSequence s) {
+        return s == null ? 0 : s.length();
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final boolean[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final char[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final byte[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final short[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final int[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final long[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final float[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final double[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param a
+     * @return
+     */
+    public static int len(final Object[] a) {
+        return a == null ? 0 : a.length;
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param c
+     * @return
+     */
+    public static int len(final Collection<?> c) {
+        return c == null ? 0 : c.size();
+    }
+
+    /**
+     * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
+     * 
+     * @param m
+     * @return
+     */
+    public static int len(final Map<?, ?> m) {
+        return m == null ? 0 : m.size();
     }
 
     /**
@@ -10134,8 +10254,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10175,8 +10295,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10216,8 +10336,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10257,8 +10377,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10298,8 +10418,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10339,8 +10459,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10380,8 +10500,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10421,8 +10541,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10462,8 +10582,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10495,8 +10615,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10531,8 +10651,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
-        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -11653,7 +11773,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final boolean[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11693,7 +11813,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final char[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11733,7 +11853,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final byte[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11773,7 +11893,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final short[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11813,7 +11933,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final int[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11853,7 +11973,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final long[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11893,7 +12013,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final float[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11933,7 +12053,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final double[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -11979,7 +12099,7 @@ public final class N {
      * @param toIndex
      */
     public static void reverse(final Object[] a, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
@@ -12003,7 +12123,7 @@ public final class N {
     }
 
     public static void reverse(final List<?> list, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, list == null ? 0 : list.size());
+        checkFromToIndex(fromIndex, toIndex, len(list));
 
         if (N.isNullOrEmpty(list) || list.size() == 1) {
             return;
@@ -15743,7 +15863,7 @@ public final class N {
      * @return
      */
     public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
-        N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
+        N.checkFromToIndex(fromIndex, toIndex, len(str));
 
         final List<IntPair> res = new ArrayList<>();
 
@@ -15804,7 +15924,7 @@ public final class N {
      * @return
      */
     public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
-        N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
+        N.checkFromToIndex(fromIndex, toIndex, len(str));
 
         final List<IntPair> res = new ArrayList<>();
 
@@ -17712,8 +17832,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.Consumer<? super T, E> action) throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
         N.requireNonNull(action);
 
         if (N.isNullOrEmpty(a)) {
@@ -17743,8 +17862,7 @@ public final class N {
 
     public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.IndexedConsumer<? super T, E> action)
             throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
         N.requireNonNull(action);
 
         if (N.isNullOrEmpty(a)) {
@@ -17786,8 +17904,7 @@ public final class N {
      */
     public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed,
             final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -17842,8 +17959,7 @@ public final class N {
      */
     public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed,
             final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -17900,8 +18016,7 @@ public final class N {
      */
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.Consumer<? super T, E> action) throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
         N.requireNonNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -17989,8 +18104,7 @@ public final class N {
      */
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.IndexedConsumer<? super T, E> action) throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
         N.requireNonNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -18075,8 +18189,7 @@ public final class N {
      */
     public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, int fromIndex, final int toIndex,
             final R seed, final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -18186,8 +18299,7 @@ public final class N {
     public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, int fromIndex, final int toIndex,
             final R seed, final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak)
             throws E, E2 {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
-                c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -18430,8 +18542,8 @@ public final class N {
             final Try.BiConsumer<? super A, ? super B, E> action) throws E {
         N.requireNonNull(action);
 
-        final int lenA = a == null ? 0 : a.length;
-        final int lenB = b == null ? 0 : b.length;
+        final int lenA = len(a);
+        final int lenB = len(b);
 
         for (int i = 0, maxLen = N.max(lenA, lenB); i < maxLen; i++) {
             action.accept(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB);
@@ -18444,8 +18556,8 @@ public final class N {
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
-        final int lenA = a == null ? 0 : a.size();
-        final int lenB = b == null ? 0 : b.size();
+        final int lenA = len(a);
+        final int lenB = len(b);
 
         for (int i = 0, maxLen = N.max(lenA, lenB); i < maxLen; i++) {
             action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB);
@@ -18456,9 +18568,9 @@ public final class N {
             final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
         N.requireNonNull(action);
 
-        final int lenA = a == null ? 0 : a.length;
-        final int lenB = b == null ? 0 : b.length;
-        final int lenC = c == null ? 0 : c.length;
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
 
         for (int i = 0, maxLen = N.max(lenA, lenB, lenC); i < maxLen; i++) {
             action.accept(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB, i < lenC ? c[i] : valueForNoneC);
@@ -18472,9 +18584,9 @@ public final class N {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
-        final int lenA = a == null ? 0 : a.size();
-        final int lenB = b == null ? 0 : b.size();
-        final int lenC = c == null ? 0 : c.size();
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
 
         for (int i = 0, maxLen = N.max(lenA, lenB, lenC); i < maxLen; i++) {
             action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB, i < lenC ? iterC.next() : valueForNoneC);
@@ -18664,7 +18776,7 @@ public final class N {
      */
     public static <E extends Exception> BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -18721,7 +18833,7 @@ public final class N {
      */
     public static <E extends Exception> CharList filter(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -18778,7 +18890,7 @@ public final class N {
      */
     public static <E extends Exception> ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -18835,7 +18947,7 @@ public final class N {
      */
     public static <E extends Exception> ShortList filter(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -18892,7 +19004,7 @@ public final class N {
      */
     public static <E extends Exception> IntList filter(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter, final int max)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -18949,7 +19061,7 @@ public final class N {
      */
     public static <E extends Exception> LongList filter(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -19006,7 +19118,7 @@ public final class N {
      */
     public static <E extends Exception> FloatList filter(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -19064,7 +19176,7 @@ public final class N {
      */
     public static <E extends Exception> DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -19121,7 +19233,7 @@ public final class N {
      */
     public static <T, E extends Exception> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter,
             final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -19167,7 +19279,7 @@ public final class N {
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19255,7 +19367,7 @@ public final class N {
      */
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -19303,7 +19415,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19376,7 +19488,7 @@ public final class N {
      */
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19414,7 +19526,7 @@ public final class N {
      */
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19470,7 +19582,7 @@ public final class N {
      */
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final Try.ToCharFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19508,7 +19620,7 @@ public final class N {
      */
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToCharFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19564,7 +19676,7 @@ public final class N {
      */
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final Try.ToByteFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19602,7 +19714,7 @@ public final class N {
      */
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToByteFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19658,7 +19770,7 @@ public final class N {
      */
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19696,7 +19808,7 @@ public final class N {
      */
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19752,7 +19864,7 @@ public final class N {
      */
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19790,7 +19902,7 @@ public final class N {
      */
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19846,7 +19958,7 @@ public final class N {
      */
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19884,7 +19996,7 @@ public final class N {
      */
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19940,7 +20052,7 @@ public final class N {
      */
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -19978,7 +20090,7 @@ public final class N {
      */
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20034,7 +20146,7 @@ public final class N {
      */
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20072,7 +20184,7 @@ public final class N {
      */
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20128,7 +20240,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20166,7 +20278,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20225,7 +20337,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20266,7 +20378,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20322,7 +20434,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20364,7 +20476,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20427,7 +20539,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20471,7 +20583,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20628,7 +20740,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20669,7 +20781,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20732,7 +20844,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -20776,7 +20888,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20845,7 +20957,7 @@ public final class N {
 
     public static <T, E extends Exception> int sumInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return 0;
@@ -20896,7 +21008,7 @@ public final class N {
 
     public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return 0;
@@ -20959,7 +21071,7 @@ public final class N {
 
     public static <T, E extends Exception> long sumLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -21010,7 +21122,7 @@ public final class N {
 
     public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -21073,7 +21185,7 @@ public final class N {
 
     public static <T, E extends Exception> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final Try.ToDoubleFunction<? super T, E> func)
             throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return 0D;
@@ -21128,7 +21240,7 @@ public final class N {
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return 0D;
@@ -21193,7 +21305,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21244,7 +21356,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21307,7 +21419,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21346,7 +21458,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21385,7 +21497,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21429,7 +21541,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -21484,7 +21596,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21533,7 +21645,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21582,7 +21694,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21631,7 +21743,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21680,7 +21792,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21729,7 +21841,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21778,7 +21890,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21827,7 +21939,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21876,7 +21988,7 @@ public final class N {
      * @return
      */
     public static <T, E extends Exception> int count(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
         N.requireNonNull(filter);
 
         if (N.isNullOrEmpty(a)) {
@@ -21926,7 +22038,7 @@ public final class N {
      */
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
         N.requireNonNull(filter);
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -21969,7 +22081,7 @@ public final class N {
     }
 
     public static short[] top(final short[] a, final int n, final Comparator<? super Short> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22015,7 +22127,7 @@ public final class N {
     }
 
     public static int[] top(final int[] a, final int n, final Comparator<? super Integer> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22061,7 +22173,7 @@ public final class N {
     }
 
     public static long[] top(final long[] a, final int n, final Comparator<? super Long> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22107,7 +22219,7 @@ public final class N {
     }
 
     public static float[] top(final float[] a, final int n, final Comparator<? super Float> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22153,7 +22265,7 @@ public final class N {
     }
 
     public static double[] top(final double[] a, final int n, final Comparator<? super Double> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22199,7 +22311,7 @@ public final class N {
     }
 
     public static <T> List<T> top(final T[] a, final int n, final Comparator<? super T> cmp) {
-        return top(a, 0, a == null ? 0 : a.length, n, cmp);
+        return top(a, 0, len(a), n, cmp);
     }
 
     public static <T extends Comparable<T>> List<T> top(final T[] a, final int fromIndex, final int toIndex, final int n) {
@@ -22237,7 +22349,7 @@ public final class N {
     }
 
     public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
-        return top(c, 0, c == null ? 0 : c.size(), n, cmp);
+        return top(c, 0, len(c), n, cmp);
     }
 
     public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
@@ -22335,7 +22447,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> topp(final T[] a, final int n, final Comparator<? super T> cmp) {
-        return topp(a, 0, a == null ? 0 : a.length, n, cmp);
+        return topp(a, 0, len(a), n, cmp);
     }
 
     /**
@@ -22437,7 +22549,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> topp(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
-        return topp(c, 0, c == null ? 0 : c.size(), n, cmp);
+        return topp(c, 0, len(c), n, cmp);
     }
 
     /**
@@ -22575,7 +22687,7 @@ public final class N {
      * @return
      */
     public static boolean[] distinct(final boolean[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22599,7 +22711,7 @@ public final class N {
      * @return
      */
     public static char[] distinct(final char[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22623,7 +22735,7 @@ public final class N {
      * @return
      */
     public static byte[] distinct(final byte[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22647,7 +22759,7 @@ public final class N {
      * @return
      */
     public static short[] distinct(final short[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22671,7 +22783,7 @@ public final class N {
      * @return
      */
     public static int[] distinct(final int[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22695,7 +22807,7 @@ public final class N {
      * @return
      */
     public static long[] distinct(final long[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22719,7 +22831,7 @@ public final class N {
      * @return
      */
     public static float[] distinct(final float[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22743,7 +22855,7 @@ public final class N {
      * @return
      */
     public static double[] distinct(final double[] a) {
-        return distinct(a, 0, a == null ? 0 : a.length);
+        return distinct(a, 0, len(a));
     }
 
     /**
@@ -22784,7 +22896,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -22827,7 +22939,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -22898,7 +23010,7 @@ public final class N {
      */
     public static <T, E extends Exception> List<T> distinctBy(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ?, E> keyExtractor) throws E {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -22948,7 +23060,7 @@ public final class N {
      */
     public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ?, E> keyExtractor) throws E {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -23029,7 +23141,7 @@ public final class N {
      * @return
      */
     public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23087,7 +23199,7 @@ public final class N {
      * @return
      */
     public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23145,7 +23257,7 @@ public final class N {
      * @return
      */
     public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23203,7 +23315,7 @@ public final class N {
      * @return
      */
     public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23261,7 +23373,7 @@ public final class N {
      * @return
      */
     public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23319,7 +23431,7 @@ public final class N {
      * @return
      */
     public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23377,7 +23489,7 @@ public final class N {
      * @return
      */
     public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23435,7 +23547,7 @@ public final class N {
      * @return
      */
     public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23493,7 +23605,7 @@ public final class N {
      * @return
      */
     public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23544,7 +23656,7 @@ public final class N {
      * @return
      */
     public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -23607,7 +23719,7 @@ public final class N {
     }
 
     public static List<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
-        N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
+        N.checkFromToIndex(fromIndex, toIndex, len(str));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
@@ -28470,7 +28582,7 @@ public final class N {
     }
 
     public static boolean[] removeDuplicates(final boolean[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_BOOLEAN_ARRAY;
@@ -28509,7 +28621,7 @@ public final class N {
     }
 
     public static char[] removeDuplicates(final char[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_CHAR_ARRAY;
@@ -28569,7 +28681,7 @@ public final class N {
     }
 
     public static byte[] removeDuplicates(final byte[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_BYTE_ARRAY;
@@ -28629,7 +28741,7 @@ public final class N {
     }
 
     public static short[] removeDuplicates(final short[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_SHORT_ARRAY;
@@ -28689,7 +28801,7 @@ public final class N {
     }
 
     public static int[] removeDuplicates(final int[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_INT_ARRAY;
@@ -28750,7 +28862,7 @@ public final class N {
     }
 
     public static long[] removeDuplicates(final long[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_LONG_ARRAY;
@@ -28810,7 +28922,7 @@ public final class N {
     }
 
     public static float[] removeDuplicates(final float[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_FLOAT_ARRAY;
@@ -28871,7 +28983,7 @@ public final class N {
     }
 
     public static double[] removeDuplicates(final double[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return N.EMPTY_DOUBLE_ARRAY;
@@ -28947,7 +29059,7 @@ public final class N {
     }
 
     public static <T> T[] removeDuplicates(final T[] a, final int from, final int to, final boolean isSorted) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
             return a;
@@ -29436,7 +29548,7 @@ public final class N {
     }
 
     public static int sum(final char[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29470,7 +29582,7 @@ public final class N {
     }
 
     public static int sum(final byte[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29504,7 +29616,7 @@ public final class N {
     }
 
     public static int sum(final short[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29538,7 +29650,7 @@ public final class N {
     }
 
     public static int sum(final int[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29572,7 +29684,7 @@ public final class N {
     }
 
     public static long sum(final long[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29606,7 +29718,7 @@ public final class N {
     }
 
     public static float sum(final float[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29642,7 +29754,7 @@ public final class N {
     }
 
     public static double sum(final double[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29678,7 +29790,7 @@ public final class N {
     }
 
     public static double average(final char[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29714,7 +29826,7 @@ public final class N {
     }
 
     public static double average(final byte[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29750,7 +29862,7 @@ public final class N {
     }
 
     public static double average(final short[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29786,7 +29898,7 @@ public final class N {
     }
 
     public static double average(final int[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29822,7 +29934,7 @@ public final class N {
     }
 
     public static double average(final long[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29858,7 +29970,7 @@ public final class N {
     }
 
     public static double average(final float[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -29896,7 +30008,7 @@ public final class N {
     }
 
     public static double average(final double[] a, final int from, final int to) {
-        checkFromToIndex(from, to, a == null ? 0 : a.length);
+        checkFromToIndex(from, to, len(a));
 
         if (N.isNullOrEmpty(a)) {
             if (to > 0) {
@@ -30446,7 +30558,7 @@ public final class N {
      * @return the minimum value in the Collection
      */
     public static <T> T min(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
-        checkFromToIndex(from, to, c == null ? 0 : c.size());
+        checkFromToIndex(from, to, len(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
@@ -31080,7 +31192,7 @@ public final class N {
      * @return the maximum value in the Collection
      */
     public static <T> T max(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
-        checkFromToIndex(from, to, c == null ? 0 : c.size());
+        checkFromToIndex(from, to, len(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
@@ -33665,8 +33777,8 @@ public final class N {
 
     public static <A, B, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = a == null ? 0 : a.length;
-        final int lenB = b == null ? 0 : b.length;
+        final int lenA = len(a);
+        final int lenB = len(b);
         final int maxLen = max(lenA, lenB);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -33681,8 +33793,8 @@ public final class N {
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
-        final int lenA = a == null ? 0 : a.size();
-        final int lenB = b == null ? 0 : b.size();
+        final int lenA = len(a);
+        final int lenB = len(b);
         final int maxLen = max(lenA, lenB);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -33695,9 +33807,9 @@ public final class N {
 
     public static <A, B, C, R, E extends Exception> List<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = a == null ? 0 : a.length;
-        final int lenB = b == null ? 0 : b.length;
-        final int lenC = c == null ? 0 : c.length;
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
         final int maxLen = max(lenA, lenB, lenC);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -33713,9 +33825,9 @@ public final class N {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
-        final int lenA = a == null ? 0 : a.size();
-        final int lenB = b == null ? 0 : b.size();
-        final int lenC = c == null ? 0 : c.size();
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
         final int maxLen = max(lenA, lenB, lenC);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -33735,7 +33847,7 @@ public final class N {
      */
     public static <T, L, R, E extends Exception> Pair<List<L>, List<R>> unzip(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Pair<L, R>, E> unzip) throws E {
-        final int len = c == null ? 0 : c.size();
+        final int len = len(c);
 
         final List<L> l = new ArrayList<L>(len);
         final List<R> r = new ArrayList<R>(len);
@@ -33762,7 +33874,7 @@ public final class N {
      */
     public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>, E extends Exception> Pair<LC, RC> unzip(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Pair<L, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier) throws E {
-        final int len = c == null ? 0 : c.size();
+        final int len = len(c);
 
         final LC l = (LC) supplier.apply(len);
         final RC r = (RC) supplier.apply(len);
@@ -33788,7 +33900,7 @@ public final class N {
      */
     public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
-        final int len = c == null ? 0 : c.size();
+        final int len = len(c);
 
         final List<L> l = new ArrayList<L>(len);
         final List<M> m = new ArrayList<M>(len);
@@ -33818,7 +33930,7 @@ public final class N {
     public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
             final Collection<? extends T> c, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier)
             throws E {
-        final int len = c == null ? 0 : c.size();
+        final int len = len(c);
 
         final LC l = (LC) supplier.apply(len);
         final MC m = (MC) supplier.apply(len);

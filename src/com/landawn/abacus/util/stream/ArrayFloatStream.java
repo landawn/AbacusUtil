@@ -86,7 +86,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, closeHandlers);
 
-        checkFromToIndex(fromIndex, toIndex, values.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(values));
 
         this.elements = values;
         this.fromIndex = fromIndex;

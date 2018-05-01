@@ -894,7 +894,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream from(final char[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return empty();
@@ -946,7 +946,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream from(final byte[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return empty();
@@ -998,7 +998,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream from(final short[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return empty();

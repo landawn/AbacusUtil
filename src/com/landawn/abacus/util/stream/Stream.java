@@ -645,6 +645,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @ParallelSupported
     public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
 
+    // Not efficient. Too many temporary objects will be created.
+    //    @ParallelSupported
+    //    public abstract <V> EntryStream<T, V> flattMapToEntry(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
+
     @ParallelSupported
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
@@ -1678,6 +1682,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @SequentialOnly
     public abstract <R> R toSetAndThen(Function<? super Set<T>, R> func);
 
+    @SequentialOnly
+    public abstract <C extends Collection<T>, R> R toCollectionAndThen(Supplier<C> supplier, Function<? super C, R> func);
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() or tail() is called. 
@@ -2111,6 +2118,22 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @Beta
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
+    // Not efficient. Too many temporary objects will be created.
+    //    /**
+    //     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
+    //     * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
+    //     * The elements only can be retrieved one by one, can't be modified or saved.
+    //     * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
+    //     * , and can't be parallel stream.
+    //     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
+    //     * 
+    //     * @param flatValueMapper
+    //     * @return
+    //     */
+    //    @SequentialOnly
+    //    @Beta
+    //    public abstract <V> EntryStream<T, V> flatMapToEntryER(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
+
     public static <T> Stream<T> empty() {
         return EMPTY;
     }
@@ -2155,12 +2178,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T> Stream<T> of(final Collection<? extends T> c, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, N.len(c));
+
         if (N.isNullOrEmpty(c) && (startIndex == 0 && endIndex == 0)) {
             return empty();
-        }
-
-        if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
-            throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
         // return new CollectionStream<T>(c);
@@ -2195,6 +2216,16 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
 
         return of(map.entrySet());
+    }
+
+    public static <T> Stream<T> of(final Iterable<? extends T> iterable) {
+        if (iterable == null) {
+            return Stream.<T> empty();
+        } else if (iterable instanceof Collection) {
+            return of((Collection<T>) iterable);
+        } else {
+            return of(iterable.iterator());
+        }
     }
 
     /**
@@ -2477,7 +2508,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Boolean> of(final boolean[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2531,7 +2562,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Character> of(final char[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2586,7 +2617,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Byte> of(final byte[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2641,7 +2672,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Short> of(final short[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2696,7 +2727,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Integer> of(final int[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2751,7 +2782,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Long> of(final long[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2806,7 +2837,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Float> of(final float[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2861,7 +2892,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static Stream<Double> of(final double[] a, final int fromIndex, final int toIndex) {
-        Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (N.isNullOrEmpty(a)) {
             return empty();

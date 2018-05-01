@@ -856,7 +856,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream from(final float[] a, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(a));
 
         if (fromIndex == toIndex) {
             return empty();

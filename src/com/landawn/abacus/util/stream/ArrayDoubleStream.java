@@ -86,7 +86,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     ArrayDoubleStream(final double[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, closeHandlers);
 
-        checkFromToIndex(fromIndex, toIndex, values.length);
+        N.checkFromToIndex(fromIndex, toIndex, N.len(values));
 
         this.elements = values;
         this.fromIndex = fromIndex;
