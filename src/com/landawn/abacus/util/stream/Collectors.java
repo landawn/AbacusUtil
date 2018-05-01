@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayDeque;
@@ -77,6 +79,7 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
@@ -582,6 +585,50 @@ public class Collectors {
         }
     };
 
+    static final Supplier<BigInteger[]> SummingBigInteger_Supplier = new Supplier<BigInteger[]>() {
+        @Override
+        public BigInteger[] get() {
+            return new BigInteger[] { BigInteger.ZERO };
+        }
+    };
+
+    static final BinaryOperator<BigInteger[]> SummingBigInteger_Combiner = new BinaryOperator<BigInteger[]>() {
+        @Override
+        public BigInteger[] apply(BigInteger[] a, BigInteger[] b) {
+            a[0] = a[0].add(b[0]);
+            return a;
+        }
+    };
+
+    static final Function<BigInteger[], BigInteger> SummingBigInteger_Finisher = new Function<BigInteger[], BigInteger>() {
+        @Override
+        public BigInteger apply(BigInteger[] a) {
+            return a[0];
+        }
+    };
+
+    static final Supplier<BigDecimal[]> SummingBigDecimal_Supplier = new Supplier<BigDecimal[]>() {
+        @Override
+        public BigDecimal[] get() {
+            return new BigDecimal[] { BigDecimal.ZERO };
+        }
+    };
+
+    static final BinaryOperator<BigDecimal[]> SummingBigDecimal_Combiner = new BinaryOperator<BigDecimal[]>() {
+        @Override
+        public BigDecimal[] apply(BigDecimal[] a, BigDecimal[] b) {
+            a[0] = a[0].add(b[0]);
+            return a;
+        }
+    };
+
+    static final Function<BigDecimal[], BigDecimal> SummingBigDecimal_Finisher = new Function<BigDecimal[], BigDecimal>() {
+        @Override
+        public BigDecimal apply(BigDecimal[] a) {
+            return a[0];
+        }
+    };
+
     static final Supplier<long[]> AveragingInt_Supplier = new Supplier<long[]>() {
         @Override
         public long[] get() {
@@ -683,6 +730,52 @@ public class Collectors {
             } else {
                 return OptionalDouble.of(computeFinalSum(a) / a[2]);
             }
+        }
+    };
+
+    static final Supplier<Pair<BigInteger, MutableLong>> AveragingBigInteger_Supplier = new Supplier<Pair<BigInteger, MutableLong>>() {
+        @Override
+        public Pair<BigInteger, MutableLong> get() {
+            return Pair.of(BigInteger.ZERO, MutableLong.of(0));
+        }
+    };
+
+    static final BinaryOperator<Pair<BigInteger, MutableLong>> AveragingBigInteger_Combiner = new BinaryOperator<Pair<BigInteger, MutableLong>>() {
+        @Override
+        public Pair<BigInteger, MutableLong> apply(Pair<BigInteger, MutableLong> a, Pair<BigInteger, MutableLong> b) {
+            a.setLeft(a.left.add(b.left));
+            a.right.add(b.right.value());
+            return a;
+        }
+    };
+
+    static final Function<Pair<BigInteger, MutableLong>, BigDecimal> AveragingBigInteger_Finisher = new Function<Pair<BigInteger, MutableLong>, BigDecimal>() {
+        @Override
+        public BigDecimal apply(Pair<BigInteger, MutableLong> a) {
+            return a.right.value() == 0 ? BigDecimal.ZERO : new BigDecimal(a.left).divide(new BigDecimal(a.right.value()));
+        }
+    };
+
+    static final Supplier<Pair<BigDecimal, MutableLong>> AveragingBigDecimal_Supplier = new Supplier<Pair<BigDecimal, MutableLong>>() {
+        @Override
+        public Pair<BigDecimal, MutableLong> get() {
+            return Pair.of(BigDecimal.ZERO, MutableLong.of(0));
+        }
+    };
+
+    static final BinaryOperator<Pair<BigDecimal, MutableLong>> AveragingBigDecimal_Combiner = new BinaryOperator<Pair<BigDecimal, MutableLong>>() {
+        @Override
+        public Pair<BigDecimal, MutableLong> apply(Pair<BigDecimal, MutableLong> a, Pair<BigDecimal, MutableLong> b) {
+            a.setLeft(a.left.add(b.left));
+            a.right.add(b.right.value());
+            return a;
+        }
+    };
+
+    static final Function<Pair<BigDecimal, MutableLong>, BigDecimal> AveragingBigDecimal_Finisher = new Function<Pair<BigDecimal, MutableLong>, BigDecimal>() {
+        @Override
+        public BigDecimal apply(Pair<BigDecimal, MutableLong> a) {
+            return a.right.value() == 0 ? BigDecimal.ZERO : a.left.divide(new BigDecimal(a.right.value()));
         }
     };
 
@@ -2478,6 +2571,38 @@ public class Collectors {
             return tmp;
     }
 
+    public static <T> Collector<T, ?, BigInteger> summingBigInteger(final Function<? super T, BigInteger> mapper) {
+        final Supplier<BigInteger[]> supplier = SummingBigInteger_Supplier;
+
+        final BiConsumer<BigInteger[], T> accumulator = new BiConsumer<BigInteger[], T>() {
+            @Override
+            public void accept(BigInteger[] a, T t) {
+                a[0] = a[0].add(mapper.apply(t));
+            }
+        };
+
+        final BinaryOperator<BigInteger[]> combiner = SummingBigInteger_Combiner;
+        final Function<BigInteger[], BigInteger> finisher = SummingBigInteger_Finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
+    public static <T> Collector<T, ?, BigDecimal> summingBigDecimal(final Function<? super T, BigDecimal> mapper) {
+        final Supplier<BigDecimal[]> supplier = SummingBigDecimal_Supplier;
+
+        final BiConsumer<BigDecimal[], T> accumulator = new BiConsumer<BigDecimal[], T>() {
+            @Override
+            public void accept(BigDecimal[] a, T t) {
+                a[0] = a[0].add(mapper.apply(t));
+            }
+        };
+
+        final BinaryOperator<BigDecimal[]> combiner = SummingBigDecimal_Combiner;
+        final Function<BigDecimal[], BigDecimal> finisher = SummingBigDecimal_Finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
     /**
      * Returns a {@code Collector} that produces the arithmetic mean of an integer-valued
      * function applied to the input elements.  If no elements are present,
@@ -2633,6 +2758,40 @@ public class Collectors {
 
         final BinaryOperator<double[]> combiner = AveragingDouble_Combiner;
         final Function<double[], OptionalDouble> finisher = AveragingDouble_Finisher_2;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
+    public static <T> Collector<T, ?, BigDecimal> averagingBigInteger(final Function<? super T, BigInteger> mapper) {
+        final Supplier<Pair<BigInteger, MutableLong>> supplier = AveragingBigInteger_Supplier;
+
+        final BiConsumer<Pair<BigInteger, MutableLong>, T> accumulator = new BiConsumer<Pair<BigInteger, MutableLong>, T>() {
+            @Override
+            public void accept(Pair<BigInteger, MutableLong> a, T t) {
+                a.setLeft(a.left.add(mapper.apply(t)));
+                a.right.increment();
+            }
+        };
+
+        final BinaryOperator<Pair<BigInteger, MutableLong>> combiner = AveragingBigInteger_Combiner;
+        final Function<Pair<BigInteger, MutableLong>, BigDecimal> finisher = AveragingBigInteger_Finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
+    public static <T> Collector<T, ?, BigDecimal> averagingBigDecimal(final Function<? super T, BigDecimal> mapper) {
+        final Supplier<Pair<BigDecimal, MutableLong>> supplier = AveragingBigDecimal_Supplier;
+
+        final BiConsumer<Pair<BigDecimal, MutableLong>, T> accumulator = new BiConsumer<Pair<BigDecimal, MutableLong>, T>() {
+            @Override
+            public void accept(Pair<BigDecimal, MutableLong> a, T t) {
+                a.setLeft(a.left.add(mapper.apply(t)));
+                a.right.increment();
+            }
+        };
+
+        final BinaryOperator<Pair<BigDecimal, MutableLong>> combiner = AveragingBigDecimal_Combiner;
+        final Function<Pair<BigDecimal, MutableLong>, BigDecimal> finisher = AveragingBigDecimal_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }

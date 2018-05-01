@@ -694,21 +694,18 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
-        final Map<K, List<T>> map = groupTo(classifier);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, Fn.<T> identity());
     }
 
     @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
-        final Map<K, List<T>> map = groupTo(classifier, mapFactory);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, Fn.<T> identity(), mapFactory);
     }
 
     @Override
     public <K, U> Stream<Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper) {
         final Collector<T, ?, List<U>> downstream = Collectors.mapping(valueMapper, Collectors.<U> toList());
+
         return groupBy(classifier, downstream);
     }
 
@@ -716,77 +713,120 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             Supplier<Map<K, List<U>>> mapFactory) {
         final Collector<T, ?, List<U>> downstream = Collectors.mapping(valueMapper, Collectors.<U> toList());
-        final Map<K, List<U>> map = toMap(classifier, downstream, mapFactory);
 
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, downstream, mapFactory);
     }
 
     @Override
     public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        final Map<K, D> map = toMap(classifier, downstream);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, downstream, Fn.Suppliers.<K, D> ofMap());
     }
 
     @Override
-    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
-            Supplier<Map<K, D>> mapFactory) {
-        final Map<K, D> map = toMap(classifier, downstream, mapFactory);
+    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<Map<K, D>> mapFactory) {
+        return newStream(new ObjIteratorEx<Entry<K, D>>() {
+            private Iterator<Entry<K, D>> iter = null;
 
-        return newStream(map.entrySet().iterator(), false, null);
+            @Override
+            public boolean hasNext() {
+                init();
+                return iter.hasNext();
+            }
+
+            @Override
+            public Entry<K, D> next() {
+                init();
+                return iter.next();
+            }
+
+            private void init() {
+                if (iter == null) {
+                    iter = AbstractStream.this.toMap(classifier, downstream, mapFactory).entrySet().iterator();
+                }
+            }
+        }, false, null);
     }
 
     @Override
     public <K, U, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             Collector<? super U, A, D> downstream) {
-        final Map<K, D> map = toMap(classifier, valueMapper, downstream);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, valueMapper, downstream, Fn.Suppliers.<K, D> ofMap());
     }
 
     @Override
     public <K, U, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             Collector<? super U, A, D> downstream, Supplier<Map<K, D>> mapFactory) {
-        final Map<K, D> map = toMap(classifier, valueMapper, downstream, mapFactory);
+        final Collector<T, ?, D> downstream2 = Collectors.mapping(valueMapper, downstream);
 
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, downstream2, mapFactory);
     }
 
     @Override
     public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Map<K, U> map = toMap(classifier, valueMapper, mergeFunction);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return groupBy(classifier, valueMapper, mergeFunction, Fn.Suppliers.<K, U> ofMap());
     }
 
     @Override
     public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = toMap(classifier, valueMapper, mergeFunction, mapFactory);
+            final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory) {
+        return newStream(new ObjIteratorEx<Entry<K, U>>() {
+            private Iterator<Entry<K, U>> iter = null;
 
-        return newStream(map.entrySet().iterator(), false, null);
+            @Override
+            public boolean hasNext() {
+                init();
+                return iter.hasNext();
+            }
+
+            @Override
+            public Entry<K, U> next() {
+                init();
+                return iter.next();
+            }
+
+            private void init() {
+                if (iter == null) {
+                    iter = AbstractStream.this.toMap(classifier, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+                }
+            }
+        }, false, null);
     }
 
     @Override
     public Stream<Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate) {
-        final Map<Boolean, List<T>> map = partitionTo(predicate);
-
-        return newStream(map.entrySet().iterator(), false, null);
+        return partitionBy(predicate, Collectors.<T> toList());
     }
 
     @Override
-    public <A, D> Stream<Entry<Boolean, D>> partitionBy(Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
-        final Map<Boolean, D> map = partitionTo(predicate, downstream);
+    public <A, D> Stream<Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream) {
+        return newStream(new ObjIteratorEx<Entry<Boolean, D>>() {
+            private Iterator<Entry<Boolean, D>> iter = null;
 
-        return newStream(map.entrySet().iterator(), false, null);
+            @Override
+            public boolean hasNext() {
+                init();
+                return iter.hasNext();
+            }
+
+            @Override
+            public Entry<Boolean, D> next() {
+                init();
+                return iter.next();
+            }
+
+            private void init() {
+                if (iter == null) {
+                    iter = AbstractStream.this.partitionTo(predicate, downstream).entrySet().iterator();
+                }
+            }
+        }, false, null);
     }
 
     @Override
     public EntryStream<Boolean, List<T>> partitionByToEntry(Predicate<? super T> predicate) {
-        final Function<Map.Entry<Boolean, List<T>>, Map.Entry<Boolean, List<T>>> mapper = Fn.identity();
-
-        return partitionBy(predicate).mapToEntry(mapper);
+        return partitionByToEntry(predicate, Collectors.<T> toList());
     }
 
     @Override
@@ -798,26 +838,17 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> EntryStream<K, List<T>> groupByToEntry(Function<? super T, ? extends K> classifier) {
-        final Function<Map.Entry<K, List<T>>, Map.Entry<K, List<T>>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-
-        return groupBy(classifier2).mapToEntry(mapper);
+        return groupByToEntry(classifier, Fn.<T> identity());
     }
 
     @Override
     public <K> EntryStream<K, List<T>> groupByToEntry(Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
-        final Function<Map.Entry<K, List<T>>, Map.Entry<K, List<T>>> mapper = Fn.identity();
-
-        return groupBy(classifier, mapFactory).mapToEntry(mapper);
+        return groupByToEntry(classifier, Fn.<T> identity(), mapFactory);
     }
 
     @Override
     public <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper) {
-        final Function<Map.Entry<K, List<U>>, Map.Entry<K, List<U>>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-        final Function<T, U> valueMapper2 = (Function<T, U>) valueMapper;
-
-        return groupBy(classifier2, valueMapper2).mapToEntry(mapper);
+        return groupByToEntry(classifier, valueMapper, Fn.Suppliers.<K, List<U>> ofMap());
     }
 
     @Override
@@ -830,10 +861,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, A, D> EntryStream<K, D> groupByToEntry(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        final Function<Map.Entry<K, D>, Map.Entry<K, D>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-
-        return groupBy(classifier2, downstream).mapToEntry(mapper);
+        return groupByToEntry(classifier, downstream, Fn.Suppliers.<K, D> ofMap());
     }
 
     @Override
@@ -847,10 +875,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             Collector<? super U, A, D> downstream) {
-        final Function<Map.Entry<K, D>, Map.Entry<K, D>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-
-        return groupBy(classifier2, valueMapper, downstream).mapToEntry(mapper);
+        return groupByToEntry(classifier, valueMapper, downstream, Fn.Suppliers.<K, D> ofMap());
     }
 
     @Override
@@ -864,11 +889,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <K, U> EntryStream<K, U> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-        final Function<T, U> valueMapper2 = (Function<T, U>) valueMapper;
-
-        return groupBy(classifier2, valueMapper2, mergeFunction).mapToEntry(mapper);
+        return groupByToEntry(classifier, valueMapper, mergeFunction, Fn.Suppliers.<K, U> ofMap());
     }
 
     @Override

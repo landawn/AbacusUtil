@@ -8682,4 +8682,16 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, //
         HEADD, TAILL, HEAD_AND_TAILL;
     }
+
+    /**
+     * LAIO = Loading Right Now Operations.
+     * 
+     * Intermediate operations which will load or go through all the elements in the stream when it's called.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static enum LRNO {
+        CACHED, HEADD, TAILL, HEAD_AND_TAILL;
+    }
 }
