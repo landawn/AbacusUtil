@@ -72,6 +72,12 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [FloatList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatList_view.html) and
 [DoubleList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleList_view.html).
 
+* Primitive Pair/Tuple: 
+[BooleanPair](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanPair_view.html),
+[BooleanTriple](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanTriple_view.html)...  
+[DoublePair](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoublePair_view.html),
+[DoubleTriple](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleTriple_view.html).
+
 * Primitive/Immutable Iterator: 
 [BooleanIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanIterator_view.html), 
 [CharIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharIterator_view.html), 
