@@ -74,7 +74,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 * Primitive Pair/Tuple: 
 [BooleanPair](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanPair_view.html),
-[BooleanTriple](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanTriple_view.html)...  
+[BooleanTriple](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BooleanTriple_view.html)... 
 [DoublePair](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoublePair_view.html),
 [DoubleTriple](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleTriple_view.html).
 
@@ -193,6 +193,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [EmailUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/EmailUtil.html),
 [IEEE754rUtil](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/IEEE754rUtil.html),
 [Index](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Index.html),
+[Median](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Median.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/f.html),
 [Maths](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/Maths.html), 
 [SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util-all/1.2.7/com/landawn/abacus/util/SafeInitializer.html),
