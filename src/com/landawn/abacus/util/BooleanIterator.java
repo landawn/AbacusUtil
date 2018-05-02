@@ -46,6 +46,42 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
+    public static BooleanIterator of(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    
+        if (fromIndex == toIndex) {
+            return EMPTY;
+        }
+    
+        return new BooleanIterator() {
+            private int cursor = fromIndex;
+    
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+    
+            @Override
+            public boolean nextBoolean() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+    
+                return a[cursor++];
+            }
+    
+            @Override
+            public boolean[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+    
+            @Override
+            public BooleanList toList() {
+                return BooleanList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
     /**
      * Returns an infinite {@code BooleanIterator}.
      * 
@@ -85,42 +121,6 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
                 }
 
                 return supplier.getAsBoolean();
-            }
-        };
-    }
-
-    public static BooleanIterator of(final boolean[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (fromIndex == toIndex) {
-            return EMPTY;
-        }
-
-        return new BooleanIterator() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public boolean nextBoolean() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public boolean[] toArray() {
-                return N.copyOfRange(a, cursor, toIndex);
-            }
-
-            @Override
-            public BooleanList toList() {
-                return BooleanList.of(N.copyOfRange(a, cursor, toIndex));
             }
         };
     }
