@@ -2,6 +2,10 @@
  
 * Add `ByteStream/.../DoubleStream/.flattMapToObj`.
 
+* Add `N.checkArgPositive`.
+
+* Rename `Maps.removeAll(collection)/(map)` to `removeKeys/removeEntries`.
+
 * Improvements and bug fix.
 
 
