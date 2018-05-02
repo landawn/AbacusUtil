@@ -1719,7 +1719,7 @@ public abstract class SQLBuilder {
                 return set((Map<String, Object>) entity);
             } else {
                 final Map<String, Object> props = new LinkedHashMap<>((Map<String, Object>) entity);
-                Maps.removeAll(props, excludedPropNames);
+                Maps.removeKeys(props, excludedPropNames);
                 return set(props);
             }
         } else {
@@ -2384,7 +2384,7 @@ public abstract class SQLBuilder {
                 instance.props = (Map<String, Object>) entity;
             } else {
                 instance.props = new LinkedHashMap<>((Map<String, Object>) entity);
-                Maps.removeAll(instance.props, excludedPropNames);
+                Maps.removeKeys(instance.props, excludedPropNames);
             }
         } else {
             final Collection<String> propNames = getPropNamesByClass(entity.getClass(), false, excludedPropNames);

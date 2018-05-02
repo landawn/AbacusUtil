@@ -1017,7 +1017,7 @@ public abstract class CQLBuilder {
                 return set((Map<String, Object>) entity);
             } else {
                 final Map<String, Object> props = new LinkedHashMap<>((Map<String, Object>) entity);
-                Maps.removeAll(props, excludedPropNames);
+                Maps.removeKeys(props, excludedPropNames);
                 return set(props);
             }
         } else {
@@ -1028,7 +1028,7 @@ public abstract class CQLBuilder {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
 
-                Maps.removeAll(props, excludedPropNames);
+                Maps.removeKeys(props, excludedPropNames);
 
                 return set(props);
             } else {

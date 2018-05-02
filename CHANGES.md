@@ -6,6 +6,8 @@
 
 * Rename `Maps.removeAll(collection)/(map)` to `removeKeys/removeEntries`.
 
+* Rename `Synchronized.run(consumer)/call(function)` to `accept(consumer)/apply(function)`.
+
 * Improvements and bug fix.
 
 

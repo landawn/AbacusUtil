@@ -591,7 +591,7 @@ public final class Maps {
      * @param keysToRemove
      * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
      */
-    public static boolean removeAll(final Map<?, ?> map, final Collection<?> keysToRemove) {
+    public static boolean removeKeys(final Map<?, ?> map, final Collection<?> keysToRemove) {
         if (N.isNullOrEmpty(map) || N.isNullOrEmpty(keysToRemove)) {
             return false;
         }
@@ -612,7 +612,7 @@ public final class Maps {
      * @param entriesToRemove
      * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
      */
-    public static boolean removeAll(final Map<?, ?> map, final Map<?, ?> entriesToRemove) {
+    public static boolean removeEntries(final Map<?, ?> map, final Map<?, ?> entriesToRemove) {
         if (N.isNullOrEmpty(map) || N.isNullOrEmpty(entriesToRemove)) {
             return false;
         }

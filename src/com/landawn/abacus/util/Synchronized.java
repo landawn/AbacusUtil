@@ -14,6 +14,12 @@
 
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.util.function.Callable;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.Runnable;
+
 /**
  * 
  * @since 0.8
@@ -33,15 +39,145 @@ public final class Synchronized<T> {
         return new Synchronized<>(target);
     }
 
+    /**
+     * 
+     * @param target to locked on.
+     * @param cmd
+     * @return
+     */
+    public static <U> Runnable run(final U target, final Try.Runnable<RuntimeException> cmd) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                synchronized (target) {
+                    cmd.run();
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param cmd
+     * @return
+     */
+    public static <U, R> Callable<R> call(final U target, final Try.Callable<R, RuntimeException> cmd) {
+        return new Callable<R>() {
+            @Override
+            public R call() {
+                synchronized (target) {
+                    return cmd.call();
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param predicate
+     * @return
+     */
+    public static <U, T> Predicate<T> test(final U target, final Try.Predicate<T, RuntimeException> predicate) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                synchronized (target) {
+                    return predicate.test(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param predicate
+     * @return
+     */
+    public static <U, T> Predicate<T> test(final U target, final Try.BiPredicate<U, T, RuntimeException> predicate) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                synchronized (target) {
+                    return predicate.test(target, t);
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param consumer
+     * @return
+     */
+    public static <U, T> Consumer<T> accept(final U target, final Try.Consumer<T, RuntimeException> consumer) {
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                synchronized (target) {
+                    consumer.accept(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param consumer
+     * @return
+     */
+    public static <U, T> Consumer<T> accept(final U target, final Try.BiConsumer<U, T, RuntimeException> consumer) {
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                synchronized (target) {
+                    consumer.accept(target, t);
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param funciton
+     * @return
+     */
+    public static <U, T, R> Function<T, R> apply(final U target, final Try.Function<T, R, RuntimeException> funciton) {
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                synchronized (target) {
+                    return funciton.apply(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param target to locked on.
+     * @param funciton
+     * @return
+     */
+    public static <U, T, R> Function<T, R> apply(final U target, final Try.BiFunction<U, T, R, RuntimeException> funciton) {
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                synchronized (target) {
+                    return funciton.apply(target, t);
+                }
+            }
+        };
+    }
+
     public <E extends Exception> void run(final Try.Runnable<E> cmd) throws E {
         synchronized (target) {
             cmd.run();
-        }
-    }
-
-    public <E extends Exception> void run(final Try.Consumer<? super T, E> cmd) throws E {
-        synchronized (target) {
-            cmd.accept(target);
         }
     }
 
@@ -51,7 +187,19 @@ public final class Synchronized<T> {
         }
     }
 
-    public <R, E extends Exception> R call(final Try.Function<? super T, R, E> cmd) throws E {
+    public <E extends Exception> boolean test(final Try.Predicate<? super T, E> cmd) throws E {
+        synchronized (target) {
+            return cmd.test(target);
+        }
+    }
+
+    public <E extends Exception> void accept(final Try.Consumer<? super T, E> cmd) throws E {
+        synchronized (target) {
+            cmd.accept(target);
+        }
+    }
+
+    public <R, E extends Exception> R apply(final Try.Function<? super T, R, E> cmd) throws E {
         synchronized (target) {
             return cmd.apply(target);
         }

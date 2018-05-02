@@ -165,7 +165,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream step(final long step) {
-        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+        N.checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;

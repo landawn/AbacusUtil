@@ -527,7 +527,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharStream> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<CharStream>() {
             private int cursor = fromIndex;
@@ -562,7 +562,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<CharList>() {
             private int cursor = fromIndex;
@@ -1158,7 +1158,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
+        N.checkArgPositive(k, "k");
 
         if (k > toIndex - fromIndex) {
             return OptionalChar.empty();

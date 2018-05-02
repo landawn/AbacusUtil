@@ -751,7 +751,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleStream> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<DoubleStream>() {
             private int cursor = fromIndex;
@@ -786,7 +786,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<DoubleList>() {
             private int cursor = fromIndex;
@@ -1400,7 +1400,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
+        N.checkArgPositive(k, "k");
 
         if (k > toIndex - fromIndex) {
             return OptionalDouble.empty();

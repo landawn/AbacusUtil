@@ -165,7 +165,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream step(final long step) {
-        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+        N.checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;

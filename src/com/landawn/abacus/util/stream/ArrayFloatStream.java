@@ -751,7 +751,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<FloatStream>() {
             private int cursor = fromIndex;
@@ -786,7 +786,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<FloatList>() {
             private int cursor = fromIndex;
@@ -1400,7 +1400,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
+        N.checkArgPositive(k, "k");
 
         if (k > toIndex - fromIndex) {
             return OptionalFloat.empty();

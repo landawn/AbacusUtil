@@ -3104,7 +3104,7 @@ public final class SQLExecutor implements Closeable {
             if (N.notNullOrEmpty(sql) && sql.length() <= CACHED_SQL_LENGTH) {
                 if (_sqlColumnLabelPool.size() >= SQL_CACHE_SIZE) {
                     final List<String> tmp = new ArrayList<>(_sqlColumnLabelPool.keySet());
-                    Maps.removeAll(_sqlColumnLabelPool, tmp.subList(0, (int) (tmp.size() * 0.25)));
+                    Maps.removeKeys(_sqlColumnLabelPool, tmp.subList(0, (int) (tmp.size() * 0.25)));
                 }
 
                 _sqlColumnLabelPool.put(sql, labelList);

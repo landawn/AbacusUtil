@@ -9817,7 +9817,7 @@ public final class N {
     //    }
 
     /**
-     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
      * 
      * @param arg
      * @param argNameOrErrorMsg
@@ -9834,7 +9834,7 @@ public final class N {
     }
 
     /**
-     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
      * 
      * @param arg
      * @param argNameOrErrorMsg
@@ -9851,7 +9851,7 @@ public final class N {
     }
 
     /**
-     * Checks if the specified {@code arg} is negative, and throws {@code IllegalArgumentException} if it is.
+     * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
      * 
      * @param arg
      * @param argNameOrErrorMsg
@@ -9861,6 +9861,57 @@ public final class N {
         if (arg < 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
                 throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgPositive(final int arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgPositive(final long arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+    }
+
+    /**
+     * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static void checkArgPositive(final double arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }

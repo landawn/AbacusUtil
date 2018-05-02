@@ -646,7 +646,7 @@ public final class CassandraExecutor implements Closeable {
                 props.put(propName, ClassUtil.getPropValue(entity, propName));
             }
 
-            Maps.removeAll(props, keyNameSet);
+            Maps.removeKeys(props, keyNameSet);
 
             return update(targetClass, props, entity2Cond(entity));
         } else {
@@ -677,7 +677,7 @@ public final class CassandraExecutor implements Closeable {
                 props.put(propName, ClassUtil.getPropValue(entity, propName));
             }
 
-            Maps.removeAll(props, keyNameSet);
+            Maps.removeKeys(props, keyNameSet);
 
             return update(targetClass, props, and);
         } else {

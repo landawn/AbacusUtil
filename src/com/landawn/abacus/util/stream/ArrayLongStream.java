@@ -752,7 +752,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<LongStream>() {
             private int cursor = fromIndex;
@@ -787,7 +787,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+        N.checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<LongList>() {
             private int cursor = fromIndex;
@@ -1401,7 +1401,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong kthLargest(int k) {
-        N.checkArgument(k > 0, "'k' must be bigger than 0");
+        N.checkArgPositive(k, "k");
 
         if (k > toIndex - fromIndex) {
             return OptionalLong.empty();
