@@ -697,9 +697,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     public Map<K, V> toMap() {
-        final Collector<Map.Entry<K, V>, ?, Map<K, V>> collector = Collectors.toMap();
-
-        return s.collect(collector);
+        return s.toMap(Fn.<K, V> key(), Fn.<K, V> value());
     }
 
     /**
@@ -708,9 +706,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     public Map<K, V> toMap(final BinaryOperator<V> mergeFunction) {
-        final Collector<Map.Entry<K, V>, ?, Map<K, V>> collector = Collectors.toMap(mergeFunction);
-
-        return s.collect(collector);
+        return s.toMap(Fn.<K, V> key(), Fn.<K, V> value(), mergeFunction);
     }
 
     /**
@@ -719,9 +715,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     public <M extends Map<K, V>> M toMap(final Supplier<M> mapFactory) {
-        final Collector<Map.Entry<K, V>, ?, M> collector = Collectors.toMap(mapFactory);
-
-        return s.collect(collector);
+        return s.toMap(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
     }
 
     /**
@@ -731,12 +725,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     public <M extends Map<K, V>> M toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-        final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
-
-        final Collector<Entry<K, V>, ?, M> collector = Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-
-        return s.collect(collector);
+        return s.toMap(Fn.<K, V> key(), Fn.<K, V> value(), mergeFunction, mapFactory);
     }
 
     /**
@@ -810,9 +799,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function, Collector)
      */
     public <A, D, M extends Map<K, D>> M toMap(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<M> mapFactory) {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-
-        return s.toMap(keyExtractor, downstream, mapFactory);
+        return s.toMap(Fn.<K, V> key(), downstream, mapFactory);
     }
 
     /**
@@ -851,10 +838,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function)
      */
     public Map<K, List<V>> groupTo() {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-        final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
-
-        return s.groupTo(keyExtractor, valueMapper);
+        return s.groupTo(Fn.<K, V> key(), Fn.<K, V> value());
     }
 
     /**
@@ -865,10 +849,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function, Supplier)
      */
     public <M extends Map<K, List<V>>> M groupTo(final Supplier<M> mapFactory) {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-        final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
-
-        return s.groupTo(keyExtractor, valueMapper, mapFactory);
+        return s.groupTo(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
     }
 
     public <KK, VV> Map<KK, List<VV>> groupTo(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
@@ -886,7 +867,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     public <KK, VV, M extends Map<KK, List<VV>>> M groupTo(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
-
         return s.groupTo(keyExtractor, valueMapper, mapFactory);
     }
 
@@ -901,10 +881,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#toMultimap(Function, Function)
      */
     public ListMultimap<K, V> toMultimap() {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-        final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
-
-        return s.toMultimap(keyExtractor, valueMapper);
+        return s.toMultimap(Fn.<K, V> key(), Fn.<K, V> value());
     }
 
     /**
@@ -915,10 +892,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public <C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Supplier<M> mapFactory) {
-        final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
-        final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
-
-        return s.toMultimap(keyExtractor, valueMapper, mapFactory);
+        return s.toMultimap(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
     }
 
     /**

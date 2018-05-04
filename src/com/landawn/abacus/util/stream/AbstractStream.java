@@ -2253,11 +2253,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<T>, R> R toCollectionAndThen(final Supplier<C> supplier, final Function<? super C, R> func) {
-        return func.apply(toCollection(supplier));
-    }
-
-    @Override
     public Pair<Nullable<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }

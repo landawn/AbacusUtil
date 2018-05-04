@@ -20,7 +20,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Retry](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Retry_view.html), 
 [Synchronized](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Synchronized_view.html),
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
-[LongMultiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMultiset_view.html), 
 [Multimap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multimap_view.html), 
 [Sheet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Sheet_view.html), 
 [BiMap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BiMap_view.html), 

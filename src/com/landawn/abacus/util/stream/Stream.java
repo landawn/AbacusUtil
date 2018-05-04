@@ -1682,9 +1682,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @SequentialOnly
     public abstract <R> R toSetAndThen(Function<? super Set<T>, R> func);
 
-    @SequentialOnly
-    public abstract <C extends Collection<T>, R> R toCollectionAndThen(Supplier<C> supplier, Function<? super C, R> func);
-
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() or tail() is called. 

@@ -46,6 +46,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U> Runnable run(final U target, final Try.Runnable<RuntimeException> cmd) {
+        N.requireNonNull(target);
+        N.requireNonNull(cmd);
+
         return new Runnable() {
             @Override
             public void run() {
@@ -63,6 +66,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, R> Callable<R> call(final U target, final Try.Callable<R, RuntimeException> cmd) {
+        N.requireNonNull(target);
+        N.requireNonNull(cmd);
+
         return new Callable<R>() {
             @Override
             public R call() {
@@ -80,6 +86,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T> Predicate<T> test(final U target, final Try.Predicate<T, RuntimeException> predicate) {
+        N.requireNonNull(target);
+        N.requireNonNull(predicate);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -97,6 +106,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T> Predicate<T> test(final U target, final Try.BiPredicate<U, T, RuntimeException> predicate) {
+        N.requireNonNull(target);
+        N.requireNonNull(predicate);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -114,6 +126,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T> Consumer<T> accept(final U target, final Try.Consumer<T, RuntimeException> consumer) {
+        N.requireNonNull(target);
+        N.requireNonNull(consumer);
+
         return new Consumer<T>() {
             @Override
             public void accept(T t) {
@@ -131,6 +146,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T> Consumer<T> accept(final U target, final Try.BiConsumer<U, T, RuntimeException> consumer) {
+        N.requireNonNull(target);
+        N.requireNonNull(consumer);
+
         return new Consumer<T>() {
             @Override
             public void accept(T t) {
@@ -148,6 +166,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T, R> Function<T, R> apply(final U target, final Try.Function<T, R, RuntimeException> funciton) {
+        N.requireNonNull(target);
+        N.requireNonNull(funciton);
+
         return new Function<T, R>() {
             @Override
             public R apply(T t) {
@@ -165,6 +186,9 @@ public final class Synchronized<T> {
      * @return
      */
     public static <U, T, R> Function<T, R> apply(final U target, final Try.BiFunction<U, T, R, RuntimeException> funciton) {
+        N.requireNonNull(target);
+        N.requireNonNull(funciton);
+
         return new Function<T, R>() {
             @Override
             public R apply(T t) {
@@ -176,32 +200,47 @@ public final class Synchronized<T> {
     }
 
     public <E extends Exception> void run(final Try.Runnable<E> cmd) throws E {
+        N.requireNonNull(target);
+        N.requireNonNull(cmd);
+
         synchronized (target) {
             cmd.run();
         }
     }
 
     public <R, E extends Exception> R call(final Try.Callable<R, E> cmd) throws E {
+        N.requireNonNull(target);
+        N.requireNonNull(cmd);
+
         synchronized (target) {
             return cmd.call();
         }
     }
 
-    public <E extends Exception> boolean test(final Try.Predicate<? super T, E> cmd) throws E {
+    public <E extends Exception> boolean test(final Try.Predicate<? super T, E> predicate) throws E {
+        N.requireNonNull(target);
+        N.requireNonNull(predicate);
+
         synchronized (target) {
-            return cmd.test(target);
+            return predicate.test(target);
         }
     }
 
-    public <E extends Exception> void accept(final Try.Consumer<? super T, E> cmd) throws E {
+    public <E extends Exception> void accept(final Try.Consumer<? super T, E> consumer) throws E {
+        N.requireNonNull(target);
+        N.requireNonNull(consumer);
+
         synchronized (target) {
-            cmd.accept(target);
+            consumer.accept(target);
         }
     }
 
-    public <R, E extends Exception> R apply(final Try.Function<? super T, R, E> cmd) throws E {
+    public <R, E extends Exception> R apply(final Try.Function<? super T, R, E> function) throws E {
+        N.requireNonNull(target);
+        N.requireNonNull(function);
+
         synchronized (target) {
-            return cmd.apply(target);
+            return function.apply(target);
         }
     }
 }

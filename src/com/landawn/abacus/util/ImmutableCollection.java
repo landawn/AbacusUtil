@@ -122,6 +122,10 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
         return coll.toArray(a);
     }
 
+    public Stream<E> streamm() {
+        return Stream.of(coll);
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof ImmutableCollection && ((ImmutableCollection<E>) obj).coll.equals(coll);
@@ -135,9 +139,5 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
     @Override
     public String toString() {
         return coll.toString();
-    }
-
-    public Stream<E> streamm() {
-        return Stream.of(coll);
     }
 }
