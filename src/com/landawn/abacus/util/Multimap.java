@@ -446,6 +446,20 @@ public class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
+    /**
+     * <pre>
+     * <code>
+     * ListMultimap<String, Integer> listMultimap = ListMultimap.of("a", 1, "b", 2, "a", 2, "a", 2); // -> {a=[1, 2, 2], b=[2]}
+     * listMultimap.removeAll(N.asMap("a", 2)); // -> {a=[1, 2], b=[2]}
+     * 
+     * SetMultimap<String, Integer> setMultimap = SetMultimap.of("a", 1, "b", 2, "a", 2); // -> {a=[1, 2, 2], b=[2]}
+     * setMultimap.removeAll(N.asMap("a", 2)); // -> {a=[1], b=[2]}
+     * </code>
+     * </pre>
+     * 
+     * @param m
+     * @return
+     */
     public boolean removeAll(final Map<? extends K, ? extends E> m) {
         if (N.isNullOrEmpty(m)) {
             return false;

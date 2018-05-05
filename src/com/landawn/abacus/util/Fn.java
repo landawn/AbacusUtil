@@ -47,6 +47,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Tuple.Tuple1;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
@@ -257,6 +258,13 @@ public final class Fn extends Comparators {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
             return t.getValue();
+        }
+    };
+
+    private static final Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>> INVERSE = new Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>() {
+        @Override
+        public Map.Entry<Object, Object> apply(Map.Entry<Object, Object> t) {
+            return Pair.of(t.getValue(), t.getKey());
         }
     };
 
@@ -530,6 +538,11 @@ public final class Fn extends Comparators {
     @SuppressWarnings("rawtypes")
     public static <K, V> Function<Entry<K, V>, V> value() {
         return (Function) VALUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> Function<Entry<K, V>, Entry<V, K>> inverse() {
+        return (Function) INVERSE;
     }
 
     @SuppressWarnings("rawtypes")
@@ -1088,18 +1101,6 @@ public final class Fn extends Comparators {
         };
     }
 
-    public static <T> BinaryOperator<T> throwingMerger() {
-        return BinaryOperators.THROWING_MERGER;
-    }
-
-    public static <T> BinaryOperator<T> ignoringMerger() {
-        return BinaryOperators.IGNORING_MERGER;
-    }
-
-    public static <T> BinaryOperator<T> replacingMerger() {
-        return BinaryOperators.REPLACING_MERGER;
-    }
-
     public static ToByteFunction<Byte> unboxB() {
         return ToByteFunction.UNBOX;
     }
@@ -1329,6 +1330,63 @@ public final class Fn extends Comparators {
                 action.accept(u, idx.getAndIncrement(), t);
             }
         };
+    }
+
+    @Beta
+    public static <T> Predicate<T> p(final Predicate<T> predicate) {
+        return predicate;
+    }
+
+    @Beta
+    public static <U, T> Predicate<T> p(final U u, final BiPredicate<T, U> predicate) {
+        return Predicates.create(u, predicate);
+    }
+
+    @Beta
+    public static <T, U> BiPredicate<T, U> p(final BiPredicate<T, U> biPredicate) {
+        return biPredicate;
+    }
+
+    @Beta
+    public static <T> Consumer<T> c(final Consumer<T> consumer) {
+        return consumer;
+    }
+
+    @Beta
+    public static <U, T> Consumer<T> c(final U u, final BiConsumer<T, U> consumer) {
+        return Consumers.create(u, consumer);
+    }
+
+    @Beta
+    public static <T, U> BiConsumer<T, U> c(final BiConsumer<T, U> biConsumer) {
+        return biConsumer;
+    }
+
+    @Beta
+    public static <T, R> Function<T, R> f(final Function<T, R> consumer) {
+        return consumer;
+    }
+
+    @Beta
+    public static <U, T, R> Function<T, R> f(final U u, final BiFunction<T, U, R> consumer) {
+        return Functions.create(u, consumer);
+    }
+
+    @Beta
+    public static <T, U, R> BiFunction<T, U, R> f(final BiFunction<T, U, R> biFunction) {
+        return biFunction;
+    }
+
+    public static <T> BinaryOperator<T> throwingMerger() {
+        return BinaryOperators.THROWING_MERGER;
+    }
+
+    public static <T> BinaryOperator<T> ignoringMerger() {
+        return BinaryOperators.IGNORING_MERGER;
+    }
+
+    public static <T> BinaryOperator<T> replacingMerger() {
+        return BinaryOperators.REPLACING_MERGER;
     }
 
     public static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
@@ -1756,8 +1814,17 @@ public final class Fn extends Comparators {
     }
 
     public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
-            Collector<? super U, A, R> downstream) {
+            final Collector<? super U, A, R> downstream) {
         return Collectors.flatMapping(mapper, downstream);
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper) {
+        return Collectors.flattMapping(mapper);
+    }
+
+    public static <T, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper,
+            final Collector<? super U, A, R> downstream) {
+        return Collectors.flattMapping(mapper, downstream);
     }
 
     public static final class Factory {

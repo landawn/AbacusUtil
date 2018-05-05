@@ -169,52 +169,28 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
-            @Override
-            public Entry<K, V> apply(K k, V v) {
-                return Pair.of(k, v);
-            }
-        };
-
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
         final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
 
         return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
     }
 
     public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values, K valueForNonKey, V valueForNonValue) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
-            @Override
-            public Entry<K, V> apply(K k, V v) {
-                return Pair.of(k, v);
-            }
-        };
-
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
         final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
 
         return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
     }
 
     public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
-            @Override
-            public Entry<K, V> apply(K k, V v) {
-                return Pair.of(k, v);
-            }
-        };
-
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
         final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
 
         return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
     }
 
     public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values, K valueForNonKey, V valueForNonValue) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
-            @Override
-            public Entry<K, V> apply(K k, V v) {
-                return Pair.of(k, v);
-            }
-        };
-
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
         final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
 
         return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
@@ -237,12 +213,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public EntryStream<V, K> inversed() {
-        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
-            @Override
-            public Entry<V, K> apply(Entry<K, V> e) {
-                return Pair.of(e.getValue(), e.getKey());
-            }
-        };
+        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = Fn.inverse();
 
         return map(mapper);
     }

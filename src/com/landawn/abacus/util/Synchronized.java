@@ -45,7 +45,7 @@ public final class Synchronized<T> {
      * @param cmd
      * @return
      */
-    public static <U> Runnable run(final U target, final Try.Runnable<RuntimeException> cmd) {
+    public static <T> Runnable run(final T target, final Try.Runnable<RuntimeException> cmd) {
         N.requireNonNull(target);
         N.requireNonNull(cmd);
 
@@ -65,7 +65,7 @@ public final class Synchronized<T> {
      * @param cmd
      * @return
      */
-    public static <U, R> Callable<R> call(final U target, final Try.Callable<R, RuntimeException> cmd) {
+    public static <T, R> Callable<R> call(final T target, final Try.Callable<R, RuntimeException> cmd) {
         N.requireNonNull(target);
         N.requireNonNull(cmd);
 
@@ -85,7 +85,7 @@ public final class Synchronized<T> {
      * @param predicate
      * @return
      */
-    public static <U, T> Predicate<T> test(final U target, final Try.Predicate<T, RuntimeException> predicate) {
+    public static <T> Predicate<T> test(final T target, final Try.Predicate<T, RuntimeException> predicate) {
         N.requireNonNull(target);
         N.requireNonNull(predicate);
 
@@ -105,13 +105,13 @@ public final class Synchronized<T> {
      * @param predicate
      * @return
      */
-    public static <U, T> Predicate<T> test(final U target, final Try.BiPredicate<U, T, RuntimeException> predicate) {
+    public static <T, U> Predicate<U> test(final T target, final Try.BiPredicate<T, U, RuntimeException> predicate) {
         N.requireNonNull(target);
         N.requireNonNull(predicate);
 
-        return new Predicate<T>() {
+        return new Predicate<U>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(U t) {
                 synchronized (target) {
                     return predicate.test(target, t);
                 }
@@ -125,13 +125,13 @@ public final class Synchronized<T> {
      * @param consumer
      * @return
      */
-    public static <U, T> Consumer<T> accept(final U target, final Try.Consumer<T, RuntimeException> consumer) {
+    public static <T, U> Consumer<U> accept(final T target, final Try.Consumer<U, RuntimeException> consumer) {
         N.requireNonNull(target);
         N.requireNonNull(consumer);
 
-        return new Consumer<T>() {
+        return new Consumer<U>() {
             @Override
-            public void accept(T t) {
+            public void accept(U t) {
                 synchronized (target) {
                     consumer.accept(t);
                 }
@@ -145,13 +145,13 @@ public final class Synchronized<T> {
      * @param consumer
      * @return
      */
-    public static <U, T> Consumer<T> accept(final U target, final Try.BiConsumer<U, T, RuntimeException> consumer) {
+    public static <T, U> Consumer<U> accept(final T target, final Try.BiConsumer<T, U, RuntimeException> consumer) {
         N.requireNonNull(target);
         N.requireNonNull(consumer);
 
-        return new Consumer<T>() {
+        return new Consumer<U>() {
             @Override
-            public void accept(T t) {
+            public void accept(U t) {
                 synchronized (target) {
                     consumer.accept(target, t);
                 }
@@ -165,13 +165,13 @@ public final class Synchronized<T> {
      * @param funciton
      * @return
      */
-    public static <U, T, R> Function<T, R> apply(final U target, final Try.Function<T, R, RuntimeException> funciton) {
+    public static <T, U, R> Function<U, R> apply(final T target, final Try.Function<U, R, RuntimeException> funciton) {
         N.requireNonNull(target);
         N.requireNonNull(funciton);
 
-        return new Function<T, R>() {
+        return new Function<U, R>() {
             @Override
-            public R apply(T t) {
+            public R apply(U t) {
                 synchronized (target) {
                     return funciton.apply(t);
                 }
@@ -185,13 +185,13 @@ public final class Synchronized<T> {
      * @param funciton
      * @return
      */
-    public static <U, T, R> Function<T, R> apply(final U target, final Try.BiFunction<U, T, R, RuntimeException> funciton) {
+    public static <T, U, R> Function<U, R> apply(final T target, final Try.BiFunction<T, U, R, RuntimeException> funciton) {
         N.requireNonNull(target);
         N.requireNonNull(funciton);
 
-        return new Function<T, R>() {
+        return new Function<U, R>() {
             @Override
-            public R apply(T t) {
+            public R apply(U t) {
                 synchronized (target) {
                     return funciton.apply(target, t);
                 }

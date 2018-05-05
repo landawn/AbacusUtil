@@ -161,12 +161,23 @@ public final class BiMap<K, V> implements Map<K, V> {
         return map;
     }
 
-    public static <K, V> BiMap<K, V> from(final Map<? extends K, ? extends V> map) {
+    public static <K, V> BiMap<K, V> copyOf(final Map<? extends K, ? extends V> map) {
         final BiMap<K, V> biMap = new BiMap<>(Maps.newTargetMap(map), Maps.newOrderingMap(map));
-
+    
         biMap.putAll(map);
-
+    
         return biMap;
+    }
+
+    /**
+     * 
+     * @param map
+     * @return
+     * @deprecated replaced by {@code copyOf}
+     */
+    @Deprecated
+    public static <K, V> BiMap<K, V> from(final Map<? extends K, ? extends V> map) {
+        return copyOf(map);
     }
 
     @Override

@@ -1590,14 +1590,14 @@ public class Collectors {
         return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
     }
 
-    public static <T, U> Collector<T, ?, List<U>> flatMapping(Function<? super T, ? extends Stream<? extends U>> mapper) {
+    public static <T, U> Collector<T, ?, List<U>> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper) {
         final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
 
         return flatMapping(mapper, downstream);
     }
 
     public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
-            Collector<? super U, A, R> downstream) {
+            final Collector<? super U, A, R> downstream) {
         final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
 
         final BiConsumer<A, T> accumulator = new BiConsumer<A, T>() {
@@ -1615,6 +1615,25 @@ public class Collectors {
         };
 
         return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper) {
+        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
+
+        return flattMapping(mapper, downstream);
+    }
+
+    public static <T, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper,
+            final Collector<? super U, A, R> downstream) {
+
+        final Function<T, Stream<U>> mapper2 = new Function<T, Stream<U>>() {
+            @Override
+            public Stream<U> apply(T t) {
+                return Stream.of(mapper.apply(t));
+            }
+        };
+
+        return flatMapping(mapper2, downstream);
     }
 
     /**

@@ -413,8 +413,14 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * </p>
      * 
      * @return the numerator fraction part
+     * @deprecated replaced by {@code numerator}
      */
+    @Deprecated
     public int getNumerator() {
+        return numerator;
+    }
+
+    public int numerator() {
         return numerator;
     }
 
@@ -424,8 +430,14 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * </p>
      * 
      * @return the denominator fraction part
+     * @deprecated replaced by {@code denominator}
      */
+    @Deprecated
     public int getDenominator() {
+        return denominator;
+    }
+
+    public int denominator() {
         return denominator;
     }
 
@@ -445,8 +457,14 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * </p>
      * 
      * @return the numerator fraction part of a proper fraction, always positive
+     * @deprecated replaced by {@code properNumerator}
      */
+    @Deprecated
     public int getProperNumerator() {
+        return Math.abs(numerator % denominator);
+    }
+
+    public int properNumerator() {
         return Math.abs(numerator % denominator);
     }
 
@@ -466,8 +484,14 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * </p>
      * 
      * @return the whole fraction part of a proper fraction, that includes the sign
+     * @deprecated replaced by {@code properWhole}
      */
+    @Deprecated
     public int getProperWhole() {
+        return numerator / denominator;
+    }
+
+    public int properWhole() {
         return numerator / denominator;
     }
 

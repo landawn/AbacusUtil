@@ -18,9 +18,7 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.Supplier;
@@ -32,48 +30,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @author Haiyang Li
  */
 public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
-
-    @SuppressWarnings("rawtypes")
-    private static final ImmutableIterator EMPTY = new ObjIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Object next() {
-            throw new NoSuchElementException();
-        }
-    };
-
-    protected ImmutableIterator() {
-
-    }
-
-    public static <E> ImmutableIterator<E> empty() {
-        return EMPTY;
-    }
-
-    public static <E> ImmutableIterator<E> of(final Iterator<E> iter) {
-        if (iter == null) {
-            return empty();
-        } else if (iter instanceof ImmutableIterator) {
-            return (ImmutableIterator<E>) iter;
-        }
-
-        return new ObjIterator<E>() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public E next() {
-                return iter.next();
-            }
-        };
-    }
-
     /**
      * @deprecated - UnsupportedOperationException
      */
@@ -107,14 +63,13 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
         return Iterators.toMap(this, keyExtractor);
     }
 
-    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(final Iterator<? extends T> iter, final Try.Function<? super T, K, E> keyExtractor,
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(final Try.Function<? super T, K, E> keyExtractor,
             final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
         return Iterators.toMap(this, keyExtractor, valueExtractor);
     }
 
-    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(final Iterator<? extends T> iter,
-            final Try.Function<? super T, K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier)
-            throws E, E2 {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(final Try.Function<? super T, K, E> keyExtractor,
+            final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier) throws E, E2 {
         return Iterators.toMap(this, keyExtractor, valueExtractor, mapSupplier);
     }
 }
