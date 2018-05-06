@@ -101,7 +101,7 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class DoubleStream
-        extends StreamBase<Double, double[], DoublePredicate, DoubleConsumer, DoubleList, OptionalDouble, IndexedDouble, DoubleStream> {
+        extends StreamBase<Double, double[], DoublePredicate, DoubleConsumer, DoubleList, OptionalDouble, IndexedDouble, DoubleIterator, DoubleStream> {
 
     private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY, true, null);
 

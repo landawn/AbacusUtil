@@ -97,7 +97,7 @@ import com.landawn.abacus.util.function.ToByteFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteStream> {
+public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteIterator, ByteStream> {
 
     private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY, true, null);
 

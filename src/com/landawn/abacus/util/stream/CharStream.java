@@ -97,7 +97,8 @@ import com.landawn.abacus.util.function.ToCharFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class CharStream extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharStream> {
+public abstract class CharStream
+        extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharIterator, CharStream> {
 
     private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY, true, null);
 

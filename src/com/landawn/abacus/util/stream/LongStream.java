@@ -104,7 +104,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongStream> {
+public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongIterator, LongStream> {
 
     private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY, true, null);
 

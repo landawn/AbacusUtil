@@ -1,5 +1,9 @@
 ### 1.2.9
 
+* Refactoring: change the return type of `Opitonal.map` from `Optional<U>` to `Nullable<U>`.
+
+* Add `Fn/Collectors.flattMapping`.
+
 * Improvements and bug fix.
 
 

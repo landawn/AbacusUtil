@@ -49,15 +49,6 @@ public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predi
         return Fn.alwaysFalse();
     }
 
-    /**
-     * Returns the {@code Predicate} which always returns {@code false}.
-     * 
-     * @return
-     */
-    static <T> Predicate<T> never() {
-        return Fn.Predicates.never();
-    }
-
     static <T> Predicate<T> isNull() {
         return Fn.isNull();
     }

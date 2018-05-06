@@ -98,7 +98,8 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class ShortStream extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortStream> {
+public abstract class ShortStream
+        extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortIterator, ShortStream> {
 
     private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY, true, null);
 

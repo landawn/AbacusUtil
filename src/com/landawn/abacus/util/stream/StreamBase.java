@@ -84,7 +84,8 @@ import com.landawn.abacus.util.function.BinaryOperator;
  * 
  * @author Haiyang Li
  */
-abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, C, PL, OT, IT, S>> implements BaseStream<T, A, P, C, PL, OT, IT, S> {
+abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, A, P, C, PL, OT, IT, ITER, S>>
+        implements BaseStream<T, A, P, C, PL, OT, IT, ITER, S> {
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
     static final Object NONE = new Object();
@@ -916,13 +917,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return Fn.closeQuietly(closeable);
     }
 
-    static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {
+    static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?>> c) {
         return new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?> s : c) {
+                for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> s : c) {
                     try {
                         s.close();
                     } catch (Throwable throwable) {
@@ -941,7 +942,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         };
     }
 
-    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?> stream, final Set<Runnable> closeHandlers) {
+    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> stream, final Set<Runnable> closeHandlers) {
         return mergeCloseHandlers(stream.closeHandlers, closeHandlers);
     }
 

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
@@ -73,6 +72,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @param <PL> the type of PrimitiveList/List
  * @param <OT> the type of Optional
  * @param <IT> the type of Indexed
+ * @param <IT> the type of Iterator
  * @param <S> the type of of the stream implementing {@code BaseStream}
  * @since 1.8
  * @see Stream
@@ -81,7 +81,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P, C, PL, OT, IT, S>> extends AutoCloseable {
+public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T, A, P, C, PL, OT, IT, ITER, S>> extends AutoCloseable {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -778,7 +778,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return the element iterator for this stream
      */
     @SequentialOnly
-    ImmutableIterator<T> iterator();
+    ITER iterator();
 
     @SequentialOnly
     void println();

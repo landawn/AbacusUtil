@@ -104,7 +104,7 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntStream> {
+public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntIterator, IntStream> {
 
     private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY, true, null);
 

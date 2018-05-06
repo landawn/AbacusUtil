@@ -29,7 +29,7 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
+abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
     /**
      * @deprecated - UnsupportedOperationException
      */

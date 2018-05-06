@@ -247,6 +247,37 @@ public final class Fn extends Comparators {
         }
     };
 
+    private static final Function<String, String> NULL_TO_EMPTY = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return t == null ? N.EMPTY_STRING : t;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Function<List, List> NULL_TO_EMPTY_L = new Function<List, List>() {
+        @Override
+        public List apply(List t) {
+            return t == null ? N.emptyList() : t;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Function<Set, Set> NULL_TO_EMPTY_S = new Function<Set, Set>() {
+        @Override
+        public Set apply(Set t) {
+            return t == null ? N.emptySet() : t;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Function<Map, Map> NULL_TO_EMPTY_M = new Function<Map, Map>() {
+        @Override
+        public Map apply(Map t) {
+            return t == null ? N.emptyMap() : t;
+        }
+    };
+
     private static final Function<Map.Entry<Object, Object>, Object> KEY = new Function<Map.Entry<Object, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
@@ -504,6 +535,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, T> Function<T, Keyed<K, T>> keyed(final Function<? super T, K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
         return new Function<T, Keyed<K, T>>() {
             @Override
             public Keyed<K, T> apply(T t) {
@@ -522,6 +555,9 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Function<T, Wrapper<T>> wrap(final ToIntFunction<? super T> hashFunction, final BiPredicate<? super T, ? super T> equalsFunction) {
+        N.requireNonNull(hashFunction);
+        N.requireNonNull(equalsFunction);
+
         return new Function<T, Wrapper<T>>() {
             @Override
             public Wrapper<T> apply(T t) {
@@ -550,6 +586,26 @@ public final class Fn extends Comparators {
         // return (BiFunction) ENTRY;
 
         return (BiFunction) PAIR;
+    }
+
+    public static <K, T> Function<T, Map.Entry<K, T>> entry(final K key) {
+        return new Function<T, Map.Entry<K, T>>() {
+            @Override
+            public Entry<K, T> apply(T t) {
+                return Pair.of(key, t);
+            }
+        };
+    }
+
+    public static <K, T> Function<T, Map.Entry<K, T>> entry(final Function<? super T, K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        return new Function<T, Map.Entry<K, T>>() {
+            @Override
+            public Entry<K, T> apply(T t) {
+                return Pair.of(keyExtractor.apply(t), t);
+            }
+        };
     }
 
     @SuppressWarnings("rawtypes")
@@ -594,7 +650,28 @@ public final class Fn extends Comparators {
         return TRIM_TO_NULL;
     }
 
+    public static Function<String, String> nullToEmpty() {
+        return NULL_TO_EMPTY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Function<List<T>, List<T>> nullToEmptyL() {
+        return (Function) NULL_TO_EMPTY_L;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Function<Set<T>, Set<T>> nullToEmptyS() {
+        return (Function) NULL_TO_EMPTY_S;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> Function<Map<K, V>, Map<K, V>> nullToEmptyM() {
+        return (Function) NULL_TO_EMPTY_M;
+    }
+
     public static <T, U> Function<T, U> cast(final Class<U> clazz) {
+        N.requireNonNull(clazz);
+
         return new Function<T, U>() {
             @Override
             public U apply(T t) {
@@ -711,6 +788,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> in(final Collection<?> c) {
+        N.requireNonNull(c);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -720,6 +799,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> notIn(final Collection<?> c) {
+        N.requireNonNull(c);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -729,6 +810,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> instanceOf(final Class<?> clazz) {
+        N.requireNonNull(clazz);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -739,6 +822,8 @@ public final class Fn extends Comparators {
 
     @SuppressWarnings("rawtypes")
     public static Predicate<Class> subtypeOf(final Class<?> clazz) {
+        N.requireNonNull(clazz);
+
         return new Predicate<Class>() {
             @Override
             public boolean test(Class value) {
@@ -748,6 +833,8 @@ public final class Fn extends Comparators {
     }
 
     public static Predicate<String> startsWith(final String prefix) {
+        N.requireNonNull(prefix);
+
         return new Predicate<String>() {
             @Override
             public boolean test(String value) {
@@ -757,6 +844,8 @@ public final class Fn extends Comparators {
     }
 
     public static Predicate<String> endsWith(final String suffix) {
+        N.requireNonNull(suffix);
+
         return new Predicate<String>() {
             @Override
             public boolean test(String value) {
@@ -766,6 +855,8 @@ public final class Fn extends Comparators {
     }
 
     public static Predicate<CharSequence> matches(final Pattern pattern) {
+        N.requireNonNull(pattern);
+
         return new Predicate<CharSequence>() {
             @Override
             public boolean test(CharSequence value) {
@@ -803,6 +894,9 @@ public final class Fn extends Comparators {
     }
 
     public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new BooleanSupplier() {
             @Override
             public boolean getAsBoolean() {
@@ -812,6 +906,10 @@ public final class Fn extends Comparators {
     }
 
     public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new BooleanSupplier() {
             @Override
             public boolean getAsBoolean() {
@@ -821,6 +919,9 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -830,6 +931,10 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -839,6 +944,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> and(final Collection<Predicate<? super T>> c) {
+        N.checkArgNotNullOrEmpty(c, "c");
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -854,6 +961,9 @@ public final class Fn extends Comparators {
     }
 
     public static <T, U> BiPredicate<T, U> and(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -864,6 +974,10 @@ public final class Fn extends Comparators {
 
     public static <T, U> BiPredicate<T, U> and(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second,
             final BiPredicate<? super T, ? super U> third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -873,6 +987,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T, U> BiPredicate<T, U> and(final List<BiPredicate<? super T, ? super U>> c) {
+        N.checkArgNotNullOrEmpty(c, "c");
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -888,6 +1004,9 @@ public final class Fn extends Comparators {
     }
 
     public static BooleanSupplier or(final BooleanSupplier first, final BooleanSupplier second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new BooleanSupplier() {
             @Override
             public boolean getAsBoolean() {
@@ -897,6 +1016,10 @@ public final class Fn extends Comparators {
     }
 
     public static BooleanSupplier or(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new BooleanSupplier() {
             @Override
             public boolean getAsBoolean() {
@@ -906,6 +1029,9 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -915,6 +1041,10 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -924,6 +1054,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T> Predicate<T> or(final Collection<Predicate<? super T>> c) {
+        N.checkArgNotNullOrEmpty(c, "c");
+
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -939,6 +1071,9 @@ public final class Fn extends Comparators {
     }
 
     public static <T, U> BiPredicate<T, U> or(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -949,6 +1084,10 @@ public final class Fn extends Comparators {
 
     public static <T, U> BiPredicate<T, U> or(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second,
             final BiPredicate<? super T, ? super U> third) {
+        N.requireNonNull(first);
+        N.requireNonNull(second);
+        N.requireNonNull(third);
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -958,6 +1097,8 @@ public final class Fn extends Comparators {
     }
 
     public static <T, U> BiPredicate<T, U> or(final List<BiPredicate<? super T, ? super U>> c) {
+        N.checkArgNotNullOrEmpty(c, "c");
+
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
@@ -973,6 +1114,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
+        N.requireNonNull(predicate);
+
         return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
@@ -982,6 +1125,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testByValue(final Predicate<? super V> predicate) {
+        N.requireNonNull(predicate);
+
         return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
@@ -1021,6 +1166,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Consumer<Map.Entry<K, V>> acceptByKey(final Consumer<? super K> consumer) {
+        N.requireNonNull(consumer);
+
         return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
@@ -1030,6 +1177,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Consumer<Map.Entry<K, V>> acceptByValue(final Consumer<? super V> consumer) {
+        N.requireNonNull(consumer);
+
         return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
@@ -1039,6 +1188,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V, R> Function<Map.Entry<K, V>, R> applyByKey(final Function<? super K, R> func) {
+        N.requireNonNull(func);
+
         return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
@@ -1048,6 +1199,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V, R> Function<Map.Entry<K, V>, R> applyByValue(final Function<? super V, R> func) {
+        N.requireNonNull(func);
+
         return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
@@ -1057,6 +1210,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V, KK> Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapKey(final Function<? super K, KK> func) {
+        N.requireNonNull(func);
+
         return new Function<Map.Entry<K, V>, Map.Entry<KK, V>>() {
             @Override
             public Map.Entry<KK, V> apply(Entry<K, V> entry) {
@@ -1066,6 +1221,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V, VV> Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapValue(final Function<? super V, VV> func) {
+        N.requireNonNull(func);
+
         return new Function<Map.Entry<K, V>, Map.Entry<K, VV>>() {
             @Override
             public Map.Entry<K, VV> apply(Entry<K, V> entry) {
@@ -1075,6 +1232,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testKeyVal(final BiPredicate<? super K, ? super V> predicate) {
+        N.requireNonNull(predicate);
+
         return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
@@ -1084,6 +1243,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V> Consumer<Map.Entry<K, V>> acceptKeyVal(final BiConsumer<? super K, ? super V> consumer) {
+        N.requireNonNull(consumer);
+
         return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
@@ -1093,6 +1254,8 @@ public final class Fn extends Comparators {
     }
 
     public static <K, V, R> Function<Map.Entry<K, V>, R> applyKeyVal(final BiFunction<? super K, ? super V, R> func) {
+        N.requireNonNull(func);
+
         return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
@@ -2916,15 +3079,6 @@ public final class Fn extends Comparators {
             // singleton.
         }
 
-        /**
-         * Returns the {@code Predicate} which always returns {@code false}.
-         * 
-         * @return
-         */
-        public static <T> Predicate<T> never() {
-            return Fn.ALWAYS_FALSE;
-        }
-
         public static <T, U> Predicate<T> create(final U u, final BiPredicate<? super T, ? super U> predicate) {
             Objects.requireNonNull(predicate);
 
@@ -3035,15 +3189,6 @@ public final class Fn extends Comparators {
         }
 
         public static <T, U> BiPredicate<T, U> alwaysFalse() {
-            return ALWAYS_FALSE;
-        }
-
-        /**
-         * Returns the {@code BiPredicate} which always returns {@code false}.
-         * 
-         * @return
-         */
-        public static <T, U> BiPredicate<T, U> never() {
             return ALWAYS_FALSE;
         }
 

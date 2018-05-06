@@ -244,7 +244,8 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Nullable<T>, Indexed<T>, Stream<T>> {
+public abstract class Stream<T>
+        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Nullable<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);

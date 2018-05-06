@@ -215,14 +215,14 @@ public final class Optional<T> {
      * {@code Optional<FileInputStream>}:
      *
      * <pre>{@code
-     *     Optional<FileInputStream> fis =
+     *     Nullable<FileInputStream> fis =
      *         names.stream().filter(name -> !isProcessedYet(name))
      *                       .findFirst()
      *                       .map(name -> new FileInputStream(name));
      * }</pre>
      *
      * Here, {@code findFirst} returns an {@code Optional<String>}, and then
-     * {@code map} returns an {@code Optional<FileInputStream>} for the desired
+     * {@code map} returns an {@code Nullable<FileInputStream>} for the desired
      * file if one exists.
      *
      * @param <U> The type of the result of the mapping function
@@ -232,13 +232,13 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    public <U, E extends Exception> Optional<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
+    public <U, E extends Exception> Nullable<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
-            return (Optional<U>) Optional.ofNullable(mapper.apply(value));
+            return Nullable.<U> of(mapper.apply(value));
         } else {
-            return empty();
+            return Nullable.<U> empty();
         }
     }
 

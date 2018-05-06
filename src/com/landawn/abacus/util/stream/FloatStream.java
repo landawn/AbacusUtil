@@ -100,7 +100,8 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class FloatStream extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatStream> {
+public abstract class FloatStream
+        extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatIterator, FloatStream> {
 
     private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, true, null);
 
