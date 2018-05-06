@@ -1,3 +1,8 @@
+### 1.2.9
+
+* Improvements and bug fix.
+
+
 ### 1.2.8
  
 * Add `ByteStream/.../DoubleStream/.flattMapToObj`.

@@ -87,7 +87,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [FloatIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatIterator_view.html), 
 [DoubleIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleIterator_view.html),
 [ObjIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ObjIterator_view.html), 
-[ImmutableIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableIterator_view.html), 
 [LineIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LineIterator_view.html) and 
 [RowIterator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RowIterator_view.html).
 
