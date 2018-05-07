@@ -17,7 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -2386,26 +2385,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         });
 
         return new ParallelIteratorDoubleStream(Stream.parallelConcatt(iters, iters.size()), false, maxThreadNum, splitor, newCloseHandlers);
-    }
-
-    @Override
-    public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
-        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().distinctBy(keyExtractor).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-
-        final Set<Object> set = new HashSet<>();
-
-        return filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                final Object key = hashKey(keyExtractor.apply(value));
-
-                synchronized (set) {
-                    return set.add(key);
-                }
-            }
-        });
     }
 
     @Override

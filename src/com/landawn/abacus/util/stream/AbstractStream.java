@@ -36,6 +36,7 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
@@ -1985,14 +1986,46 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
-        final Set<Object> set = new HashSet<>();
+        //    final Set<Object> set = new HashSet<>();
+        //
+        //    final Predicate<T> predicate = isParallel() ? new Predicate<T>() {
+        //        @Override
+        //        public boolean test(T value) {
+        //            final Object key = hashKey(keyExtractor.apply(value));
+        //
+        //            synchronized (set) {
+        //                return set.add(key);
+        //            }
+        //        }
+        //    } : new Predicate<T>() {
+        //        @Override
+        //        public boolean test(T value) {
+        //            return set.add(hashKey(keyExtractor.apply(value)));
+        //        }
+        //    };
 
-        return newStream(this.sequential().filter(new Predicate<T>() {
+        final Predicate<T> predicate = isParallel() ? new Predicate<T>() {
+            private final ConcurrentHashMap<Object, Object> map = new ConcurrentHashMap<>();
+
+            @Override
+            public boolean test(T value) {
+                Object key = hashKey(keyExtractor.apply(value));
+                key = key == null ? NONE : key;
+
+                synchronized (map) {
+                    return map.put(key, key) == null;
+                }
+            }
+        } : new Predicate<T>() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
             public boolean test(T value) {
                 return set.add(hashKey(keyExtractor.apply(value)));
             }
-        }).iterator(), sorted, cmp);
+        };
+
+        return filter(predicate);
     }
 
     @Override

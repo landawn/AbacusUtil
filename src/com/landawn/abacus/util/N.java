@@ -1923,6 +1923,7 @@ public final class N {
     }
 
     @SafeVarargs
+    @NullSafe
     public static <K, V> Map<K, V> asMap(final Object... a) {
         if (N.isNullOrEmpty(a)) {
             return new HashMap<>();
@@ -2007,6 +2008,69 @@ public final class N {
         return newMap(new LinkedHashMap<K, V>(N.initHashCapacity(a.length / 2)), a);
     }
 
+    public static <T> List<T> asList(final T e) {
+        final List<T> list = new ArrayList<>(1);
+        list.add(e);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2) {
+        final List<T> list = new ArrayList<>(2);
+        list.add(e1);
+        list.add(e2);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3) {
+        final List<T> list = new ArrayList<>(3);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4) {
+        final List<T> list = new ArrayList<>(4);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4, final T e5) {
+        final List<T> list = new ArrayList<>(5);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6) {
+        final List<T> list = new ArrayList<>(6);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7) {
+        final List<T> list = new ArrayList<>(7);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        list.add(e7);
+        return list;
+    }
+
     /**
      * @param a
      * @return
@@ -2031,6 +2095,69 @@ public final class N {
         return list;
     }
 
+    public static <T> LinkedList<T> asLinkedList(final T e) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2, final T e3) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2, final T e3, final T e4) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2, final T e3, final T e4, final T e5) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        return list;
+    }
+
+    public static <T> LinkedList<T> asLinkedList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7) {
+        final LinkedList<T> list = new LinkedList<>();
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        list.add(e7);
+        return list;
+    }
+
     @SafeVarargs
     @NullSafe
     public static <T> LinkedList<T> asLinkedList(final T... a) {
@@ -2045,6 +2172,69 @@ public final class N {
         }
 
         return list;
+    }
+
+    public static <T> Set<T> asSet(final T e) {
+        final Set<T> set = new HashSet<>(1);
+        set.add(e);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2) {
+        final Set<T> set = new HashSet<>(2);
+        set.add(e1);
+        set.add(e2);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3) {
+        final Set<T> set = new HashSet<>(3);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4) {
+        final Set<T> set = new HashSet<>(4);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4, final T e5) {
+        final Set<T> set = new HashSet<>(5);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6) {
+        final Set<T> set = new HashSet<>(6);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7) {
+        final Set<T> set = new HashSet<>(7);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        set.add(e7);
+        return set;
     }
 
     @SafeVarargs
@@ -2063,7 +2253,71 @@ public final class N {
         return set;
     }
 
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(1);
+        set.add(e);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(2);
+        set.add(e1);
+        set.add(e2);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2, final T e3) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(3);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2, final T e3, final T e4) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(4);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2, final T e3, final T e4, final T e5) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(5);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(6);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        return set;
+    }
+
+    public static <T> LinkedHashSet<T> asLinkedLinkedHashSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7) {
+        final LinkedHashSet<T> set = new LinkedHashSet<>(7);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        set.add(e7);
+        return set;
+    }
+
     @SafeVarargs
+    @NullSafe
     public static <T> LinkedHashSet<T> asLinkedHashSet(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new LinkedHashSet<>();
@@ -2079,6 +2333,7 @@ public final class N {
     }
 
     @SafeVarargs
+    @NullSafe
     public static <T> SortedSet<T> asSortedSet(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return new TreeSet<>();
