@@ -2444,23 +2444,23 @@ public final class N {
     }
 
     @SafeVarargs
-    static <T> ArrayDeque<T> asArrayDeque(final T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new ArrayDeque<>();
-        }
-
-        final ArrayDeque<T> arrayDeque = new ArrayDeque<>(a.length);
-
-        for (T e : a) {
-            arrayDeque.add(e);
-        }
-
-        return arrayDeque;
+    public static <T> Deque<T> asDeque(final T... a) {
+        return asArrayDeque(a);
     }
 
     @SafeVarargs
-    public static <T> Deque<T> asDeque(final T... a) {
-        return asArrayDeque(a);
+    public static <T> ArrayDeque<T> asArrayDeque(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayDeque<>();
+        }
+    
+        final ArrayDeque<T> arrayDeque = new ArrayDeque<>(a.length);
+    
+        for (T e : a) {
+            arrayDeque.add(e);
+        }
+    
+        return arrayDeque;
     }
 
     @SafeVarargs

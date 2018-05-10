@@ -215,6 +215,22 @@ public final class Fn extends Comparators {
     };
 
     @SuppressWarnings("rawtypes")
+    private static final Function TO_STRING = new Function() {
+        @Override
+        public Object apply(Object t) {
+            return N.toString(t);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiFunction COMPARE = new BiFunction<Comparable, Comparable, Integer>() {
+        @Override
+        public Integer apply(Comparable a, Comparable b) {
+            return N.compare(a, b);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
     private static final Function IDENTITY = new Function() {
         @Override
         public Object apply(Object t) {
@@ -528,6 +544,10 @@ public final class Fn extends Comparators {
                     }
                 };
         }
+    }
+
+    public static <T> Function<T, String> toStr() {
+        return TO_STRING;
     }
 
     public static <T> Function<T, T> identity() {
@@ -1495,14 +1515,60 @@ public final class Fn extends Comparators {
         };
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Function<T, Integer> compareTo(final T target) {
+        return new Function<T, Integer>() {
+            @Override
+            public Integer apply(T t) {
+                return N.compare(t, target);
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Function<T, Integer> compareTo(final T target, final Comparator<? super T> cmp) {
+        // N.requireNonNull(cmp);
+
+        if (cmp == null || cmp == Comparators.naturalOrder()) {
+            return (Function) compareTo((Comparable) target);
+        }
+
+        return new Function<T, Integer>() {
+            @Override
+            public Integer apply(T t) {
+                return N.compare(t, target, cmp);
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> BiFunction<T, T, Integer> compare() {
+        return COMPARE;
+    }
+
+    public static <T> BiFunction<T, T, Integer> compare(final Comparator<? super T> cmp) {
+        // N.requireNonNull(cmp);
+
+        if (cmp == null || cmp == Comparators.naturalOrder()) {
+            return COMPARE;
+        }
+
+        return new BiFunction<T, T, Integer>() {
+            @Override
+            public Integer apply(T a, T b) {
+                return N.compare(a, b, cmp);
+            }
+        };
+    }
+
     @Beta
     public static <T> Predicate<T> p(final Predicate<T> predicate) {
         return predicate;
     }
 
     @Beta
-    public static <U, T> Predicate<T> p(final U u, final BiPredicate<T, U> predicate) {
-        return Predicates.create(u, predicate);
+    public static <U, T> Predicate<T> p(final U u, final BiPredicate<T, U> biPredicate) {
+        return Predicates.create(u, biPredicate);
     }
 
     @Beta
@@ -1516,8 +1582,8 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <U, T> Consumer<T> c(final U u, final BiConsumer<T, U> consumer) {
-        return Consumers.create(u, consumer);
+    public static <U, T> Consumer<T> c(final U u, final BiConsumer<T, U> biConsumer) {
+        return Consumers.create(u, biConsumer);
     }
 
     @Beta
@@ -1526,18 +1592,228 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, R> Function<T, R> f(final Function<T, R> consumer) {
-        return consumer;
+    public static <T, R> Function<T, R> f(final Function<T, R> function) {
+        return function;
     }
 
     @Beta
-    public static <U, T, R> Function<T, R> f(final U u, final BiFunction<T, U, R> consumer) {
-        return Functions.create(u, consumer);
+    public static <U, T, R> Function<T, R> f(final U u, final BiFunction<T, U, R> biFunction) {
+        return Functions.create(u, biFunction);
     }
 
     @Beta
     public static <T, U, R> BiFunction<T, U, R> f(final BiFunction<T, U, R> biFunction) {
         return biFunction;
+    }
+
+    @Beta
+    public static <T, E extends Exception> Try.Predicate<T, E> pp(final Try.Predicate<T, E> predicate) {
+        return predicate;
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Try.Predicate<T, E> pp(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
+        N.requireNonNull(biPredicate);
+
+        return new Try.Predicate<T, E>() {
+            @Override
+            public boolean test(T t) throws E {
+                return biPredicate.test(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> pp(final Try.BiPredicate<T, U, E> biPredicate) {
+        return biPredicate;
+    }
+
+    @Beta
+    public static <T, E extends Exception> Try.Consumer<T, E> cc(final Try.Consumer<T, E> consumer) {
+        return consumer;
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Try.Consumer<T, E> cc(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
+        N.requireNonNull(biConsumer);
+
+        return new Try.Consumer<T, E>() {
+            @Override
+            public void accept(T t) throws E {
+                biConsumer.accept(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> cc(final Try.BiConsumer<T, U, E> biConsumer) {
+        return biConsumer;
+    }
+
+    @Beta
+    public static <T, R, E extends Exception> Try.Function<T, R, E> ff(final Try.Function<T, R, E> function) {
+        return function;
+    }
+
+    @Beta
+    public static <U, T, R, E extends Exception> Try.Function<T, R, E> ff(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
+        N.requireNonNull(biFunction);
+
+        return new Try.Function<T, R, E>() {
+            @Override
+            public R apply(T t) throws E {
+                return biFunction.apply(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <U, T, R, E extends Exception> Try.BiFunction<T, U, R, E> ff(final Try.BiFunction<T, U, R, E> biFunction) {
+        return biFunction;
+    }
+
+    @Beta
+    public static <T, E extends Exception> Predicate<T> ep(final Try.Predicate<T, E> predicate) {
+        N.requireNonNull(predicate);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                try {
+                    return predicate.test(value);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Predicate<T> ep(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
+        N.requireNonNull(biPredicate);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                try {
+                    return biPredicate.test(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> BiPredicate<T, U> ep(final Try.BiPredicate<T, U, E> biPredicate) {
+        N.requireNonNull(biPredicate);
+
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                try {
+                    return biPredicate.test(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, E extends Exception> Consumer<T> ec(final Try.Consumer<T, E> consumer) {
+        N.requireNonNull(consumer);
+
+        return new Consumer<T>() {
+            @Override
+            public void accept(T value) {
+                try {
+                    consumer.accept(value);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Consumer<T> ec(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
+        N.requireNonNull(biConsumer);
+
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                try {
+                    biConsumer.accept(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> BiConsumer<T, U> ec(final Try.BiConsumer<T, U, E> biConsumer) {
+        N.requireNonNull(biConsumer);
+
+        return new BiConsumer<T, U>() {
+            @Override
+            public void accept(T t, U u) {
+                try {
+                    biConsumer.accept(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, R, E extends Exception> Function<T, R> ef(final Try.Function<T, R, E> function) {
+        N.requireNonNull(function);
+
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                try {
+                    return function.apply(t);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <U, T, R, E extends Exception> Function<T, R> ef(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
+        N.requireNonNull(biFunction);
+
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                try {
+                    return biFunction.apply(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, R, E extends Exception> BiFunction<T, U, R> ef(final Try.BiFunction<T, U, R, E> biFunction) {
+        N.requireNonNull(biFunction);
+
+        return new BiFunction<T, U, R>() {
+            @Override
+            public R apply(T t, U u) {
+                try {
+                    return biFunction.apply(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
     }
 
     public static <T> BinaryOperator<T> throwingMerger() {
@@ -1988,6 +2264,16 @@ public final class Fn extends Comparators {
     public static <T, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper,
             final Collector<? super U, A, R> downstream) {
         return Collectors.flattMapping(mapper, downstream);
+    }
+
+    public static <T, A1, A2, R1, R2> Collector<T, Tuple2<A1, A2>, Tuple2<R1, R2>> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2) {
+        return Collectors.combine(collector1, collector2);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3) {
+        return Collectors.combine(collector1, collector2, collector3);
     }
 
     public static final class Factory {
