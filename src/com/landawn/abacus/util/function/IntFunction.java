@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Function;
 
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -73,7 +72,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R>, Try.I
     @Override
     R apply(int value);
 
-    default <V> IntFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> IntFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));

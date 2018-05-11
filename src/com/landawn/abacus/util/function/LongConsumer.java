@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,4 +27,14 @@ public interface LongConsumer extends java.util.function.LongConsumer, Try.LongC
 
     @Override
     void accept(long t);
+
+    @Override
+    default LongConsumer andThen(java.util.function.LongConsumer after) {
+        N.requireNonNull(after);
+
+        return (long t) -> {
+            accept(t);
+            after.accept(t);
+        };
+    }
 }

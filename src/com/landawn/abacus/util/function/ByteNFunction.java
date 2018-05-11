@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * 
@@ -27,7 +26,7 @@ public interface ByteNFunction<R> {
 
     R apply(byte... args);
 
-    default <V> ByteNFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> ByteNFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return args -> after.apply(apply(args));

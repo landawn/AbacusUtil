@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,6 +28,18 @@ public interface LongUnaryOperator extends java.util.function.LongUnaryOperator,
 
     @Override
     long applyAsLong(long operand);
+
+    @Override
+    default LongUnaryOperator compose(java.util.function.LongUnaryOperator before) {
+        Objects.requireNonNull(before);
+        return (long v) -> applyAsLong(before.applyAsLong(v));
+    }
+
+    @Override
+    default LongUnaryOperator andThen(java.util.function.LongUnaryOperator after) {
+        Objects.requireNonNull(after);
+        return (long t) -> after.applyAsLong(applyAsLong(t));
+    }
 
     static LongUnaryOperator identity() {
         return t -> t;

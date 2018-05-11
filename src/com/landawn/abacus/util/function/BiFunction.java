@@ -16,6 +16,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
@@ -31,6 +32,12 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 
     @Override
     R apply(T t, U u);
+
+    @Override
+    default <V> BiFunction<T, U, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (T t, U u) -> after.apply(apply(t, u));
+    }
 
     /**
      * Returns the specified instance

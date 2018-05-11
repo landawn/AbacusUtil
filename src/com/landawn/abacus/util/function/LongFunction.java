@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import com.landawn.abacus.util.Try;
 
@@ -36,7 +35,7 @@ public interface LongFunction<R> extends java.util.function.LongFunction<R>, Try
     @Override
     R apply(long value);
 
-    default <V> LongFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> LongFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));

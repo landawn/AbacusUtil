@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -82,6 +84,23 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Try
 
     @Override
     boolean test(double value);
+
+    @Override
+    default DoublePredicate negate() {
+        return (value) -> !test(value);
+    }
+
+    @Override
+    default DoublePredicate and(java.util.function.DoublePredicate other) {
+        Objects.requireNonNull(other);
+        return (value) -> test(value) && other.test(value);
+    }
+
+    @Override
+    default DoublePredicate or(java.util.function.DoublePredicate other) {
+        Objects.requireNonNull(other);
+        return (value) -> test(value) || other.test(value);
+    }
 
     /**
      * Returns the specified instance

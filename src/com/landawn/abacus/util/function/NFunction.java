@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * 
@@ -27,7 +26,7 @@ public interface NFunction<T, R> {
 
     R apply(T... args);
 
-    default <V> NFunction<T, V> andThen(Function<? super R, ? extends V> after) {
+    default <V> NFunction<T, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return args -> after.apply(apply(args));

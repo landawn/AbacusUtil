@@ -30,18 +30,6 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
     @Override
     boolean test(A a, B b, C c);
 
-    /**
-     * Returns the specified instance
-     * 
-     * @param predicate
-     * @return
-     */
-    static <A, B, C> TriPredicate<A, B, C> of(final TriPredicate<A, B, C> predicate) {
-        N.requireNonNull(predicate);
-
-        return predicate;
-    }
-
     default TriPredicate<A, B, C> negate() {
         return (a, b, c) -> !test(a, b, c);
     }
@@ -56,6 +44,18 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
         Objects.requireNonNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
+    }
+
+    /**
+     * Returns the specified instance
+     * 
+     * @param predicate
+     * @return
+     */
+    static <A, B, C> TriPredicate<A, B, C> of(final TriPredicate<A, B, C> predicate) {
+        N.requireNonNull(predicate);
+    
+        return predicate;
     }
 
     static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {

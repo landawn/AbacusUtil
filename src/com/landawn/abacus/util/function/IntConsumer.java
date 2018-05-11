@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,4 +28,14 @@ public interface IntConsumer extends java.util.function.IntConsumer, Try.IntCons
 
     @Override
     void accept(int t);
+
+    @Override
+    default IntConsumer andThen(java.util.function.IntConsumer after) {
+        Objects.requireNonNull(after);
+
+        return (int t) -> {
+            accept(t);
+            after.accept(t);
+        };
+    }
 }

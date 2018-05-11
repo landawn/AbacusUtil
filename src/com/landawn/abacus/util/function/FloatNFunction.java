@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * 
@@ -27,7 +26,7 @@ public interface FloatNFunction<R> {
 
     R apply(float... args);
 
-    default <V> FloatNFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> FloatNFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return args -> after.apply(apply(args));

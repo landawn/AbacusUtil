@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
@@ -31,7 +30,7 @@ public interface TriFunction<A, B, C, R> extends Try.TriFunction<A, B, C, R, Run
     @Override
     R apply(A a, B b, C c);
 
-    default <V> TriFunction<A, B, C, V> andThen(Function<? super R, ? extends V> after) {
+    default <V> TriFunction<A, B, C, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));

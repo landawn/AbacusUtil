@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Try;
 
 /**
@@ -27,4 +29,14 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer, Try.D
 
     @Override
     void accept(double t);
+
+    @Override
+    default DoubleConsumer andThen(java.util.function.DoubleConsumer after) {
+        Objects.requireNonNull(after);
+
+        return (double t) -> {
+            accept(t);
+            after.accept(t);
+        };
+    }
 }

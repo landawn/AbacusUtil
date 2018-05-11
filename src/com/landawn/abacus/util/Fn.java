@@ -1607,12 +1607,12 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, E extends Exception> Try.Predicate<T, E> pp(final Try.Predicate<T, E> predicate) {
+    public static <T, E extends Exception> Try.Predicate<T, E> ep(final Try.Predicate<T, E> predicate) {
         return predicate;
     }
 
     @Beta
-    public static <U, T, E extends Exception> Try.Predicate<T, E> pp(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
+    public static <U, T, E extends Exception> Try.Predicate<T, E> ep(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
         N.requireNonNull(biPredicate);
 
         return new Try.Predicate<T, E>() {
@@ -1624,17 +1624,17 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> pp(final Try.BiPredicate<T, U, E> biPredicate) {
+    public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> ep(final Try.BiPredicate<T, U, E> biPredicate) {
         return biPredicate;
     }
 
     @Beta
-    public static <T, E extends Exception> Try.Consumer<T, E> cc(final Try.Consumer<T, E> consumer) {
+    public static <T, E extends Exception> Try.Consumer<T, E> ec(final Try.Consumer<T, E> consumer) {
         return consumer;
     }
 
     @Beta
-    public static <U, T, E extends Exception> Try.Consumer<T, E> cc(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
+    public static <U, T, E extends Exception> Try.Consumer<T, E> ec(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
         N.requireNonNull(biConsumer);
 
         return new Try.Consumer<T, E>() {
@@ -1646,17 +1646,17 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> cc(final Try.BiConsumer<T, U, E> biConsumer) {
+    public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> ec(final Try.BiConsumer<T, U, E> biConsumer) {
         return biConsumer;
     }
 
     @Beta
-    public static <T, R, E extends Exception> Try.Function<T, R, E> ff(final Try.Function<T, R, E> function) {
+    public static <T, R, E extends Exception> Try.Function<T, R, E> ef(final Try.Function<T, R, E> function) {
         return function;
     }
 
     @Beta
-    public static <U, T, R, E extends Exception> Try.Function<T, R, E> ff(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
+    public static <U, T, R, E extends Exception> Try.Function<T, R, E> ef(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
         N.requireNonNull(biFunction);
 
         return new Try.Function<T, R, E>() {
@@ -1668,12 +1668,12 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <U, T, R, E extends Exception> Try.BiFunction<T, U, R, E> ff(final Try.BiFunction<T, U, R, E> biFunction) {
+    public static <U, T, R, E extends Exception> Try.BiFunction<T, U, R, E> ef(final Try.BiFunction<T, U, R, E> biFunction) {
         return biFunction;
     }
 
     @Beta
-    public static <T, E extends Exception> Predicate<T> ep(final Try.Predicate<T, E> predicate) {
+    public static <T, E extends Exception> Predicate<T> pp(final Try.Predicate<T, E> predicate) {
         N.requireNonNull(predicate);
 
         return new Predicate<T>() {
@@ -1689,7 +1689,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <U, T, E extends Exception> Predicate<T> ep(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
+    public static <U, T, E extends Exception> Predicate<T> pp(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
         N.requireNonNull(biPredicate);
 
         return new Predicate<T>() {
@@ -1705,7 +1705,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, U, E extends Exception> BiPredicate<T, U> ep(final Try.BiPredicate<T, U, E> biPredicate) {
+    public static <T, U, E extends Exception> BiPredicate<T, U> pp(final Try.BiPredicate<T, U, E> biPredicate) {
         N.requireNonNull(biPredicate);
 
         return new BiPredicate<T, U>() {
@@ -1721,7 +1721,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, E extends Exception> Consumer<T> ec(final Try.Consumer<T, E> consumer) {
+    public static <T, E extends Exception> Consumer<T> cc(final Try.Consumer<T, E> consumer) {
         N.requireNonNull(consumer);
 
         return new Consumer<T>() {
@@ -1737,7 +1737,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <U, T, E extends Exception> Consumer<T> ec(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
+    public static <U, T, E extends Exception> Consumer<T> cc(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
         N.requireNonNull(biConsumer);
 
         return new Consumer<T>() {
@@ -1753,7 +1753,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, U, E extends Exception> BiConsumer<T, U> ec(final Try.BiConsumer<T, U, E> biConsumer) {
+    public static <T, U, E extends Exception> BiConsumer<T, U> cc(final Try.BiConsumer<T, U, E> biConsumer) {
         N.requireNonNull(biConsumer);
 
         return new BiConsumer<T, U>() {
@@ -1769,7 +1769,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, R, E extends Exception> Function<T, R> ef(final Try.Function<T, R, E> function) {
+    public static <T, R, E extends Exception> Function<T, R> ff(final Try.Function<T, R, E> function) {
         N.requireNonNull(function);
 
         return new Function<T, R>() {
@@ -1785,7 +1785,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <U, T, R, E extends Exception> Function<T, R> ef(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
+    public static <U, T, R, E extends Exception> Function<T, R> ff(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
         N.requireNonNull(biFunction);
 
         return new Function<T, R>() {
@@ -1801,7 +1801,7 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, U, R, E extends Exception> BiFunction<T, U, R> ef(final Try.BiFunction<T, U, R, E> biFunction) {
+    public static <T, U, R, E extends Exception> BiFunction<T, U, R> ff(final Try.BiFunction<T, U, R, E> biFunction) {
         N.requireNonNull(biFunction);
 
         return new BiFunction<T, U, R>() {

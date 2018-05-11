@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import com.landawn.abacus.util.Try;
 
@@ -37,7 +36,7 @@ public interface ShortFunction<R> extends Try.ShortFunction<R, RuntimeException>
     @Override
     R apply(short value);
 
-    default <V> ShortFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> ShortFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));

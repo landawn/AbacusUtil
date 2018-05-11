@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
@@ -28,6 +30,23 @@ public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predi
 
     @Override
     boolean test(T value);
+
+    @Override
+    default Predicate<T> negate() {
+        return (t) -> !test(t);
+    }
+
+    @Override
+    default Predicate<T> and(java.util.function.Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return (t) -> test(t) && other.test(t);
+    }
+
+    @Override
+    default Predicate<T> or(java.util.function.Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return (t) -> test(t) || other.test(t);
+    }
 
     /**
      * Returns the specified instance

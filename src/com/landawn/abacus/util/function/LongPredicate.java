@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -83,6 +85,23 @@ public interface LongPredicate extends java.util.function.LongPredicate, Try.Lon
 
     @Override
     boolean test(long value);
+
+    @Override
+    default LongPredicate negate() {
+        return (value) -> !test(value);
+    }
+
+    @Override
+    default LongPredicate or(java.util.function.LongPredicate other) {
+        Objects.requireNonNull(other);
+        return (value) -> test(value) || other.test(value);
+    }
+
+    @Override
+    default LongPredicate and(java.util.function.LongPredicate other) {
+        Objects.requireNonNull(other);
+        return (value) -> test(value) && other.test(value);
+    }
 
     /**
      * Returns the specified instance

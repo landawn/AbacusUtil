@@ -35,7 +35,7 @@ public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R>,
     @Override
     R apply(double value);
 
-    default <V> DoubleFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> DoubleFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
