@@ -208,8 +208,32 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         }
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced with orElseZero.
+     */
+    @Deprecated
     public char orZero() {
         return isPresent() ? value : 0;
+    }
+
+    public char orElseZero() {
+        return isPresent() ? value : 0;
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public char orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
     }
 
     /**
@@ -257,20 +281,6 @@ public final class OptionalChar implements Comparable<OptionalChar> {
             return value;
         } else {
             throw exceptionSupplier.get();
-        }
-    }
-
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
-    public char orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
         }
     }
 

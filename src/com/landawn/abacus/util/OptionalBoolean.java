@@ -208,12 +208,46 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         }
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced with orElseFalse.
+     */
+    @Deprecated
     public boolean orFalse() {
         return isPresent() ? value : false;
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced with orElseTrue.
+     */
+    @Deprecated
     public boolean orTrue() {
         return isPresent() ? value : true;
+    }
+
+    public boolean orElseFalse() {
+        return isPresent() ? value : false;
+    }
+
+    public boolean orElseTrue() {
+        return isPresent() ? value : true;
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public boolean orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
     }
 
     /**
@@ -261,20 +295,6 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
             return value;
         } else {
             throw exceptionSupplier.get();
-        }
-    }
-
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
-    public boolean orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
         }
     }
 

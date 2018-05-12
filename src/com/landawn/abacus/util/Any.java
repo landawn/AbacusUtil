@@ -441,8 +441,32 @@ abstract class Any<T> {
      */
     public abstract <E extends Exception> Any<T> or(Try.Supplier<? extends Any<T>, E> supplier) throws E;
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced with orElseNull.
+     */
+    @Deprecated
     public T orNull() {
         return isPresent() ? value : null;
+    }
+
+    public T orElseNull() {
+        return isPresent() ? value : null;
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public T orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
     }
 
     /**
@@ -487,20 +511,6 @@ abstract class Any<T> {
             return value;
         } else {
             throw exceptionSupplier.get();
-        }
-    }
-
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
-    public T orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
         }
     }
 

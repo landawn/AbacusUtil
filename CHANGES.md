@@ -1,3 +1,12 @@
+### 1.3.0
+
+* Add `Optional.orElseNull/OptionalDouble/.../OptionalInt.orElseZero`. And `orNull/OrZero/...` are marked as @deprecated.
+
+* Stop releasing `abacus-util-all` and `abacus-util-all-jdk7`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.9
 
 * Refactoring: change the return type of `Opitonal.map` from `Optional<U>` to `Nullable<U>`.

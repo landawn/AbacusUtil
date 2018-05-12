@@ -212,8 +212,32 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced with orElseZero.
+     */
+    @Deprecated
     public int orZero() {
         return isPresent() ? value : 0;
+    }
+
+    public int orElseZero() {
+        return isPresent() ? value : 0;
+    }
+
+    /**
+     * If a value is present, returns the value, otherwise throws NoSuchElementException.
+     * 
+     * @return
+     * @throws NoSuchElementException - if no value is present
+     */
+    public int orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value present");
+        }
     }
 
     /**
@@ -261,20 +285,6 @@ public final class OptionalInt implements Comparable<OptionalInt> {
             return value;
         } else {
             throw exceptionSupplier.get();
-        }
-    }
-
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
-    public int orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
         }
     }
 
