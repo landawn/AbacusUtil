@@ -1,4 +1,4 @@
-### 1.3.0
+### 1.2.10
 
 * Add `Optional.orElseNull/OptionalDouble/.../OptionalInt.orElseZero`. And `orNull/OrZero/...` are marked as @deprecated.
 
