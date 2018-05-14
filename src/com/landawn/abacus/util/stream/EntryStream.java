@@ -67,9 +67,15 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @SuppressWarnings("rawtypes")
     private static final EntryStream EMPTY = new EntryStream(Stream.<Map.Entry> empty());
 
+    private final Map<K, V> m;
     private final Stream<Map.Entry<K, V>> s;
 
     EntryStream(final Stream<? extends Map.Entry<K, V>> s) {
+        this(null, s);
+    }
+
+    EntryStream(final Map<K, V> m, final Stream<? extends Map.Entry<K, V>> s) {
+        this.m = m;
         this.s = (Stream<Map.Entry<K, V>>) s;
     }
 
@@ -119,7 +125,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
-        return new EntryStream<K, V>(Stream.of(map));
+        return new EntryStream<K, V>(map, Stream.of(map));
     }
 
     public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {
@@ -197,12 +203,20 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public Stream<K> keys() {
+        if (m != null) {
+            return Stream.of(m.keySet());
+        }
+
         final Function<Map.Entry<K, V>, K> func = Fn.key();
 
         return s.map(func);
     }
 
     public Stream<V> values() {
+        if (m != null) {
+            return Stream.of(m.values());
+        }
+
         final Function<Map.Entry<K, V>, V> func = Fn.value();
 
         return s.map(func);

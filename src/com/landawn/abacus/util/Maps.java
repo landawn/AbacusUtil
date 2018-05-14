@@ -532,6 +532,13 @@ public final class Maps {
         return v;
     }
 
+    /**
+     * Removes the specified entry.
+     * 
+     * @param map
+     * @param entry
+     * @return
+     */
     public static <K, V> boolean remove(final Map<K, V> map, Map.Entry<?, ?> entry) {
         return remove(map, entry.getKey(), entry.getValue());
     }
