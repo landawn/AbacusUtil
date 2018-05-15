@@ -361,15 +361,19 @@ public final class Optional<T> {
     }
 
     /**
+     * Same as {@code orElseNull}.
      * 
      * @return
-     * @deprecated replaced with orElseNull.
      */
-    @Deprecated
     public T orNull() {
         return isPresent() ? value : null;
     }
 
+    /**
+     * Same as {@code orNull}.
+     * 
+     * @return
+     */
     public T orElseNull() {
         return isPresent() ? value : null;
     }

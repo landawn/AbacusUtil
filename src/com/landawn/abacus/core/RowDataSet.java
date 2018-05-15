@@ -1528,98 +1528,6 @@ public class RowDataSet implements DataSet, Cloneable {
         }
     }
 
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2 {
-        return forEach(seed, accumulator, conditionToBreak, false);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2 {
-        return forEach(this._columnNameList, seed, accumulator, conditionToBreak, shareRowArray);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2 {
-        return forEach(columnNames, seed, accumulator, conditionToBreak, false);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
-            throws E, E2 {
-        return forEach(columnNames, 0, size(), seed, accumulator, conditionToBreak, shareRowArray);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2 {
-        return forEach(fromRowIndex, toRowIndex, seed, accumulator, conditionToBreak, false);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
-            throws E, E2 {
-        return forEach(this._columnNameList, fromRowIndex, toRowIndex, seed, accumulator, conditionToBreak, shareRowArray);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2 {
-        return forEach(columnNames, fromRowIndex, toRowIndex, seed, accumulator, conditionToBreak, false);
-    }
-
-    @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
-            throws E, E2 {
-        final int[] columnIndexes = checkColumnName(columnNames);
-        checkRowIndex(fromRowIndex < toRowIndex ? fromRowIndex : (toRowIndex == -1 ? 0 : toRowIndex), fromRowIndex < toRowIndex ? toRowIndex : fromRowIndex);
-
-        if (size() == 0) {
-            return seed;
-        }
-
-        R result = seed;
-        final int columnCount = columnIndexes.length;
-        final Object[] rowOne = shareRowArray ? new Object[columnCount] : null;
-
-        if (fromRowIndex <= toRowIndex) {
-            for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
-                final Object[] row = shareRowArray ? rowOne : new Object[columnCount];
-
-                for (int i = 0; i < columnCount; i++) {
-                    row[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
-                }
-
-                result = accumulator.apply(result, row);
-
-                if (conditionToBreak.test(result, row)) {
-                    break;
-                }
-            }
-        } else {
-            for (int rowIndex = N.min(size() - 1, fromRowIndex); rowIndex > toRowIndex; rowIndex--) {
-                final Object[] row = shareRowArray ? rowOne : new Object[columnCount];
-
-                for (int i = 0; i < columnCount; i++) {
-                    row[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
-                }
-
-                result = accumulator.apply(result, row);
-
-                if (conditionToBreak.test(result, row)) {
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-
     //    @SuppressWarnings("unchecked")
     //    @Override
     //    public Object[][] toArray() {
@@ -6365,8 +6273,8 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("rawtypes")
     @Override
     public DataSet join(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass) {
-        return join(right, onColumnNames, newColumnName, newColumnClass, collClass, false);
+            final IntFunction<? extends Collection> collSupplier) {
+        return join(right, onColumnNames, newColumnName, newColumnClass, collSupplier, false);
     }
 
     @Override
@@ -6626,14 +6534,6 @@ public class RowDataSet implements DataSet, Cloneable {
         }
     }
 
-    private void checkJoinCollType(@SuppressWarnings("rawtypes") final Class<? extends Collection> collClass) {
-        final Type<?> collType = N.typeOf(collClass);
-
-        if (!(collType.isList() || collType.isSet())) {
-            throw new IllegalArgumentException("Invalid collClass: " + ClassUtil.getCanonicalClassName(collClass) + ". Only List and Set are supported");
-        }
-    }
-
     private List<String> getRightColumnNames(final DataSet right, final String refColumnName) {
         final List<String> rightColumnNames = new ArrayList<>(right.columnNameList());
 
@@ -6738,16 +6638,16 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("rawtypes")
     @Override
     public DataSet leftJoin(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass) {
-        return join(right, onColumnNames, newColumnName, newColumnClass, collClass, true);
+            final IntFunction<? extends Collection> collSupplier) {
+        return join(right, onColumnNames, newColumnName, newColumnClass, collSupplier, true);
     }
 
     @SuppressWarnings("rawtypes")
     private DataSet join(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass, final boolean isLeftJoin) {
+            final IntFunction<? extends Collection> collSupplier, final boolean isLeftJoin) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        checkJoinCollType(collClass);
+        N.requireNonNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();
@@ -6776,7 +6676,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 hashKey = getHashKey(leftJoinColumn.get(leftRowIndex));
                 rightRowIndexList = joinColumnRightRowIndexMap.get(hashKey);
 
-                join(newColumnList, right, isLeftJoin, newColumnClass, collClass, newColumnIndex, leftRowIndex, rightRowIndexList);
+                join(newColumnList, right, isLeftJoin, newColumnClass, collSupplier, newColumnIndex, leftRowIndex, rightRowIndexList);
             }
 
             return new RowDataSet(newColumnNameList, newColumnList);
@@ -6819,7 +6719,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
                 rightRowIndexList = joinColumnRightRowIndexMap.get(row);
 
-                join(newColumnList, right, isLeftJoin, newColumnClass, collClass, newColumnIndex, leftRowIndex, rightRowIndexList);
+                join(newColumnList, right, isLeftJoin, newColumnClass, collSupplier, newColumnIndex, leftRowIndex, rightRowIndexList);
             }
 
             if (row != null) {
@@ -6837,13 +6737,13 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private void join(final List<List<Object>> newColumnList, final DataSet right, final boolean isLeftJoin, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass, final int newColumnIndex, int leftRowIndex, List<Integer> rightRowIndexList) {
+            final IntFunction<? extends Collection> collSupplier, final int newColumnIndex, int leftRowIndex, List<Integer> rightRowIndexList) {
         if (N.notNullOrEmpty(rightRowIndexList)) {
             for (int i = 0, leftColumnLength = _columnNameList.size(); i < leftColumnLength; i++) {
                 newColumnList.get(i).add(_columnList.get(i).get(leftRowIndex));
             }
 
-            final Collection<Object> coll = N.newInstance(collClass);
+            final Collection<Object> coll = collSupplier.apply(rightRowIndexList.size());
 
             for (int rightRowIndex : rightRowIndexList) {
                 coll.add(right.getRow(newColumnClass, rightRowIndex));
@@ -7163,10 +7063,10 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("rawtypes")
     @Override
     public DataSet rightJoin(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass) {
+            final IntFunction<? extends Collection> collSupplier) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        checkJoinCollType(collClass);
+        N.requireNonNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();
@@ -7205,7 +7105,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 leftRowIndexList = joinColumnLeftRowIndexMap.get(rightRowIndexEntry.getKey());
                 rightRowIndexList = rightRowIndexEntry.getValue();
 
-                rightJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, leftColumnIndexes, leftRowIndexList, rightRowIndexList);
+                rightJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, leftColumnIndexes, leftRowIndexList, rightRowIndexList);
             }
 
             return new RowDataSet(newColumnNameList, newColumnList);
@@ -7265,7 +7165,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 leftRowIndexList = joinColumnLeftRowIndexMap.get(rightRowIndexEntry.getKey());
                 rightRowIndexList = rightRowIndexEntry.getValue();
 
-                rightJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, leftColumnIndexes, leftRowIndexList, rightRowIndexList);
+                rightJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, leftColumnIndexes, leftRowIndexList, rightRowIndexList);
             }
 
             for (Object[] a : joinColumnLeftRowIndexMap.keySet()) {
@@ -7282,7 +7182,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private void rightJoin(final List<List<Object>> newColumnList, final DataSet right, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass, final int newColumnIndex, final int[] leftColumnIndexes, List<Integer> leftRowIndexList,
+            final IntFunction<? extends Collection> collSupplier, final int newColumnIndex, final int[] leftColumnIndexes, List<Integer> leftRowIndexList,
             List<Integer> rightRowIndexList) {
         if (N.notNullOrEmpty(leftRowIndexList)) {
             for (int leftRowIndex : leftRowIndexList) {
@@ -7290,7 +7190,7 @@ public class RowDataSet implements DataSet, Cloneable {
                     newColumnList.get(i).add(this.get(leftRowIndex, leftColumnIndexes[i]));
                 }
 
-                final Collection<Object> coll = N.newInstance(collClass);
+                final Collection<Object> coll = collSupplier.apply(rightRowIndexList.size());
 
                 for (int righRowIndex : rightRowIndexList) {
                     coll.add(right.getRow(newColumnClass, righRowIndex));
@@ -7303,7 +7203,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 newColumnList.get(i).add(null);
             }
 
-            final Collection<Object> coll = N.newInstance(collClass);
+            final Collection<Object> coll = collSupplier.apply(rightRowIndexList.size());
 
             for (int righRowIndex : rightRowIndexList) {
                 coll.add(right.getRow(newColumnClass, righRowIndex));
@@ -7624,10 +7524,10 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("rawtypes")
     @Override
     public DataSet fullJoin(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass) {
+            final IntFunction<? extends Collection> collSupplier) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        checkJoinCollType(collClass);
+        N.requireNonNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();
@@ -7657,14 +7557,14 @@ public class RowDataSet implements DataSet, Cloneable {
                 hashKey = getHashKey(leftJoinColumn.get(leftRowIndex));
                 rightRowIndexList = joinColumnRightRowIndexMap.get(hashKey);
 
-                fullJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, leftRowIndex, rightRowIndexList);
+                fullJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, leftRowIndex, rightRowIndexList);
 
                 joinColumnLeftRowIndexSet.add(hashKey);
             }
 
             for (Map.Entry<Object, List<Integer>> rightRowIndexEntry : joinColumnRightRowIndexMap.entrySet()) {
                 if (joinColumnLeftRowIndexSet.contains(rightRowIndexEntry.getKey()) == false) {
-                    fullJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, rightRowIndexEntry.getValue());
+                    fullJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, rightRowIndexEntry.getValue());
                 }
             }
 
@@ -7710,7 +7610,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
                 rightRowIndexList = joinColumnRightRowIndexMap.get(row);
 
-                fullJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, leftRowIndex, rightRowIndexList);
+                fullJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, leftRowIndex, rightRowIndexList);
 
                 if (!joinColumnLeftRowIndexMap.containsKey(row)) {
                     joinColumnLeftRowIndexMap.put(row, leftRowIndex);
@@ -7725,7 +7625,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
             for (Map.Entry<Object[], List<Integer>> rightRowIndexEntry : joinColumnRightRowIndexMap.entrySet()) {
                 if (joinColumnLeftRowIndexMap.containsKey(rightRowIndexEntry.getKey()) == false) {
-                    fullJoin(newColumnList, right, newColumnClass, collClass, newColumnIndex, rightRowIndexEntry.getValue());
+                    fullJoin(newColumnList, right, newColumnClass, collSupplier, newColumnIndex, rightRowIndexEntry.getValue());
                 }
             }
 
@@ -7743,12 +7643,12 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private void fullJoin(final List<List<Object>> newColumnList, final DataSet right, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass, final int newColumnIndex, final List<Integer> rightRowIndexList) {
+            final IntFunction<? extends Collection> collSupplier, final int newColumnIndex, final List<Integer> rightRowIndexList) {
         for (int i = 0, leftColumnLength = _columnNameList.size(); i < leftColumnLength; i++) {
             newColumnList.get(i).add(null);
         }
 
-        final Collection<Object> coll = N.newInstance(collClass);
+        final Collection<Object> coll = collSupplier.apply(rightRowIndexList.size());
 
         for (int rightRowIndex : rightRowIndexList) {
             coll.add(right.getRow(newColumnClass, rightRowIndex));
@@ -7759,13 +7659,13 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private void fullJoin(final List<List<Object>> newColumnList, final DataSet right, final Class<?> newColumnClass,
-            final Class<? extends Collection> collClass, final int newColumnIndex, int leftRowIndex, List<Integer> rightRowIndexList) {
+            final IntFunction<? extends Collection> collSupplier, final int newColumnIndex, int leftRowIndex, List<Integer> rightRowIndexList) {
         if (N.notNullOrEmpty(rightRowIndexList)) {
             for (int i = 0, leftColumnLength = _columnNameList.size(); i < leftColumnLength; i++) {
                 newColumnList.get(i).add(_columnList.get(i).get(leftRowIndex));
             }
 
-            final Collection<Object> coll = N.newInstance(collClass);
+            final Collection<Object> coll = collSupplier.apply(rightRowIndexList.size());
 
             for (int rightRowIndex : rightRowIndexList) {
                 coll.add(right.getRow(newColumnClass, rightRowIndex));

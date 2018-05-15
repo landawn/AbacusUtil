@@ -457,33 +457,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.forEach(coll, action);
     }
 
-    //    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) throws E {
-    //        N.forEach(coll, fromIndex, toIndex, action);
-    //    }
-
-    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
-            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        return N.forEach(coll, seed, accumulator, conditionToBreak);
-    }
-
-    //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super R, ? super T> conditionToBreak) throws E {
-    //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
-    //    }
-
-    /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @return
-     */
-    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, final Try.IndexedBiFunction<R, ? super T, R, E> accumulator,
-            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        return N.forEach(coll, seed, accumulator, conditionToBreak);
-    }
-
     public <U, E extends Exception, E2 extends Exception> void forEach(final Try.Function<? super T, ? extends Collection<U>, E> flatMapper,
             final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         N.forEach(coll, flatMapper, action);
@@ -543,21 +516,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final Iterator<T> iter = coll.iterator();
         Iterators.forEachTriple(iter, action, increment);
     }
-
-    //    /**
-    //     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-    //     * 
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-    //     * @param accumulator
-    //     * @param conditionToBreak break if <code>true</code> is return.
-    //     * @return
-    //     */
-    //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super R, ? super T> conditionToBreak) throws E {
-    //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
-    //    }
 
     public Nullable<T> first() {
         if (size() == 0) {

@@ -209,29 +209,37 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     /**
+     * Same as {@code OrElseFalse}.
      * 
      * @return
-     * @deprecated replaced with orElseFalse.
      */
-    @Deprecated
     public boolean orFalse() {
         return isPresent() ? value : false;
     }
 
     /**
+     * Same as {@code orElseTrue}.
      * 
      * @return
-     * @deprecated replaced with orElseTrue.
      */
-    @Deprecated
     public boolean orTrue() {
         return isPresent() ? value : true;
     }
 
+    /**
+     * Same as {@code orFalse}.
+     * 
+     * @return
+     */
     public boolean orElseFalse() {
         return isPresent() ? value : false;
     }
 
+    /**
+     * Same as {@code orTrue}.
+     * 
+     * @return
+     */
     public boolean orElseTrue() {
         return isPresent() ? value : true;
     }

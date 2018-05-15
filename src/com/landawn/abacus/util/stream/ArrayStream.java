@@ -2067,22 +2067,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
-            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        R result = seed;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, elements[i]);
-
-            if (conditionToBreak.test(result, elements[i])) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
 

@@ -255,57 +255,6 @@ public final class Iterators {
         }
     }
 
-    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final Iterator<T> iter, final R seed,
-            Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        N.requireNonNull(accumulator);
-        N.requireNonNull(conditionToBreak);
-
-        if (iter == null) {
-            return seed;
-        }
-
-        R result = seed;
-        T e = null;
-
-        while (iter.hasNext()) {
-            e = iter.next();
-
-            result = accumulator.apply(result, e);
-
-            if (conditionToBreak.test(result, e)) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final Iterator<T> iter, final R seed,
-            final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        N.requireNonNull(accumulator);
-        N.requireNonNull(conditionToBreak);
-
-        if (iter == null) {
-            return seed;
-        }
-
-        R result = seed;
-        T e = null;
-        int index = 0;
-
-        while (iter.hasNext()) {
-            e = iter.next();
-
-            result = accumulator.apply(result, index++, e);
-
-            if (conditionToBreak.test(result, e)) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
     public static <T, U, E extends Exception, E2 extends Exception> void forEach(final Iterator<T> iter,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         N.requireNonNull(flatMapper);

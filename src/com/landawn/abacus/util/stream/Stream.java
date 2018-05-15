@@ -983,21 +983,6 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E;
 
-    /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @return
-     */
-    @SequentialOnly
-    public abstract <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
-            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2;
-
     @ParallelSupported
     public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E;
 

@@ -2591,16 +2591,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
-            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        if (logger.isWarnEnabled()) {
-            logger.warn("The 'forEach' with break condition is sequentially executed in parallel stream");
-        }
-
-        return sequential().forEach(seed, accumulator, conditionToBreak);
-    }
-
-    @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEachPair(action, increment);

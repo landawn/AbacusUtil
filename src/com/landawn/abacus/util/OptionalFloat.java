@@ -209,15 +209,19 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
+     * Same as {@code orElseZero}.
      * 
-     * @return
-     * @deprecated replaced with orElseZero.
+     * @return.
      */
-    @Deprecated
     public float orZero() {
         return isPresent() ? value : 0;
     }
 
+    /**
+     * Same as {@code orZero}.
+     * 
+     * @return.
+     */
     public float orElseZero() {
         return isPresent() ? value : 0;
     }

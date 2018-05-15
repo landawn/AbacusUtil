@@ -1005,32 +1005,6 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @return
-     */
-    public <R, X extends Exception, X2 extends Exception> R forEach(final R seed, Try.TriFunction<R, ? super K, ? super V, R, X> accumulator,
-            final Try.TriPredicate<? super R, ? super K, ? super V, X2> conditionToBreak) throws X, X2 {
-        N.requireNonNull(accumulator);
-        N.requireNonNull(conditionToBreak);
-
-        R result = seed;
-
-        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
-            result = accumulator.apply(result, entry.getKey(), entry.getValue());
-
-            if (conditionToBreak.test(result, entry.getKey(), entry.getValue())) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * The implementation is equivalent to performing the following steps for this Multimap:
      * 
      * <pre>

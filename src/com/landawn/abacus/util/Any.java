@@ -442,15 +442,19 @@ abstract class Any<T> {
     public abstract <E extends Exception> Any<T> or(Try.Supplier<? extends Any<T>, E> supplier) throws E;
 
     /**
+     * Same as {@code orElseNull}.
      * 
      * @return
-     * @deprecated replaced with orElseNull.
      */
-    @Deprecated
     public T orNull() {
         return isPresent() ? value : null;
     }
 
+    /**
+     * Same as {@code orNull}
+     * 
+     * @return
+     */
     public T orElseNull() {
         return isPresent() ? value : null;
     }

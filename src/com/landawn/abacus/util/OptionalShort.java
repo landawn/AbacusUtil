@@ -209,15 +209,19 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     /**
+     * Same as {@code orElseZero}.
      * 
-     * @return
-     * @deprecated replaced with orElseZero.
+     * @return.
      */
-    @Deprecated
     public short orZero() {
         return isPresent() ? value : 0;
     }
 
+    /**
+     * Same as {@code orZero}.
+     * 
+     * @return.
+     */
     public short orElseZero() {
         return isPresent() ? value : 0;
     }

@@ -3743,6 +3743,41 @@ public final class Fn extends Comparators {
     }
 
     public static final class Functions {
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
+            @Override
+            public List apply(Pair t) {
+                return N.asList(t.getLeft(), t.getRight());
+            }
+
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
+            @Override
+            public Set apply(Pair t) {
+                return N.asSet(t.getLeft(), t.getRight());
+            }
+
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
+            @Override
+            public List apply(Triple t) {
+                return N.asList(t.getLeft(), t.getMiddle(), t.getRight());
+            }
+
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
+            @Override
+            public Set apply(Triple t) {
+                return N.asSet(t.getLeft(), t.getMiddle(), t.getRight());
+            }
+
+        };
 
         private Functions() {
             // singleton.
@@ -3779,6 +3814,26 @@ public final class Fn extends Comparators {
 
         public static <T, R> Function<T, R> indexed(final IndexedFunction<T, R> func) {
             return Fn.indexedd(func);
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, List<T>> pairToList() {
+            return (Function) PAIR_TO_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, Set<T>> pairToSet() {
+            return (Function) PAIR_TO_SET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, List<T>> tripleToList() {
+            return (Function) TRIPLE_TO_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, Set<T>> tripleToSet() {
+            return (Function) TRIPLE_TO_SET;
         }
     }
 

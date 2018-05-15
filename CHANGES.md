@@ -1,6 +1,12 @@
 ### 1.2.10
 
-* Add `Optional.orElseNull/OptionalDouble/.../OptionalInt.orElseZero`. And `orNull/OrZero/...` are marked as @deprecated.
+* Add `Optional.orElseNull/OptionalDouble/.../OptionalInt.orElseZero`.
+
+* Add `Functions.pairToList/pairToSet/tripleToList/tripleToSet`.
+
+* Remove `XXX.forEach(..., accumulator, conditionToBreak...)`.
+
+* Refactoring: change `DataSet.join/leftJoin/RightJoin/fullJoin(Class<? extends Collection> collClass)` to `DataSet.join/leftJoin/RightJoin/fullJoin(IntFunction<? extends Collection> collSupplier)`.
 
 * Stop releasing `abacus-util-all` and `abacus-util-all-jdk7`.
 

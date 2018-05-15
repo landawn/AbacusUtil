@@ -209,15 +209,19 @@ public final class OptionalByte implements Comparable<OptionalByte> {
     }
 
     /**
+     * Same as {@code orElseZero}.
      * 
-     * @return
-     * @deprecated replaced with orElseZero.
+     * @return.
      */
-    @Deprecated
     public byte orZero() {
         return isPresent() ? value : 0;
     }
 
+    /**
+     * Same as {@code orZero}.
+     * 
+     * @return.
+     */
     public byte orElseZero() {
         return isPresent() ? value : 0;
     }

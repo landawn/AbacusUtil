@@ -213,15 +213,19 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
+     * Same as {@code orElseZero}.
      * 
-     * @return
-     * @deprecated replaced with orElseZero.
+     * @return.
      */
-    @Deprecated
     public double orZero() {
         return isPresent() ? value : 0;
     }
 
+    /**
+     * Same as {@code orZero}.
+     * 
+     * @return.
+     */
     public double orElseZero() {
         return isPresent() ? value : 0;
     }

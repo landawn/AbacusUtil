@@ -1224,32 +1224,6 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @return
-     */
-    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.TriFunction<R, ? super T, Long, R, E> accumulator,
-            final Try.TriPredicate<? super R, ? super T, Long, E2> conditionToBreak) throws E, E2 {
-        N.requireNonNull(accumulator);
-        N.requireNonNull(conditionToBreak);
-
-        R result = seed;
-
-        for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
-            result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
-
-            if (conditionToBreak.test(result, entry.getKey(), entry.getValue().value())) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * The implementation is equivalent to performing the following steps for this LongMultiset:
      * 
      * <pre>

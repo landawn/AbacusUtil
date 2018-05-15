@@ -860,53 +860,6 @@ public interface DataSet {
     <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action,
             boolean shareRowArray) throws E;
 
-    <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
-
-    <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
-
-    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
-
-    /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * @param columnNames
-     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @param shareRowArray
-     * @return
-     */
-    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
-
-    <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
-
-    <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
-            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
-
-    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
-
-    /**
-     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
-     * @param accumulator
-     * @param conditionToBreak break if <code>true</code> is return.
-     * @param shareRowArray
-     * @return
-     */
-    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
-            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
-            throws E, E2;
-
     //    /**
     //     *
     //     * @return
@@ -3945,11 +3898,12 @@ public interface DataSet {
      * @param onColumnNames
      * @param newColumnName
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
-     * @param collClass it's for one-to-many join
+     * @param collSupplier it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
-    DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass, Class<? extends Collection> collClass);
+    DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
+            IntFunction<? extends Collection> collSupplier);
 
     /**
      * Returns a new <code>DataSet</code> that has all the rows from this <code>DataSet</code> and the rows from the specified <code>right DataSet</code> if they have a match with the rows from the this <code>DataSet</code>.
@@ -3988,11 +3942,12 @@ public interface DataSet {
      * @param onColumnNames
      * @param newColumnName
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
-     * @param collClass it's for one-to-many join
+     * @param collSupplier it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
-    DataSet leftJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass, Class<? extends Collection> collClass);
+    DataSet leftJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
+            IntFunction<? extends Collection> collSupplier);
 
     /**
      * Returns a new <code>DataSet</code> that has all the rows from the specified right <code>DataSet</code> and the rows from <code>this DataSet</code> if they have a match with the rows from the right <code>DataSet</code>.
@@ -4031,11 +3986,12 @@ public interface DataSet {
      * @param onColumnNames
      * @param newColumnName
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
-     * @param collClass it's for one-to-many join
+     * @param collSupplier it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
-    DataSet rightJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass, Class<? extends Collection> collClass);
+    DataSet rightJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
+            IntFunction<? extends Collection> collSupplier);
 
     /**
      * Returns a new <code>DataSet</code> that has all the rows from this <code>DataSet</code> and the specified <code>right DataSet</code>, regardless of whether there are any matches.
@@ -4074,11 +4030,12 @@ public interface DataSet {
      * @param onColumnNames
      * @param newColumnName
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
-     * @param collClass it's for one-to-many join
+     * @param collSupplier it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
-    DataSet fullJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass, Class<? extends Collection> collClass);
+    DataSet fullJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
+            IntFunction<? extends Collection> collSupplier);
 
     /**
      * Returns a new <code>DataSet</code>. Duplicated row in the specified {@code DataSet} will be eliminated.

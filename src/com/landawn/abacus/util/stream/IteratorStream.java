@@ -1869,24 +1869,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
-            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
-        R result = seed;
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-            result = accumulator.apply(result, next);
-
-            if (conditionToBreak.test(result, next)) {
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
 
