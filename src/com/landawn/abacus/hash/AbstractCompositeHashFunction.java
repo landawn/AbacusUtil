@@ -33,7 +33,7 @@ abstract class AbstractCompositeHashFunction extends AbstractStreamingHashFuncti
 
     AbstractCompositeHashFunction(HashFunction... functions) {
         for (HashFunction function : functions) {
-            N.requireNonNull(function);
+            N.checkArgNotNull(function);
         }
         this.functions = functions;
     }

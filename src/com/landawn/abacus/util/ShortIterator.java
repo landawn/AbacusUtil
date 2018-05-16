@@ -90,7 +90,7 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
      * @return
      */
     public static ShortIterator generate(final ShortSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new ShortIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
      * @return
      */
     public static ShortIterator generate(final BooleanSupplier hasNext, final ShortSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new ShortIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.ShortConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextShort());

@@ -93,7 +93,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     IteratorStream(final Iterator<? extends T> values, final boolean sorted, final Comparator<? super T> comparator, final Collection<Runnable> closeHandlers) {
         super(sorted, comparator, closeHandlers);
 
-        N.requireNonNull(values);
+        N.checkArgNotNull(values);
 
         ObjIteratorEx<T> tmp = null;
 
@@ -482,7 +482,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
-        N.requireNonNull(mapperForFirst);
+        N.checkArgNotNull(mapperForFirst);
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean isFirst = true;
@@ -543,8 +543,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.requireNonNull(mapperForFirst);
-        N.requireNonNull(mapperForElse);
+        N.checkArgNotNull(mapperForFirst);
+        N.checkArgNotNull(mapperForElse);
 
         return newStream(new ObjIteratorEx<R>() {
             private boolean isFirst = true;
@@ -584,7 +584,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
-        N.requireNonNull(mapperForLast);
+        N.checkArgNotNull(mapperForLast);
 
         return newStream(new ObjIteratorEx<T>() {
             @Override
@@ -617,8 +617,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.requireNonNull(mapperForLast);
-        N.requireNonNull(mapperForElse);
+        N.checkArgNotNull(mapperForLast);
+        N.checkArgNotNull(mapperForElse);
 
         return newStream(new ObjIteratorEx<R>() {
             @Override
@@ -2049,7 +2049,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         while (elements.hasNext()) {
             element = elements.next();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

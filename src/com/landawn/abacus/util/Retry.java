@@ -50,7 +50,7 @@ public final class Retry<T> {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
 
-        N.requireNonNull(retryCondition);
+        N.checkArgNotNull(retryCondition);
 
         return new Retry<Void>(retryTimes, retryInterval, retryCondition, null);
     }
@@ -60,7 +60,7 @@ public final class Retry<T> {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
 
-        N.requireNonNull(retryCondition);
+        N.checkArgNotNull(retryCondition);
 
         return new Retry<R>(retryTimes, retryInterval, null, retryCondition);
     }

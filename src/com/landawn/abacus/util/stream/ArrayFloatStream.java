@@ -1278,7 +1278,7 @@ class ArrayFloatStream extends AbstractFloatStream {
         A v = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

@@ -15,13 +15,13 @@ public interface Callable<R> extends java.util.concurrent.Callable<R>, Try.Calla
      * @return
      */
     public static <R> Callable<R> of(final Callable<R> callable) {
-        N.requireNonNull(callable);
+        N.checkArgNotNull(callable);
 
         return callable;
     }
 
     public static Callable<Void> create(Runnable cmd) {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         return new Callable<Void>() {
             @Override

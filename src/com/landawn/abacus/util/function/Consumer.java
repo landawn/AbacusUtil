@@ -30,7 +30,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T>, Try.Consume
 
     @Override
     default Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
-        N.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (T t) -> {
             accept(t);
@@ -45,13 +45,13 @@ public interface Consumer<T> extends java.util.function.Consumer<T>, Try.Consume
      * @return
      */
     public static <T> Consumer<T> of(final Consumer<T> consumer) {
-        N.requireNonNull(consumer);
+        N.checkArgNotNull(consumer);
 
         return consumer;
     }
 
     public static <T, R> Consumer<T> create(final Function<T, R> func) {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         return new Consumer<T>() {
             @Override

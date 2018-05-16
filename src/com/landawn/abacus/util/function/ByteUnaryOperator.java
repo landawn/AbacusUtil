@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,13 +29,13 @@ public interface ByteUnaryOperator extends Try.ByteUnaryOperator<RuntimeExceptio
     byte applyAsByte(byte operand);
 
     default ByteUnaryOperator compose(ByteUnaryOperator before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
 
         return v -> applyAsByte(before.applyAsByte(v));
     }
 
     default ByteUnaryOperator andThen(ByteUnaryOperator after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return t -> after.applyAsByte(applyAsByte(t));
     }

@@ -59,7 +59,7 @@ public final class Maps {
     }
 
     public static <T, K, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor) throws E {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
             return new HashMap<K, T>();
@@ -76,7 +76,7 @@ public final class Maps {
 
     public static <T, K, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor)
             throws E {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
             return new LinkedHashMap<K, T>();
@@ -93,8 +93,8 @@ public final class Maps {
 
     public static <T, K, V, E extends Exception, E2 extends Exception> Map<K, V> newMap(Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
-        N.requireNonNull(keyExtractor);
-        N.requireNonNull(valueExtractor);
+        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(valueExtractor);
 
         if (N.isNullOrEmpty(c)) {
             return new HashMap<K, V>();
@@ -112,8 +112,8 @@ public final class Maps {
     public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M newMap(Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor,
             final IntFunction<M> mapSupplier) throws E, E2 {
-        N.requireNonNull(keyExtractor);
-        N.requireNonNull(valueExtractor);
+        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(valueExtractor);
 
         if (N.isNullOrEmpty(c)) {
             return mapSupplier.apply(0);
@@ -881,7 +881,7 @@ public final class Maps {
      */
     public static <K, V, E extends Exception> void replaceAll(final Map<K, V> map, final Try.BiFunction<? super K, ? super V, ? extends V, E> function)
             throws E {
-        N.requireNonNull(function);
+        N.checkArgNotNull(function);
 
         if (N.isNullOrEmpty(map)) {
             return;
@@ -972,7 +972,7 @@ public final class Maps {
      */
     public static <K, V, E extends Exception> V computeIfAbsent(final Map<K, V> map, final K key, final Try.Function<? super K, ? extends V, E> mappingFunction)
             throws E {
-        N.requireNonNull(mappingFunction);
+        N.checkArgNotNull(mappingFunction);
         V v = null;
 
         if ((v = map.get(key)) == null) {
@@ -1035,7 +1035,7 @@ public final class Maps {
      */
     public static <K, V, E extends Exception> V computeIfPresent(final Map<K, V> map, K key,
             final Try.BiFunction<? super K, ? super V, ? extends V, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         V oldValue = null;
 
@@ -1114,7 +1114,7 @@ public final class Maps {
      */
     public static <K, V, E extends Exception> V compute(final Map<K, V> map, K key,
             final Try.BiFunction<? super K, ? super V, ? extends V, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         V oldValue = map.get(key);
         V newValue = remappingFunction.apply(key, oldValue);
@@ -1196,8 +1196,8 @@ public final class Maps {
      */
     public static <K, V, E extends Exception> V merge(final Map<K, V> map, final K key, final V value,
             final Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
-        N.requireNonNull(value);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(value);
 
         V oldValue = map.get(key);
         V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
@@ -1237,7 +1237,7 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V, E extends Exception> void forEach(final Map<K, V> map, final Try.BiConsumer<? super K, ? super V, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(map)) {
             return;
@@ -2310,133 +2310,5 @@ public final class Maps {
         }
 
         return resultList;
-    }
-
-    public static String join(final Map<?, ?> m) {
-        return join(m, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final Map<?, ?> m, final char entryDelimiter) {
-        if (N.isNullOrEmpty(m)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(m, 0, m.size(), entryDelimiter);
-    }
-
-    public static String join(final Map<?, ?> m, final String entryDelimiter) {
-        if (N.isNullOrEmpty(m)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(m, 0, m.size(), entryDelimiter);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, false);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, WD._EQUAL, trim);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, false);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, WD.EQUAL, trim);
-    }
-
-    public static String join(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {
-        if (N.isNullOrEmpty(m)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
-    }
-
-    public static String join(final Map<?, ?> m, final String entryDelimiter, final String keyValueDelimiter) {
-        if (N.isNullOrEmpty(m)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
-            final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            int i = 0;
-            for (Map.Entry<?, ?> entry : m.entrySet()) {
-                if (i++ > fromIndex) {
-                    sb.append(entryDelimiter);
-                }
-
-                if (i > fromIndex) {
-                    sb.append(trim ? N.toString(entry.getKey()).trim() : N.toString(entry.getKey()));
-                    sb.append(keyValueDelimiter);
-                    sb.append(trim ? N.toString(entry.getValue()).trim() : N.toString(entry.getValue()));
-                }
-
-                if (i >= toIndex) {
-                    break;
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
-    }
-
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
-            final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            int i = 0;
-            for (Map.Entry<?, ?> entry : m.entrySet()) {
-                if (i++ > fromIndex) {
-                    sb.append(entryDelimiter);
-                }
-
-                if (i > fromIndex) {
-                    sb.append(trim ? N.toString(entry.getKey()).trim() : N.toString(entry.getKey()));
-                    sb.append(keyValueDelimiter);
-                    sb.append(trim ? N.toString(entry.getValue()).trim() : N.toString(entry.getValue()));
-                }
-
-                if (i >= toIndex) {
-                    break;
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
     }
 }

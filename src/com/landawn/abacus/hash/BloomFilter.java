@@ -108,10 +108,10 @@ public final class BloomFilter<T> implements Predicate<T>, Serializable {
     private BloomFilter(BitArray bits, int numHashFunctions, BiConsumer<? super T, ? super Hasher> funnel, Strategy strategy) {
         N.checkArgument(numHashFunctions > 0, "numHashFunctions (%s) must be > 0", numHashFunctions);
         N.checkArgument(numHashFunctions <= 255, "numHashFunctions (%s) must be <= 255", numHashFunctions);
-        this.bits = N.requireNonNull(bits);
+        this.bits = N.checkArgNotNull(bits);
         this.numHashFunctions = numHashFunctions;
-        this.funnel = N.requireNonNull(funnel);
-        this.strategy = N.requireNonNull(strategy);
+        this.funnel = N.checkArgNotNull(funnel);
+        this.strategy = N.checkArgNotNull(strategy);
     }
 
     /**
@@ -197,7 +197,7 @@ public final class BloomFilter<T> implements Predicate<T>, Serializable {
      * @since 15.0
      */
     public boolean isCompatible(BloomFilter<T> that) {
-        N.requireNonNull(that);
+        N.checkArgNotNull(that);
         return (this != that) && (this.numHashFunctions == that.numHashFunctions) && (this.bitSize() == that.bitSize()) && (this.strategy.equals(that.strategy))
                 && (this.funnel.equals(that.funnel));
     }
@@ -213,7 +213,7 @@ public final class BloomFilter<T> implements Predicate<T>, Serializable {
      * @since 15.0
      */
     public void putAll(BloomFilter<T> that) {
-        N.requireNonNull(that);
+        N.checkArgNotNull(that);
         N.checkArgument(this != that, "Cannot combine a BloomFilter with itself.");
         N.checkArgument(this.numHashFunctions == that.numHashFunctions, "BloomFilters must have the same number of hash functions (%s != %s)",
                 this.numHashFunctions, that.numHashFunctions);
@@ -292,11 +292,11 @@ public final class BloomFilter<T> implements Predicate<T>, Serializable {
     }
 
     static <T> BloomFilter<T> create(BiConsumer<? super T, ? super Hasher> funnel, long expectedInsertions, double fpp, Strategy strategy) {
-        N.requireNonNull(funnel);
+        N.checkArgNotNull(funnel);
         N.checkArgument(expectedInsertions >= 0, "Expected insertions (%s) must be >= 0", expectedInsertions);
         N.checkArgument(fpp > 0.0, "False positive probability (%s) must be > 0.0", fpp);
         N.checkArgument(fpp < 1.0, "False positive probability (%s) must be < 1.0", fpp);
-        N.requireNonNull(strategy);
+        N.checkArgNotNull(strategy);
 
         if (expectedInsertions == 0) {
             expectedInsertions = 1;
@@ -462,8 +462,8 @@ public final class BloomFilter<T> implements Predicate<T>, Serializable {
      *     appear to be a BloomFilter serialized using the {@linkplain #writeTo(OutputStream)} method.
      */
     public static <T> BloomFilter<T> readFrom(InputStream in, BiConsumer<? super T, ? super Hasher> funnel) throws IOException {
-        N.requireNonNull(in, "InputStream");
-        N.requireNonNull(funnel, "BiConsumer");
+        N.checkArgNotNull(in, "InputStream");
+        N.checkArgNotNull(funnel, "BiConsumer");
         int strategyOrdinal = -1;
         int numHashFunctions = -1;
         int dataLength = -1;

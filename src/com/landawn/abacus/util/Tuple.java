@@ -48,7 +48,7 @@ public abstract class Tuple {
 
         @Override
         public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
-            N.requireNonNull(consumer);
+            N.checkArgNotNull(consumer);
             // do nothing.
         }
 

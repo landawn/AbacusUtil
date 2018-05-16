@@ -100,7 +100,7 @@ public final class Optional<T> {
      * @throws NullPointerException if value is null
      */
     private Optional(T value) {
-        this.value = N.requireNonNull(value);
+        this.value = N.checkArgNotNull(value);
     }
 
     /**
@@ -194,7 +194,7 @@ public final class Optional<T> {
      * @throws NullPointerException if the predicate is null
      */
     public <E extends Exception> Optional<T> filter(Try.Predicate<? super T, E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -233,7 +233,7 @@ public final class Optional<T> {
      * @throws NullPointerException if the mapping function is null
      */
     public <U, E extends Exception> Nullable<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.<U> of(mapper.apply(value));
@@ -243,7 +243,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalBoolean mapToBoolean(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
@@ -253,7 +253,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalChar mapToChar(final Try.ToCharFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalChar.of(mapper.applyAsChar(value));
@@ -263,7 +263,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalByte mapToByte(final Try.ToByteFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalByte.of(mapper.applyAsByte(value));
@@ -273,7 +273,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalShort mapToShort(final Try.ToShortFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalShort.of(mapper.applyAsShort(value));
@@ -283,7 +283,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalInt.of(mapper.applyAsInt(value));
@@ -293,7 +293,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalLong.of(mapper.applyAsLong(value));
@@ -303,7 +303,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalFloat mapToFloat(final Try.ToFloatFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalFloat.of(mapper.applyAsFloat(value));
@@ -313,7 +313,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
@@ -340,10 +340,10 @@ public final class Optional<T> {
      * a null result
      */
     public <U, E extends Exception> Optional<U> flatMap(Try.Function<? super T, Optional<U>, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -357,7 +357,7 @@ public final class Optional<T> {
      * @throws E
      */
     public <E extends Exception> Optional<T> or(Try.Supplier<? extends Optional<T>, E> supplier) throws E {
-        return isPresent() ? this : N.requireNonNull(supplier.get());
+        return isPresent() ? this : N.checkArgNotNull(supplier.get());
     }
 
     /**
@@ -369,14 +369,14 @@ public final class Optional<T> {
         return isPresent() ? value : null;
     }
 
-    /**
-     * Same as {@code orNull}.
-     * 
-     * @return
-     */
-    public T orElseNull() {
-        return isPresent() ? value : null;
-    }
+    //    /**
+    //     * Same as {@code orNull}.
+    //     * 
+    //     * @return
+    //     */
+    //    public T orElseNull() {
+    //        return isPresent() ? value : null;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

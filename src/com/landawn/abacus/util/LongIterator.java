@@ -90,7 +90,7 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
      * @return
      */
     public static LongIterator generate(final LongSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new LongIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
      * @return
      */
     public static LongIterator generate(final BooleanSupplier hasNext, final LongSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new LongIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.LongConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextLong());

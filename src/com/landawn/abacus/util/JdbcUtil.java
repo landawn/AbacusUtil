@@ -374,25 +374,25 @@ public final class JdbcUtil {
     private static Class<? extends Driver> getDriverClasssByUrl(final String url) {
         Class<? extends Driver> driverClass = null;
         // jdbc:mysql://localhost:3306/abacustest
-        if (url.indexOf("mysql") > 0 || N.indexOfIgnoreCase(url, "mysql") > 0) {
+        if (url.indexOf("mysql") > 0 || StringUtil.indexOfIgnoreCase(url, "mysql") > 0) {
             driverClass = ClassUtil.forClass("com.mysql.jdbc.Driver");
             // jdbc:postgresql://localhost:5432/abacustest
-        } else if (url.indexOf("postgresql") > 0 || N.indexOfIgnoreCase(url, "postgresql") > 0) {
+        } else if (url.indexOf("postgresql") > 0 || StringUtil.indexOfIgnoreCase(url, "postgresql") > 0) {
             driverClass = ClassUtil.forClass("org.postgresql.Driver");
             // jdbc:h2:hsql://<host>:<port>/<database>
-        } else if (url.indexOf("h2") > 0 || N.indexOfIgnoreCase(url, "h2") > 0) {
+        } else if (url.indexOf("h2") > 0 || StringUtil.indexOfIgnoreCase(url, "h2") > 0) {
             driverClass = ClassUtil.forClass("org.h2.Driver");
             // jdbc:hsqldb:hsql://localhost/abacustest
-        } else if (url.indexOf("hsqldb") > 0 || N.indexOfIgnoreCase(url, "hsqldb") > 0) {
+        } else if (url.indexOf("hsqldb") > 0 || StringUtil.indexOfIgnoreCase(url, "hsqldb") > 0) {
             driverClass = ClassUtil.forClass("org.hsqldb.jdbc.JDBCDriver");
             // jdbc.url=jdbc:oracle:thin:@localhost:1521:abacustest
-        } else if (url.indexOf("oracle") > 0 || N.indexOfIgnoreCase(url, "oracle") > 0) {
+        } else if (url.indexOf("oracle") > 0 || StringUtil.indexOfIgnoreCase(url, "oracle") > 0) {
             driverClass = ClassUtil.forClass("oracle.jdbc.driver.OracleDriver");
             // jdbc.url=jdbc:sqlserver://localhost:1433;Database=abacustest
-        } else if (url.indexOf("sqlserver") > 0 || N.indexOfIgnoreCase(url, "sqlserver") > 0) {
+        } else if (url.indexOf("sqlserver") > 0 || StringUtil.indexOfIgnoreCase(url, "sqlserver") > 0) {
             driverClass = ClassUtil.forClass("com.microsoft.sqlserver.jdbc.SQLServerDrive");
             // jdbc:db2://localhost:50000/abacustest
-        } else if (url.indexOf("db2") > 0 || N.indexOfIgnoreCase(url, "db2") > 0) {
+        } else if (url.indexOf("db2") > 0 || StringUtil.indexOfIgnoreCase(url, "db2") > 0) {
             driverClass = ClassUtil.forClass("com.ibm.db2.jcc.DB2Driver");
         } else {
             throw new UncheckedSQLException(
@@ -856,8 +856,8 @@ public final class JdbcUtil {
      */
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize)
             throws UncheckedSQLException {
-        N.requireNonNull(conn);
-        N.requireNonNull(sql);
+        N.checkArgNotNull(conn);
+        N.checkArgNotNull(sql);
         N.checkArgument(batchSize > 0, "'batchSize' can't be 0 or negative");
 
         if (N.isNullOrEmpty(parametersListList)) {
@@ -1082,7 +1082,7 @@ public final class JdbcUtil {
     @SafeVarargs
     public static <T> Try<Stream<T>> stream(final Class<T> targetType, final Connection conn, final String sql, final Object... parameters)
             throws UncheckedSQLException {
-        N.requireNonNull(targetType);
+        N.checkArgNotNull(targetType);
 
         return stream2(targetType, conn, sql, parameters);
     }
@@ -1141,7 +1141,7 @@ public final class JdbcUtil {
      * @throws UncheckedSQLException
      */
     public static <T> Try<Stream<T>> stream(final Class<T> targetType, final PreparedStatement stmt) throws UncheckedSQLException {
-        N.requireNonNull(targetType);
+        N.checkArgNotNull(targetType);
 
         return stream2(targetType, stmt);
     }

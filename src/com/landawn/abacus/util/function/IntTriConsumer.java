@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface IntTriConsumer extends Try.IntTriConsumer<RuntimeException> {
     void accept(int a, int b, int c);
 
     default IntTriConsumer andThen(IntTriConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> {
             accept(a, b, c);

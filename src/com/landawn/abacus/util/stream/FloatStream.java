@@ -870,8 +870,8 @@ public abstract class FloatStream
     }
 
     public static FloatStream iterate(final BooleanSupplier hasNext, final FloatSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             private boolean hasNextVal = false;
@@ -898,8 +898,8 @@ public abstract class FloatStream
     }
 
     public static FloatStream iterate(final float seed, final BooleanSupplier hasNext, final FloatUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
@@ -943,8 +943,8 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream iterate(final float seed, final FloatPredicate hasNext, final FloatUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
@@ -985,7 +985,7 @@ public abstract class FloatStream
     }
 
     public static FloatStream iterate(final float seed, final FloatUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
@@ -1011,7 +1011,7 @@ public abstract class FloatStream
     }
 
     public static FloatStream generate(final FloatSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             @Override

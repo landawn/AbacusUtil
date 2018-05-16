@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,13 +29,13 @@ public interface FloatUnaryOperator extends Try.FloatUnaryOperator<RuntimeExcept
     float applyAsFloat(float operand);
 
     default FloatUnaryOperator compose(FloatUnaryOperator before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
 
         return v -> applyAsFloat(before.applyAsFloat(v));
     }
 
     default FloatUnaryOperator andThen(FloatUnaryOperator after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return t -> after.applyAsFloat(applyAsFloat(t));
     }

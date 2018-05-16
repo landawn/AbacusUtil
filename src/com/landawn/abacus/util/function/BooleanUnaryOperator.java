@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,13 +29,13 @@ public interface BooleanUnaryOperator extends Try.BooleanUnaryOperator<RuntimeEx
     boolean applyAsBoolean(boolean operand);
 
     default BooleanUnaryOperator compose(BooleanUnaryOperator before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
 
         return v -> applyAsBoolean(before.applyAsBoolean(v));
     }
 
     default BooleanUnaryOperator andThen(BooleanUnaryOperator after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return t -> after.applyAsBoolean(applyAsBoolean(t));
     }

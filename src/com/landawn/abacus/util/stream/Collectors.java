@@ -44,7 +44,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -1655,7 +1654,7 @@ public class Collectors {
      * followed by an additional finishing step
      */
     public static <T, A, R, RR> Collector<T, A, RR> collectingAndThen(final Collector<T, A, R> downstream, final Function<R, RR> finisher) {
-        Objects.requireNonNull(finisher);
+        N.checkArgNotNull(finisher);
 
         final Function<A, R> downstreamFinisher = downstream.finisher();
 
@@ -1820,7 +1819,7 @@ public class Collectors {
      * @return a {@code Collector} that produces the minimal value
      */
     public static <T> Collector<T, ?, Nullable<T>> minBy(final Comparator<? super T> comparator) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -1833,7 +1832,7 @@ public class Collectors {
     }
 
     public static <T> Collector<T, ?, T> minByOrGet(final Comparator<? super T> comparator, final Supplier<? extends T> other) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -1847,7 +1846,7 @@ public class Collectors {
 
     public static <T, X extends RuntimeException> Collector<T, ?, T> minByOrThrow(final Comparator<? super T> comparator,
             final Supplier<? extends X> exceptionSupplier) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -1879,7 +1878,7 @@ public class Collectors {
      * @return a {@code Collector} that produces the maximal value
      */
     public static <T> Collector<T, ?, Nullable<T>> maxBy(final Comparator<? super T> comparator) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -1892,7 +1891,7 @@ public class Collectors {
     }
 
     public static <T> Collector<T, ?, T> maxByOrGet(final Comparator<? super T> comparator, final Supplier<? extends T> other) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -1906,7 +1905,7 @@ public class Collectors {
 
     public static <T, X extends RuntimeException> Collector<T, ?, T> maxByOrThrow(final Comparator<? super T> comparator,
             final Supplier<? extends X> exceptionSupplier) {
-        Objects.requireNonNull(comparator);
+        N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
             @Override
@@ -3680,7 +3679,7 @@ public class Collectors {
         //        Supplier<A> downstreamSupplier = downstream.supplier();
         //        BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
         //        BiConsumer<Map<K, A>, T> accumulator = (m, t) -> {
-        //            K key = Objects.requireNonNull(classifier.apply(t), "element cannot be mapped to a null key");
+        //            K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
         //            A container = m.computeIfAbsent(key, k -> downstreamSupplier.get());
         //            downstreamAccumulator.accept(container, t);
         //        };
@@ -3716,7 +3715,7 @@ public class Collectors {
         final BiConsumer<Map<K, A>, T> accumulator = new BiConsumer<Map<K, A>, T>() {
             @Override
             public void accept(Map<K, A> m, T t) {
-                K key = Objects.requireNonNull(classifier.apply(t), "element cannot be mapped to a null key");
+                K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
                 A container = computeIfAbsent(m, key, mappingFunction);
                 downstreamAccumulator.accept(container, t);
             }
@@ -3887,13 +3886,13 @@ public class Collectors {
         //        BiConsumer<ConcurrentMap<K, A>, T> accumulator;
         //        if (downstream.characteristics().contains(Collector.Characteristics.CONCURRENT)) {
         //            accumulator = (m, t) -> {
-        //                K key = Objects.requireNonNull(classifier.apply(t), "element cannot be mapped to a null key");
+        //                K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
         //                A resultContainer = m.computeIfAbsent(key, k -> downstreamSupplier.get());
         //                downstreamAccumulator.accept(resultContainer, t);
         //            };
         //        } else {
         //            accumulator = (m, t) -> {
-        //                K key = Objects.requireNonNull(classifier.apply(t), "element cannot be mapped to a null key");
+        //                K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
         //                A resultContainer = m.computeIfAbsent(key, k -> downstreamSupplier.get());
         //                synchronized (resultContainer) {
         //                    downstreamAccumulator.accept(resultContainer, t);
@@ -3928,7 +3927,7 @@ public class Collectors {
         final BiConsumer<ConcurrentMap<K, A>, T> accumulator = new BiConsumer<ConcurrentMap<K, A>, T>() {
             @Override
             public void accept(ConcurrentMap<K, A> m, T t) {
-                K key = Objects.requireNonNull(classifier.apply(t), "element cannot be mapped to a null key");
+                K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
                 A container = computeIfAbsent(m, key, mappingFunction);
                 downstreamAccumulator.accept(container, t);
             }
@@ -5073,7 +5072,7 @@ public class Collectors {
     //    }
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
-        Objects.requireNonNull(function);
+        N.checkArgNotNull(function);
         for (Map.Entry<K, V> entry : map.entrySet()) {
             K k;
             V v;
@@ -5098,7 +5097,7 @@ public class Collectors {
     }
 
     private static <K, V> V computeIfAbsent(Map<K, V> map, K key, Function<? super K, ? extends V> mappingFunction) {
-        Objects.requireNonNull(mappingFunction);
+        N.checkArgNotNull(mappingFunction);
         V v = null;
 
         if ((v = map.get(key)) == null) {
@@ -5125,7 +5124,7 @@ public class Collectors {
      * @return a merge function for two maps
      */
     private static <K, V, M extends Map<K, V>> BinaryOperator<M> mapMerger(final BinaryOperator<V> mergeFunction) {
-        Objects.requireNonNull(mergeFunction);
+        N.checkArgNotNull(mergeFunction);
 
         return new BinaryOperator<M>() {
             @Override
@@ -5134,7 +5133,7 @@ public class Collectors {
                 K key = null;
                 V value = null;
                 for (Map.Entry<K, V> e : m2.entrySet()) {
-                    Objects.requireNonNull(e.getValue());
+                    N.checkArgNotNull(e.getValue());
                     key = e.getKey();
                     value = e.getValue();
                     V oldValue = m1.get(key);
@@ -5162,7 +5161,7 @@ public class Collectors {
     }
 
     private static <K, V, M extends ConcurrentMap<K, V>> BinaryOperator<M> concurrentMapMerger(final BinaryOperator<V> mergeFunction) {
-        Objects.requireNonNull(mergeFunction);
+        N.checkArgNotNull(mergeFunction);
 
         return new BinaryOperator<M>() {
             @Override
@@ -5188,7 +5187,7 @@ public class Collectors {
                 K key = null;
                 V value = null;
                 for (Map.Entry<K, V> e : m2.entrySet()) {
-                    Objects.requireNonNull(e.getValue());
+                    N.checkArgNotNull(e.getValue());
                     key = e.getKey();
                     value = e.getValue();
 
@@ -5209,8 +5208,8 @@ public class Collectors {
 
     /*
     static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        Objects.requireNonNull(remappingFunction);
-        Objects.requireNonNull(value);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(value);
     
         V oldValue = map.get(key);
         V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
@@ -5225,7 +5224,7 @@ public class Collectors {
     */
 
     static <K, V> void merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        Objects.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         final V oldValue = map.get(key);
 

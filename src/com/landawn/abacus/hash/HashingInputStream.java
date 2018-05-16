@@ -38,8 +38,8 @@ public final class HashingInputStream extends FilterInputStream {
      * <p>The {@link InputStream} should not be read from before or after the hand-off.
      */
     public HashingInputStream(HashFunction hashFunction, InputStream in) {
-        super(N.requireNonNull(in));
-        this.hasher = N.requireNonNull(hashFunction.newHasher());
+        super(N.checkArgNotNull(in));
+        this.hasher = N.checkArgNotNull(hashFunction.newHasher());
     }
 
     /**

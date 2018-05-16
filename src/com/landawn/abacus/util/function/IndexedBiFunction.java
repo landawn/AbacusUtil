@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface IndexedBiFunction<U, T, R> extends Try.IndexedBiFunction<U, T, 
     R apply(U u, int idx, T e);
 
     default <V> IndexedBiFunction<U, T, V> andThen(IndexedFunction<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (u, idx, e) -> after.apply(idx, apply(u, idx, e));
     }

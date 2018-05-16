@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface FloatConsumer extends Try.FloatConsumer<RuntimeException> {
     void accept(float t);
 
     default FloatConsumer andThen(FloatConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t) -> {
             accept(t);

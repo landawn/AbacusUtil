@@ -15,8 +15,7 @@
  */
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -29,13 +28,13 @@ public interface QuadPredicate<A, B, C, D> extends Try.QuadPredicate<A, B, C, D,
     boolean test(A a, B b, C c, D d);
 
     default QuadPredicate<A, B, C, D> and(QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c, d) -> test(a, b, c, d) && other.test(a, b, c, d);
     }
 
     default QuadPredicate<A, B, C, D> or(QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c, d) -> test(a, b, c, d) || other.test(a, b, c, d);
     }

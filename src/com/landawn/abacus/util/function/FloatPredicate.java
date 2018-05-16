@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -93,7 +91,7 @@ public interface FloatPredicate extends Try.FloatPredicate<RuntimeException> {
      * @return
      */
     static FloatPredicate of(final FloatPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }
@@ -103,13 +101,13 @@ public interface FloatPredicate extends Try.FloatPredicate<RuntimeException> {
     }
 
     default FloatPredicate and(FloatPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default FloatPredicate or(FloatPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

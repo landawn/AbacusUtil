@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -48,13 +47,13 @@ public interface DoubleTriPredicate extends Try.DoubleTriPredicate<RuntimeExcept
     }
 
     default DoubleTriPredicate and(DoubleTriPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) && other.test(a, b, c);
     }
 
     default DoubleTriPredicate or(DoubleTriPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
     }

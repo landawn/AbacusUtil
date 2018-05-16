@@ -173,7 +173,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     public <E extends Exception> OptionalDouble filter(Try.DoublePredicate<E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -183,7 +183,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     public <E extends Exception> OptionalDouble map(final Try.DoubleUnaryOperator<E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
@@ -193,7 +193,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.DoubleFunction<T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of(mapper.apply(value));
@@ -203,10 +203,10 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     public <E extends Exception> OptionalDouble flatMap(Try.DoubleFunction<OptionalDouble, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -221,14 +221,14 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         return isPresent() ? value : 0;
     }
 
-    /**
-     * Same as {@code orZero}.
-     * 
-     * @return.
-     */
-    public double orElseZero() {
-        return isPresent() ? value : 0;
-    }
+    //    /**
+    //     * Same as {@code orZero}.
+    //     * 
+    //     * @return.
+    //     */
+    //    public double orElseZero() {
+    //        return isPresent() ? value : 0;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface DoubleTriFunction<R> extends Try.DoubleTriFunction<R, RuntimeEx
     R apply(double a, double b, double c);
 
     default <V> DoubleTriFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
     }

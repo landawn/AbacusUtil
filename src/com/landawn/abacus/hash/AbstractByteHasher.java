@@ -63,7 +63,7 @@ abstract class AbstractByteHasher extends AbstractHasher {
 
     @Override
     public Hasher put(byte[] bytes) {
-        N.requireNonNull(bytes);
+        N.checkArgNotNull(bytes);
         update(bytes);
         return this;
     }

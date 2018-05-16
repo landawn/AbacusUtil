@@ -169,7 +169,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     public <E extends Exception> OptionalShort filter(Try.ShortPredicate<E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -179,7 +179,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     public <E extends Exception> OptionalShort map(final Try.ShortUnaryOperator<E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalShort.of(mapper.applyAsShort(value));
@@ -189,7 +189,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.ShortFunction<T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of(mapper.apply(value));
@@ -199,10 +199,10 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     public <E extends Exception> OptionalShort flatMap(Try.ShortFunction<OptionalShort, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -217,14 +217,14 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         return isPresent() ? value : 0;
     }
 
-    /**
-     * Same as {@code orZero}.
-     * 
-     * @return.
-     */
-    public short orElseZero() {
-        return isPresent() ? value : 0;
-    }
+    //    /**
+    //     * Same as {@code orZero}.
+    //     * 
+    //     * @return.
+    //     */
+    //    public short orElseZero() {
+    //        return isPresent() ? value : 0;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface LongBiFunction<R> extends Try.LongBiFunction<R, RuntimeExceptio
     R apply(long t, long u);
 
     default <V> LongBiFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t, u) -> after.apply(apply(t, u));
     }

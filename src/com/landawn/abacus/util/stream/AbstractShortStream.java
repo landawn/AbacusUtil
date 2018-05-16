@@ -117,7 +117,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream removeIf(final ShortPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new ShortPredicate() {
             @Override
@@ -129,8 +129,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream removeIf(final ShortPredicate predicate, final ShortConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new ShortPredicate() {
             @Override
@@ -147,8 +147,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate, final ShortConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return dropWhile(new ShortPredicate() {
             @Override
@@ -499,7 +499,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortStream> splitBy(final ShortPredicate where) {
-        N.requireNonNull(where);
+        N.checkArgNotNull(where);
 
         return newStream(new ObjIteratorEx<ShortStream>() {
             private ShortStream[] a = null;

@@ -1216,7 +1216,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> void forEach(final Try.ObjLongConsumer<? super T, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue().value());
@@ -1247,7 +1247,7 @@ public final class LongMultiset<T> implements Iterable<T> {
      * @return
      */
     public <E extends Exception> long computeIfAbsent(T e, Try.Function<? super T, Long, E> mappingFunction) throws E {
-        N.requireNonNull(mappingFunction);
+        N.checkArgNotNull(mappingFunction);
 
         final long oldValue = get(e);
 
@@ -1290,7 +1290,7 @@ public final class LongMultiset<T> implements Iterable<T> {
      * @return
      */
     public <E extends Exception> long computeIfPresent(T e, Try.BiFunction<? super T, Long, Long, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         final long oldValue = get(e);
 
@@ -1332,7 +1332,7 @@ public final class LongMultiset<T> implements Iterable<T> {
      * @return
      */
     public <E extends Exception> long compute(T key, Try.BiFunction<? super T, Long, Long, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         final long oldValue = get(key);
         final long newValue = remappingFunction.apply(key, oldValue);
@@ -1372,8 +1372,8 @@ public final class LongMultiset<T> implements Iterable<T> {
      * @return
      */
     public <E extends Exception> long merge(T key, long value, Try.BiFunction<Long, Long, Long, E> remappingFunction) throws E {
-        N.requireNonNull(remappingFunction);
-        N.requireNonNull(value);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(value);
 
         long oldValue = get(key);
         long newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);

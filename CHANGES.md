@@ -1,12 +1,22 @@
 ### 1.2.10
 
-* Add `Optional.orElseNull/OptionalDouble/.../OptionalInt.orElseZero`.
-
 * Add `Functions.pairToList/pairToSet/tripleToList/tripleToSet`.
+
+* Move `Maps.join` to `StringUtil.join`.
+
+* Move `Joiner.concat` to `StringUtil.concat`.
+
+* Move `N.repeatt` to `StringUtil.repeat`.
+
+* Move a lot of String related operations from `N` to `StringUtil`.
+
+* Remove `N.checkNullOrEmpty`, replaced by `N.checkArgNotNullorEmpty`.
+
+* Remove `N.requireNonNull`, replaced by `N.checkArgNotNull`.
 
 * Remove `XXX.forEach(..., accumulator, conditionToBreak...)`.
 
-* Refactoring: change `DataSet.join/leftJoin/RightJoin/fullJoin(Class<? extends Collection> collClass)` to `DataSet.join/leftJoin/RightJoin/fullJoin(IntFunction<? extends Collection> collSupplier)`.
+* Refactoring: change `DataSet.join/leftJoin/RightJoin/fullJoin(...Class<? extends Collection> collClass)` to `DataSet.join/leftJoin/RightJoin/fullJoin(...IntFunction<? extends Collection> collSupplier)`.
 
 * Stop releasing `abacus-util-all` and `abacus-util-all-jdk7`.
 

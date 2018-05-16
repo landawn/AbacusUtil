@@ -16,7 +16,6 @@ package com.landawn.abacus.util.function;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
@@ -35,7 +34,7 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 
     @Override
     default <V> BiFunction<T, U, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
         return (T t, U u) -> after.apply(apply(t, u));
     }
 
@@ -46,13 +45,13 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
      * @return
      */
     public static <T, U, R> BiFunction<T, U, R> of(final BiFunction<T, U, R> func) {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         return func;
     }
 
     public static <T, U> BiFunction<T, U, Void> create(final BiConsumer<T, U> biConsumer) {
-        N.requireNonNull(biConsumer);
+        N.checkArgNotNull(biConsumer);
 
         return new BiFunction<T, U, Void>() {
             @Override

@@ -223,7 +223,7 @@ public final class Splitter {
         String[] strs = null;
 
         if (N.notNullOrEmpty(delimiter)) {
-            strs = N.split(sourceStr, delimiter, max, trim);
+            strs = StringUtil.split(sourceStr, delimiter, max, trim);
         } else {
             strs = sourceStr.split(delimiterRegex, max);
 
@@ -306,7 +306,7 @@ public final class Splitter {
 
             if (N.notNullOrEmpty(keyValueDelimiter)) {
                 for (String str : strs) {
-                    strEntry = N.split(str, keyValueDelimiter, 2, trim);
+                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
                         throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
@@ -352,7 +352,7 @@ public final class Splitter {
 
             if (N.notNullOrEmpty(keyValueDelimiter)) {
                 for (String str : strs) {
-                    strEntry = N.split(str, keyValueDelimiter, 2, trim);
+                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
                         throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
@@ -392,7 +392,7 @@ public final class Splitter {
 
             if (N.notNullOrEmpty(keyValueDelimiter)) {
                 for (String str : strs) {
-                    strEntry = N.split(str, keyValueDelimiter, 2, trim);
+                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
                         throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
@@ -439,7 +439,7 @@ public final class Splitter {
 
             if (N.notNullOrEmpty(keyValueDelimiter)) {
                 for (String str : strs) {
-                    strEntry = N.split(str, keyValueDelimiter, 2, trim);
+                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
                         throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));

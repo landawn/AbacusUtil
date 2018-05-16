@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface LongBiConsumer extends Try.LongBiConsumer<RuntimeException> {
     void accept(long t, long u);
 
     default LongBiConsumer andThen(LongBiConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t, u) -> {
             accept(t, u);

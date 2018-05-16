@@ -193,7 +193,7 @@ abstract class Any<T> {
     public abstract <U, E extends Exception> Any<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
     public <E extends Exception> OptionalBoolean mapToBoolean(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
@@ -203,7 +203,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalChar mapToChar(final Try.ToCharFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalChar.of(mapper.applyAsChar(value));
@@ -213,7 +213,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalByte mapToByte(final Try.ToByteFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalByte.of(mapper.applyAsByte(value));
@@ -223,7 +223,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalShort mapToShort(final Try.ToShortFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalShort.of(mapper.applyAsShort(value));
@@ -233,7 +233,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalInt.of(mapper.applyAsInt(value));
@@ -243,7 +243,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalLong.of(mapper.applyAsLong(value));
@@ -253,7 +253,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalFloat mapToFloat(final Try.ToFloatFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalFloat.of(mapper.applyAsFloat(value));
@@ -263,7 +263,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
@@ -334,7 +334,7 @@ abstract class Any<T> {
     public abstract <U, E extends Exception> Any<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
     public <E extends Exception> OptionalBoolean mapToBooleanIfNotNull(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
@@ -344,7 +344,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalChar mapToCharIfNotNull(final Try.ToCharFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalChar.of(mapper.applyAsChar(value));
@@ -354,7 +354,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalByte mapToByteIfNotNull(final Try.ToByteFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalByte.of(mapper.applyAsByte(value));
@@ -364,7 +364,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalShort mapToShortIfNotNull(final Try.ToShortFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalShort.of(mapper.applyAsShort(value));
@@ -374,7 +374,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalInt mapToIntIfNotNull(final Try.ToIntFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalInt.of(mapper.applyAsInt(value));
@@ -384,7 +384,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalLong mapToLongIfNotNull(final Try.ToLongFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalLong.of(mapper.applyAsLong(value));
@@ -394,7 +394,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalFloat mapToFloatIfNotNull(final Try.ToFloatFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalFloat.of(mapper.applyAsFloat(value));
@@ -404,7 +404,7 @@ abstract class Any<T> {
     }
 
     public <E extends Exception> OptionalDouble mapToDoubleIfNotNull(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
@@ -450,14 +450,14 @@ abstract class Any<T> {
         return isPresent() ? value : null;
     }
 
-    /**
-     * Same as {@code orNull}
-     * 
-     * @return
-     */
-    public T orElseNull() {
-        return isPresent() ? value : null;
-    }
+    //    /**
+    //     * Same as {@code orNull}
+    //     * 
+    //     * @return
+    //     */
+    //    public T orElseNull() {
+    //        return isPresent() ? value : null;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

@@ -117,7 +117,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream removeIf(final BytePredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new BytePredicate() {
             @Override
@@ -129,8 +129,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream removeIf(final BytePredicate predicate, final ByteConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new BytePredicate() {
             @Override
@@ -147,8 +147,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return dropWhile(new BytePredicate() {
             @Override
@@ -499,7 +499,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> splitBy(final BytePredicate where) {
-        N.requireNonNull(where);
+        N.checkArgNotNull(where);
 
         return newStream(new ObjIteratorEx<ByteStream>() {
             private ByteStream[] a = null;

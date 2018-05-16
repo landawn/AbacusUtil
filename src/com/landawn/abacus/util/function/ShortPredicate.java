@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -93,7 +91,7 @@ public interface ShortPredicate extends Try.ShortPredicate<RuntimeException> {
      * @return
      */
     static ShortPredicate of(final ShortPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }
@@ -103,13 +101,13 @@ public interface ShortPredicate extends Try.ShortPredicate<RuntimeException> {
     }
 
     default ShortPredicate and(ShortPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default ShortPredicate or(ShortPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

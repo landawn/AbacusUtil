@@ -155,8 +155,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     public RowDataSet(final List<String> columnNameList, final List<List<Object>> columnList, final Properties<String, Object> properties) {
-        N.requireNonNull(columnNameList);
-        N.requireNonNull(columnList);
+        N.checkArgNotNull(columnNameList);
+        N.checkArgNotNull(columnList);
 
         final int size = columnList.size() == 0 ? 0 : columnList.get(0).size();
 
@@ -3926,7 +3926,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> DataSet groupBy(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final Try.Function<? super Object[], ?, E> keyExtractor) throws E {
-        N.checkNullOrEmpty(columnNames, "columnNames");
+        N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int[] columnIndexes = N.isNullOrEmpty(columnNames) ? N.EMPTY_INT_ARRAY : checkColumnName(columnNames);
@@ -4016,7 +4016,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
             final Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) throws E {
-        N.checkNullOrEmpty(columnNames, "columnNames");
+        N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
 
         if (N.notNullOrEmpty(columnNames) && columnNames.contains(aggregateResultColumnName)) {
@@ -4117,7 +4117,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
             Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) throws E {
-        N.checkNullOrEmpty(columnNames, "columnNames");
+        N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
 
         if (N.notNullOrEmpty(columnNames) && columnNames.contains(aggregateResultColumnName)) {
@@ -6647,7 +6647,7 @@ public class RowDataSet implements DataSet, Cloneable {
             final IntFunction<? extends Collection> collSupplier, final boolean isLeftJoin) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        N.requireNonNull(collSupplier);
+        N.checkArgNotNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();
@@ -7066,7 +7066,7 @@ public class RowDataSet implements DataSet, Cloneable {
             final IntFunction<? extends Collection> collSupplier) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        N.requireNonNull(collSupplier);
+        N.checkArgNotNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();
@@ -7527,7 +7527,7 @@ public class RowDataSet implements DataSet, Cloneable {
             final IntFunction<? extends Collection> collSupplier) {
         checkJoinOnColumnNames(onColumnNames);
         checkNewColumnName(newColumnName);
-        N.requireNonNull(collSupplier);
+        N.checkArgNotNull(collSupplier);
 
         if (onColumnNames.size() == 1) {
             final Map.Entry<String, String> onColumnEntry = onColumnNames.entrySet().iterator().next();

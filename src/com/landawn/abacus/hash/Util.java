@@ -148,7 +148,7 @@ final class Util {
         }
 
         public static long divide(long p, long q, RoundingMode mode) {
-            N.requireNonNull(mode);
+            N.checkArgNotNull(mode);
             long div = p / q; // throws if q == 0
             long rem = p - q * div; // equals p % q
 

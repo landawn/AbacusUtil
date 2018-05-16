@@ -116,7 +116,7 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <E extends Exception> Nullable<T> filter(Try.Predicate<? super T, E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -154,7 +154,7 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <U, E extends Exception> Nullable<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of((U) mapper.apply(value));
@@ -182,10 +182,10 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <U, E extends Exception> Nullable<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            final Any<U> any = N.requireNonNull(mapper.apply(value));
+            final Any<U> any = N.checkArgNotNull(mapper.apply(value));
             return any instanceof Nullable ? (Nullable<U>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<U> empty());
         } else {
             return empty();
@@ -205,7 +205,7 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <E extends Exception> Nullable<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isNotNull() && predicate.test(value)) {
             return this;
@@ -243,7 +243,7 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <U, E extends Exception> Nullable<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
             return Nullable.of((U) mapper.apply(value));
@@ -271,10 +271,10 @@ public final class Nullable<T> extends Any<T> {
      */
     @Override
     public <U, E extends Exception> Nullable<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isNotNull()) {
-            final Any<U> any = N.requireNonNull(mapper.apply(value));
+            final Any<U> any = N.checkArgNotNull(mapper.apply(value));
             return any instanceof Nullable ? (Nullable<U>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<U> empty());
         } else {
             return empty();
@@ -293,7 +293,7 @@ public final class Nullable<T> extends Any<T> {
         if (isPresent()) {
             return this;
         } else {
-            final Any<T> any = N.requireNonNull(supplier.get());
+            final Any<T> any = N.checkArgNotNull(supplier.get());
             return any instanceof Nullable ? (Nullable<T>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<T> empty());
         }
     }

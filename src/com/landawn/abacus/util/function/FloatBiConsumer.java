@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface FloatBiConsumer extends Try.FloatBiConsumer<RuntimeException> {
     void accept(float t, float u);
 
     default FloatBiConsumer andThen(FloatBiConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t, u) -> {
             accept(t, u);

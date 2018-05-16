@@ -15,8 +15,7 @@
  */
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -29,7 +28,7 @@ public interface QuadFunction<A, B, C, D, R> extends Try.QuadFunction<A, B, C, D
     R apply(A a, B b, C c, D d);
 
     default <V> QuadFunction<A, B, C, D, V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c, d) -> after.apply(apply(a, b, c, d));
     }

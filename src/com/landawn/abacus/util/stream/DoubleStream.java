@@ -961,8 +961,8 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream iterate(final BooleanSupplier hasNext, final DoubleSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private boolean hasNextVal = false;
@@ -989,8 +989,8 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream iterate(final double seed, final BooleanSupplier hasNext, final DoubleUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private double t = 0;
@@ -1034,8 +1034,8 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream iterate(final double seed, final DoublePredicate hasNext, final DoubleUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private double t = 0;
@@ -1076,7 +1076,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream iterate(final double seed, final DoubleUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private double t = 0;
@@ -1102,7 +1102,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream generate(final DoubleSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             @Override

@@ -15,13 +15,13 @@ public interface Runnable extends java.lang.Runnable, Try.Runnable<RuntimeExcept
      * @return
      */
     public static Runnable of(final Runnable runnable) {
-        N.requireNonNull(runnable);
+        N.checkArgNotNull(runnable);
 
         return runnable;
     }
 
     public static <R> Runnable create(final Callable<R> callable) {
-        N.requireNonNull(callable);
+        N.checkArgNotNull(callable);
 
         return new Runnable() {
             @Override

@@ -118,7 +118,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream removeIf(final FloatPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new FloatPredicate() {
             @Override
@@ -130,8 +130,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream removeIf(final FloatPredicate predicate, final FloatConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new FloatPredicate() {
             @Override
@@ -148,8 +148,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return dropWhile(new FloatPredicate() {
             @Override
@@ -564,7 +564,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> splitBy(final FloatPredicate where) {
-        N.requireNonNull(where);
+        N.checkArgNotNull(where);
 
         return newStream(new ObjIteratorEx<FloatStream>() {
             private FloatStream[] a = null;

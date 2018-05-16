@@ -340,9 +340,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onClick(final OnClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -388,9 +388,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -437,9 +437,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -486,9 +486,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -535,9 +535,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -583,9 +583,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -632,9 +632,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -681,9 +681,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -736,9 +736,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -791,9 +791,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -854,9 +854,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -906,9 +906,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -964,9 +964,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1019,9 +1019,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1073,9 +1073,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1142,9 +1142,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1205,9 +1205,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable onTextChangged(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1266,9 +1266,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1329,9 +1329,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable beforeTextChangged(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1390,9 +1390,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1451,9 +1451,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable afterTextChangged(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1512,9 +1512,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1601,9 +1601,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1657,9 +1657,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1713,9 +1713,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1785,9 +1785,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1835,9 +1835,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1891,9 +1891,9 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override

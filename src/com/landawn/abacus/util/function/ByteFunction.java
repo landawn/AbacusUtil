@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -36,7 +35,7 @@ public interface ByteFunction<R> extends Try.ByteFunction<R, RuntimeException> {
     R apply(byte value);
 
     default <V> ByteFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return t -> after.apply(apply(t));
     }

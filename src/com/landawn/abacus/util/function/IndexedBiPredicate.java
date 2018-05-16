@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -34,13 +33,13 @@ public interface IndexedBiPredicate<U, T> extends Try.IndexedBiPredicate<U, T, R
     }
 
     default IndexedBiPredicate<U, T> and(IndexedBiPredicate<? super U, ? super T> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (u, idx, e) -> test(u, idx, e) && other.test(u, idx, e);
     }
 
     default IndexedBiPredicate<U, T> or(IndexedBiPredicate<? super U, ? super T> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (u, idx, e) -> test(u, idx, e) || other.test(u, idx, e);
     }

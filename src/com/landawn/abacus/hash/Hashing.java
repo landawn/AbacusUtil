@@ -262,7 +262,7 @@ public final class Hashing {
      * @since 20.0
      */
     public static HashFunction hmacMd5(byte[] key) {
-        return hmacMd5(new SecretKeySpec(N.requireNonNull(key), "HmacMD5"));
+        return hmacMd5(new SecretKeySpec(N.checkArgNotNull(key), "HmacMD5"));
     }
 
     /**
@@ -288,7 +288,7 @@ public final class Hashing {
      * @since 20.0
      */
     public static HashFunction hmacSha1(byte[] key) {
-        return hmacSha1(new SecretKeySpec(N.requireNonNull(key), "HmacSHA1"));
+        return hmacSha1(new SecretKeySpec(N.checkArgNotNull(key), "HmacSHA1"));
     }
 
     /**
@@ -314,7 +314,7 @@ public final class Hashing {
      * @since 20.0
      */
     public static HashFunction hmacSha256(byte[] key) {
-        return hmacSha256(new SecretKeySpec(N.requireNonNull(key), "HmacSHA256"));
+        return hmacSha256(new SecretKeySpec(N.checkArgNotNull(key), "HmacSHA256"));
     }
 
     /**
@@ -340,7 +340,7 @@ public final class Hashing {
      * @since 20.0
      */
     public static HashFunction hmacSha512(byte[] key) {
-        return hmacSha512(new SecretKeySpec(N.requireNonNull(key), "HmacSHA512"));
+        return hmacSha512(new SecretKeySpec(N.checkArgNotNull(key), "HmacSHA512"));
     }
 
     private static String hmacToString(String methodName, Key key) {
@@ -614,7 +614,7 @@ public final class Hashing {
      * @since 19.0
      */
     public static HashFunction concatenating(Iterable<HashFunction> hashFunctions) {
-        N.requireNonNull(hashFunctions);
+        N.checkArgNotNull(hashFunctions);
         // We can't use Iterables.toArray() here because there's no hash->collect dependency
         List<HashFunction> list = new ArrayList<HashFunction>();
         for (HashFunction hashFunction : hashFunctions) {

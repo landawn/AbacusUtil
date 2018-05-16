@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -90,13 +89,13 @@ public interface LongBiPredicate extends Try.LongBiPredicate<RuntimeException> {
     }
 
     default LongBiPredicate and(LongBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default LongBiPredicate or(LongBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

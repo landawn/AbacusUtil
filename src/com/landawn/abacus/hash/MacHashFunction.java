@@ -38,8 +38,8 @@ final class MacHashFunction extends AbstractStreamingHashFunction {
 
     MacHashFunction(String algorithmName, Key key, String toString) {
         this.prototype = getMac(algorithmName, key);
-        this.key = N.requireNonNull(key);
-        this.toString = N.requireNonNull(toString);
+        this.key = N.checkArgNotNull(key);
+        this.toString = N.checkArgNotNull(toString);
         this.bits = prototype.getMacLength() * Byte.SIZE;
         this.supportsClone = supportsClone(prototype);
     }

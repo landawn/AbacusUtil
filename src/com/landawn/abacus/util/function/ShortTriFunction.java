@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface ShortTriFunction<R> extends Try.ShortTriFunction<R, RuntimeExce
     R apply(short a, short b, short c);
 
     default <V> ShortTriFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
     }

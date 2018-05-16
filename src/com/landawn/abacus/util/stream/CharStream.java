@@ -49,6 +49,7 @@ import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -652,7 +653,7 @@ public abstract class CharStream
         }
 
         if (str instanceof String) {
-            return of(N.getCharsForReadOnly((String) str), startIndex, endIndex);
+            return of(StringUtil.getCharsForReadOnly((String) str), startIndex, endIndex);
         }
 
         final CharIteratorEx iter = new CharIteratorEx() {
@@ -1039,8 +1040,8 @@ public abstract class CharStream
     }
 
     public static CharStream iterate(final BooleanSupplier hasNext, final CharSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorCharStream(new CharIteratorEx() {
             private boolean hasNextVal = false;
@@ -1067,8 +1068,8 @@ public abstract class CharStream
     }
 
     public static CharStream iterate(final char seed, final BooleanSupplier hasNext, final CharUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorCharStream(new CharIteratorEx() {
             private char t = 0;
@@ -1112,8 +1113,8 @@ public abstract class CharStream
      * @return
      */
     public static CharStream iterate(final char seed, final CharPredicate hasNext, final CharUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorCharStream(new CharIteratorEx() {
             private char t = 0;
@@ -1154,7 +1155,7 @@ public abstract class CharStream
     }
 
     public static CharStream iterate(final char seed, final CharUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorCharStream(new CharIteratorEx() {
             private char t = 0;
@@ -1180,7 +1181,7 @@ public abstract class CharStream
     }
 
     public static CharStream generate(final CharSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorCharStream(new CharIteratorEx() {
             @Override

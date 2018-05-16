@@ -1117,8 +1117,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream iterate(final BooleanSupplier hasNext, final LongSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorLongStream(new LongIteratorEx() {
             private boolean hasNextVal = false;
@@ -1145,8 +1145,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream iterate(final long seed, final BooleanSupplier hasNext, final LongUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorLongStream(new LongIteratorEx() {
             private long t = 0;
@@ -1190,8 +1190,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream iterate(final long seed, final LongPredicate hasNext, final LongUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorLongStream(new LongIteratorEx() {
             private long t = 0;
@@ -1232,7 +1232,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream iterate(final long seed, final LongUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorLongStream(new LongIteratorEx() {
             private long t = 0;
@@ -1258,7 +1258,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream generate(final LongSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorLongStream(new LongIteratorEx() {
             @Override

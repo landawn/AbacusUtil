@@ -15,10 +15,6 @@
  */
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.util.WD._BACKSLASH;
-import static com.landawn.abacus.util.WD._QUOTATION_D;
-import static com.landawn.abacus.util.WD._QUOTATION_S;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,12 +29,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.sql.SQLException;
-import java.text.Normalizer;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
 import java.util.AbstractSet;
@@ -62,12 +55,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -92,13 +83,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
-import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.annotation.NullSafe;
 import com.landawn.abacus.core.EntityUtil;
 import com.landawn.abacus.core.MapEntity;
@@ -122,7 +110,6 @@ import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
@@ -540,9 +527,6 @@ public final class N {
     private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
-    static final Field strValueField;
-    static volatile boolean isStringCharsGettable = true;
-    static final Constructor<String> sharedStringConstructor;
     static final Field listElementDataField;
     static final Field listSizeField;
     static volatile boolean isListElementDataFieldGettable = true;
@@ -573,23 +557,6 @@ public final class N {
             }
         }
 
-        strValueField = ((tmp != null) && tmp.getName().equals("value") && tmp.getType().equals(char[].class)) ? tmp : null;
-
-        if (strValueField != null) {
-            strValueField.setAccessible(true);
-        }
-
-        Constructor<String> tmpConstructor = null;
-
-        try {
-            tmpConstructor = String.class.getDeclaredConstructor(char[].class, boolean.class);
-            tmpConstructor.setAccessible(true);
-        } catch (Exception e) {
-            // ignore.
-        }
-
-        sharedStringConstructor = tmpConstructor;
-
         tmp = null;
 
         try {
@@ -618,15 +585,6 @@ public final class N {
             listSizeField.setAccessible(true);
         }
     }
-
-    /**
-     * A regex pattern for recognizing blocks of whitespace characters. The
-     * apparent convolutedness of the pattern serves the purpose of ignoring
-     * "blocks" consisting of only a single space: the pattern is used only to
-     * normalize whitespace, condensing "blocks" down to a single space, thus
-     * matching the same would likely cause a great many noop replacements.
-     */
-    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(?: |\\u00A0|\\s|[\\s&&[^ ]])\\s*");
 
     static final String[] charStringCache = new String[128];
     static final int intStringCacheLow = -1001;
@@ -689,7 +647,7 @@ public final class N {
 
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public static <T> List<Type<T>> typeOfAll(final Class<?>... classes) {
+    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
         if (N.isNullOrEmpty(classes)) {
             return new ArrayList<>();
         }
@@ -704,7 +662,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<Type<T>> typeOfAll(final Collection<? extends Class<?>> classes) {
+    public static <T> List<Type<T>> typeOf(final Collection<? extends Class<?>> classes) {
         final List<Type<T>> result = new ArrayList<>(classes.size());
 
         for (Class<?> cls : classes) {
@@ -958,29 +916,6 @@ public final class N {
     }
 
     /**
-     *
-     * @param a
-     *            the specified array should not be modified after it's used to
-     *            create the new String.
-     * @param share
-     *            the same array will be shared with the new created ArrayList
-     *            if it's true.
-     * @return
-     */
-    @Internal
-    static String newString(final char[] a, final boolean share) {
-        if (share && sharedStringConstructor != null) {
-            try {
-                return sharedStringConstructor.newInstance(a, true);
-            } catch (Exception e) {
-                throw new AbacusException(e);
-            }
-        } else {
-            return String.valueOf(a);
-        }
-    }
-
-    /**
      * Returns a set backed by the specified map.
      *
      * @param map the backing map
@@ -1130,7 +1065,7 @@ public final class N {
 
     public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c,
             final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         if (isNullOrEmpty(c)) {
             return new HashMap<>();
@@ -1164,7 +1099,7 @@ public final class N {
 
     public static <K, V, E extends Exception> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c,
             final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         if (isNullOrEmpty(c)) {
             return new LinkedHashMap<>();
@@ -1388,7 +1323,7 @@ public final class N {
     @SuppressWarnings("deprecation")
     public static <T> DataSet newDataSet(Collection<String> columnNames, Collection<T> rowList) {
         if (N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(rowList)) {
-            // throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
+            // throw new IllegalArgumentException("Column name list and row list can not be both null or empty");
 
             return new RowDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
         }
@@ -1462,7 +1397,7 @@ public final class N {
             columnNames = new ArrayList<>(columnNameSet);
 
             if (N.isNullOrEmpty(columnNames)) {
-                throw new IllegalArgumentException("Column name list can't be obtained from row list because it's empty or null");
+                throw new IllegalArgumentException("Column name list can not be obtained from row list because it's empty or null");
             }
         }
 
@@ -2918,443 +2853,6 @@ public final class N {
         return UUID.randomUUID().toString();
     }
 
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>Integer</code>, handling hex
-     * (0xhhhh) and octal (0dddd) notations. N.B. a leading zero means octal;
-     * spaces are not trimmed.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code OptionalInt} if the string is {@code null} or can't be parsed as {@code Integer}.
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static OptionalInt createInteger(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return OptionalInt.empty();
-        }
-
-        try {
-            return OptionalInt.of(Integer.decode(str));
-        } catch (NumberFormatException e) {
-            return OptionalInt.empty();
-        }
-    }
-
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>Long</code>; since 3.1 it
-     * handles hex (0Xhhhh) and octal (0ddd) notations. N.B. a leading zero
-     * means octal; spaces are not trimmed.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code OptionalLong} if the string is {@code null} or can't be parsed as {@code Long}.
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static OptionalLong createLong(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return OptionalLong.empty();
-        }
-
-        try {
-            return OptionalLong.of(Long.decode(str));
-        } catch (NumberFormatException e) {
-            return OptionalLong.empty();
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>Float</code>.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code OptionalFloat} if the string is {@code null} or can't be parsed as {@code Float}.
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static OptionalFloat createFloat(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return OptionalFloat.empty();
-        }
-
-        try {
-            return OptionalFloat.of(Float.parseFloat(str));
-        } catch (NumberFormatException e) {
-            return OptionalFloat.empty();
-        }
-    }
-
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>Double</code>.
-     * </p>
-     *
-     * <p>
-     * <p>
-     * Returns an empty {@code OptionalDouble} if the string is {@code null} or can't be parsed as {@code Double}.
-     * </p>
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static OptionalDouble createDouble(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return OptionalDouble.empty();
-        }
-
-        try {
-            return OptionalDouble.of(Double.parseDouble(str));
-        } catch (NumberFormatException e) {
-            return OptionalDouble.empty();
-        }
-    }
-
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>BigInteger</code>; since 3.2 it
-     * handles hex (0x or #) and octal (0) notations.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code BigInteger}.
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static Optional<BigInteger> createBigInteger(final String str) {
-        if (N.isNullOrEmptyOrBlank(str)) {
-            return Optional.empty();
-        }
-
-        int pos = 0; // offset within string
-        int radix = 10;
-        boolean negate = false; // need to negate later?
-        if (str.startsWith("-")) {
-            negate = true;
-            pos = 1;
-        }
-        if (str.startsWith("0x", pos) || str.startsWith("0X", pos)) { // hex
-            radix = 16;
-            pos += 2;
-        } else if (str.startsWith("#", pos)) { // alternative hex (allowed by Long/Integer)
-            radix = 16;
-            pos++;
-        } else if (str.startsWith("0", pos) && str.length() > pos + 1) { // octal; so long as there are additional digits
-            radix = 8;
-            pos++;
-        } // default is to treat as decimal
-
-        try {
-            final BigInteger value = new BigInteger(str.substring(pos), radix);
-            return Optional.of(negate ? value.negate() : value);
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * <p>
-     * Convert a <code>String</code> to a <code>BigDecimal</code>.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code BigDecimal}.
-     * </p>
-     *
-     * @param str a <code>String</code> to convert, may be null
-     * @return
-     */
-    public static Optional<BigDecimal> createBigDecimal(final String str) {
-        if (N.isNullOrEmptyOrBlank(str) || str.trim().startsWith("--")) {
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(new BigDecimal(str));
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * <p>
-     * Turns a string value into a java.lang.Number.
-     * </p>
-     *
-     * <p>
-     * If the string starts with {@code 0x} or {@code -0x} (lower or upper case)
-     * or {@code #} or {@code -#}, it will be interpreted as a hexadecimal
-     * Integer - or Long, if the number of digits after the prefix is more than
-     * 8 - or BigInteger if there are more than 16 digits.
-     * </p>
-     * <p>
-     * Then, the value is examined for a type qualifier on the end, i.e. one of
-     * <code>'f','F','d','D','l','L'</code>. If it is found, it starts trying to
-     * create successively larger types from the type specified until one is
-     * found that can represent the value.
-     * </p>
-     *
-     * <p>
-     * If a type specifier is not found, it will check for a decimal point and
-     * then try successively larger types from <code>Integer</code> to
-     * <code>BigInteger</code> and from <code>double</code> to
-     * <code>BigDecimal</code>.
-     * </p>
-     *
-     * <p>
-     * Integral values with a leading {@code 0} will be interpreted as octal;
-     * the returned number will be Integer, Long or BigDecimal as appropriate.
-     * </p>
-     *
-     * <p>
-     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code Number}.
-     * </p>
-     *
-     *
-     * @param str a String containing a number, may be null
-     * @return
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static Optional<Number> createNumber(final String str) {
-        if (N.isNullOrEmptyOrBlank(str)) {
-            return Optional.empty();
-        }
-
-        // Need to deal with all possible hex prefixes here
-        final String[] hex_prefixes = { "0x", "0X", "-0x", "-0X", "#", "-#" };
-        int pfxLen = 0;
-        for (final String pfx : hex_prefixes) {
-            if (str.startsWith(pfx)) {
-                pfxLen += pfx.length();
-                break;
-            }
-        }
-        if (pfxLen > 0) { // we have a hex number
-            char firstSigDigit = 0; // strip leading zeroes
-
-            for (int i = pfxLen; i < str.length(); i++) {
-                firstSigDigit = str.charAt(i);
-                if (firstSigDigit == '0') { // count leading zeroes
-                    pfxLen++;
-                } else {
-                    break;
-                }
-            }
-
-            final int hexDigits = str.length() - pfxLen;
-
-            if (hexDigits > 16 || hexDigits == 16 && firstSigDigit > '7') { // too many for Long
-                return (Optional) createBigInteger(str);
-            } else if (hexDigits > 8 || hexDigits == 8 && firstSigDigit > '7') { // too many for an int
-                return (Optional) createLong(str).boxed();
-            } else {
-                return (Optional) createInteger(str).boxed();
-            }
-        }
-
-        final char lastChar = str.charAt(str.length() - 1);
-        String mant;
-        String dec;
-        String exp;
-        final int decPos = str.indexOf('.');
-        final int expPos = str.indexOf('e') + str.indexOf('E') + 1; // assumes both not present
-        // if both e and E are present, this is caught by the checks on expPos (which prevent IOOBE)
-        // and the parsing which will detect if e or E appear in a number due to using the wrong offset
-
-        Optional<? extends Number> op = null;
-
-        if (decPos > -1) { // there is a decimal point
-            if (expPos > -1) { // there is an exponent
-                if (expPos < decPos || expPos > str.length()) { // prevents double exponent causing IOOBE
-                    return Optional.empty();
-                }
-                dec = str.substring(decPos + 1, expPos);
-            } else {
-                dec = str.substring(decPos + 1);
-            }
-
-            mant = getMantissa(str, decPos);
-        } else {
-            if (expPos > -1) {
-                if (expPos > str.length()) { // prevents double exponent causing IOOBE
-                    return Optional.empty();
-                }
-                mant = getMantissa(str, expPos);
-            } else {
-                mant = getMantissa(str);
-            }
-
-            dec = null;
-        }
-
-        if (!Character.isDigit(lastChar) && lastChar != '.') {
-            if (expPos > -1 && expPos < str.length() - 1) {
-                exp = str.substring(expPos + 1, str.length() - 1);
-            } else {
-                exp = null;
-            }
-
-            //Requesting a specific type..
-            final String numeric = str.substring(0, str.length() - 1);
-            final boolean allZeros = isAllZeros(mant) && isAllZeros(exp);
-            switch (lastChar) {
-                case 'l':
-                case 'L':
-                    if (dec == null && exp == null && (numeric.charAt(0) == '-' && N.isNumeric(numeric.substring(1)) || N.isNumeric(numeric))) {
-
-                        op = createLong(numeric).boxed();
-
-                        if (op.isPresent()) {
-                            return (Optional) op;
-                        } else {
-                            return (Optional) createBigInteger(numeric);
-                        }
-                    }
-
-                    return Optional.empty();
-
-                case 'f':
-                case 'F':
-                    try {
-                        final Float f = Float.valueOf(str);
-
-                        if (!(f.isInfinite() || f.floatValue() == 0.0F && !allZeros)) {
-                            //If it's too big for a float or the float value = 0 and the string
-                            //has non-zeros in it, then float does not have the precision we want
-                            return (Optional) Optional.of(f);
-                        }
-
-                    } catch (final NumberFormatException nfe) { // NOPMD
-                        // ignore the bad number
-                    }
-                    //$FALL-THROUGH$
-                case 'd':
-                case 'D':
-                    try {
-                        final Double d = Double.valueOf(str);
-
-                        if (!(d.isInfinite() || d.floatValue() == 0.0D && !allZeros)) {
-                            return (Optional) Optional.of(d);
-                        }
-                    } catch (final NumberFormatException nfe) { // NOPMD
-                        // ignore the bad number
-                    }
-
-                    return (Optional) createBigDecimal(numeric);
-
-                //$FALL-THROUGH$
-                default:
-                    return Optional.empty();
-            }
-        }
-
-        //User doesn't have a preference on the return type, so let's start
-        //small and go from there...
-        if (expPos > -1 && expPos < str.length() - 1) {
-            exp = str.substring(expPos + 1, str.length());
-        } else {
-            exp = null;
-        }
-
-        if (dec == null && exp == null) { // no decimal point and no exponent
-            //Must be an Integer, Long, Biginteger          
-            op = createInteger(str).boxed();
-
-            if (op.isPresent()) {
-                return (Optional) op;
-            } else {
-                op = createLong(str).boxed();
-
-                if (op.isPresent()) {
-                    return (Optional) op;
-                } else {
-                    return (Optional) createBigInteger(str);
-                }
-            }
-        }
-
-        //Must be a Float, Double, BigDecimal
-        final boolean allZeros = isAllZeros(mant) && isAllZeros(exp);
-
-        try {
-            final Float f = Float.valueOf(str);
-            final Double d = Double.valueOf(str);
-
-            if (!f.isInfinite() && !(f.floatValue() == 0.0F && !allZeros) && f.toString().equals(d.toString())) {
-                return (Optional) Optional.of(f);
-            }
-
-            if (!d.isInfinite() && !(d.doubleValue() == 0.0D && !allZeros)) {
-                final Optional<BigDecimal> b = createBigDecimal(str);
-
-                if (b.isPresent() && b.get().compareTo(BigDecimal.valueOf(d.doubleValue())) == 0) {
-                    return (Optional) Optional.of(d);
-                } else {
-                    return (Optional) b;
-                }
-            }
-        } catch (final NumberFormatException nfe) { // NOPMD
-            // ignore the bad number
-        }
-
-        return (Optional) createBigDecimal(str);
-    }
-
-    /**
-     * <p>Utility method for {@link #createNumber(java.lang.String)}.</p>
-     *
-     * <p>Returns mantissa of the given number.</p>
-     *
-     * @param str the string representation of the number
-     * @return mantissa of the given number
-     */
-    private static String getMantissa(final String str) {
-        return getMantissa(str, str.length());
-    }
-
-    /**
-     * <p>Utility method for {@link #createNumber(java.lang.String)}.</p>
-     *
-     * <p>Returns mantissa of the given number.</p>
-     *
-     * @param str the string representation of the number
-     * @param stopPos the position of the exponent or decimal point
-     * @return mantissa of the given number
-     */
-    private static String getMantissa(final String str, final int stopPos) {
-        final char firstChar = str.charAt(0);
-        final boolean hasSign = firstChar == '-' || firstChar == '+';
-
-        return hasSign ? str.substring(1, stopPos) : str.substring(0, stopPos);
-    }
-
-    private static boolean isAllZeros(final String str) {
-        if (str == null) {
-            return true;
-        }
-
-        for (int i = str.length() - 1; i >= 0; i--) {
-            if (str.charAt(i) != '0') {
-                return false;
-            }
-        }
-
-        return str.length() > 0;
-    }
-
     private static final Set<Class<?>> notKryoCompatible = new HashSet<>();
 
     @SuppressWarnings("unchecked")
@@ -4057,3349 +3555,6 @@ public final class N {
         return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareToIgnoreCase(b));
     }
 
-    // Abbreviating
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Abbreviates a String using ellipses. This will turn
-     * "Now is the time for all good men" into "Now is the time for..."
-     * </p>
-     *
-     * <p>
-     * Specifically:
-     * </p>
-     * <ul>
-     * <li>If {@code str} is less than or equals to {@code maxWidth} characters
-     * long, return it.</li>
-     * <li>Else abbreviate it to {@code (substring(str, 0, max-3) + "...")}.</li>
-     * <li>If {@code maxWidth} is less than {@code 4}, throw an
-     * {@code IllegalArgumentException}.</li>
-     * <li>In no case will it return a String of length greater than
-     * {@code maxWidth}.</li>
-     * </ul>
-     *
-     * <pre>
-     * N.abbreviate(null, *)      = null
-     * N.abbreviate("", 4)        = ""
-     * N.abbreviate("abcdefg", 6) = "abc..."
-     * N.abbreviate("abcdefg", 7) = "abcdefg"
-     * N.abbreviate("abcdefg", 8) = "abcdefg"
-     * N.abbreviate("abcdefg", 4) = "a..."
-     * N.abbreviate("abcdefg", 3) = IllegalArgumentException
-     * </pre>
-     *
-     * @param str
-     *            the String to check, may be null
-     * @param maxWidth
-     *            maximum length of result String, must be at least 4
-     * @return abbreviated String, {@code ""} if null or "" String input
-     * @throws IllegalArgumentException
-     *             if the width is too small
-     * @since 2.0
-     */
-    public static String abbreviate(final String str, final int maxWidth) {
-        if (maxWidth < 4) {
-            throw new IllegalArgumentException("Minimum abbreviation width is 4");
-        }
-
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return str.length() <= maxWidth ? str : str.substring(0, maxWidth - 3) + "...";
-    }
-
-    public static String reverse(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            sb.append(str);
-
-            return sb.reverse().toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    /**
-     * <p>
-     * Reverses a String that is delimited by a specific character.
-     * </p>
-     *
-     * <p>
-     * The Strings between the delimiters are not reversed. Thus
-     * java.lang.String becomes String.lang.java (if the delimiter is
-     * {@code '.'}).
-     * </p>
-     *
-     * <pre>
-     * N.reverseDelimited(null, *)      = null
-     * N.reverseDelimited("", *)        = ""
-     * N.reverseDelimited("a.b.c", 'x') = "a.b.c"
-     * N.reverseDelimited("a.b.c", ".") = "c.b.a"
-     * </pre>
-     *
-     * @param str
-     *            the String to reverse, may be null
-     * @param delimiter
-     *            the delimiter character to use
-     * @return the reversed String, {@code null} if null String input
-     * @since 2.0
-     */
-    public static String reverseDelimited(final String str, final char delimiter) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        // could implement manually, but simple way is to reuse other,
-        // probably slower, methods.
-        final String[] strs = N.split(str, delimiter);
-
-        N.reverse(strs);
-
-        return N.join(strs, delimiter);
-    }
-
-    public static String reverseDelimited(final String str, final String delimiter) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        // could implement manually, but simple way is to reuse other,
-        // probably slower, methods.
-        final String[] strs = N.split(str, delimiter);
-
-        N.reverse(strs);
-
-        return Joiner.with(delimiter).reuseStringBuilder(true).appendAll(strs).toString();
-    }
-
-    public static String padStart(final String str, final int minLength) {
-        return padStart(str, minLength, WD._SPACE);
-    }
-
-    /**
-     *
-     * @param str
-     * @param minLength
-     * @param padChar
-     * @return
-     */
-    public static String padStart(String str, final int minLength, final char padChar) {
-        if (str == null) {
-            str = N.EMPTY_STRING;
-        } else if (str.length() >= minLength) {
-            return str;
-        }
-
-        int delta = minLength - str.length();
-        final char[] chars = new char[minLength];
-
-        N.fill(chars, 0, delta, padChar);
-
-        str.getChars(0, str.length(), chars, delta);
-
-        return N.newString(chars, true);
-    }
-
-    public static String padStart(String str, final int minLength, final String padStr) {
-        if (str == null) {
-            str = N.EMPTY_STRING;
-        } else if (str.length() >= minLength) {
-            return str;
-        }
-
-        int delta = ((minLength - str.length()) % padStr.length() == 0) ? ((minLength - str.length()) / padStr.length())
-                : ((minLength - str.length()) % padStr.length() + 1);
-        switch (delta) {
-            case 1:
-                return padStr + str;
-
-            case 2:
-                return padStr + padStr + str;
-
-            case 3:
-                return padStr + padStr + padStr + str;
-
-            default: {
-                final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-                try {
-                    for (int i = 0; i < delta; i++) {
-                        sb.append(padStr);
-                    }
-
-                    sb.append(str);
-
-                    return sb.toString();
-                } finally {
-                    ObjectFactory.recycle(sb);
-                }
-            }
-        }
-    }
-
-    public static String padEnd(final String str, final int minLength) {
-        return padEnd(str, minLength, WD._SPACE);
-    }
-
-    /**
-     *
-     * @param str
-     * @param minLength
-     * @param padChar
-     * @return
-     */
-    public static String padEnd(String str, final int minLength, final char padChar) {
-        if (str == null) {
-            str = N.EMPTY_STRING;
-        } else if (str.length() >= minLength) {
-            return str;
-        }
-
-        final char[] chars = new char[minLength];
-        str.getChars(0, str.length(), chars, 0);
-
-        N.fill(chars, str.length(), minLength, padChar);
-
-        return N.newString(chars, true);
-    }
-
-    public static String padEnd(String str, final int minLength, final String padStr) {
-        if (str == null) {
-            str = N.EMPTY_STRING;
-        } else if (str.length() >= minLength) {
-            return str;
-        }
-
-        int delta = ((minLength - str.length()) % padStr.length() == 0) ? ((minLength - str.length()) / padStr.length())
-                : ((minLength - str.length()) % padStr.length() + 1);
-
-        switch (delta) {
-            case 1:
-                return str + padStr;
-
-            case 2:
-                return str + padStr + padStr;
-
-            case 3:
-                return str + padStr + padStr + padStr;
-
-            default: {
-                StringBuilder sb = ObjectFactory.createStringBuilder();
-
-                try {
-                    sb.append(str);
-
-                    for (int i = 0; i < delta; i++) {
-                        sb.append(padStr);
-                    }
-
-                    return sb.toString();
-                } finally {
-                    ObjectFactory.recycle(sb);
-                }
-            }
-        }
-    }
-
-    public static String repeatt(final char ch, final int n) {
-        checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        if (n == 0) {
-            return EMPTY_STRING;
-        } else if (n == 1) {
-            return String.valueOf(ch);
-        }
-
-        if (n < 16) {
-            final char[] array = new char[n];
-            Arrays.fill(array, ch);
-
-            return newString(array, true);
-        } else {
-            final char[] array = new char[n];
-            array[0] = ch;
-
-            int cnt = 1;
-
-            for (; cnt < n - cnt; cnt <<= 1) {
-                copy(array, 0, array, cnt, cnt);
-            }
-
-            if (cnt < n) {
-                copy(array, 0, array, cnt, n - cnt);
-            }
-
-            return newString(array, true);
-        }
-    }
-
-    public static String repeatt(final char ch, final int n, final char delimiter) {
-        return repeatt(String.valueOf(ch), n, String.valueOf(delimiter));
-    }
-
-    /**
-     *
-     * @param str
-     * @param repeat
-     * @return
-     */
-    public static String repeatt(final String str, final int repeat) {
-        return repeatt(str, repeat, EMPTY_STRING);
-    }
-
-    public static String repeatt(String str, final int n, String delimiter) {
-        checkArgument(n >= 0, "'n' can't be negative: %s", n);
-
-        str = str == null ? EMPTY_STRING : str;
-        delimiter = delimiter == null ? EMPTY_STRING : delimiter;
-
-        if (n == 0 || (isNullOrEmpty(str) && isNullOrEmpty(delimiter))) {
-            return EMPTY_STRING;
-        } else if (n == 1) {
-            return str;
-        }
-
-        final int strLen = str.length();
-        final int delimiterLen = delimiter.length();
-        final int len = strLen + delimiterLen;
-        if (Integer.MAX_VALUE / len < n) {
-            throw new ArrayIndexOutOfBoundsException("Required array size too large: " + 1L * len * n);
-        }
-
-        final int size = len * n - delimiterLen;
-        final char[] cbuf = new char[size];
-
-        str.getChars(0, strLen, cbuf, 0);
-        delimiter.getChars(0, delimiterLen, cbuf, strLen);
-
-        int cnt = 0;
-
-        for (cnt = len; cnt < size - cnt; cnt <<= 1) {
-            copy(cbuf, 0, cbuf, cnt, cnt);
-        }
-
-        if (cnt < size) {
-            copy(cbuf, 0, cbuf, cnt, size - cnt);
-        }
-
-        return newString(cbuf, true);
-    }
-
-    public static char toLowerCase(final char ch) {
-        return Character.toLowerCase(ch);
-    }
-
-    /**
-     * <p>
-     * Converts a String to lower case as per {@link String#toLowerCase()}.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.toLowerCase(null)  = null
-     * N.toLowerCase("")    = ""
-     * N.toLowerCase("aBc") = "abc"
-     * </pre>
-     *
-     * <p>
-     * <strong>Note:</strong> As described in the documentation for
-     * {@link String#toLowerCase()}, the result of this method is affected by
-     * the current locale. For platform-independent case transformations, the
-     * method {@link #toLowerCase(String, Locale)} should be used with a specific
-     * locale (e.g. {@link Locale#ENGLISH}).
-     * </p>
-     *
-     * @param str
-     *            the String to lower case, may be null
-     * @return the lower cased String, {@code null} if null String input
-     */
-    public static String toLowerCase(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return str.toLowerCase();
-    }
-
-    /**
-     * <p>
-     * Converts a String to lower case as per {@link String#toLowerCase(Locale)}
-     * .
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.toLowerCase(null, Locale.ENGLISH)  = null
-     * N.toLowerCase("", Locale.ENGLISH)    = ""
-     * N.toLowerCase("aBc", Locale.ENGLISH) = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to lower case, may be null
-     * @param locale
-     *            the locale that defines the case transformation rules, must
-     *            not be null
-     * @return the lower cased String, {@code null} if null String input
-     * @since 2.5
-     */
-    public static String toLowerCase(final String str, final Locale locale) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return str.toLowerCase(locale);
-    }
-
-    public static String toLowerCaseWithUnderscore(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = 0, len = str.length(); i < len; i++) {
-                char ch = str.charAt(i);
-
-                if (Character.isUpperCase(ch)) {
-                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
-                            sb.append(WD._UNDERSCORE);
-                        }
-                    }
-
-                    sb.append(Character.toLowerCase(ch));
-                } else {
-                    if (i > 0 && ((N.isAsciiNumeric(ch) && !N.isAsciiNumeric(str.charAt(i - 1)))
-                            || (N.isAsciiNumeric(str.charAt(i - 1)) && !N.isAsciiNumeric(ch)))) {
-                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
-                            sb.append(WD._UNDERSCORE);
-                        }
-                    }
-
-                    sb.append(ch);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static char toUpperCase(final char ch) {
-        return Character.toUpperCase(ch);
-    }
-
-    // Case conversion
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts a String to upper case as per {@link String#toUpperCase()}.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.toUpperCase(null)  = null
-     * N.toUpperCase("")    = ""
-     * N.toUpperCase("aBc") = "ABC"
-     * </pre>
-     *
-     * <p>
-     * <strong>Note:</strong> As described in the documentation for
-     * {@link String#toUpperCase()}, the result of this method is affected by
-     * the current locale. For platform-independent case transformations, the
-     * method {@link #toLowerCase(String, Locale)} should be used with a specific
-     * locale (e.g. {@link Locale#ENGLISH}).
-     * </p>
-     *
-     * @param str
-     *            the String to upper case, may be null
-     * @return the upper cased String, {@code null} if null String input
-     */
-    public static String toUpperCase(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return str.toUpperCase();
-    }
-
-    /**
-     * <p>
-     * Converts a String to upper case as per {@link String#toUpperCase(Locale)}
-     * .
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.toUpperCase(null, Locale.ENGLISH)  = null
-     * N.toUpperCase("", Locale.ENGLISH)    = ""
-     * N.toUpperCase("aBc", Locale.ENGLISH) = "ABC"
-     * </pre>
-     *
-     * @param str
-     *            the String to upper case, may be null
-     * @param locale
-     *            the locale that defines the case transformation rules, must
-     *            not be null
-     * @return the upper cased String, {@code null} if null String input
-     * @since 2.5
-     */
-    public static String toUpperCase(final String str, final Locale locale) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return str.toUpperCase(locale);
-    }
-
-    public static String toUpperCaseWithUnderscore(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = 0, len = str.length(); i < len; i++) {
-                char ch = str.charAt(i);
-
-                if (Character.isUpperCase(ch)) {
-                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
-                            sb.append(WD._UNDERSCORE);
-                        }
-                    }
-
-                    sb.append(ch);
-                } else {
-                    if (i > 0 && ((N.isAsciiNumeric(ch) && !N.isAsciiNumeric(str.charAt(i - 1)))
-                            || (N.isAsciiNumeric(str.charAt(i - 1)) && !N.isAsciiNumeric(ch)))) {
-                        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != WD._UNDERSCORE) {
-                            sb.append(WD._UNDERSCORE);
-                        }
-                    }
-
-                    sb.append(Character.toUpperCase(ch));
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static char swapCase(final char ch) {
-        return Character.isLowerCase(ch) ? Character.toUpperCase(ch) : Character.toLowerCase(ch);
-    }
-
-    /**
-     * <p>
-     * Swaps the case of a String changing upper and title case to lower case,
-     * and lower case to upper case.
-     * </p>
-     *
-     * <ul>
-     * <li>Upper case character converts to Lower case</li>
-     * <li>Title case character converts to Lower case</li>
-     * <li>Lower case character converts to Upper case</li>
-     * </ul>
-     *
-     * <p>
-     * For a word based algorithm, see
-     * {@link org.apache.commons.lang3.text.WordUtils#swapCase(String)}. A
-     * {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.swapCase(null)                 = null
-     * N.swapCase("")                   = ""
-     * N.swapCase("The dog has a BONE") = "tHE DOG HAS A bone"
-     * </pre>
-     *
-     * <p>
-     * NOTE: This method changed in Lang version 2.0. It no longer performs a
-     * word based algorithm. If you only use ASCII, you will notice no change.
-     * That functionality is available in
-     * org.apache.commons.lang3.text.WordUtils.
-     * </p>
-     *
-     * @param str
-     *            the String to swap case, may be null
-     * @return the changed String, {@code null} if null String input
-     */
-    public static String swapCase(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final char[] cbuf = str.toCharArray();
-        char ch = 0;
-        for (int i = 0, len = cbuf.length; i < len; i++) {
-            ch = cbuf[i];
-
-            if (Character.isUpperCase(ch) || Character.isTitleCase(ch)) {
-                cbuf[i] = Character.toLowerCase(ch);
-            } else if (Character.isLowerCase(ch)) {
-                cbuf[i] = Character.toUpperCase(ch);
-            }
-        }
-
-        return newString(cbuf, true);
-    }
-
-    /**
-     *
-     * @param str
-     * @return
-     */
-    public static String capitalize(final String str) {
-        if (isNullOrEmpty(str)) {
-            return str;
-        }
-
-        char ch = str.charAt(0);
-
-        if (Character.isTitleCase(ch)) {
-            return str;
-        }
-
-        if (str.length() == 1) {
-            return String.valueOf(Character.toTitleCase(ch));
-        } else {
-            return Character.toTitleCase(ch) + str.substring(1);
-        }
-    }
-
-    /**
-     *
-     * @param str
-     * @return
-     */
-    public static String uncapitalize(final String str) {
-        if (isNullOrEmpty(str)) {
-            return str;
-        }
-
-        char ch = str.charAt(0);
-
-        if (Character.isLowerCase(ch)) {
-            return str;
-        }
-
-        if (str.length() == 1) {
-            return String.valueOf(Character.toLowerCase(ch));
-        } else {
-            return Character.toLowerCase(ch) + str.substring(1);
-        }
-    }
-
-    /**
-     * Replace ''' or '"' with '\'' or '\"' if the previous char of the
-     * quotation is not '\'. original String is returned if the specified String
-     * is {@code null} or empty.
-     *
-     * @param str
-     * @return
-     */
-    public static String quoteEscaped(final String str) {
-        if (isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-        final char[] chars = N.getCharsForReadOnly(str);
-
-        try {
-            char ch = 0;
-            for (int i = 0, len = str.length(); i < len; i++) {
-                ch = chars[i];
-
-                if ((ch == _BACKSLASH) && (i < (len - 1))) {
-                    sb.append(ch);
-                    sb.append(str.charAt(++i));
-                } else if ((ch == _QUOTATION_S) || (ch == _QUOTATION_D)) {
-                    sb.append(_BACKSLASH);
-                    sb.append(ch);
-                } else {
-                    sb.append(ch);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    // --------------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts the char to the unicode format '\u0020'.
-     * </p>
-     *
-     * <p>
-     * This format is the Java source code format.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.unicodeEscaped(' ') = "\u0020"
-     *   CharUtils.unicodeEscaped('A') = "\u0041"
-     * </pre>
-     *
-     * @param ch
-     *            the character to convert
-     * @return the escaped Unicode string
-     */
-    public static String unicodeEscaped(final char ch) {
-        if (ch < 0x10) {
-            return "\\u000" + Integer.toHexString(ch);
-        } else if (ch < 0x100) {
-            return "\\u00" + Integer.toHexString(ch);
-        } else if (ch < 0x1000) {
-            return "\\u0" + Integer.toHexString(ch);
-        }
-
-        return "\\u" + Integer.toHexString(ch);
-    }
-
-    /**
-     * <p>
-     * Similar to <a
-     * href="http://www.w3.org/TR/xpath/#function-normalize-space">
-     * http://www.w3.org/TR/xpath/#function-normalize -space</a>
-     * </p>
-     * <p>
-     * The function returns the argument string with whitespace normalized by
-     * using <code>{@link #trim(String)}</code> to remove leading and trailing
-     * whitespace and then replacing sequences of whitespace characters by a
-     * single space.
-     * </p>
-     * In XML Whitespace characters are the same as those allowed by the <a
-     * href="http://www.w3.org/TR/REC-xml/#NT-S">S</a> production, which is S
-     * ::= (#x20 | #x9 | #xD | #xA)+
-     * <p>
-     * Java's regexp pattern \s defines whitespace as [ \t\n\x0B\f\r]
-     *
-     * <p>
-     * For reference:
-     * </p>
-     * <ul>
-     * <li>\x0B = vertical tab</li>
-     * <li>\f = #xC = form feed</li>
-     * <li>#x20 = space</li>
-     * <li>#x9 = \t</li>
-     * <li>#xA = \n</li>
-     * <li>#xD = \r</li>
-     * </ul>
-     *
-     * <p>
-     * The difference is that Java's whitespace includes vertical tab and form
-     * feed, which this functional will also normalize. Additionally
-     * <code>{@link #trim(String)}</code> removes control characters (char &lt;=
-     * 32) from both ends of this String.
-     * </p>
-     *
-     * @see Pattern
-     * @see #trim(String)
-     * @see <a
-     *      href="http://www.w3.org/TR/xpath/#function-normalize-space">http://www.w3.org/TR/xpath/#function-normalize-space</a>
-     * @param str
-     *            the source String to normalize whitespaces from, may be null
-     * @return the modified string with whitespace normalized, {@code null} if
-     *         null String input
-     *
-     * @since 3.0
-     */
-    public static String normalizeSpace(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return WHITESPACE_PATTERN.matcher(str.trim()).replaceAll(WD.SPACE);
-    }
-
-    /**
-     * <p>
-     * Replaces all occurrences of a String within another String.
-     * </p>
-     *
-     * <p>
-     * A {@code null} reference passed to this method is a no-op.
-     * </p>
-     *
-     * <pre>
-     * N.replaceAll(null, *, *)        = null
-     * N.replaceAll("", *, *)          = ""
-     * N.replaceAll("any", null, *)    = "any"
-     * N.replaceAll("any", *, null)    = "any"
-     * N.replaceAll("any", "", *)      = "any"
-     * N.replaceAll("aba", "a", null)  = "aba"
-     * N.replaceAll("aba", "a", "")    = "b"
-     * N.replaceAll("aba", "a", "z")   = "zbz"
-     * </pre>
-     *
-     * @see #replaceAll(String text, String searchString, String replacement,
-     *      int max)
-     * @param str
-     *            text to search and replace in, may be null
-     * @param target
-     *            the String to search for, may be null
-     * @param replacement
-     *            the String to replace it with, may be null
-     * @return the text with any replacements processed, {@code null} if null
-     *         String input
-     */
-    public static String replaceAll(final String str, final String target, final String replacement) {
-        return replaceAll(str, 0, target, replacement);
-    }
-
-    public static String replaceAll(final String str, final int fromIndex, final String target, final String replacement) {
-        return replace(str, fromIndex, target, replacement, -1);
-    }
-
-    /**
-     * <p>
-     * Replaces a String with another String inside a larger String, for the
-     * first {@code max} values of the search String.
-     * </p>
-     *
-     * <p>
-     * A {@code null} reference passed to this method is a no-op.
-     * </p>
-     *
-     * <pre>
-     * N.replace(null, *, *, *)         = null
-     * N.replace("", *, *, *)           = ""
-     * N.replace("any", null, *, *)     = "any"
-     * N.replace("any", "", *, *)       = "any"
-     * N.replace("any", *, *, 0)        = "any"
-     * N.replace("abaa", 0, "a", null, -1) = "abaa"
-     * N.replace("abaa", 0, "a", "", -1)   = "b"
-     * N.replace("abaa", 0, "a", "z", 0)   = "abaa"
-     * N.replace("abaa", 0, "a", "z", 1)   = "zbaa"
-     * N.replace("abaa", 0, "a", "z", 2)   = "zbza"
-     * N.replace("abaa", 0, "a", "z", -1)  = "zbzz"
-     * </pre>
-     *
-     * @param str
-     *            text to search and replace in, may be null
-     * @param fromIndex
-     * @param target
-     *            the String to search for, may be null
-     * @param replacement
-     *            the String to replace it with, can't be null
-     * @param max
-     *            maximum number of values to replace, or {@code -1} if no
-     *            maximum
-     * @return the text with any replacements processed, {@code null} if null
-     *         String input
-     */
-    public static String replace(final String str, final int fromIndex, final String target, final String replacement, int max) {
-        return N.replace(str, fromIndex, target, replacement, max, false);
-    }
-
-    public static String replaceAllIgnoreCase(final String str, final String target, final String replacement) {
-        return replaceAllIgnoreCase(str, 0, target, replacement);
-    }
-
-    public static String replaceAllIgnoreCase(final String str, final int fromIndex, final String target, final String replacement) {
-        return replaceIgnoreCase(str, fromIndex, target, replacement, -1);
-    }
-
-    public static String replaceIgnoreCase(final String str, final int fromIndex, final String target, final String replacement, int max) {
-        return N.replace(str, fromIndex, target, replacement, max, true);
-    }
-
-    private static String replace(final String str, final int fromIndex, final String target, final String replacement, int max, boolean ignoreCase) {
-        if (replacement == null) {
-            throw new IllegalArgumentException("Replacement can't be null");
-        }
-
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(target) || max == 0) {
-            return str;
-        }
-
-        final String searchText = ignoreCase ? str.toLowerCase() : str;
-        final String searchTarget = ignoreCase ? target.toLowerCase() : target;
-
-        int start = fromIndex;
-        int end = searchText.indexOf(searchTarget, start);
-
-        if (end == N.INDEX_NOT_FOUND) {
-            return str;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-        final int substrLength = target.length();
-
-        try {
-            while (end != N.INDEX_NOT_FOUND) {
-                sb.append(str, start, end).append(replacement);
-                start = end + substrLength;
-
-                if (--max == 0) {
-                    break;
-                }
-
-                end = searchText.indexOf(searchTarget, start);
-            }
-
-            sb.append(str, start, str.length());
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    /**
-     * Replaces each substring of the source String that matches the given
-     * regular expression with the given replacement using the
-     * {@link Pattern#DOTALL} option. DOTALL is also know as single-line mode in
-     * Perl. This call is also equivalent to:
-     * <ul>
-     * <li>{@code source.replaceAll(&quot;(?s)&quot; + regex, replacement)}</li>
-     * <li>
-     * {@code Pattern.compile(regex, Pattern.DOTALL).filter(source).replaceAll(replacement)}
-     * </li>
-     * </ul>
-     *
-     * @param source
-     *            the source string
-     * @param regex
-     *            the regular expression to which this string is to be matched
-     * @param replacement
-     *            the string to be substituted for each match
-     * @return The resulting {@code String}
-     * @see String#replaceAll(String, String)
-     * @see Pattern#DOTALL
-     * @since 3.2
-     */
-    public static String replacePattern(final String source, final String regex, final String replacement) {
-        return Pattern.compile(regex, Pattern.DOTALL).matcher(source).replaceAll(replacement);
-    }
-
-    // Remove
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Removes a substring only if it is at the beginning of a source string,
-     * otherwise returns the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string. A {@code null} search string
-     * will return the source string.
-     * </p>
-     *
-     * <pre>
-     * N.removeStart(null, *)      = null
-     * N.removeStart("", *)        = ""
-     * N.removeStart(*, null)      = *
-     * N.removeStart("www.domain.com", "www.")   = "domain.com"
-     * N.removeStart("domain.com", "www.")       = "domain.com"
-     * N.removeStart("www.domain.com", "domain") = "www.domain.com"
-     * N.removeStart("abc", "")    = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeStr
-     *            the String to search for and remove, may be null
-     * @return the substring with the string removed if found, {@code null} if
-     *         null String input
-     * @since 2.1
-     */
-    public static String removeStart(final String str, final String removeStr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(removeStr)) {
-            return str;
-        }
-
-        if (str.startsWith(removeStr)) {
-            return str.substring(removeStr.length());
-        }
-
-        return str;
-    }
-
-    /**
-     * <p>
-     * Case insensitive removal of a substring if it is at the beginning of a
-     * source string, otherwise returns the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string. A {@code null} search string
-     * will return the source string.
-     * </p>
-     *
-     * <pre>
-     * N.removeStartIgnoreCase(null, *)      = null
-     * N.removeStartIgnoreCase("", *)        = ""
-     * N.removeStartIgnoreCase(*, null)      = *
-     * N.removeStartIgnoreCase("www.domain.com", "www.")   = "domain.com"
-     * N.removeStartIgnoreCase("www.domain.com", "WWW.")   = "domain.com"
-     * N.removeStartIgnoreCase("domain.com", "www.")       = "domain.com"
-     * N.removeStartIgnoreCase("www.domain.com", "domain") = "www.domain.com"
-     * N.removeStartIgnoreCase("abc", "")    = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeStr
-     *            the String to search for (case insensitive) and remove, may be
-     *            null
-     * @return the substring with the string removed if found, {@code null} if
-     *         null String input
-     * @since 2.4
-     */
-    public static String removeStartIgnoreCase(final String str, final String removeStr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(removeStr)) {
-            return str;
-        }
-
-        if (startsWithIgnoreCase(str, removeStr)) {
-            return str.substring(removeStr.length());
-        }
-
-        return str;
-    }
-
-    /**
-     * <p>
-     * Removes a substring only if it is at the end of a source string,
-     * otherwise returns the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string. A {@code null} search string
-     * will return the source string.
-     * </p>
-     *
-     * <pre>
-     * N.removeEnd(null, *)      = null
-     * N.removeEnd("", *)        = ""
-     * N.removeEnd(*, null)      = *
-     * N.removeEnd("www.domain.com", ".com.")  = "www.domain.com"
-     * N.removeEnd("www.domain.com", ".com")   = "www.domain"
-     * N.removeEnd("www.domain.com", "domain") = "www.domain.com"
-     * N.removeEnd("abc", "")    = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeStr
-     *            the String to search for and remove, may be null
-     * @return the substring with the string removed if found, {@code null} if
-     *         null String input
-     * @since 2.1
-     */
-    public static String removeEnd(final String str, final String removeStr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(removeStr)) {
-            return str;
-        }
-
-        if (str.endsWith(removeStr)) {
-            return str.substring(0, str.length() - removeStr.length());
-        }
-
-        return str;
-    }
-
-    /**
-     * <p>
-     * Case insensitive removal of a substring if it is at the end of a source
-     * string, otherwise returns the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string. A {@code null} search string
-     * will return the source string.
-     * </p>
-     *
-     * <pre>
-     * N.removeEndIgnoreCase(null, *)      = null
-     * N.removeEndIgnoreCase("", *)        = ""
-     * N.removeEndIgnoreCase(*, null)      = *
-     * N.removeEndIgnoreCase("www.domain.com", ".com.")  = "www.domain.com"
-     * N.removeEndIgnoreCase("www.domain.com", ".com")   = "www.domain"
-     * N.removeEndIgnoreCase("www.domain.com", "domain") = "www.domain.com"
-     * N.removeEndIgnoreCase("abc", "")    = "abc"
-     * N.removeEndIgnoreCase("www.domain.com", ".COM") = "www.domain")
-     * N.removeEndIgnoreCase("www.domain.COM", ".com") = "www.domain")
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeStr
-     *            the String to search for (case insensitive) and remove, may be
-     *            null
-     * @return the substring with the string removed if found, {@code null} if
-     *         null String input
-     * @since 2.4
-     */
-    public static String removeEndIgnoreCase(final String str, final String removeStr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(removeStr)) {
-            return str;
-        }
-
-        if (endsWithIgnoreCase(str, removeStr)) {
-            return str.substring(0, str.length() - removeStr.length());
-        }
-
-        return str;
-    }
-
-    /**
-     * <p>
-     * Removes all occurrences of a character from within the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string.
-     * </p>
-     *
-     * <pre>
-     * N.remove(null, *)       = null
-     * N.remove("", *)         = ""
-     * N.remove("queued", 'u') = "qeed"
-     * N.remove("queued", 'z') = "queued"
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeChar
-     *            the char to search for and remove, may be null
-     * @return the substring with the char removed if found, {@code null} if
-     *         null String input
-     * @since 2.1
-     */
-    public static String removeAll(final String str, final char removeChar) {
-        return removeAll(str, 0, removeChar);
-    }
-
-    public static String removeAll(final String str, final int fromIndex, final char removeChar) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        int index = str.indexOf(removeChar, fromIndex);
-        if (index == N.INDEX_NOT_FOUND) {
-            return str;
-        } else {
-            final char[] chars = N.getCharsForReadOnly(str);
-            final char[] cbuf = new char[str.length()];
-
-            if (index > 0) {
-                str.getChars(0, index, cbuf, 0);
-            }
-
-            int count = index;
-            for (int i = index + 1, len = chars.length; i < len; i++) {
-                if (chars[i] != removeChar) {
-                    cbuf[count++] = chars[i];
-                }
-            }
-
-            return count == chars.length ? str : new String(cbuf, 0, count);
-        }
-    }
-
-    /**
-     * <p>
-     * Removes all occurrences of a substring from within the source string.
-     * </p>
-     *
-     * <p>
-     * A {@code null} source string will return {@code null}. An empty ("")
-     * source string will return the empty string. A {@code null} remove string
-     * will return the source string. An empty ("") remove string will return
-     * the source string.
-     * </p>
-     *
-     * <pre>
-     * N.remove(null, *)        = null
-     * N.remove("", *)          = ""
-     * N.remove(*, null)        = *
-     * N.remove(*, "")          = *
-     * N.remove("queued", "ue") = "qd"
-     * N.remove("queued", "zz") = "queued"
-     * </pre>
-     *
-     * @param str
-     *            the source String to search, may be null
-     * @param removeStr
-     *            the String to search for and remove, may be null
-     * @return the substring with the string removed if found, {@code null} if
-     *         null String input
-     * @since 2.1
-     */
-    public static String removeAll(final String str, final String removeStr) {
-        return removeAll(str, 0, removeStr);
-    }
-
-    public static String removeAll(final String str, final int fromIndex, final String removeStr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(removeStr)) {
-            return str;
-        }
-
-        return replace(str, fromIndex, removeStr, N.EMPTY_STRING, -1);
-    }
-
-    /**
-     * Removes each substring of the source String that matches the given
-     * regular expression using the DOTALL option.
-     *
-     * @param source
-     *            the source string
-     * @param regex
-     *            the regular expression to which this string is to be matched
-     * @return The resulting {@code String}
-     * @see String#replaceAll(String, String)
-     * @see Pattern#DOTALL
-     * @since 3.2
-     */
-    public static String removePattern(final String source, final String regex) {
-        return replacePattern(source, regex, N.EMPTY_STRING);
-    }
-
-    public static String[] split(final String str, final char delimiter) {
-        return splitWorker(str, delimiter, false);
-    }
-
-    public static String[] split(final String str, final char delimiter, final boolean trim) {
-        final String[] strs = split(str, delimiter);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
-    }
-
-    public static String[] split(final String str, final String delimiter) {
-        return split(str, delimiter, false);
-    }
-
-    public static String[] split(final String str, final String delimiter, final boolean trim) {
-        return split(str, delimiter, Integer.MAX_VALUE, trim);
-    }
-
-    public static String[] split(final String str, final String delimiter, final int max) {
-        return splitWorker(str, delimiter, max, false);
-    }
-
-    public static String[] split(final String str, final String delimiter, final int max, final boolean trim) {
-        final String[] strs = split(str, delimiter, max);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final char delimiter) {
-        return splitPreserveAllTokens(str, delimiter, false);
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final char delimiter, boolean trim) {
-        final String[] strs = splitWorker(str, delimiter, true);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final String delimiter) {
-        return splitPreserveAllTokens(str, delimiter, false);
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final String delimiter, boolean trim) {
-        return splitPreserveAllTokens(str, delimiter, Integer.MAX_VALUE, trim);
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max) {
-        return splitPreserveAllTokens(str, delimiter, max, false);
-    }
-
-    public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max, boolean trim) {
-        final String[] strs = splitWorker(str, delimiter, max, true);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
-    }
-
-    private static String[] splitWorker(final String str, final char delimiter, final boolean preserveAllTokens) {
-        // Performance tuned for 2.0 (JDK1.4)
-
-        //    if (str == null) {
-        //        return null;
-        //    }
-        //
-        //    final int len = str.length();
-        //    if (len == 0) {
-        //        return N.EMPTY_STRING_ARRAY;
-        //    }
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
-
-        final int len = str.length();
-        final char[] chs = N.getCharsForReadOnly(str);
-        final List<String> list = ObjectFactory.createList();
-
-        try {
-            int i = 0, start = 0;
-            boolean match = false;
-            boolean lastMatch = false;
-            while (i < len) {
-                if (chs[i] == delimiter) {
-                    if (match || preserveAllTokens) {
-                        list.add(str.substring(start, i));
-                        match = false;
-                        lastMatch = true;
-                    }
-
-                    start = ++i;
-                    continue;
-                }
-
-                lastMatch = false;
-                match = true;
-                i++;
-            }
-
-            if (match || preserveAllTokens && lastMatch) {
-                list.add(str.substring(start, i));
-            }
-
-            return list.toArray(new String[list.size()]);
-        } finally {
-            ObjectFactory.recycle(list);
-        }
-    }
-
-    private static String[] splitWorker(final String str, final String delimiter, final int max, final boolean preserveAllTokens) {
-        // Performance tuned for 2.0 (JDK1.4)
-        // Direct code is quicker than StringTokenizer.
-        // Also, StringTokenizer uses isSpace() not isWhitespace()
-
-        //    if (str == null) {
-        //        return null;
-        //    }
-        //
-        //    final int len = str.length();
-        //    if (len == 0) {
-        //        return N.EMPTY_STRING_ARRAY;
-        //    }
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
-
-        final int len = str.length();
-        final List<String> list = ObjectFactory.createList();
-        int cnt = 1;
-        int i = 0, start = 0;
-        boolean match = false;
-        boolean lastMatch = false;
-        try {
-            if (delimiter == null) {
-                // Null delimiter means use whitespace
-                final char[] chs = N.getCharsForReadOnly(str);
-                while (i < len) {
-                    if (Character.isWhitespace(chs[i])) {
-                        if (match || preserveAllTokens) {
-                            lastMatch = true;
-                            if (cnt++ == max) {
-                                i = len;
-                                lastMatch = false;
-                            }
-
-                            list.add(str.substring(start, i));
-                            match = false;
-                        }
-
-                        start = ++i;
-                        continue;
-                    }
-
-                    lastMatch = false;
-                    match = true;
-                    i++;
-                }
-
-                if (match || preserveAllTokens && lastMatch) {
-                    list.add(str.substring(start, i));
-                }
-            } else if (delimiter.length() == 1) {
-                final char[] chs = N.getCharsForReadOnly(str);
-                final char sep = delimiter.charAt(0);
-
-                while (i < len) {
-                    if (chs[i] == sep) {
-                        if (match || preserveAllTokens) {
-                            lastMatch = true;
-                            if (cnt++ == max) {
-                                i = len;
-                                lastMatch = false;
-                            }
-
-                            list.add(str.substring(start, i));
-                            match = false;
-                        }
-
-                        start = ++i;
-                        continue;
-                    }
-
-                    lastMatch = false;
-                    match = true;
-                    i++;
-                }
-
-                if (match || preserveAllTokens && lastMatch) {
-                    list.add(str.substring(start, i));
-                }
-            } else {
-                final int delimiterLength = delimiter.length();
-                int beginIndex = 0;
-                int idx = 0;
-                while (idx < len) {
-                    idx = str.indexOf(delimiter, beginIndex);
-
-                    if (idx > -1) {
-                        if (idx > beginIndex) {
-                            if (cnt++ == max) {
-                                idx = len;
-                                list.add(str.substring(beginIndex));
-                            } else {
-                                // The following is OK, because String.substring( beg, end ) excludes
-                                // the character at the position 'end'.
-                                list.add(str.substring(beginIndex, idx));
-
-                                // Set the starting point for the next search.
-                                // The following is equivalent to beg = end + (delimiterLength - 1) + 1,
-                                // which is the right calculation:
-                                beginIndex = idx + delimiterLength;
-                            }
-                        } else {
-                            // We found a consecutive occurrence of the delimiter, so skip it.
-                            if (preserveAllTokens) {
-                                if (cnt++ == max) {
-                                    idx = len;
-                                    list.add(str.substring(beginIndex));
-                                } else {
-                                    list.add(N.EMPTY_STRING);
-                                }
-                            }
-                            beginIndex = idx + delimiterLength;
-                        }
-                    } else {
-                        // String.substring( beg ) goes from 'beg' to the end of the String.
-                        list.add(str.substring(beginIndex));
-                        idx = len;
-                    }
-                }
-            }
-
-            return list.toArray(new String[list.size()]);
-        } finally {
-            ObjectFactory.recycle(list);
-        }
-    }
-
-    // Trim
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Removes control characters (char &lt;= 32) from both ends of this String,
-     * handling {@code null} by returning {@code null}.
-     * </p>
-     *
-     * <p>
-     * The String is trimmed using {@link String#trim()}. Trim removes start and
-     * end characters &lt;= 32. To strip whitespace use {@link #strip(String)}.
-     * </p>
-     *
-     * <p>
-     * To trim your choice of characters, use the {@link #strip(String, String)}
-     * methods.
-     * </p>
-     *
-     * <pre>
-     * N.trim(null)          = null
-     * N.trim("")            = ""
-     * N.trim("     ")       = ""
-     * N.trim("abc")         = "abc"
-     * N.trim("    abc    ") = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to be trimmed, may be null
-     * @return the trimmed string, {@code null} if null String input
-     */
-    public static String trim(final String str) {
-        return N.isNullOrEmpty(str) || (str.charAt(0) != ' ' && str.charAt(str.length() - 1) != ' ') ? str : str.trim();
-    }
-
-    public static String[] trim(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = trim(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Removes control characters (char &lt;= 32) from both ends of this String
-     * returning {@code null} if the String is empty ("") after the trim or if
-     * it is {@code null}.
-     *
-     * <p>
-     * The String is trimmed using {@link String#trim()}. Trim removes start and
-     * end characters &lt;= 32. To strip whitespace use
-     * {@link #stripToNull(String)}.
-     * </p>
-     *
-     * <pre>
-     * N.trimToNull(null)          = null
-     * N.trimToNull("")            = null
-     * N.trimToNull("     ")       = null
-     * N.trimToNull("abc")         = "abc"
-     * N.trimToNull("    abc    ") = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to be trimmed, may be null
-     * @return the trimmed String, {@code null} if only chars &lt;= 32, empty or
-     *         null String input
-     * @since 2.0
-     */
-    public static String trimToNull(String str) {
-        str = trim(str);
-
-        return N.isNullOrEmpty(str) ? null : str;
-    }
-
-    public static String[] trimToNull(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = trimToNull(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Removes control characters (char &lt;= 32) from both ends of this String
-     * returning an empty String ("") if the String is empty ("") after the trim
-     * or if it is {@code null}.
-     *
-     * <p>
-     * The String is trimmed using {@link String#trim()}. Trim removes start and
-     * end characters &lt;= 32. To strip whitespace use
-     * {@link #stripToEmpty(String)}.
-     * </p>
-     *
-     * <pre>
-     * N.trimToEmpty(null)          = ""
-     * N.trimToEmpty("")            = ""
-     * N.trimToEmpty("     ")       = ""
-     * N.trimToEmpty("abc")         = "abc"
-     * N.trimToEmpty("    abc    ") = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to be trimmed, may be null
-     * @return the trimmed String, or an empty String if {@code null} input
-     * @since 2.0
-     */
-    public static String trimToEmpty(final String str) {
-        return N.isNullOrEmpty(str) ? N.EMPTY_STRING : str.trim();
-    }
-
-    public static String[] trimToEmpty(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = trimToEmpty(strs[i]);
-        }
-
-        return res;
-    }
-
-    // Stripping
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Strips whitespace from the start and end of a String.
-     * </p>
-     *
-     * <p>
-     * This is similar to {@link #trim(String)} but removes whitespace.
-     * Whitespace is defined by {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}.
-     * </p>
-     *
-     * <pre>
-     * N.strip(null)     = null
-     * N.strip("")       = ""
-     * N.strip("   ")    = ""
-     * N.strip("abc")    = "abc"
-     * N.strip("  abc")  = "abc"
-     * N.strip("abc  ")  = "abc"
-     * N.strip(" abc ")  = "abc"
-     * N.strip(" ab c ") = "ab c"
-     * </pre>
-     *
-     * @param str
-     *            the String to remove whitespace from, may be null
-     * @return the stripped String, {@code null} if null String input
-     */
-    public static String strip(final String str) {
-        return strip(str, null);
-    }
-
-    public static String[] strip(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = strip(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Strips whitespace from the start and end of a String returning
-     * {@code null} if the String is empty ("") after the strip.
-     * </p>
-     *
-     * <p>
-     * This is similar to {@link #trimToNull(String)} but removes whitespace.
-     * Whitespace is defined by {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <pre>
-     * N.stripToNull(null)     = null
-     * N.stripToNull("")       = null
-     * N.stripToNull("   ")    = null
-     * N.stripToNull("abc")    = "abc"
-     * N.stripToNull("  abc")  = "abc"
-     * N.stripToNull("abc  ")  = "abc"
-     * N.stripToNull(" abc ")  = "abc"
-     * N.stripToNull(" ab c ") = "ab c"
-     * </pre>
-     *
-     * @param str
-     *            the String to be stripped, may be null
-     * @return the stripped String, {@code null} if whitespace, empty or null
-     *         String input
-     * @since 2.0
-     */
-    public static String stripToNull(String str) {
-        str = strip(str, null);
-
-        return N.isNullOrEmpty(str) ? null : str;
-    }
-
-    public static String[] stripToNull(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = stripToNull(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Strips whitespace from the start and end of a String returning an empty
-     * String if {@code null} input.
-     * </p>
-     *
-     * <p>
-     * This is similar to {@link #trimToEmpty(String)} but removes whitespace.
-     * Whitespace is defined by {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <pre>
-     * N.stripToEmpty(null)     = ""
-     * N.stripToEmpty("")       = ""
-     * N.stripToEmpty("   ")    = ""
-     * N.stripToEmpty("abc")    = "abc"
-     * N.stripToEmpty("  abc")  = "abc"
-     * N.stripToEmpty("abc  ")  = "abc"
-     * N.stripToEmpty(" abc ")  = "abc"
-     * N.stripToEmpty(" ab c ") = "ab c"
-     * </pre>
-     *
-     * @param str
-     *            the String to be stripped, may be null
-     * @return the trimmed String, or an empty String if {@code null} input
-     * @since 2.0
-     */
-    public static String stripToEmpty(final String str) {
-        return N.isNullOrEmpty(str) ? N.EMPTY_STRING : strip(str, null);
-    }
-
-    public static String[] stripToEmpty(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = trimToEmpty(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Strips any of a set of characters from the start and end of a String.
-     * This is similar to {@link String#trim()} but allows the characters to be
-     * stripped to be controlled.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}. An empty string ("")
-     * input returns the empty string.
-     * </p>
-     *
-     * <p>
-     * If the stripChars String is {@code null}, whitespace is stripped as
-     * defined by {@link Character#isWhitespace(char)}. Alternatively use
-     * {@link #strip(String)}.
-     * </p>
-     *
-     * <pre>
-     * N.strip(null, *)          = null
-     * N.strip("", *)            = ""
-     * N.strip("abc", null)      = "abc"
-     * N.strip("  abc", null)    = "abc"
-     * N.strip("abc  ", null)    = "abc"
-     * N.strip(" abc ", null)    = "abc"
-     * N.strip("  abcyx", "xyz") = "  abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to remove characters from, may be null
-     * @param stripChars
-     *            the characters to remove, null treated as whitespace
-     * @return the stripped String, {@code null} if null String input
-     */
-    public static String strip(final String str, final String stripChars) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        return stripEnd(stripStart(str, stripChars), stripChars);
-    }
-
-    public static String[] strip(final String[] strs, final String stripChars) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = strip(strs[i], stripChars);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Strips any of a set of characters from the start of a String.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}. An empty string ("")
-     * input returns the empty string.
-     * </p>
-     *
-     * <p>
-     * If the stripChars String is {@code null}, whitespace is stripped as
-     * defined by {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <pre>
-     * N.stripStart(null, *)          = null
-     * N.stripStart("", *)            = ""
-     * N.stripStart("abc", "")        = "abc"
-     * N.stripStart("abc", null)      = "abc"
-     * N.stripStart("  abc", null)    = "abc"
-     * N.stripStart("abc  ", null)    = "abc  "
-     * N.stripStart(" abc ", null)    = "abc "
-     * N.stripStart("yxabc  ", "xyz") = "abc  "
-     * </pre>
-     *
-     * @param str
-     *            the String to remove characters from, may be null
-     * @param stripChars
-     *            the characters to remove, null treated as whitespace
-     * @return the stripped String, {@code null} if null String input
-     */
-    public static String stripStart(final String str, final String stripChars) {
-        if (N.isNullOrEmpty(str) || (stripChars != null && stripChars.isEmpty())) {
-            return str;
-        }
-
-        final int strLen = str.length();
-        int start = 0;
-        if (stripChars == null) {
-            while (start != strLen && Character.isWhitespace(str.charAt(start))) {
-                start++;
-            }
-        } else {
-            while (start != strLen && stripChars.indexOf(str.charAt(start)) != N.INDEX_NOT_FOUND) {
-                start++;
-            }
-        }
-
-        return start == 0 ? str : str.substring(start);
-    }
-
-    public static String[] stripStart(final String[] strs, final String stripChars) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = stripStart(strs[i], stripChars);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Strips any of a set of characters from the end of a String.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns {@code null}. An empty string ("")
-     * input returns the empty string.
-     * </p>
-     *
-     * <p>
-     * If the stripChars String is {@code null}, whitespace is stripped as
-     * defined by {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <pre>
-     * N.stripEnd(null, *)          = null
-     * N.stripEnd("", *)            = ""
-     * N.stripEnd("abc", "")        = "abc"
-     * N.stripEnd("abc", null)      = "abc"
-     * N.stripEnd("  abc", null)    = "  abc"
-     * N.stripEnd("abc  ", null)    = "abc"
-     * N.stripEnd(" abc ", null)    = " abc"
-     * N.stripEnd("  abcyx", "xyz") = "  abc"
-     * N.stripEnd("120.00", ".0")   = "12"
-     * </pre>
-     *
-     * @param str
-     *            the String to remove characters from, may be null
-     * @param stripChars
-     *            the set of characters to remove, null treated as whitespace
-     * @return the stripped String, {@code null} if null String input
-     */
-    public static String stripEnd(final String str, final String stripChars) {
-        if (N.isNullOrEmpty(str) || (stripChars != null && stripChars.isEmpty())) {
-            return str;
-        }
-
-        int end = str.length();
-
-        if (stripChars == null) {
-            while (end > 0 && Character.isWhitespace(str.charAt(end - 1))) {
-                end--;
-            }
-        } else {
-            while (end > 0 && stripChars.indexOf(str.charAt(end - 1)) != N.INDEX_NOT_FOUND) {
-                end--;
-            }
-        }
-
-        return end == str.length() ? str : str.substring(0, end);
-    }
-
-    public static String[] stripEnd(final String[] strs, final String stripChars) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = stripEnd(strs[i], stripChars);
-        }
-
-        return res;
-    }
-
-    /**
-     * <p>
-     * Removes diacritics (~= accents) from a string. The case will not be
-     * altered.
-     * </p>
-     * <p>
-     * For instance, '&agrave;' will be replaced by 'a'.
-     * </p>
-     * <p>
-     * Note that ligatures will be left as is.
-     * </p>
-     *
-     * <pre>
-     * N.stripAccents(null)                = null
-     * N.stripAccents("")                  = ""
-     * N.stripAccents("control")           = "control"
-     * N.stripAccents("&eacute;clair")     = "eclair"
-     * </pre>
-     *
-     * @param strs
-     *            String to be stripped
-     * @return input text with diacritics removed
-     *
-     * @since 3.0
-     */
-    // See also Lucene's ASCIIFoldingFilter (Lucene 2.9) that replaces accented
-    // characters by their unaccented equivalent (and uncommitted bug fix:
-    // https://issues.apache.org/jira/browse/LUCENE-1343?focusedCommentId=12858907&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#action_12858907).
-    public static String stripAccents(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final String decomposed = Normalizer.normalize(str, Normalizer.Form.NFD);
-        // Note that this doesn't correctly remove ligatures...
-        return pattern_accent.matcher(decomposed).replaceAll("");//$NON-NLS-1$
-    }
-
-    private static final Pattern pattern_accent = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");//$NON-NLS-1$
-
-    public static String[] stripAccents(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = stripAccents(strs[i]);
-        }
-
-        return res;
-    }
-
-    // Chomping
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Removes one newline from end of a String if it's there, otherwise leave
-     * it alone. A newline is &quot;{@code \n} &quot;, &quot;{@code \r}&quot;,
-     * or &quot;{@code \r\n}&quot;.
-     * </p>
-     *
-     * <p>
-     * NOTE: This method changed in 2.0. It now more closely matches Perl chomp.
-     * </p>
-     *
-     * <pre>
-     * N.chomp(null)          = null
-     * N.chomp("")            = ""
-     * N.chomp("abc \r")      = "abc "
-     * N.chomp("abc\n")       = "abc"
-     * N.chomp("abc\r\n")     = "abc"
-     * N.chomp("abc\r\n\r\n") = "abc\r\n"
-     * N.chomp("abc\n\r")     = "abc\n"
-     * N.chomp("abc\n\rabc")  = "abc\n\rabc"
-     * N.chomp("\r")          = ""
-     * N.chomp("\n")          = ""
-     * N.chomp("\r\n")        = ""
-     * </pre>
-     *
-     * @param str
-     *            the String to chomp a newline from, may be null
-     * @return String without newline, {@code null} if null String input
-     */
-    public static String chomp(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        if (str.length() == 1) {
-            final char ch = str.charAt(0);
-            if (ch == N.CHAR_CR || ch == N.CHAR_LF) {
-                return N.EMPTY_STRING;
-            }
-
-            return str;
-        }
-
-        int lastIdx = str.length() - 1;
-        final char last = str.charAt(lastIdx);
-
-        if (last == N.CHAR_LF) {
-            if (str.charAt(lastIdx - 1) == N.CHAR_CR) {
-                lastIdx--;
-            }
-        } else if (last != N.CHAR_CR) {
-            lastIdx++;
-        }
-
-        return lastIdx == str.length() ? str : str.substring(0, lastIdx);
-    }
-
-    public static String[] chomp(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = chomp(strs[i]);
-        }
-
-        return res;
-    }
-
-    // Chopping
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Remove the last character from a String.
-     * </p>
-     *
-     * <p>
-     * If the String ends in {@code \r\n}, then remove both of them.
-     * </p>
-     *
-     * <pre>
-     * N.chop(null)          = null
-     * N.chop("")            = ""
-     * N.chop("abc \r")      = "abc "
-     * N.chop("abc\n")       = "abc"
-     * N.chop("abc\r\n")     = "abc"
-     * N.chop("abc")         = "ab"
-     * N.chop("abc\nabc")    = "abc\nab"
-     * N.chop("a")           = ""
-     * N.chop("\r")          = ""
-     * N.chop("\n")          = ""
-     * N.chop("\r\n")        = ""
-     * </pre>
-     *
-     * @param str
-     *            the String to chop last character from, may be null
-     * @return String without last character, {@code null} if null String input
-     */
-    public static String chop(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final int strLen = str.length();
-
-        if (strLen < 2) {
-            return N.EMPTY_STRING;
-        }
-
-        final int lastIdx = strLen - 1;
-
-        if (str.charAt(lastIdx) == N.CHAR_LF && str.charAt(lastIdx - 1) == N.CHAR_CR) {
-            return str.substring(0, lastIdx - 1);
-        } else {
-            return str.substring(0, lastIdx);
-        }
-    }
-
-    public static String[] chop(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = chop(strs[i]);
-        }
-
-        return res;
-    }
-
-    // Delete
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Deletes all white spaces from a String as defined by
-     * {@link Character#isWhitespace(char)}.
-     * </p>
-     *
-     * <pre>
-     * N.deleteWhitespace(null)         = null
-     * N.deleteWhitespace("")           = ""
-     * N.deleteWhitespace("abc")        = "abc"
-     * N.deleteWhitespace("   ab  c  ") = "abc"
-     * </pre>
-     *
-     * @param str
-     *            the String to delete whitespace from, may be null
-     * @return the String without whitespaces, {@code null} if null String input
-     */
-    public static String deleteWhitespace(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return str;
-        }
-
-        final char[] chars = N.getCharsForReadOnly(str);
-        final char[] cbuf = new char[chars.length];
-        int count = 0;
-        for (int i = 0, len = chars.length; i < len; i++) {
-            if (!Character.isWhitespace(chars[i])) {
-                cbuf[count++] = chars[i];
-            }
-        }
-
-        return count == chars.length ? str : new String(cbuf, 0, count);
-    }
-
-    public static String[] deleteWhitespace(final String[] strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return strs;
-        }
-
-        final String[] res = new String[strs.length];
-
-        for (int i = 0, len = strs.length; i < len; i++) {
-            res[i] = deleteWhitespace(strs[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * @param str
-     * @param suffix
-     * @return
-     */
-    public static String appendIfMissing(final String str, final String suffix) {
-        N.requireNonNull(suffix);
-
-        if (N.isNullOrEmpty(str)) {
-            return suffix;
-        } else if (str.endsWith(suffix)) {
-            return str;
-        } else {
-            return str + suffix;
-        }
-    }
-
-    public static String prependIfMissing(final String str, final String prefix) {
-        N.requireNonNull(prefix);
-
-        if (N.isNullOrEmpty(str)) {
-            return prefix;
-        } else if (str.startsWith(prefix)) {
-            return str;
-        } else {
-            return prefix + str;
-        }
-    }
-
-    public static String wrapIfMissing(final String str, final String prefixSuffix) {
-        N.requireNonNull(prefixSuffix);
-
-        return wrapIfMissing(str, prefixSuffix, prefixSuffix);
-    }
-
-    /**
-     * <pre>
-     * N.wrapIfMissing(null, "[", "]") -> "[]"
-     * N.wrapIfMissing("", "[", "]") -> "[]"
-     * N.wrapIfMissing("[", "[", "]") -> "[]"
-     * N.wrapIfMissing("]", "[", "]") -> "[]"
-     * N.wrapIfMissing("abc", "[", "]") -> "[abc]"
-     * N.wrapIfMissing("a", "aa", "aa") -> "aaaaa"
-     * N.wrapIfMissing("aa", "aa", "aa") -> "aaaa"
-     * N.wrapIfMissing("aaa", "aa", "aa") -> "aaaaa"
-     * N.wrapIfMissing("aaaa", "aa", "aa") -> "aaaa"
-     * </pre>
-     * 
-     * @param str
-     * @param prefix
-     * @param suffix
-     * @return
-     */
-    public static String wrapIfMissing(final String str, final String prefix, final String suffix) {
-        N.requireNonNull(prefix);
-        N.requireNonNull(suffix);
-
-        if (N.isNullOrEmpty(str)) {
-            return prefix + suffix;
-        } else if (str.startsWith(prefix)) {
-            return (str.length() - prefix.length() >= suffix.length() && str.endsWith(suffix)) ? str : str + suffix;
-        } else if (str.endsWith(suffix)) {
-            return prefix + str;
-        } else {
-            return N.concat(prefix, str, suffix);
-        }
-    }
-
-    public static String wrap(final String str, final String prefixSuffix) {
-        N.requireNonNull(prefixSuffix);
-
-        return wrap(str, prefixSuffix, prefixSuffix);
-    }
-
-    /**
-     * <pre>
-     * N.wrap(null, "[", "]") -> "[]"
-     * N.wrap("", "[", "]") -> "[]"
-     * N.wrap("[", "[", "]") -> "[[]"
-     * N.wrap("]", "[", "]") -> "[]]"
-     * N.wrap("abc", "[", "]") -> "[abc]"
-     * N.wrap("a", "aa", "aa") -> "aaaaa"
-     * N.wrap("aa", "aa", "aa") -> "aaaaaa"
-     * N.wrap("aaa", "aa", "aa") -> "aaaaaaa"
-     * </pre>
-     * 
-     * @param str
-     * @param prefix
-     * @param suffix
-     * @return
-     */
-    public static String wrap(final String str, final String prefix, final String suffix) {
-        N.requireNonNull(prefix);
-        N.requireNonNull(suffix);
-
-        if (N.isNullOrEmpty(str)) {
-            return prefix + suffix;
-        } else {
-            return N.concat(prefix, str, suffix);
-        }
-    }
-
-    public static String unwrap(final String str, final String prefixSuffix) {
-        N.requireNonNull(prefixSuffix);
-
-        return unwrap(str, prefixSuffix, prefixSuffix);
-    }
-
-    /** 
-     * <p>
-     * Unwraps the specified string {@code str} if and only if it's wrapped by the specified {@code prefix} and {@code suffix}
-     * </p>
-     * 
-     * <pre>
-     * N.unwrap(null, "[", "]") -> ""
-     * N.unwrap("", "[", "]") -> ""
-     * N.unwrap("[", "[", "]") -> "["
-     * N.unwrap("]", "[", "]") -> "["
-     * N.unwrap("[abc]", "[", "]") -> "abc"
-     * N.unwrap("aaaaa", "aa", "aa") -> "a"
-     * N.unwrap("aa", "aa", "aa") -> "aa"
-     * N.unwrap("aaa", "aa", "aa") -> "aaa"
-     * N.unwrap("aaaa", "aa", "aa") -> ""
-     * </pre>
-     * 
-     * @param str
-     * @param prefix
-     * @param suffix
-     * @return
-     */
-    public static String unwrap(final String str, final String prefix, final String suffix) {
-        N.requireNonNull(prefix);
-        N.requireNonNull(suffix);
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING;
-        } else if (str.length() - prefix.length() >= suffix.length() && str.startsWith(prefix) && str.endsWith(suffix)) {
-            return str.substring(prefix.length(), str.length() - suffix.length());
-        } else {
-            return str;
-        }
-    }
-
-    public static boolean isLowerCase(final char ch) {
-        return Character.isLowerCase(ch);
-    }
-
-    public static boolean isAsciiLowerCase(final char ch) {
-        return (ch >= 'a') && (ch <= 'z');
-    }
-
-    public static boolean isUpperCase(final char ch) {
-        return Character.isUpperCase(ch);
-    }
-
-    public static boolean isAsciiUpperCase(final char ch) {
-        return (ch >= 'A') && (ch <= 'Z');
-    }
-
-    public static boolean isAllLowerCase(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isUpperCase(chars[i])) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isUpperCase(cs.charAt(i))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAllUpperCase(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isLowerCase(chars[i])) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isLowerCase(cs.charAt(i))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Copied from Apache Commons Lang: StringUtils#isMixedCase.
-     * 
-     * @param cs
-     * @return
-     */
-    public static boolean isMixedCase(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs) || cs.length() == 1) {
-            return false;
-        }
-
-        boolean containsUppercase = false;
-        boolean containsLowercase = false;
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (containsUppercase && containsLowercase) {
-                    return true;
-                } else if (Character.isUpperCase(chars[i])) {
-                    containsUppercase = true;
-                } else if (Character.isLowerCase(chars[i])) {
-                    containsLowercase = true;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (containsUppercase && containsLowercase) {
-                    return true;
-                } else if (Character.isUpperCase(cs.charAt(i))) {
-                    containsUppercase = true;
-                } else if (Character.isLowerCase(cs.charAt(i))) {
-                    containsLowercase = true;
-                }
-            }
-        }
-
-        return containsUppercase && containsLowercase;
-    }
-
-    /**
-     *
-     * @param ch
-     * @return
-     * @see Character#isDigit(char)
-     */
-    public static boolean isDigit(final char ch) {
-        return Character.isDigit(ch);
-    }
-
-    /**
-     *
-     * @param ch
-     * @return
-     * @see Character#isLetter(char)
-     */
-    public static boolean isLetter(final char ch) {
-        return Character.isLetter(ch);
-    }
-
-    /**
-     *
-     * @param ch
-     * @return
-     * @see Character#isLetterOrDigit(char)
-     */
-    public static boolean isLetterOrDigit(final char ch) {
-        return Character.isLetterOrDigit(ch);
-    }
-
-    // --------------------------------------------------------------------------
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAscii('a')  = true
-     *   CharUtils.isAscii('A')  = true
-     *   CharUtils.isAscii('3')  = true
-     *   CharUtils.isAscii('-')  = true
-     *   CharUtils.isAscii('\n') = true
-     *   CharUtils.isAscii('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if less than 128
-     */
-    public static boolean isAscii(final char ch) {
-        return ch < 128;
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit printable.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiPrintable('a')  = true
-     *   CharUtils.isAsciiPrintable('A')  = true
-     *   CharUtils.isAsciiPrintable('3')  = true
-     *   CharUtils.isAsciiPrintable('-')  = true
-     *   CharUtils.isAsciiPrintable('\n') = false
-     *   CharUtils.isAsciiPrintable('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 32 and 126 inclusive
-     */
-    public static boolean isAsciiPrintable(final char ch) {
-        return ch > 31 && ch < 127;
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit control.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiControl('a')  = false
-     *   CharUtils.isAsciiControl('A')  = false
-     *   CharUtils.isAsciiControl('3')  = false
-     *   CharUtils.isAsciiControl('-')  = false
-     *   CharUtils.isAsciiControl('\n') = true
-     *   CharUtils.isAsciiControl('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if less than 32 or equals 127
-     */
-    public static boolean isAsciiControl(final char ch) {
-        return ch < 32 || ch == 127;
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit alphabetic.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiAlpha('a')  = true
-     *   CharUtils.isAsciiAlpha('A')  = true
-     *   CharUtils.isAsciiAlpha('3')  = false
-     *   CharUtils.isAsciiAlpha('-')  = false
-     *   CharUtils.isAsciiAlpha('\n') = false
-     *   CharUtils.isAsciiAlpha('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 65 and 90 or 97 and 122 inclusive
-     */
-    public static boolean isAsciiAlpha(final char ch) {
-        return isAsciiAlphaUpper(ch) || isAsciiAlphaLower(ch);
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit alphabetic upper case.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiAlphaUpper('a')  = false
-     *   CharUtils.isAsciiAlphaUpper('A')  = true
-     *   CharUtils.isAsciiAlphaUpper('3')  = false
-     *   CharUtils.isAsciiAlphaUpper('-')  = false
-     *   CharUtils.isAsciiAlphaUpper('\n') = false
-     *   CharUtils.isAsciiAlphaUpper('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 65 and 90 inclusive
-     */
-    public static boolean isAsciiAlphaUpper(final char ch) {
-        return ch >= 'A' && ch <= 'Z';
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit alphabetic lower case.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiAlphaLower('a')  = true
-     *   CharUtils.isAsciiAlphaLower('A')  = false
-     *   CharUtils.isAsciiAlphaLower('3')  = false
-     *   CharUtils.isAsciiAlphaLower('-')  = false
-     *   CharUtils.isAsciiAlphaLower('\n') = false
-     *   CharUtils.isAsciiAlphaLower('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 97 and 122 inclusive
-     */
-    public static boolean isAsciiAlphaLower(final char ch) {
-        return ch >= 'a' && ch <= 'z';
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit numeric.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiNumeric('a')  = false
-     *   CharUtils.isAsciiNumeric('A')  = false
-     *   CharUtils.isAsciiNumeric('3')  = true
-     *   CharUtils.isAsciiNumeric('-')  = false
-     *   CharUtils.isAsciiNumeric('\n') = false
-     *   CharUtils.isAsciiNumeric('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 48 and 57 inclusive
-     */
-    public static boolean isAsciiNumeric(final char ch) {
-        return ch >= '0' && ch <= '9';
-    }
-
-    /**
-     * <p>
-     * Checks whether the character is ASCII 7 bit numeric.
-     * </p>
-     *
-     * <pre>
-     *   CharUtils.isAsciiAlphanumeric('a')  = true
-     *   CharUtils.isAsciiAlphanumeric('A')  = true
-     *   CharUtils.isAsciiAlphanumeric('3')  = true
-     *   CharUtils.isAsciiAlphanumeric('-')  = false
-     *   CharUtils.isAsciiAlphanumeric('\n') = false
-     *   CharUtils.isAsciiAlphanumeric('&copy;') = false
-     * </pre>
-     *
-     * @param ch
-     *            the character to check
-     * @return true if between 48 and 57 or 65 and 90 or 97 and 122 inclusive
-     */
-    public static boolean isAsciiAlphanumeric(final char ch) {
-        return isAsciiAlpha(ch) || isAsciiNumeric(ch);
-    }
-
-    public static boolean isAsciiPrintable(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiPrintable(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiPrintable(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAsciiAlpha(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlpha(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlpha(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAsciiAlphaSpace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlpha(chars[i]) == false && chars[i] != ' ') {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlpha(cs.charAt(i)) == false && cs.charAt(i) != ' ') {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAsciiAlphanumeric(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlphanumeric(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlphanumeric(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAsciiAlphanumericSpace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlphanumeric(chars[i]) == false && chars[i] != ' ') {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (N.isAsciiAlphanumeric(cs.charAt(i)) == false && cs.charAt(i) != ' ') {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean isAsciiNumeric(final CharSequence cs) {
-        if (isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (isAsciiNumeric(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (isAsciiNumeric(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    // Character Tests
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode letters.
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isAlpha(null)   = false
-     * N.isAlpha("")     = false
-     * N.isAlpha("  ")   = false
-     * N.isAlpha("abc")  = true
-     * N.isAlpha("ab2c") = false
-     * N.isAlpha("ab-c") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains letters, and is non-null
-     * @since 3.0 Changed signature from isAlpha(String) to
-     *        isAlpha(CharSequence)
-     * @since 3.0 Changed "" to return false and not true
-     */
-    public static boolean isAlpha(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetter(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetter(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode letters and space (' ').
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isAlphaSpace(null)   = false
-     * N.isAlphaSpace("")     = false
-     * N.isAlphaSpace("  ")   = true
-     * N.isAlphaSpace("abc")  = true
-     * N.isAlphaSpace("ab c") = true
-     * N.isAlphaSpace("ab2c") = false
-     * N.isAlphaSpace("ab-c") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains letters and space, and is non-null
-     * @since 3.0 Changed signature from isAlphaSpace(String) to
-     *        isAlphaSpace(CharSequence)
-     */
-    public static boolean isAlphaSpace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetter(chars[i]) == false && chars[i] != ' ') {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetter(cs.charAt(i)) == false && cs.charAt(i) != ' ') {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode letters or digits.
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isAlphanumeric(null)   = false
-     * N.isAlphanumeric("")     = false
-     * N.isAlphanumeric("  ")   = false
-     * N.isAlphanumeric("abc")  = true
-     * N.isAlphanumeric("ab c") = false
-     * N.isAlphanumeric("ab2c") = true
-     * N.isAlphanumeric("ab-c") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains letters or digits, and is non-null
-     * @since 3.0 Changed signature from isAlphanumeric(String) to
-     *        isAlphanumeric(CharSequence)
-     * @since 3.0 Changed "" to return false and not true
-     */
-    public static boolean isAlphanumeric(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetterOrDigit(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetterOrDigit(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode letters, digits or space
-     * ({@code ' '}).
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isAlphanumericSpace(null)   = false
-     * N.isAlphanumericSpace("")     = false
-     * N.isAlphanumericSpace("  ")   = true
-     * N.isAlphanumericSpace("abc")  = true
-     * N.isAlphanumericSpace("ab c") = true
-     * N.isAlphanumericSpace("ab2c") = true
-     * N.isAlphanumericSpace("ab-c") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains letters, digits or space, and is
-     *         non-null
-     * @since 3.0 Changed signature from isAlphanumericSpace(String) to
-     *        isAlphanumericSpace(CharSequence)
-     */
-    public static boolean isAlphanumericSpace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetterOrDigit(chars[i]) == false && chars[i] != ' ') {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isLetterOrDigit(cs.charAt(i)) == false && cs.charAt(i) != ' ') {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode digits. A decimal point
-     * is not a Unicode digit and returns false.
-     * </p>
-     *
-     * <p>
-     * {@code null} will return {@code false}. An empty CharSequence
-     * (length()=0) will return {@code false}.
-     * </p>
-     *
-     * <p>
-     * Note that the method does not allow for a leading sign, either positive
-     * or negative. Also, if a String passes the numeric test, it may still
-     * generate a NumberFormatException when parsed by Integer.parseInt or
-     * Long.parseLong, e.g. if the value is outside the range for int or long
-     * respectively.
-     * </p>
-     *
-     * <pre>
-     * N.isNumeric(null)   = false
-     * N.isNumeric("")     = false
-     * N.isNumeric("  ")   = false
-     * N.isNumeric("123")  = true
-     * N.isNumeric("12 3") = false
-     * N.isNumeric("ab2c") = false
-     * N.isNumeric("12-3") = false
-     * N.isNumeric("12.3") = false
-     * N.isNumeric("-123") = false
-     * N.isNumeric("+123") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains digits, and is non-null
-     * @since 3.0 Changed signature from isNumeric(String) to
-     *        isNumeric(CharSequence)
-     * @since 3.0 Changed "" to return false and not true
-     */
-    public static boolean isNumeric(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isDigit(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isDigit(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only Unicode digits or space (
-     * {@code ' '}). A decimal point is not a Unicode digit and returns false.
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isNumericSpace(null)   = false
-     * N.isNumericSpace("")     = false
-     * N.isNumericSpace("  ")   = true
-     * N.isNumericSpace("123")  = true
-     * N.isNumericSpace("12 3") = true
-     * N.isNumericSpace("ab2c") = false
-     * N.isNumericSpace("12-3") = false
-     * N.isNumericSpace("12.3") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains digits or space, and is non-null
-     * @since 3.0 Changed signature from isNumericSpace(String) to
-     *        isNumericSpace(CharSequence)
-     */
-    public static boolean isNumericSpace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isDigit(chars[i]) == false && chars[i] != ' ') {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isDigit(cs.charAt(i)) == false && cs.charAt(i) != ' ') {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>
-     * Checks if the CharSequence contains only whitespace.
-     * </p>
-     *
-     * <p>
-     * {@code null} or empty CharSequence (length()=0) will return {@code false}
-     * .
-     * </p>
-     *
-     * <pre>
-     * N.isWhitespace(null)   = false
-     * N.isWhitespace("")     = false
-     * N.isWhitespace("  ")   = true
-     * N.isWhitespace("abc")  = false
-     * N.isWhitespace("ab2c") = false
-     * N.isWhitespace("ab-c") = false
-     * </pre>
-     *
-     * @param cs
-     *            the CharSequence to check, may be null
-     * @return {@code true} if only contains whitespace, and is non-null
-     * @since 2.0
-     * @since 3.0 Changed signature from isWhitespace(String) to
-     *        isWhitespace(CharSequence)
-     */
-    public static boolean isWhitespace(final CharSequence cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return false;
-        }
-
-        final int len = cs.length();
-
-        if (cs.getClass().equals(String.class)) {
-            final char[] chars = N.getCharsForReadOnly((String) cs);
-
-            for (int i = 0; i < len; i++) {
-                if (Character.isWhitespace(chars[i]) == false) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0; i < len; i++) {
-                if (Character.isWhitespace(cs.charAt(i)) == false) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Note: It's copied from NumberUtils in Apache Commons Lang under Apache
-     * License 2.0
-     *
-     * <p>
-     * Checks whether the String a valid Java number. <code>true</code> is
-     * returned if there is a number which can be initialized by
-     * <code>createNumber</code> with specified String.
-     * </p>
-     *
-     * <p>
-     * <code>Null</code> and empty String will return <code>false</code>.
-     * </p>
-     *
-     * @param str
-     *            the <code>String</code> to check
-     * @return <code>true</code> if the string is a correctly formatted number
-     * @since 3.3 the code supports hex {@code 0Xhhh} and octal {@code 0ddd}
-     *        validation
-     */
-    public static boolean isNumber(final String str) {
-        return N.createNumber(str).isPresent();
-    }
-
-    /**
-     * <code>true</code> is returned if the specified <code>str</code> only
-     * includes characters ('0' ~ '9', '.', '-', '+', 'e').
-     * <code>false</code> is return if the specified String is null/empty, or contains empty chars.
-     * 
-     *  "0" => true
-     *  " 0.1 " => false
-     *  "abc" => false
-     *  "1 a" => false
-     *  "2e10" => true
-     *  "2E-10" => true
-     *
-     * @param val
-     * @return
-     */
-    public static boolean isAsciiDigtalNumber(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return false;
-        }
-
-        final char[] chs = N.getCharsForReadOnly(str);
-
-        int i = 0, num = 0;
-        if (chs[i] == '+' || chs[i] == '-') {
-            i++;
-        }
-
-        for (; i < chs.length && (chs[i] >= '0' && chs[i] <= '9'); i++) {
-            num++;
-        }
-
-        if (i < chs.length && chs[i] == '.') {
-            if (num == 0) {
-                return false;
-            } else {
-                num = 0;
-            }
-
-            i++;
-        }
-
-        for (; i < chs.length && (chs[i] >= '0' && chs[i] <= '9'); i++) {
-            num++;
-        }
-
-        if (num == 0) {
-            return false;
-        }
-
-        if (i == chs.length) {
-            return true;
-        } else if (chs[i] != 'e' && chs[i] != 'E') {
-            return false;
-        } else {
-            i++;
-        }
-
-        num = 0;
-        if (i < chs.length && (chs[i] == '+' || chs[i] == '-')) {
-            i++;
-        }
-
-        for (; i < chs.length && (chs[i] >= '0' && chs[i] <= '9'); i++) {
-            num++;
-        }
-
-        if (num == 0) {
-            return false;
-        } else if (i == chs.length) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <code>true</code> is returned if the specified <code>str</code> only
-     * includes characters ('0' ~ '9', '-', '+' ).
-     * <code>false</code> is return if the specified String is null/empty, or contains empty chars.
-     * 
-     *  "-123" => true
-     *  "+123" => true
-     *  "123" => true
-     *  "+0" => true
-     *  "-0" => true
-     *  "0" => true
-     *  " 0.1 " => false
-     *  "abc" => false
-     *  "1 a" => false
-     *  "2e10" => false
-     *
-     * @param val
-     * @return
-     */
-    public static boolean isAsciiDigtalInteger(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return false;
-        }
-
-        final char[] chs = N.getCharsForReadOnly(str);
-
-        int i = 0, num = 0;
-        if (chs[i] == '+' || chs[i] == '-') {
-            i++;
-        }
-
-        for (; i < chs.length && (chs[i] >= '0' && chs[i] <= '9'); i++) {
-            num++;
-        }
-
-        if (num == 0) {
-            return false;
-        }
-
-        return i == chs.length;
-    }
-
     public static boolean isEntity(final Class<?> cls) {
         Boolean b = entityClassPool.get(cls);
 
@@ -7518,800 +3673,6 @@ public final class N {
         N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
 
         return c;
-    }
-
-    public static String join(final boolean[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final boolean[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final boolean[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final char[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final char[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final char[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final char[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final char[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final byte[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final byte[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final byte[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final byte[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final byte[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final short[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final short[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final short[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final short[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final short[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final int[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final int[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final int[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final int[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final int[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final long[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final long[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final long[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final long[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final long[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final float[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final float[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final float[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final float[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final float[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final double[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final double[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final double[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final double[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(a[i]);
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final double[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(a[i]);
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(a[i]);
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final Object[] a) {
-        return join(a, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final Object[] a, final char delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final Object[] a, final String delimiter) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(a, 0, a.length, delimiter);
-    }
-
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter) {
-        return N.join(a, fromIndex, toIndex, delimiter, false);
-    }
-
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (i > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter) {
-        return N.join(a, fromIndex, toIndex, delimiter, false);
-    }
-
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (N.isNullOrEmpty(delimiter)) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
-                }
-            } else {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    if (i > fromIndex) {
-                        sb.append(delimiter);
-                    }
-
-                    sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final Collection<?> c) {
-        return join(c, N.ELEMENT_SEPARATOR);
-    }
-
-    public static String join(final Collection<?> c, final char delimiter) {
-        if (N.isNullOrEmpty(c)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(c, 0, c.size(), delimiter);
-    }
-
-    public static String join(final Collection<?> c, final String delimiter) {
-        if (N.isNullOrEmpty(c)) {
-            return N.EMPTY_STRING;
-        }
-
-        return join(c, 0, c.size(), delimiter);
-    }
-
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter) {
-        return N.join(c, fromIndex, toIndex, delimiter, false);
-    }
-
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, len(c));
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            int i = 0;
-            for (Object e : c) {
-                if (i++ > fromIndex) {
-                    sb.append(delimiter);
-                }
-
-                if (i > fromIndex) {
-                    sb.append(trim ? toString(e).trim() : toString(e));
-                }
-
-                if (i >= toIndex) {
-                    break;
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter) {
-        return N.join(c, fromIndex, toIndex, delimiter, false);
-    }
-
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-        checkFromToIndex(fromIndex, toIndex, len(c));
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            if (c instanceof List && c instanceof RandomAccess) {
-                final List<?> list = (List<?>) c;
-
-                if (N.isNullOrEmpty(delimiter)) {
-                    for (int i = fromIndex; i < toIndex; i++) {
-                        sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
-                    }
-                } else {
-                    for (int i = fromIndex; i < toIndex; i++) {
-                        if (i > fromIndex) {
-                            sb.append(delimiter);
-                        }
-
-                        sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
-                    }
-                }
-            } else {
-                int i = 0;
-                if (N.isNullOrEmpty(delimiter)) {
-                    for (Object e : c) {
-                        if (i++ >= fromIndex) {
-                            sb.append(trim ? toString(e).trim() : toString(e));
-                        }
-
-                        if (i >= toIndex) {
-                            break;
-                        }
-                    }
-                } else {
-                    for (Object e : c) {
-                        if (i++ > fromIndex) {
-                            sb.append(delimiter);
-                        }
-
-                        if (i > fromIndex) {
-                            sb.append(trim ? toString(e).trim() : toString(e));
-                        }
-
-                        if (i >= toIndex) {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
     }
 
     /**
@@ -9006,413 +4367,6 @@ public final class N {
         return !N.isNullOrEmptyOrBlank(s);
     }
 
-    /**
-     *
-     * @param obj
-     * @return
-     * @throws NullPointerException if {@code obj} is {@code null}
-     */
-    public static <T> T requireNonNull(final T obj) {
-        if (obj == null) {
-            throw new NullPointerException();
-        }
-
-        return obj;
-    }
-
-    /**
-     *
-     * @param obj
-     * @param errorMessage
-     * @return
-     * @throws NullPointerException if {@code obj} is {@code null}
-     */
-    public static <T> T requireNonNull(final T obj, final String errorMessage) {
-        if (obj == null) {
-            if (isNullErrorMsg(errorMessage)) {
-                throw new NullPointerException(errorMessage);
-            } else {
-                throw new NullPointerException("'" + errorMessage + "' can not be null");
-            }
-        }
-
-        return obj;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T extends CharSequence> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.length() == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static boolean[] checkNullOrEmpty(final boolean[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static char[] checkNullOrEmpty(final char[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static byte[] checkNullOrEmpty(final byte[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static short[] checkNullOrEmpty(final short[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static int[] checkNullOrEmpty(final int[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static long[] checkNullOrEmpty(final long[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static float[] checkNullOrEmpty(final float[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static double[] checkNullOrEmpty(final double[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T> T[] checkNullOrEmpty(final T[] parameter, final String msg) {
-        if (parameter == null || parameter.length == 0) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T extends PrimitiveList> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <E, T extends Collection<E>> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <K, V, T extends Map<K, V>> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <E> Multiset<E> checkNullOrEmpty(final Multiset<E> parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <E> LongMultiset<E> checkNullOrEmpty(final LongMultiset<E> parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <K, E, V extends Collection<E>, T extends Multimap<K, E, V>> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T extends DataSet> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T extends EntityId> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty or blank
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
-    public static <T extends CharSequence> T checkNullOrEmptyOrBlank(final T parameter, final String msg) {
-        if (N.isNullOrEmptyOrBlank(parameter)) {
-            if (isNullErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException("'" + msg + "' can not be null or empty or blank");
-            }
-        }
-
-        return parameter;
-    }
-
     /*
      * All recent hotspots (as of 2009) *really* like to have the natural code
      *
@@ -9792,20 +4746,36 @@ public final class N {
     }
 
     /**
-     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
-     * @param arg
-     * @param argNameOrErrorMsg
-     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
+     *
+     * @param obj
+     * @return
+     * @throws IllegalArgumentException if {@code obj} is {@code null}
      */
-    public static <T extends CharSequence> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
-        if (N.isNullOrEmpty(arg)) {
-            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+    public static <T> T checkArgNotNull(final T obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return obj;
+    }
+
+    /**
+     *
+     * @param obj
+     * @param errorMessage
+     * @return
+     * @throws IllegalArgumentException if {@code obj} is {@code null}
+     */
+    public static <T> T checkArgNotNull(final T obj, final String errorMessage) {
+        if (obj == null) {
+            if (isNullErrorMsg(errorMessage)) {
+                throw new IllegalArgumentException(errorMessage);
             } else {
-                throw new IllegalArgumentException(argNameOrErrorMsg);
+                throw new IllegalArgumentException("'" + errorMessage + "' can not be null");
             }
         }
+
+        return obj;
     }
 
     /**
@@ -9815,14 +4785,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final boolean[] arg, final String argNameOrErrorMsg) {
+    public static <T extends CharSequence> T checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9832,14 +4804,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final char[] arg, final String argNameOrErrorMsg) {
+    public static boolean[] checkArgNotNullOrEmpty(final boolean[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9849,14 +4823,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final byte[] arg, final String argNameOrErrorMsg) {
+    public static char[] checkArgNotNullOrEmpty(final char[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9866,14 +4842,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final short[] arg, final String argNameOrErrorMsg) {
+    public static byte[] checkArgNotNullOrEmpty(final byte[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9883,14 +4861,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final int[] arg, final String argNameOrErrorMsg) {
+    public static short[] checkArgNotNullOrEmpty(final short[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9900,14 +4880,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final long[] arg, final String argNameOrErrorMsg) {
+    public static int[] checkArgNotNullOrEmpty(final int[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9917,14 +4899,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final float[] arg, final String argNameOrErrorMsg) {
+    public static long[] checkArgNotNullOrEmpty(final long[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9934,14 +4918,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNullOrEmpty(final double[] arg, final String argNameOrErrorMsg) {
+    public static float[] checkArgNotNullOrEmpty(final float[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9951,14 +4937,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static <T> void checkArgNotNullOrEmpty(final T[] arg, final String argNameOrErrorMsg) {
+    public static double[] checkArgNotNullOrEmpty(final double[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9968,14 +4956,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static <T extends Collection<?>> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+    public static <T> T[] checkArgNotNullOrEmpty(final T[] arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -9985,107 +4975,56 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static <T extends Map<?, ?>> void checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+    public static <T extends Collection<?>> T checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
         if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
-    //    /**
-    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-    //     * 
-    //     * @param arg
-    //     * @param argNameOrErrorMsg
-    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
-    //     */
-    //    public static <T extends CharSequence> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
-    //        if (N.isNullOrEmpty(arg)) {
-    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
-    //            } else {
-    //                throw new IllegalArgumentException(argNameOrErrorMsg);
-    //            }
-    //        }
-    //
-    //        return arg;
-    //    }
-    //
-    //    /**
-    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-    //     * 
-    //     * @param arg
-    //     * @param argNameOrErrorMsg
-    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
-    //     */
-    //    public static <T> T[] checkArgNotNullOrEmptty(final T[] arg, final String argNameOrErrorMsg) {
-    //        if (N.isNullOrEmpty(arg)) {
-    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
-    //            } else {
-    //                throw new IllegalArgumentException(argNameOrErrorMsg);
-    //            }
-    //        }
-    //
-    //        return arg;
-    //    }
-    //
-    //    /**
-    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-    //     * 
-    //     * @param arg
-    //     * @param argNameOrErrorMsg
-    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
-    //     */
-    //    public static <T extends Collection<?>> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
-    //        if (N.isNullOrEmpty(arg)) {
-    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
-    //            } else {
-    //                throw new IllegalArgumentException(argNameOrErrorMsg);
-    //            }
-    //        }
-    //
-    //        return arg;
-    //    }
-    //
-    //    /**
-    //     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-    //     * 
-    //     * @param arg
-    //     * @param argNameOrErrorMsg
-    //     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
-    //     */
-    //    public static <T extends Map<?, ?>> T checkArgNotNullOrEmptty(final T arg, final String argNameOrErrorMsg) {
-    //        if (N.isNullOrEmpty(arg)) {
-    //            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-    //                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be null or empty");
-    //            } else {
-    //                throw new IllegalArgumentException(argNameOrErrorMsg);
-    //            }
-    //        }
-    //
-    //        return arg;
-    //    }
-
     /**
-     * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
+     * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
      * 
      * @param arg
      * @param argNameOrErrorMsg
-     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
      */
-    public static void checkArgNotNegative(final int arg, final String argNameOrErrorMsg) {
-        if (arg < 0) {
+    public static <T extends Map<?, ?>> T checkArgNotNullOrEmpty(final T arg, final String argNameOrErrorMsg) {
+        if (N.isNullOrEmpty(arg)) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be null or empty");
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
+    }
+
+    /**
+     * Check if the specified parameter is null or empty or blank
+     *
+     * @param arg
+     * @param msg name of parameter or error message
+     * @return the input parameter
+     * @throws IllegalArgumentException if the specified parameter is null or empty.
+     */
+    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
+    public static <T extends CharSequence> T checkArgNotNullOrEmptyOrBlank(final T arg, final String msg) {
+        if (N.isNullOrEmptyOrBlank(arg)) {
+            if (isNullErrorMsg(msg)) {
+                throw new IllegalArgumentException(msg);
+            } else {
+                throw new IllegalArgumentException("'" + msg + "' can not be null or empty or blank");
+            }
+        }
+
+        return arg;
     }
 
     /**
@@ -10095,14 +5034,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgNotNegative(final long arg, final String argNameOrErrorMsg) {
+    public static int checkArgNotNegative(final int arg, final String argNameOrErrorMsg) {
         if (arg < 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -10112,14 +5053,35 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgNotNegative(final double arg, final String argNameOrErrorMsg) {
+    public static long checkArgNotNegative(final long arg, final String argNameOrErrorMsg) {
         if (arg < 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
+    }
+
+    /**
+     * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
+     * 
+     * @param arg
+     * @param argNameOrErrorMsg
+     * @throws IllegalArgumentException if the specified {@code arg} is negative.
+     */
+    public static double checkArgNotNegative(final double arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be negative: " + arg);
+            } else {
+                throw new IllegalArgumentException(argNameOrErrorMsg);
+            }
+        }
+
+        return arg;
     }
 
     /**
@@ -10129,14 +5091,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgPositive(final int arg, final String argNameOrErrorMsg) {
+    public static int checkArgPositive(final int arg, final String argNameOrErrorMsg) {
         if (arg <= 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be zero or negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -10146,14 +5110,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgPositive(final long arg, final String argNameOrErrorMsg) {
+    public static long checkArgPositive(final long arg, final String argNameOrErrorMsg) {
         if (arg <= 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be zero or negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -10163,14 +5129,16 @@ public final class N {
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
      */
-    public static void checkArgPositive(final double arg, final String argNameOrErrorMsg) {
+    public static double checkArgPositive(final double arg, final String argNameOrErrorMsg) {
         if (arg <= 0) {
             if (argNameOrErrorMsg.indexOf(' ') == N.INDEX_NOT_FOUND) {
-                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can't be zero or negative: " + arg);
+                throw new IllegalArgumentException("'" + argNameOrErrorMsg + "' can not be zero or negative: " + arg);
             } else {
                 throw new IllegalArgumentException(argNameOrErrorMsg);
             }
         }
+
+        return arg;
     }
 
     /**
@@ -10557,7 +5525,7 @@ public final class N {
      */
     public static boolean equals(final boolean[] a, final int fromIndexA, final boolean[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10598,7 +5566,7 @@ public final class N {
      */
     public static boolean equals(final char[] a, final int fromIndexA, final char[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10639,7 +5607,7 @@ public final class N {
      */
     public static boolean equals(final byte[] a, final int fromIndexA, final byte[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10680,7 +5648,7 @@ public final class N {
      */
     public static boolean equals(final short[] a, final int fromIndexA, final short[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10721,7 +5689,7 @@ public final class N {
      */
     public static boolean equals(final int[] a, final int fromIndexA, final int[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10762,7 +5730,7 @@ public final class N {
      */
     public static boolean equals(final long[] a, final int fromIndexA, final long[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10803,7 +5771,7 @@ public final class N {
      */
     public static boolean equals(final float[] a, final int fromIndexA, final float[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10844,7 +5812,7 @@ public final class N {
      */
     public static boolean equals(final double[] a, final int fromIndexA, final double[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10885,7 +5853,7 @@ public final class N {
      */
     public static boolean equals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10918,7 +5886,7 @@ public final class N {
 
     public static boolean deepEquals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -10954,7 +5922,7 @@ public final class N {
      */
     public static boolean equalsIgnoreCase(final String[] a, final int fromIndexA, final String[] b, final int fromIndexB, final int len) {
         if (len < 0) {
-            throw new IllegalArgumentException("'len' can't be negative");
+            throw new IllegalArgumentException("'len' can not be negative");
         }
 
         N.checkFromIndexSize(fromIndexA, len, len(a));
@@ -13259,7 +8227,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatEle(final Collection<T> c, final int n) {
-        checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        checkArgument(n >= 0, "'n' can not be negative: %s", n);
 
         if (n == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -13287,7 +8255,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatAll(final Collection<T> c, final int n) {
-        checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        checkArgument(n >= 0, "'n' can not be negative: %s", n);
 
         if (n == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -13316,8 +8284,8 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatEleToSize(final Collection<T> c, final int size) {
-        checkArgument(size >= 0, "'size' can't be negative: %s", size);
-        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
+        checkArgument(size >= 0, "'size' can not be negative: %s", size);
+        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can not be empty or null when size > 0");
 
         if (size == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -13354,8 +8322,8 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatAllToSize(final Collection<T> c, final int size) {
-        checkArgument(size >= 0, "'size' can't be negative: %s", size);
-        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
+        checkArgument(size >= 0, "'size' can not be negative: %s", size);
+        checkArgument(size == 0 || notNullOrEmpty(c), "Collection can not be empty or null when size > 0");
 
         if (size == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -13918,7 +8886,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -13973,7 +8941,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14028,7 +8996,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14083,7 +9051,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14149,7 +9117,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14204,7 +9172,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14259,7 +9227,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14314,7 +9282,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14394,7 +9362,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14444,7 +9412,7 @@ public final class N {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, c.size());
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14524,11 +9492,12 @@ public final class N {
     * @return
     * @see N#copyOfRange(int[], int, int, int)
     */
+    @SuppressWarnings("deprecation")
     public static String copyOfRange(final String str, int from, final int to, final int step) {
         N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, str.length());
 
         if (step == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+            throw new IllegalArgumentException("The input parameter 'by' can not be zero");
         }
 
         if (from == to || from < to != step > 0) {
@@ -14539,7 +9508,7 @@ public final class N {
             return copyOfRange(str, from, to);
         }
 
-        return N.newString(copyOfRange(N.getCharsForReadOnly(str), from, to, step), true);
+        return StringUtil.newString(copyOfRange(StringUtil.getCharsForReadOnly(str), from, to, step), true);
     }
 
     /**
@@ -15864,506 +10833,6 @@ public final class N {
     //        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
     //    }
 
-    /**
-     * Returns an empty <code>Optional</code> if {@code inclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || inclusiveBeginIndex > exclusiveEndIndex}, 
-     * otherwise an {@code Optional} with String value: {@code str.substring(exclusiveBeginIndex, exclusiveEndIndex)} is returned.
-     * 
-     * @param str
-     * @param inclusiveBeginIndex
-     * @param exclusiveEndIndex
-     * @return
-     */
-    public static Optional<String> substring(String str, int inclusiveBeginIndex, int exclusiveEndIndex) {
-        if (inclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || inclusiveBeginIndex > exclusiveEndIndex) {
-            return Optional.<String> empty();
-        }
-
-        return Optional.of(str.substring(inclusiveBeginIndex, exclusiveEndIndex));
-    }
-
-    /**
-     * Returns an empty <code>Optional</code> if {@code inclusiveBeginIndex < 0}, 
-     * otherwise an {@code Optional} with String value: {@code str.substring(inclusiveBeginIndex)} is returned.
-     * 
-     * @param str
-     * @param inclusiveBeginIndex
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, int inclusiveBeginIndex) {
-        if (inclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return Optional.of(str.substring(inclusiveBeginIndex));
-    }
-
-    /**
-     * Returns an empty <code>Optional</code> if {@code N.isNullOrEmpty(str) || str.indexOf(delimiterOfInclusiveBeginIndex) < 0}, 
-     * otherwise an {@code Optional} with String value: {@code str.substring(str.indexOf(delimiterOfInclusiveBeginIndex))} is returned.
-     * 
-     * @param str
-     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.indexOf(delimiterOfInclusiveBeginIndex)}
-     * @return
-     * @see #substring(String, int)
-     */
-    public static Optional<String> substring(String str, char delimiterOfInclusiveBeginIndex) {
-        if (N.isNullOrEmpty(str)) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, str.indexOf(delimiterOfInclusiveBeginIndex));
-    }
-
-    /**
-     * Returns an empty <code>Optional</code> if {@code N.isNullOrEmpty(str) || str.indexOf(delimiterOfInclusiveBeginIndex) < 0}, 
-     * otherwise an {@code Optional} with String value: {@code str.substring(str.indexOf(delimiterOfInclusiveBeginIndex))} is returned.
-     * 
-     * @param str
-     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.indexOf(delimiterOfInclusiveBeginIndex)}
-     * @return
-     * @see #substring(String, int)
-     */
-    public static Optional<String> substring(String str, String delimiterOfInclusiveBeginIndex) {
-        if (N.isNullOrEmpty(str)) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, str.indexOf(delimiterOfInclusiveBeginIndex));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param inclusiveBeginIndex
-     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1) if inclusiveBeginIndex >= 0}
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, int inclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
-        if (inclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, inclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param inclusiveBeginIndex
-     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1) if inclusiveBeginIndex >= 0}
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, int inclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
-        if (inclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, inclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param inclusiveBeginIndex
-     * @param funcOfExclusiveEndIndex {@code exclusiveEndIndex <- funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex) if inclusiveBeginIndex >= 0}
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, int inclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
-        if (inclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, inclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, char delimiterOfInclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
-    }
-
-    /**
-     * 
-     * @param str
-     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, String delimiterOfInclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
-    }
-
-    /**
-     * 
-     * @param str
-     * @param funcOfInclusiveBeginIndex {@code inclusiveBeginIndex <- funcOfInclusiveBeginIndex.applyAsInt(exclusiveEndIndex)) if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substring(String, int, int)
-     */
-    public static Optional<String> substring(String str, IntUnaryOperator funcOfInclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        return substring(str, funcOfInclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
-    }
-
-    /**
-     * Returns an empty <code>Optional</code> if {@code exclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || exclusiveBeginIndex >= exclusiveEndIndex}, 
-     * otherwise an {@code Optional} with String value: {@code str.substring(exclusiveBeginIndex + 1, exclusiveEndIndex)} is returned.
-     * 
-     * @param str
-     * @param exclusiveBeginIndex
-     * @param exclusiveEndIndex
-     * @return
-     */
-    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || exclusiveBeginIndex >= exclusiveEndIndex) {
-            return Optional.<String> empty();
-        }
-
-        return Optional.of(str.substring(exclusiveBeginIndex + 1, exclusiveEndIndex));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param exclusiveBeginIndex
-     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
-        if (exclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substringBetween(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param exclusiveBeginIndex
-     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
-        if (exclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substringBetween(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param exclusiveBeginIndex
-     * @param funcOfExclusiveEndIndex {@code exclusiveEndIndex <- funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex) if inclusiveBeginIndex >= 0}
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, int exclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
-        if (exclusiveBeginIndex < 0) {
-            return Optional.<String> empty();
-        }
-
-        return substringBetween(str, exclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(exclusiveBeginIndex));
-    }
-
-    /**
-     * 
-     * @param str
-     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, char delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        return substringBetween(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
-    }
-
-    /**
-     * 
-     * @param str
-     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) + delimiterOfExclusiveBeginIndex.length() - 1 if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, String delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        final int index = str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1);
-        final int exclusiveBeginIndex = index >= 0 ? index + delimiterOfExclusiveBeginIndex.length() - 1 : index;
-
-        return substringBetween(str, exclusiveBeginIndex, exclusiveEndIndex);
-    }
-
-    /**
-     * 
-     * @param str
-     * @param funcOfExclusiveBeginIndex {@code exclusiveBeginIndex <- funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex)) if exclusiveEndIndex > 0}
-     * @param exclusiveEndIndex
-     * @return
-     * @see #substringBetween(String, int, int)
-     */
-    public static Optional<String> substringBetween(String str, IntUnaryOperator funcOfExclusiveBeginIndex, int exclusiveEndIndex) {
-        if (exclusiveEndIndex <= 0) {
-            return Optional.<String> empty();
-        }
-
-        return substringBetween(str, funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<IntPair> findAllIndicesBetween(final String str, final char prefix, final char postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndicesBetween(str, 0, str.length(), prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param fromIndex
-     * @param toIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
-        N.checkFromToIndex(fromIndex, toIndex, len(str));
-
-        final List<IntPair> res = new ArrayList<>();
-
-        if (N.isNullOrEmpty(str)) {
-            return res;
-        }
-
-        int idx = str.indexOf(prefix, fromIndex);
-
-        if (idx < 0) {
-            return res;
-        }
-
-        final char[] chs = N.getCharsForReadOnly(str);
-        final Deque<Integer> queue = new LinkedList<>();
-
-        for (int i = idx; i < toIndex; i++) {
-            if (chs[i] == prefix) {
-                queue.push(i + 1);
-            } else if (chs[i] == postfix && queue.size() > 0) {
-                final int startIndex = queue.pop();
-
-                if (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
-                    while (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
-                        res.remove(res.size() - 1);
-                    }
-                }
-
-                res.add(IntPair.of(startIndex, i));
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<IntPair> findAllIndicesBetween(final String str, final String prefix, final String postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndicesBetween(str, 0, str.length(), prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param fromIndex
-     * @param toIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<IntPair> findAllIndicesBetween(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
-        N.checkFromToIndex(fromIndex, toIndex, len(str));
-
-        final List<IntPair> res = new ArrayList<>();
-
-        if (N.isNullOrEmpty(str)) {
-            return res;
-        }
-
-        int idx = str.indexOf(prefix, fromIndex);
-
-        if (idx < 0) {
-            return res;
-        }
-
-        final Deque<Integer> queue = new LinkedList<>();
-        queue.add(idx + prefix.length());
-        int next = -1;
-
-        for (int i = idx + prefix.length(), len = toIndex; i < len;) {
-            if (queue.size() == 0) {
-                idx = next >= i ? next : str.indexOf(prefix, i);
-
-                if (idx < 0) {
-                    break;
-                } else {
-                    queue.add(idx + prefix.length());
-                    i = idx + prefix.length();
-                }
-            }
-
-            idx = str.indexOf(postfix, i);
-
-            if (idx < 0) {
-                break;
-            } else {
-                final int endIndex = idx;
-                idx = res.size() > 0 ? Math.max(res.get(res.size() - 1)._2 + postfix.length(), queue.peekLast()) : queue.peekLast();
-
-                while ((idx = str.indexOf(prefix, idx)) >= 0 && idx < endIndex) {
-                    queue.push(idx + prefix.length());
-                    idx = idx + prefix.length();
-                }
-
-                if (idx > 0) {
-                    next = idx;
-                }
-
-                final int startIndex = queue.pop();
-
-                if (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
-                    while (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
-                        res.remove(res.size() - 1);
-                    }
-                }
-
-                res.add(IntPair.of(startIndex, endIndex));
-
-                i = endIndex + postfix.length();
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<String> findAllSubstringsBetween(final String str, final char prefix, final char postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAllSubstringsBetween(str, 0, str.length(), prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param fromIndex
-     * @param toIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<String> findAllSubstringsBetween(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
-        final List<IntPair> points = findAllIndicesBetween(str, prefix, postfix);
-        final List<String> res = new ArrayList<>(points.size());
-
-        for (IntPair p : points) {
-            res.add(str.substring(p._1, p._2));
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<String> findAllSubstringsBetween(final String str, final String prefix, final String postfix) {
-        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAllSubstringsBetween(str, 0, str.length(), prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
-     * 
-     * @param str
-     * @param fromIndex
-     * @param toIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static List<String> findAllSubstringsBetween(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
-        final List<IntPair> points = findAllIndicesBetween(str, prefix, postfix);
-        final List<String> res = new ArrayList<>(points.size());
-
-        for (IntPair p : points) {
-            res.add(str.substring(p._1, p._2));
-        }
-
-        return res;
-    }
-
     public static int indexOf(final boolean[] a, final boolean e) {
         return indexOf(a, 0, e);
     }
@@ -16625,183 +11094,6 @@ public final class N {
         return INDEX_NOT_FOUND;
     }
 
-    public static int indexOf(final String str, final int targetChar) {
-        if (N.isNullOrEmpty(str)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.indexOf(targetChar);
-    }
-
-    public static int indexOf(final String str, final int fromIndex, final int targetChar) {
-        if (N.isNullOrEmpty(str)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.indexOf(targetChar, fromIndex);
-    }
-
-    public static int indexOf(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.indexOf(substr);
-    }
-
-    public static int indexOf(final String str, final int fromIndex, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length() - fromIndex) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.indexOf(substr, fromIndex);
-    }
-
-    @SafeVarargs
-    public static int indexOfAny(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        final int strLen = str.length();
-        final int strLast = strLen - 1;
-        final int chsLen = chs.length;
-        final int chsLast = chsLen - 1;
-        for (int i = 0; i < strLen; i++) {
-            final char ch = str.charAt(i);
-            for (int j = 0; j < chsLen; j++) {
-                if (chs[j] == ch) {
-                    if (i < strLast && j < chsLast && Character.isHighSurrogate(ch)) {
-                        // ch is a supplementary character
-                        if (chs[j + 1] == str.charAt(i + 1)) {
-                            return i;
-                        }
-                    } else {
-                        return i;
-                    }
-                }
-            }
-        }
-
-        return N.INDEX_NOT_FOUND;
-    }
-
-    @SafeVarargs
-    public static int indexOfAny(final String str, final String... substrs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        int result = N.INDEX_NOT_FOUND;
-        int tmp = 0;
-
-        for (String substr : substrs) {
-            if (N.isNullOrEmpty(substr)) {
-                continue;
-            }
-
-            tmp = indexOf(str, substr);
-
-            if (tmp == N.INDEX_NOT_FOUND) {
-                continue;
-            } else if (result == N.INDEX_NOT_FOUND || tmp < result) {
-                result = tmp;
-            }
-        }
-
-        return result;
-    }
-
-    @SafeVarargs
-    public static int indexOfAnyBut(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        if (N.isNullOrEmpty(chs)) {
-            return 0;
-        }
-
-        final int strLen = str.length();
-        final int strLast = strLen - 1;
-        final int chsLen = chs.length;
-        final int chsLast = chsLen - 1;
-        outer: for (int i = 0; i < strLen; i++) {
-            final char ch = str.charAt(i);
-            for (int j = 0; j < chsLen; j++) {
-                if (chs[j] == ch) {
-                    if (i < strLast && j < chsLast && Character.isHighSurrogate(ch)) {
-                        if (chs[j + 1] == str.charAt(i + 1)) {
-                            continue outer;
-                        }
-                    } else {
-                        continue outer;
-                    }
-                }
-            }
-            return i;
-        }
-
-        return N.INDEX_NOT_FOUND;
-    }
-
-    public static int indexOf(final String str, final String substr, final String delimiter) {
-        return indexOf(str, 0, substr, delimiter);
-    }
-
-    /**
-     *
-     * @param str
-     * @param fromIndex
-     *            the index from which to start the search.
-     * @param substr
-     * @param delimiter
-     * @return
-     */
-    public static int indexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return INDEX_NOT_FOUND;
-        }
-
-        int index = str.indexOf(substr, fromIndex);
-
-        if (index < 0) {
-            return INDEX_NOT_FOUND;
-        }
-
-        if (index + substr.length() == str.length()) {
-            return index;
-        } else if (str.length() >= index + substr.length() + delimiter.length()) {
-            for (int i = 0, j = index + substr.length(), seperatorLen = delimiter.length(); i < seperatorLen;) {
-                if (delimiter.charAt(i++) != str.charAt(j++)) {
-                    return INDEX_NOT_FOUND;
-                }
-            }
-
-            return index;
-        }
-
-        return INDEX_NOT_FOUND;
-    }
-
-    public static int indexOfIgnoreCase(final String str, final String substr) {
-        return indexOfIgnoreCase(str, 0, substr);
-    }
-
-    public static int indexOfIgnoreCase(final String str, final int fromIndex, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length() - fromIndex) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        for (int i = fromIndex, len = str.length(), substrLen = substr.length(), end = len - substrLen + 1; i < end; i++) {
-            if (str.regionMatches(true, i, substr, 0, substrLen)) {
-                return i;
-            }
-        }
-
-        return N.INDEX_NOT_FOUND;
-    }
-
     /**
      *
      * @see java.util.Collections#indexOfSubList(List, List)
@@ -16813,53 +11105,6 @@ public final class N {
         }
 
         return Collections.indexOfSubList(sourceList, targetSubList);
-    }
-
-    /**
-     * <p>
-     * Finds the n-th index within a String, handling {@code null}.
-     * </p>
-     *
-     * @param str
-     * @param substr
-     * @param ordinal
-     *            the n-th {@code searchStr} to find
-     * @return the n-th index of the search String, {@code -1} (
-     *         {@code INDEX_NOT_FOUND}) if no match or {@code null} or empty
-     *         string input
-     */
-    public static int ordinalIndexOf(final String str, final String substr, final int ordinal) {
-        return ordinalIndexOf(str, substr, ordinal, false);
-    }
-
-    // Shared code between ordinalIndexOf(String,String,int) and
-    // lastOrdinalIndexOf(String,String,int)
-    private static int ordinalIndexOf(final String str, final String substr, final int ordinal, final boolean isLastIndex) {
-        if (ordinal < 1) {
-            throw new IllegalArgumentException("ordinal(" + ordinal + ") must be >= 1");
-        }
-
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        int fromIndex = isLastIndex ? str.length() : 0;
-
-        for (int found = 0; fromIndex >= 0;) {
-            fromIndex = isLastIndex ? str.lastIndexOf(substr, fromIndex) : str.indexOf(substr, fromIndex);
-
-            if (fromIndex < 0) {
-                return N.INDEX_NOT_FOUND;
-            }
-
-            if (++found >= ordinal) {
-                break;
-            }
-
-            fromIndex = isLastIndex ? (fromIndex - substr.length()) : (fromIndex + substr.length());
-        }
-
-        return fromIndex;
     }
 
     public static int lastIndexOf(final boolean[] a, final boolean e) {
@@ -17159,210 +11404,6 @@ public final class N {
         return INDEX_NOT_FOUND;
     }
 
-    public static int lastIndexOf(final String str, final int targetChar) {
-        if (N.isNullOrEmpty(str)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.lastIndexOf(targetChar);
-    }
-
-    /**
-     * Returns the index within this string of the last occurrence of the
-     * specified character, searching backward starting at the specified index.
-     * For values of <code>ch</code> in the range from 0 to 0xFFFF (inclusive),
-     * the index returned is the largest value <i>k</i> such that: <blockquote>
-     *
-     * <pre>
-     * (this.charAt(<i>k</i>) == ch) && (<i>k</i> &lt;= fromIndex)
-     * </pre>
-     *
-     * </blockquote> is true. For other values of <code>ch</code>, it is the
-     * largest value <i>k</i> such that: <blockquote>
-     *
-     * <pre>
-     * (this.codePointAt(<i>k</i>) == ch) && (<i>k</i> &lt;= fromIndex)
-     * </pre>
-     *
-     * </blockquote> is true. In either case, if no such character occurs in
-     * this string at or before position <code>fromIndex</code>, then
-     * <code>-1</code> is returned.
-     *
-     * <p>
-     * All indices are specified in <code>char</code> values (Unicode code
-     * units).
-     *
-     * @param str
-     * @param fromIndex
-     *            the index to start the search from. There is no restriction on
-     *            the value of <code>fromIndex</code>. If it is greater than or
-     *            equal to the length of this string, it has the same effect as
-     *            if it were equal to one less than the length of this string:
-     *            this entire string may be searched. If it is negative, it has
-     *            the same effect as if it were -1: -1 is returned.
-     * @param targetChar
-     *            a character (Unicode code point).
-     * @return the index of the last occurrence of the character in the
-     *         character sequence represented by this object that is less than
-     *         or equal to <code>fromIndex</code>, or <code>-1</code> if the
-     *         character does not occur before that point.
-     */
-    public static int lastIndexOf(final String str, final int fromIndex, final int targetChar) {
-        if (N.isNullOrEmpty(str)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.lastIndexOf(targetChar, fromIndex);
-    }
-
-    public static int lastIndexOf(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.lastIndexOf(substr);
-    }
-
-    /**
-     * Returns the index within <code>str</code> of the last occurrence of the
-     * specified <code>substr</code>, searching backward starting at the
-     * specified index.
-     *
-     * <p>
-     * The returned index is the largest value <i>k</i> for which: <blockquote>
-     *
-     * <pre>
-     * <i>k</i> &lt;= fromIndex && str.startsWith(substr, <i>k</i>)
-     * </pre>
-     *
-     * </blockquote> If no such value of <i>k</i> exists, then {@code -1} is
-     * returned.
-     *
-     * @param str
-     * @param fromIndex
-     * @param substr
-     * @return
-     */
-    public static int lastIndexOf(final String str, final int fromIndex, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return str.lastIndexOf(substr, fromIndex);
-    }
-
-    @SafeVarargs
-    public static int lastIndexOfAny(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        int result = N.INDEX_NOT_FOUND;
-        int tmp = 0;
-
-        for (char ch : chs) {
-            tmp = str.lastIndexOf(ch);
-
-            if (tmp == N.INDEX_NOT_FOUND) {
-                continue;
-            } else if (result == N.INDEX_NOT_FOUND || tmp > result) {
-                result = tmp;
-            }
-        }
-
-        return result;
-    }
-
-    @SafeVarargs
-    public static int lastIndexOfAny(final String str, final String... substrs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        int result = N.INDEX_NOT_FOUND;
-        int tmp = 0;
-
-        for (String substr : substrs) {
-            if (N.isNullOrEmpty(substr)) {
-                continue;
-            }
-
-            tmp = str.lastIndexOf(substr);
-
-            if (tmp == N.INDEX_NOT_FOUND) {
-                continue;
-            } else if (result == N.INDEX_NOT_FOUND || tmp > result) {
-                result = tmp;
-            }
-        }
-
-        return result;
-    }
-
-    public static int lastIndexOf(final String str, final String substr, final String delimiter) {
-        return lastIndexOf(str, str.length(), substr, delimiter);
-    }
-
-    /**
-     *
-     * @param str
-     * @param fromIndex
-     *            the start index to traverse backwards from
-     * @param substr
-     * @param delimiter
-     * @return
-     */
-    public static int lastIndexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return INDEX_NOT_FOUND;
-        }
-
-        // int index = str.lastIndexOf(substr, min(fromIndex, str.length() -
-        // 1)); // Refer to String.lastIndexOf(String, int). the result is same
-        // as below line.
-        int index = str.lastIndexOf(substr, min(fromIndex, str.length()));
-
-        if (index < 0) {
-            return INDEX_NOT_FOUND;
-        }
-
-        if (index + substr.length() == str.length()) {
-            return index;
-        } else if (str.length() >= index + substr.length() + delimiter.length()) {
-            for (int i = 0, j = index + substr.length(), len = delimiter.length(); i < len;) {
-                if (delimiter.charAt(i++) != str.charAt(j++)) {
-                    return INDEX_NOT_FOUND;
-                }
-            }
-
-            return index;
-        }
-
-        return INDEX_NOT_FOUND;
-    }
-
-    public static int lastIndexOfIgnoreCase(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        return lastIndexOfIgnoreCase(str, str.length(), substr);
-    }
-
-    public static int lastIndexOfIgnoreCase(final String str, final int fromIndex, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        for (int i = N.min(fromIndex, str.length() - substr.length()), substrLen = substr.length(); i >= 0; i--) {
-            if (str.regionMatches(true, i, substr, 0, substrLen)) {
-                return i;
-            }
-        }
-
-        return N.INDEX_NOT_FOUND;
-    }
-
     /**
      *
      * @see java.util.Collections#lastIndexOfSubList(List, List)
@@ -17373,23 +11414,6 @@ public final class N {
         }
 
         return Collections.lastIndexOfSubList(sourceList, targetSubList);
-    }
-
-    /**
-     * <p>
-     * Finds the n-th last index within a String, handling {@code null}.
-     * </p>
-     *
-     * @param str
-     * @param substr
-     * @param ordinal
-     *            the n-th last {@code searchStr} to find
-     * @return the n-th last index of the search CharSequence, {@code -1} (
-     *         {@code INDEX_NOT_FOUND}) if no match or {@code null} or empty
-     *         string input
-     */
-    public static int lastOrdinalIndexOf(final String str, final String substr, final int ordinal) {
-        return ordinalIndexOf(str, substr, ordinal, true);
     }
 
     public static int occurrencesOf(final boolean[] a, final boolean objectToFind) {
@@ -17604,492 +11628,12 @@ public final class N {
         return c.contains(e);
     }
 
-    public static boolean contains(final String str, final int targetChar) {
-        if (N.isNullOrEmpty(str)) {
-            return false;
-        }
-
-        return indexOf(str, targetChar) != N.INDEX_NOT_FOUND;
-    }
-
-    public static boolean contains(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return false;
-        }
-
-        return indexOf(str, substr) != N.INDEX_NOT_FOUND;
-    }
-
-    @SafeVarargs
-    public static boolean containsAny(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
-            return false;
-        }
-
-        return indexOfAny(str, chs) != N.INDEX_NOT_FOUND;
-    }
-
-    @SafeVarargs
-    public static boolean containsOnly(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
-            return false;
-        }
-
-        return indexOfAnyBut(str, chs) == N.INDEX_NOT_FOUND;
-    }
-
-    @SafeVarargs
-    public static boolean containsNone(final String str, final char... chs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
-            return true;
-        }
-
-        final int strLen = str.length();
-        final int strLast = strLen - 1;
-        final int chsLen = chs.length;
-        final int chsLast = chsLen - 1;
-        for (int i = 0; i < strLen; i++) {
-            final char ch = str.charAt(i);
-            for (int j = 0; j < chsLen; j++) {
-                if (chs[j] == ch) {
-                    if (Character.isHighSurrogate(ch)) {
-                        if (j == chsLast) {
-                            // missing low surrogate, fine, like
-                            // String.indexOf(String)
-                            return false;
-                        }
-                        if (i < strLast && chs[j + 1] == str.charAt(i + 1)) {
-                            return false;
-                        }
-                    } else {
-                        // ch is in the Basic Multilingual Plane
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean contains(final String str, final String substr, final String delimiter) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return false;
-        }
-
-        return indexOf(str, substr, delimiter) != INDEX_NOT_FOUND;
-    }
-
-    public static boolean containsIgnoreCase(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return false;
-        }
-
-        return indexOfIgnoreCase(str, substr) != N.INDEX_NOT_FOUND;
-    }
-
-    // From org.springframework.util.StringUtils, under Apache License 2.0
-    public static boolean containsWhitespace(final String str) {
-        if (N.isNullOrEmpty(str)) {
-            return false;
-        }
-
-        final char[] chars = N.getCharsForReadOnly(str);
-        for (int i = 0, len = str.length(); i < len; i++) {
-            if (Character.isWhitespace(chars[i])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean startsWith(final String str, final String prefix) {
-        return startsWith(str, prefix, false);
-    }
-
-    public static boolean startsWithIgnoreCase(final String str, final String prefix) {
-        return startsWith(str, prefix, true);
-    }
-
-    private static boolean startsWith(final String str, final String prefix, final boolean ignoreCase) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(prefix) || prefix.length() > str.length()) {
-            return false;
-        }
-
-        return ignoreCase ? str.regionMatches(true, 0, prefix, 0, prefix.length()) : str.startsWith(prefix);
-    }
-
-    @SafeVarargs
-    public static boolean startsWithAny(final String str, final String... substrs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
-            return false;
-        }
-
-        for (final String substr : substrs) {
-            if (startsWith(str, substr)) {
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean endsWith(final String str, final String suffix) {
-        return endsWith(str, suffix, false);
-    }
-
-    public static boolean endsWithIgnoreCase(final String str, final String suffix) {
-        return endsWith(str, suffix, true);
-    }
-
-    private static boolean endsWith(final String str, final String suffix, final boolean ignoreCase) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(suffix) || suffix.length() > str.length()) {
-            return false;
-        }
-
-        final int strOffset = str.length() - suffix.length();
-
-        return ignoreCase ? str.regionMatches(true, strOffset, suffix, 0, suffix.length()) : str.endsWith(suffix);
-    }
-
-    @SafeVarargs
-    public static boolean endsWithAny(final String str, final String... substrs) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
-            return false;
-        }
-
-        for (final String searchString : substrs) {
-            if (endsWith(str, searchString)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * <p>
-     * Compares two Strings, and returns the index at which the Stringss begin
-     * to differ.
-     * </p>
-     *
-     * <p>
-     * For example,
-     * {@code indexOfDifference("i am a machine", "i am a robot") -> 7}
-     * </p>
-     *
-     * <pre>
-     * N.indexOfDifference(null, null) = -1
-     * N.indexOfDifference("", "") = -1
-     * N.indexOfDifference("", "abc") = 0
-     * N.indexOfDifference("abc", "") = 0
-     * N.indexOfDifference("abc", "abc") = -1
-     * N.indexOfDifference("ab", "abxyz") = 2
-     * N.indexOfDifference("abcde", "abxyz") = 2
-     * N.indexOfDifference("abcde", "xyz") = 0
-     * </pre>
-     *
-     * @param a
-     *            the first String, may be null
-     * @param b
-     *            the second String, may be null
-     * @return the index where cs1 and cs2 begin to differ; -1 if they are equal
-     */
-    public static int indexOfDifference(final String a, final String b) {
-        if (a == b || (N.isNullOrEmpty(a) && N.isNullOrEmpty(b))) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return 0;
-        }
-
-        int i = 0;
-        for (int len = N.min(a.length(), b.length()); i < len; i++) {
-            if (a.charAt(i) != b.charAt(i)) {
-                break;
-            }
-        }
-
-        if (i < b.length() || i < a.length()) {
-            return i;
-        }
-
-        return N.INDEX_NOT_FOUND;
-    }
-
-    /**
-     * <p>
-     * Compares all Strings in an array and returns the index at which the
-     * Strings begin to differ.
-     * </p>
-     *
-     * <p>
-     * For example,
-     * <code>indexOfDifference(new String[] {"i am a machine", "i am a robot"}) -&gt; 7</code>
-     * </p>
-     *
-     * <pre>
-     * N.indexOfDifference(null) = -1
-     * N.indexOfDifference(new String[] {}) = -1
-     * N.indexOfDifference(new String[] {"abc"}) = -1
-     * N.indexOfDifference(new String[] {null, null}) = -1
-     * N.indexOfDifference(new String[] {"", ""}) = -1
-     * N.indexOfDifference(new String[] {"", null}) = -1
-     * N.indexOfDifference(new String[] {"abc", null, null}) = 0
-     * N.indexOfDifference(new String[] {null, null, "abc"}) = 0
-     * N.indexOfDifference(new String[] {"", "abc"}) = 0
-     * N.indexOfDifference(new String[] {"abc", ""}) = 0
-     * N.indexOfDifference(new String[] {"abc", "abc"}) = -1
-     * N.indexOfDifference(new String[] {"abc", "a"}) = 1
-     * N.indexOfDifference(new String[] {"ab", "abxyz"}) = 2
-     * N.indexOfDifference(new String[] {"abcde", "abxyz"}) = 2
-     * N.indexOfDifference(new String[] {"abcde", "xyz"}) = 0
-     * N.indexOfDifference(new String[] {"xyz", "abcde"}) = 0
-     * N.indexOfDifference(new String[] {"i am a machine", "i am a robot"}) = 7
-     * </pre>
-     *
-     * @param strs
-     *            array of Strings, entries may be null
-     * @return the index where the strings begin to differ; -1 if they are all
-     *         equal or null/empty
-     */
-    @SafeVarargs
-    public static int indexOfDifference(final String... strs) {
-        if (N.isNullOrEmpty(strs) || strs.length == 1) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        final int arrayLen = strs.length;
-        int shortestStrLen = Integer.MAX_VALUE;
-        int longestStrLen = 0;
-
-        // find the min and max string lengths; this avoids checking to make
-        // sure we are not exceeding the length of the string each time through
-        // the bottom loop.
-        for (int i = 0; i < arrayLen; i++) {
-            if (strs[i] == null) {
-                shortestStrLen = 0;
-            } else {
-                shortestStrLen = Math.min(strs[i].length(), shortestStrLen);
-                longestStrLen = Math.max(strs[i].length(), longestStrLen);
-            }
-        }
-
-        // handle lists containing all nulls or all empty strings
-        if (longestStrLen == 0) {
-            return N.INDEX_NOT_FOUND;
-        }
-
-        if (shortestStrLen == 0) {
-            return 0;
-        }
-
-        // find the position with the first difference across all strings
-        int firstDiff = -1;
-        for (int stringPos = 0; stringPos < shortestStrLen; stringPos++) {
-            final char comparisonChar = strs[0].charAt(stringPos);
-            for (int arrayPos = 1; arrayPos < arrayLen; arrayPos++) {
-                if (strs[arrayPos].charAt(stringPos) != comparisonChar) {
-                    firstDiff = stringPos;
-                    break;
-                }
-            }
-
-            if (firstDiff != -1) {
-                break;
-            }
-        }
-
-        if (firstDiff == -1 && shortestStrLen != longestStrLen) {
-            // we compared all of the characters up to the length of the
-            // shortest string and didn't find a match, but the string lengths
-            // vary, so return the length of the shortest string.
-            return shortestStrLen;
-        }
-
-        return firstDiff;
-    }
-
-    // --------- from Google Guava
-
-    /**
-     * Note: copy rights: Google Guava.
-     *
-     * Returns the longest string {@code prefix} such that
-     * {@code a.toString().startsWith(prefix) && b.toString().startsWith(prefix)}
-     * , taking care not to split surrogate pairs. If {@code a} and {@code b}
-     * have no common prefix, returns the empty string.
-     *
-     */
-    public static String commonPrefix(final String a, final String b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_STRING;
-        }
-
-        int maxPrefixLength = Math.min(a.length(), b.length());
-        int p = 0;
-
-        while (p < maxPrefixLength && a.charAt(p) == b.charAt(p)) {
-            p++;
-        }
-
-        if (validSurrogatePairAt(a, p - 1) || validSurrogatePairAt(b, p - 1)) {
-            p--;
-        }
-
-        if (p == a.length()) {
-            return a.toString();
-        } else if (p == b.length()) {
-            return b.toString();
-        } else {
-            return a.subSequence(0, p).toString();
-        }
-    }
-
-    @SafeVarargs
-    public static String commonPrefix(final String... strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return N.EMPTY_STRING;
-        }
-
-        if (strs.length == 1) {
-            return N.isNullOrEmpty(strs[0]) ? N.EMPTY_STRING : strs[0];
-        }
-
-        String commonPrefix = commonPrefix(strs[0], strs[1]);
-
-        if (N.isNullOrEmpty(commonPrefix)) {
-            return N.EMPTY_STRING;
-        }
-
-        for (int i = 2, len = strs.length; i < len; i++) {
-            commonPrefix = commonPrefix(commonPrefix, strs[i]);
-
-            if (N.isNullOrEmpty(commonPrefix)) {
-                return commonPrefix;
-            }
-        }
-
-        return commonPrefix;
-    }
-
-    /**
-     * Note: copy rights: Google Guava.
-     *
-     * Returns the longest string {@code suffix} such that
-     * {@code a.toString().endsWith(suffix) && b.toString().endsWith(suffix)},
-     * taking care not to split surrogate pairs. If {@code a} and {@code b} have
-     * no common suffix, returns the empty string.
-     *
-     */
-    public static String commonSuffix(final String a, final String b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_STRING;
-        }
-
-        final int aLength = a.length();
-        final int bLength = b.length();
-        int maxSuffixLength = Math.min(aLength, bLength);
-        int s = 0;
-
-        while (s < maxSuffixLength && a.charAt(aLength - s - 1) == b.charAt(bLength - s - 1)) {
-            s++;
-        }
-
-        if (validSurrogatePairAt(a, aLength - s - 1) || validSurrogatePairAt(b, bLength - s - 1)) {
-            s--;
-        }
-
-        if (s == aLength) {
-            return a.toString();
-        } else if (s == bLength) {
-            return b.toString();
-        } else {
-            return a.subSequence(aLength - s, aLength).toString();
-        }
-    }
-
-    @SafeVarargs
-    public static String commonSuffix(final String... strs) {
-        if (N.isNullOrEmpty(strs)) {
-            return N.EMPTY_STRING;
-        }
-
-        if (strs.length == 1) {
-            return N.isNullOrEmpty(strs[0]) ? N.EMPTY_STRING : strs[0];
-        }
-
-        String commonSuffix = commonSuffix(strs[0], strs[1]);
-
-        if (N.isNullOrEmpty(commonSuffix)) {
-            return N.EMPTY_STRING;
-        }
-
-        for (int i = 2, len = strs.length; i < len; i++) {
-            commonSuffix = commonSuffix(commonSuffix, strs[i]);
-
-            if (N.isNullOrEmpty(commonSuffix)) {
-                return commonSuffix;
-            }
-        }
-
-        return commonSuffix;
-    }
-
-    // --------- from Google Guava
-
-    /**
-     * Note: copy rights: Google Guava.
-     *
-     * True when a valid surrogate pair starts at the given {@code index} in the
-     * given {@code string}. Out-of-range indexes return false.
-     */
-    static boolean validSurrogatePairAt(final String str, final int index) {
-        return index >= 0 && index <= (str.length() - 2) && Character.isHighSurrogate(str.charAt(index)) && Character.isLowSurrogate(str.charAt(index + 1));
-    }
-
-    public static int countMatches(final String str, final char ch) {
-        if (N.isNullOrEmpty(str)) {
-            return 0;
-        }
-
-        int count = 0;
-        final char[] chs = N.getCharsForReadOnly(str);
-
-        for (int i = 0, len = chs.length; i < len; i++) {
-            if (chs[i] == ch) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public static int countMatches(final String str, final String substr) {
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
-            return 0;
-        }
-
-        int count = 0;
-        int index = 0;
-
-        while ((index = str.indexOf(substr, index)) != INDEX_NOT_FOUND) {
-            count++;
-            index += substr.length();
-        }
-
-        return count;
-    }
-
     public static <E extends Exception> void forEach(final int startInclusive, final int endExclusive, Try.IntConsumer<E> action) throws E {
         forEach(startInclusive, endExclusive, 1, action);
     }
 
     public static <E extends Exception> void forEach(final int startInclusive, final int endExclusive, final int step, Try.IntConsumer<E> action) throws E {
-        N.checkArgument(step != 0, "The input parameter 'step' can't be zero");
+        N.checkArgument(step != 0, "The input parameter 'step' can not be zero");
 
         if (endExclusive == startInclusive || endExclusive > startInclusive != step > 0) {
             return;
@@ -18110,7 +11654,7 @@ public final class N {
 
     public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final int step, final T a,
             Try.ObjIntConsumer<T, E> action) throws E {
-        N.checkArgument(step != 0, "The input parameter 'step' can't be zero");
+        N.checkArgument(step != 0, "The input parameter 'step' can not be zero");
 
         if (endExclusive == startInclusive || endExclusive > startInclusive != step > 0) {
             return;
@@ -18126,7 +11670,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> void forEach(final T[] a, final Try.Consumer<? super T, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18139,7 +11683,7 @@ public final class N {
 
     public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18157,7 +11701,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> void forEach(final T[] a, final Try.IndexedConsumer<? super T, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18169,7 +11713,7 @@ public final class N {
     public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.IndexedConsumer<? super T, E> action)
             throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(a));
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18187,7 +11731,7 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.Consumer<? super T, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18213,7 +11757,7 @@ public final class N {
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
@@ -18274,7 +11818,7 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.IndexedConsumer<? super T, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18301,7 +11845,7 @@ public final class N {
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.IndexedConsumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
@@ -18363,8 +11907,8 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEach(final T[] a,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18383,8 +11927,8 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEach(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18404,9 +11948,9 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final T[] a,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(flatMapper2);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(flatMapper2);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18432,9 +11976,9 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(flatMapper2);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(flatMapper2);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18458,7 +12002,7 @@ public final class N {
     }
 
     public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final Try.BiConsumer<? super A, ? super B, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
@@ -18471,7 +12015,7 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Try.BiConsumer<? super A, ? super B, E> action)
             throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
@@ -18487,7 +12031,7 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c,
             final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
@@ -18500,7 +12044,7 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
@@ -18517,7 +12061,7 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiConsumer<? super A, ? super B, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         final int lenA = len(a);
         final int lenB = len(b);
@@ -18529,7 +12073,7 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiConsumer<? super A, ? super B, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18543,7 +12087,7 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         final int lenA = len(a);
         final int lenB = len(b);
@@ -18556,7 +12100,7 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18571,7 +12115,7 @@ public final class N {
     }
 
     //    public static <T, E extends Exception> void forEachNonNull(final T[] a, final Try.Consumer<? super T, E> action) throws E {
-    //        N.requireNonNull(action);
+    //        N.checkArgNotNull(action);
     //
     //        if (N.isNullOrEmpty(a)) {
     //            return;
@@ -18585,7 +12129,7 @@ public final class N {
     //    }
     //
     //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Try.Consumer<? super T, E> action) throws E {
-    //        N.requireNonNull(action);
+    //        N.checkArgNotNull(action);
     //
     //        if (N.isNullOrEmpty(c)) {
     //            return;
@@ -18600,8 +12144,8 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final T[] a,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18624,8 +12168,8 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18649,9 +12193,9 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final T[] a,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(flatMapper2);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(flatMapper2);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -18683,9 +12227,9 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
-        N.requireNonNull(flatMapper);
-        N.requireNonNull(flatMapper2);
-        N.requireNonNull(action);
+        N.checkArgNotNull(flatMapper);
+        N.checkArgNotNull(flatMapper2);
+        N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c)) {
             return;
@@ -18715,7 +12259,7 @@ public final class N {
     }
 
     public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -18725,7 +12269,7 @@ public final class N {
     }
 
     public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -18754,7 +12298,7 @@ public final class N {
     public static <E extends Exception> BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -18773,7 +12317,7 @@ public final class N {
     }
 
     public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -18783,7 +12327,7 @@ public final class N {
     }
 
     public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -18811,7 +12355,7 @@ public final class N {
     public static <E extends Exception> CharList filter(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -18830,7 +12374,7 @@ public final class N {
     }
 
     public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -18840,7 +12384,7 @@ public final class N {
     }
 
     public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -18868,7 +12412,7 @@ public final class N {
     public static <E extends Exception> ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -18887,7 +12431,7 @@ public final class N {
     }
 
     public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -18897,7 +12441,7 @@ public final class N {
     }
 
     public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -18925,7 +12469,7 @@ public final class N {
     public static <E extends Exception> ShortList filter(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -18944,7 +12488,7 @@ public final class N {
     }
 
     public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -18954,7 +12498,7 @@ public final class N {
     }
 
     public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -18982,7 +12526,7 @@ public final class N {
     public static <E extends Exception> IntList filter(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter, final int max)
             throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -19001,7 +12545,7 @@ public final class N {
     }
 
     public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19011,7 +12555,7 @@ public final class N {
     }
 
     public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19039,7 +12583,7 @@ public final class N {
     public static <E extends Exception> LongList filter(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19058,7 +12602,7 @@ public final class N {
     }
 
     public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -19068,7 +12612,7 @@ public final class N {
     }
 
     public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -19096,7 +12640,7 @@ public final class N {
     public static <E extends Exception> FloatList filter(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -19115,7 +12659,7 @@ public final class N {
     }
 
     public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -19125,7 +12669,7 @@ public final class N {
     }
 
     public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -19154,7 +12698,7 @@ public final class N {
     public static <E extends Exception> DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -19173,7 +12717,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -19183,7 +12727,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -19211,7 +12755,7 @@ public final class N {
     public static <T, E extends Exception> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter,
             final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -19230,7 +12774,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
@@ -19240,7 +12784,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter, final int max) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
@@ -19257,7 +12801,7 @@ public final class N {
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -19305,7 +12849,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter,
             final IntFunction<R> supplier) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -19316,7 +12860,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max,
             final IntFunction<R> supplier) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -19345,7 +12889,7 @@ public final class N {
     public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -19365,7 +12909,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
             final IntFunction<R> supplier) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -19376,7 +12920,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
             final int max, final IntFunction<R> supplier) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -19393,7 +12937,7 @@ public final class N {
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -19444,7 +12988,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -19466,7 +13010,7 @@ public final class N {
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
@@ -19482,7 +13026,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final Try.ToBooleanFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new BooleanList();
@@ -19504,7 +13048,7 @@ public final class N {
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new BooleanList();
@@ -19538,7 +13082,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final Try.ToCharFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -19560,7 +13104,7 @@ public final class N {
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final Try.ToCharFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new CharList();
@@ -19576,7 +13120,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final Try.ToCharFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new CharList();
@@ -19598,7 +13142,7 @@ public final class N {
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToCharFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new CharList();
@@ -19632,7 +13176,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final Try.ToByteFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -19654,7 +13198,7 @@ public final class N {
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final Try.ToByteFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
@@ -19670,7 +13214,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final Try.ToByteFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
@@ -19692,7 +13236,7 @@ public final class N {
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToByteFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ByteList();
@@ -19726,7 +13270,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final Try.ToShortFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -19748,7 +13292,7 @@ public final class N {
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
@@ -19764,7 +13308,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final Try.ToShortFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new ShortList();
@@ -19786,7 +13330,7 @@ public final class N {
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ShortList();
@@ -19820,7 +13364,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -19842,7 +13386,7 @@ public final class N {
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new IntList();
@@ -19858,7 +13402,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new IntList();
@@ -19880,7 +13424,7 @@ public final class N {
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new IntList();
@@ -19914,7 +13458,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19936,7 +13480,7 @@ public final class N {
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new LongList();
@@ -19952,7 +13496,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new LongList();
@@ -19974,7 +13518,7 @@ public final class N {
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new LongList();
@@ -20008,7 +13552,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final Try.ToFloatFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -20030,7 +13574,7 @@ public final class N {
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
@@ -20046,7 +13590,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final Try.ToFloatFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new FloatList();
@@ -20068,7 +13612,7 @@ public final class N {
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new FloatList();
@@ -20102,7 +13646,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -20124,7 +13668,7 @@ public final class N {
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
@@ -20140,7 +13684,7 @@ public final class N {
     }
 
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new DoubleList();
@@ -20162,7 +13706,7 @@ public final class N {
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new DoubleList();
@@ -20196,7 +13740,7 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> map(final T[] a, final Try.Function<? super T, ? extends R, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20218,7 +13762,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20234,7 +13778,7 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final Try.Function<? super T, ? extends R, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
@@ -20256,7 +13800,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -20291,7 +13835,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final Try.Function<? super T, ? extends R, E> func,
             final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20315,7 +13859,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20332,7 +13876,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -20356,7 +13900,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -20390,7 +13934,7 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20412,7 +13956,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20432,7 +13976,7 @@ public final class N {
 
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
@@ -20454,7 +13998,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -20493,7 +14037,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20517,7 +14061,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20537,7 +14081,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -20561,7 +14105,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -20621,8 +14165,8 @@ public final class N {
     public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final T[] a,
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
             final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
-        N.requireNonNull(func);
-        N.requireNonNull(func2);
+        N.checkArgNotNull(func);
+        N.checkArgNotNull(func2);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20669,8 +14213,8 @@ public final class N {
     public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
             final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
-        N.requireNonNull(func);
-        N.requireNonNull(func2);
+        N.checkArgNotNull(func);
+        N.checkArgNotNull(func2);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -20696,7 +14240,7 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20718,7 +14262,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -20737,7 +14281,7 @@ public final class N {
     }
 
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final Try.Function<? super T, ? extends R[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
@@ -20759,7 +14303,7 @@ public final class N {
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -20798,7 +14342,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func,
             final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20822,7 +14366,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
@@ -20842,7 +14386,7 @@ public final class N {
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -20866,7 +14410,7 @@ public final class N {
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return supplier.apply(0);
@@ -21552,7 +15096,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21574,7 +15118,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21601,7 +15145,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final char[] a, final Try.CharPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21623,7 +15167,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21650,7 +15194,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final byte[] a, final Try.BytePredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21672,7 +15216,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21699,7 +15243,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final short[] a, final Try.ShortPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21721,7 +15265,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21748,7 +15292,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final int[] a, final Try.IntPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21770,7 +15314,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21797,7 +15341,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final long[] a, final Try.LongPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21819,7 +15363,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21846,7 +15390,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final float[] a, final Try.FloatPredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21868,7 +15412,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21895,7 +15439,7 @@ public final class N {
      * @return
      */
     public static <E extends Exception> int count(final double[] a, final Try.DoublePredicate<E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21917,7 +15461,7 @@ public final class N {
      */
     public static <E extends Exception> int count(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21944,7 +15488,7 @@ public final class N {
      * @return
      */
     public static <T, E extends Exception> int count(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21966,7 +15510,7 @@ public final class N {
      */
     public static <T, E extends Exception> int count(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(a)) {
             return 0;
@@ -21993,7 +15537,7 @@ public final class N {
      * @return
      */
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c)) {
             return 0;
@@ -22016,7 +15560,7 @@ public final class N {
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, len(c));
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return 0;
@@ -23090,7 +16634,7 @@ public final class N {
      */
     public static List<boolean[]> split(final boolean[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23121,7 +16665,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23148,7 +16692,7 @@ public final class N {
      */
     public static List<char[]> split(final char[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23179,7 +16723,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23206,7 +16750,7 @@ public final class N {
      */
     public static List<byte[]> split(final byte[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23237,7 +16781,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23264,7 +16808,7 @@ public final class N {
      */
     public static List<short[]> split(final short[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23295,7 +16839,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23322,7 +16866,7 @@ public final class N {
      */
     public static List<int[]> split(final int[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23353,7 +16897,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23380,7 +16924,7 @@ public final class N {
      */
     public static List<long[]> split(final long[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23411,7 +16955,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23438,7 +16982,7 @@ public final class N {
      */
     public static List<float[]> split(final float[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23469,7 +17013,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23496,7 +17040,7 @@ public final class N {
      */
     public static List<double[]> split(final double[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23527,7 +17071,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23554,7 +17098,7 @@ public final class N {
      */
     public static <T> List<T[]> split(final T[] a, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23585,7 +17129,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -23612,7 +17156,7 @@ public final class N {
      */
     public static <T> List<List<T>> split(final Collection<? extends T> c, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(c)) {
@@ -23636,7 +17180,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, len(c));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(c)) {
@@ -23685,7 +17229,7 @@ public final class N {
      */
     public static List<String> split(final CharSequence str, final int size) {
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(str)) {
@@ -23699,7 +17243,7 @@ public final class N {
         N.checkFromToIndex(fromIndex, toIndex, len(str));
 
         if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(str)) {
@@ -24316,91 +17860,6 @@ public final class N {
     }
 
     /**
-     * Returns <code>a + b</code>
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static String concat(final String a, final String b) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final String a, final String b, final String c) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).append(c).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final String a, final String b, final String c, final String d) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).append(c).append(d).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final String a, final String b, final String c, final String d, final String e) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).append(c).append(d).append(e).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).append(c).append(d).append(e).append(f).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    @SafeVarargs
-    public static String concat(final String... a) {
-        if (N.isNullOrEmpty(a)) {
-            return EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (String e : a) {
-                sb.append(e);
-            }
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    /**
      *
      * @param a
      * @param b
@@ -24910,7 +18369,7 @@ public final class N {
      */
     @SafeVarargs
     public static <T> T[] concat(final T[]... aa) {
-        N.requireNonNull(aa, "aa");
+        N.checkArgNotNull(aa, "aa");
 
         if (aa.length == 1) {
             return N.isNullOrEmpty(aa[0]) ? aa[0] : aa[0].clone();
@@ -25423,7 +18882,7 @@ public final class N {
      * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
     public static <T> T[] add(final T[] a, final T element) {
-        N.requireNonNull(a, "a");
+        N.checkArgNotNull(a, "a");
 
         if (N.isNullOrEmpty(a)) {
             return N.asArray(element);
@@ -25676,7 +19135,7 @@ public final class N {
      */
     @SafeVarargs
     public static <T> T[] addAll(final T[] a, final T... b) {
-        N.requireNonNull(a, "a");
+        N.checkArgNotNull(a, "a");
 
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? b : b.clone();
@@ -26052,7 +19511,7 @@ public final class N {
      * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
     public static <T> T[] insert(final T[] a, final int index, final T element) {
-        N.requireNonNull(a, "a");
+        N.checkArgNotNull(a, "a");
 
         final T[] newArray = N.newArray(a.getClass().getComponentType(), a.length + 1);
 
@@ -26396,7 +19855,7 @@ public final class N {
      */
     @SafeVarargs
     public static <T> T[] insertAll(final T[] a, final int index, final T... b) {
-        N.requireNonNull(a, "a");
+        N.checkArgNotNull(a, "a");
 
         final T[] newArray = (T[]) Array.newInstance(a.getClass().getComponentType(), a.length + b.length);
 
@@ -27353,7 +20812,7 @@ public final class N {
      */
     @SafeVarargs
     public static <T> T[] deleteAll(final T[] a, int... indices) {
-        N.requireNonNull(a, "a");
+        N.checkArgNotNull(a, "a");
 
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -27413,7 +20872,7 @@ public final class N {
     @SuppressWarnings("rawtypes")
     @SafeVarargs
     public static boolean deleteAll(final List<?> list, int... indices) {
-        N.requireNonNull(list);
+        N.checkArgNotNull(list);
 
         if (N.isNullOrEmpty(indices)) {
             return false;
@@ -30228,10 +23687,10 @@ public final class N {
      */
     @SafeVarargs
     public static char min(final char... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return min(a, 0, a.length);
@@ -30239,7 +23698,7 @@ public final class N {
 
     public static char min(final char[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30264,14 +23723,14 @@ public final class N {
      */
     @SafeVarargs
     public static byte min(final byte... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static byte min(final byte[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30296,14 +23755,14 @@ public final class N {
      */
     @SafeVarargs
     public static short min(final short... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static short min(final short[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30328,14 +23787,14 @@ public final class N {
      */
     @SafeVarargs
     public static int min(final int... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static int min(final int[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30362,14 +23821,14 @@ public final class N {
      */
     @SafeVarargs
     public static long min(final long... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static long min(final long[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30396,14 +23855,14 @@ public final class N {
      */
     @SafeVarargs
     public static float min(final float... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static float min(final float[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30432,14 +23891,14 @@ public final class N {
      */
     @SafeVarargs
     public static double min(final double... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
 
     public static double min(final double[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns min
@@ -30463,7 +23922,7 @@ public final class N {
      * @return the minimum value in the array
      */
     public static <T extends Comparable<? super T>> T min(final T[] a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -30481,14 +23940,14 @@ public final class N {
      * @return the minimum value in the array
      */
     public static <T> T min(final T[] a, final Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return min(a, 0, a.length, cmp);
     }
 
     public static <T> T min(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
@@ -30508,19 +23967,19 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return min(c, 0, c.size());
     }
 
     public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c, final int from, final int to) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return (T) min(c, from, to, NULL_MAX_COMPARATOR);
     }
 
     public static <T> T min(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return min(c, 0, c.size(), cmp);
     }
@@ -30538,7 +23997,7 @@ public final class N {
         checkFromToIndex(from, to, len(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
-            throw new IllegalArgumentException("The size of collection can't be null or empty");
+            throw new IllegalArgumentException("The size of collection can not be null or empty");
         }
 
         cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
@@ -30866,14 +24325,14 @@ public final class N {
      */
     @SafeVarargs
     public static char max(final char... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static char max(final char[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -30898,14 +24357,14 @@ public final class N {
      */
     @SafeVarargs
     public static byte max(final byte... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static byte max(final byte[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -30930,14 +24389,14 @@ public final class N {
      */
     @SafeVarargs
     public static short max(final short... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static short max(final short[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -30962,14 +24421,14 @@ public final class N {
      */
     @SafeVarargs
     public static int max(final int... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static int max(final int[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -30994,14 +24453,14 @@ public final class N {
      */
     @SafeVarargs
     public static long max(final long... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static long max(final long[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -31028,14 +24487,14 @@ public final class N {
      */
     @SafeVarargs
     public static float max(final float... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static float max(final float[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -31064,14 +24523,14 @@ public final class N {
      */
     @SafeVarargs
     public static double max(final double... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
 
     public static double max(final double[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         // Finds and returns max
@@ -31097,7 +24556,7 @@ public final class N {
      *             if <code>a</code> is <code>null</code> or empty.
      */
     public static <T extends Comparable<? super T>> T max(final T[] a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -31115,14 +24574,14 @@ public final class N {
      * @return the maximum value in the array
      */
     public static <T> T max(final T[] a, final Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return max(a, 0, a.length, cmp);
     }
 
     public static <T> T max(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
@@ -31142,19 +24601,19 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return max(c, 0, c.size());
     }
 
     public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c, final int from, final int to) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return (T) max(c, from, to, NULL_MIN_COMPARATOR);
     }
 
     public static <T> T max(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return max(c, 0, c.size(), cmp);
     }
@@ -31172,7 +24631,7 @@ public final class N {
         checkFromToIndex(from, to, len(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
-            throw new IllegalArgumentException("The size of collection can't be null or empty");
+            throw new IllegalArgumentException("The size of collection can not be null or empty");
         }
 
         cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
@@ -31474,14 +24933,14 @@ public final class N {
      */
     @SafeVarargs
     public static char median(final char... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static char median(final char[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31508,14 +24967,14 @@ public final class N {
      */
     @SafeVarargs
     public static byte median(final byte... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static byte median(final byte[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31542,14 +25001,14 @@ public final class N {
      */
     @SafeVarargs
     public static short median(final short... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static short median(final short[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31576,14 +25035,14 @@ public final class N {
      */
     @SafeVarargs
     public static int median(final int... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static int median(final int[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31610,14 +25069,14 @@ public final class N {
      */
     @SafeVarargs
     public static long median(final long... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static long median(final long[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31644,14 +25103,14 @@ public final class N {
      */
     @SafeVarargs
     public static float median(final float... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static float median(final float[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31678,14 +25137,14 @@ public final class N {
      */
     @SafeVarargs
     public static double median(final double... a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static double median(final double[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31711,14 +25170,14 @@ public final class N {
      * @see #median(int...)
      */
     public static <T extends Comparable<? super T>> T median(final T[] a) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length);
     }
 
     public static <T extends Comparable<? super T>> T median(final T[] a, final int from, final int to) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return (T) median(a, from, to, NATURAL_ORDER);
@@ -31732,14 +25191,14 @@ public final class N {
      * @see #median(int...)
      */
     public static <T> T median(final T[] a, Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return median(a, 0, a.length, cmp);
     }
 
     public static <T> T median(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, a.length);
@@ -31759,7 +25218,7 @@ public final class N {
      * @see #median(int...)
      */
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return median(c, 0, c.size());
     }
@@ -31776,14 +25235,14 @@ public final class N {
      * @see #median(int...)
      */
     public static <T> T median(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return median(c, 0, c.size(), cmp);
     }
 
     public static <T> T median(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         checkFromToIndex(from, to, c.size());
@@ -31803,7 +25262,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static char kthLargest(final char[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31819,7 +25278,7 @@ public final class N {
      */
     public static char kthLargest(final char[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31833,7 +25292,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static byte kthLargest(final byte[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31849,7 +25308,7 @@ public final class N {
      */
     public static byte kthLargest(final byte[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31863,7 +25322,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static short kthLargest(final short[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31879,7 +25338,7 @@ public final class N {
      */
     public static short kthLargest(final short[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31893,7 +25352,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static int kthLargest(final int[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31909,7 +25368,7 @@ public final class N {
      */
     public static int kthLargest(final int[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31923,7 +25382,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static long kthLargest(final long[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31939,7 +25398,7 @@ public final class N {
      */
     public static long kthLargest(final long[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31953,7 +25412,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static float kthLargest(final float[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31969,7 +25428,7 @@ public final class N {
      */
     public static float kthLargest(final float[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -31983,7 +25442,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static double kthLargest(final double[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -31999,7 +25458,7 @@ public final class N {
      */
     public static double kthLargest(final double[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -32013,7 +25472,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int k) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -32029,7 +25488,7 @@ public final class N {
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k);
@@ -32044,7 +25503,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T> T kthLargest(final T[] a, final int k, final Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+        N.checkArgNotNullOrEmpty(a, "The spcified array 'a' can not be null or empty");
 
         return Array.kthLargest(a, k, cmp);
     }
@@ -32061,7 +25520,7 @@ public final class N {
      */
     public static <T> T kthLargest(final T[] a, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of array can not be null or empty");
         }
 
         return Array.kthLargest(a, from, to, k, cmp);
@@ -32075,7 +25534,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int k) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return Array.kthLargest(c, k);
     }
@@ -32091,7 +25550,7 @@ public final class N {
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
-            throw new IllegalArgumentException("The length of collection can't be null or empty");
+            throw new IllegalArgumentException("The length of collection can not be null or empty");
         }
 
         return Array.kthLargest(c, from, to, k);
@@ -32106,7 +25565,7 @@ public final class N {
      * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T> T kthLargest(final Collection<? extends T> c, final int k, final Comparator<? super T> cmp) {
-        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
+        N.checkArgNotNullOrEmpty(c, "The spcified collection 'c' can not be null or empty");
 
         return Array.kthLargest(c, k, cmp);
     }
@@ -32123,7 +25582,7 @@ public final class N {
      */
     public static <T> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
-            throw new IllegalArgumentException("The length of collection can't be null or empty");
+            throw new IllegalArgumentException("The length of collection can not be null or empty");
         }
 
         return Array.kthLargest(c, from, to, k, cmp);
@@ -32137,7 +25596,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Character> percentiles(final char[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Character> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32157,7 +25616,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Byte> percentiles(final byte[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Byte> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32177,7 +25636,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Short> percentiles(final short[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Short> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32197,7 +25656,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Integer> percentiles(final int[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Integer> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32217,7 +25676,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Long> percentiles(final long[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Long> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32237,7 +25696,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Float> percentiles(final float[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Float> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32257,7 +25716,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Double> percentiles(final double[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Double> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32277,7 +25736,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static <T> Map<Percentage, T> percentiles(final T[] sortedArray) {
-        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedArray, "The spcified 'sortedArray' can not be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, T> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32297,7 +25756,7 @@ public final class N {
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static <T> Map<Percentage, T> percentiles(final List<T> sortedList) {
-        N.checkNullOrEmpty(sortedList, "The spcified 'sortedList' can't be null or empty");
+        N.checkArgNotNullOrEmpty(sortedList, "The spcified 'sortedList' can not be null or empty");
 
         final int size = sortedList.size();
         final Map<Percentage, T> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
@@ -32847,7 +26306,7 @@ public final class N {
     public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset,
             final long count, final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser,
             final Try.Runnable<E2> onComplete) throws E, E2 {
-        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can not be negative", offset, count);
 
         if (N.isNullOrEmpty(iterators)) {
             return;
@@ -32933,29 +26392,6 @@ public final class N {
         }
     }
 
-    @Beta
-    @Internal
-    @Deprecated
-    public static char[] getCharsForReadOnly(final String str) {
-        if (isStringCharsGettable && strValueField != null && str.length() > 3) {
-            try {
-                final char[] chars = (char[]) strValueField.get(str);
-
-                if (chars.length == str.length()) {
-                    return chars;
-                } else {
-                    isStringCharsGettable = false;
-                }
-
-            } catch (Exception e) {
-                // ignore.
-                isStringCharsGettable = false;
-            }
-        }
-
-        return str.toCharArray();
-    }
-
     public static RuntimeException toRuntimeException(Throwable e) {
         if (e instanceof RuntimeException) {
             return (RuntimeException) e;
@@ -32983,7 +26419,7 @@ public final class N {
     }
 
     public static void sleep(final long timeout, final TimeUnit unit) {
-        N.requireNonNull(unit, "unit");
+        N.checkArgNotNull(unit, "unit");
 
         if (timeout <= 0) {
             return;
@@ -33046,7 +26482,7 @@ public final class N {
      * @param timeoutInMillis
      */
     public static void sleepUninterruptibly(final long timeout, final TimeUnit unit) {
-        N.requireNonNull(unit, "unit");
+        N.checkArgNotNull(unit, "unit");
 
         if (timeout <= 0) {
             return;
@@ -33087,7 +26523,7 @@ public final class N {
      * @param cmd
      */
     public static void runUninterruptibly(final Try.Runnable<InterruptedException> cmd) {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
 
@@ -33119,7 +26555,7 @@ public final class N {
      * @param cmd
      */
     public static void runUninterruptibly(final long timeoutInMillis, final Try.LongConsumer<InterruptedException> cmd) {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
 
@@ -33157,8 +26593,8 @@ public final class N {
      * @param cmd
      */
     public static void runUninterruptibly(final long timeout, final TimeUnit unit, final Try.BiConsumer<Long, TimeUnit, InterruptedException> cmd) {
-        N.requireNonNull(unit, "unit");
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(unit, "unit");
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
 
@@ -33195,7 +26631,7 @@ public final class N {
      * @return
      */
     public static <T> T callUninterruptibly(Try.Callable<T, InterruptedException> cmd) {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
         try {
@@ -33226,7 +26662,7 @@ public final class N {
      * @return
      */
     public static <T> T callUninterruptibly(final long timeoutInMillis, final Try.LongFunction<T, InterruptedException> cmd) {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
 
@@ -33264,8 +26700,8 @@ public final class N {
      * @return
      */
     public static <T> T callUninterruptibly(final long timeout, final TimeUnit unit, final Try.BiFunction<Long, TimeUnit, T, InterruptedException> cmd) {
-        N.requireNonNull(unit, "unit");
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(unit, "unit");
+        N.checkArgNotNull(cmd);
 
         boolean interrupted = false;
 
@@ -33314,7 +26750,7 @@ public final class N {
     }
 
     /**
-     * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
+     * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can not be assigned to {@code targetType}.
      * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
      * 
      * @param val
@@ -34223,7 +27659,7 @@ public final class N {
     }
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
-        Objects.requireNonNull(function);
+        N.checkArgNotNull(function);
         for (Map.Entry<K, V> entry : map.entrySet()) {
             K k;
             V v;
@@ -34248,8 +27684,8 @@ public final class N {
     }
 
     static <K, V, E extends Exception> V merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction) throws E {
-        Objects.requireNonNull(remappingFunction);
-        Objects.requireNonNull(value);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(value);
 
         V oldValue = map.get(key);
         V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);

@@ -962,8 +962,8 @@ public abstract class ShortStream
     }
 
     public static ShortStream iterate(final BooleanSupplier hasNext, final ShortSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasNextVal = false;
@@ -990,8 +990,8 @@ public abstract class ShortStream
     }
 
     public static ShortStream iterate(final short seed, final BooleanSupplier hasNext, final ShortUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorShortStream(new ShortIteratorEx() {
             private short t = 0;
@@ -1035,8 +1035,8 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream iterate(final short seed, final ShortPredicate hasNext, final ShortUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorShortStream(new ShortIteratorEx() {
             private short t = 0;
@@ -1077,7 +1077,7 @@ public abstract class ShortStream
     }
 
     public static ShortStream iterate(final short seed, final ShortUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorShortStream(new ShortIteratorEx() {
             private short t = 0;
@@ -1103,7 +1103,7 @@ public abstract class ShortStream
     }
 
     public static ShortStream generate(final ShortSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorShortStream(new ShortIteratorEx() {
             @Override

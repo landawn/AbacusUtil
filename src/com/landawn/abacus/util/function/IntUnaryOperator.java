@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -31,13 +30,13 @@ public interface IntUnaryOperator extends java.util.function.IntUnaryOperator, T
 
     @Override
     default IntUnaryOperator compose(java.util.function.IntUnaryOperator before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
         return (int v) -> applyAsInt(before.applyAsInt(v));
     }
 
     @Override
     default IntUnaryOperator andThen(java.util.function.IntUnaryOperator after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
         return (int t) -> after.applyAsInt(applyAsInt(t));
     }
 

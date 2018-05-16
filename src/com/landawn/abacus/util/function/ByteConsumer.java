@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface ByteConsumer extends Try.ByteConsumer<RuntimeException> {
     void accept(byte t);
 
     default ByteConsumer andThen(ByteConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t) -> {
             accept(t);

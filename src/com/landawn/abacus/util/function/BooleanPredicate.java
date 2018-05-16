@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -65,7 +63,7 @@ public interface BooleanPredicate extends Try.BooleanPredicate<RuntimeException>
      * @return
      */
     static BooleanPredicate of(final BooleanPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }
@@ -75,13 +73,13 @@ public interface BooleanPredicate extends Try.BooleanPredicate<RuntimeException>
     }
 
     default BooleanPredicate and(BooleanPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default BooleanPredicate or(BooleanPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

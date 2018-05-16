@@ -90,6 +90,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.ShortIterator;
+import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -2315,13 +2316,13 @@ public abstract class Stream<T>
      * @return
      */
     public static Stream<String> of(final Reader reader) {
-        N.requireNonNull(reader);
+        N.checkArgNotNull(reader);
 
         return of(new LineIterator(reader));
     }
 
     static Stream<String> of(final Reader reader, int startIndex, int endIndex) {
-        N.requireNonNull(reader);
+        N.checkArgNotNull(reader);
 
         return of(new LineIterator(reader), startIndex, endIndex);
     }
@@ -2333,7 +2334,7 @@ public abstract class Stream<T>
      * @return
      */
     public static Stream<Object[]> of(final RowIterator rowIterator) {
-        N.requireNonNull(rowIterator);
+        N.checkArgNotNull(rowIterator);
 
         return new IteratorStream<>(new ObjIteratorEx<Object[]>() {
             @Override
@@ -2365,8 +2366,8 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> of(final Class<T> targetClass, final RowIterator rowIterator) {
-        N.requireNonNull(targetClass);
-        N.requireNonNull(rowIterator);
+        N.checkArgNotNull(targetClass);
+        N.checkArgNotNull(rowIterator);
 
         final Type<?> type = N.typeOf(targetClass);
 
@@ -3012,8 +3013,8 @@ public abstract class Stream<T>
     }
 
     public static <T> Stream<T> iterate(final BooleanSupplier hasNext, final Supplier<? extends T> next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return of(new ObjIteratorEx<T>() {
             private boolean hasNextVal = false;
@@ -3056,8 +3057,8 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> iterate(final T seed, final BooleanSupplier hasNext, final UnaryOperator<T> f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
@@ -3092,8 +3093,8 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> iterate(final T seed, final Predicate<T> hasNext, final UnaryOperator<T> f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
@@ -3129,7 +3130,7 @@ public abstract class Stream<T>
     }
 
     public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
@@ -3147,7 +3148,7 @@ public abstract class Stream<T>
     }
 
     public static <T> Stream<T> generate(final Supplier<T> s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return of(new ObjIteratorEx<T>() {
             @Override
@@ -3193,7 +3194,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final Supplier<T> s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
 
@@ -3236,7 +3237,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final LongFunction<T> s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
 
@@ -3276,7 +3277,7 @@ public abstract class Stream<T>
         if (delimiter.length() == 1) {
             return split(str, delimiter.charAt(0), trim);
         } else {
-            return of(N.splitPreserveAllTokens(str, delimiter, trim));
+            return of(StringUtil.splitPreserveAllTokens(str, delimiter, trim));
         }
     }
 
@@ -8255,7 +8256,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> merge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        N.requireNonNull(nextSelector);
+        N.checkArgNotNull(nextSelector);
 
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -8282,7 +8283,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> mergge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        N.requireNonNull(nextSelector);
+        N.checkArgNotNull(nextSelector);
 
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -8322,7 +8323,7 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        N.requireNonNull(nextSelector);
+        N.checkArgNotNull(nextSelector);
         checkMaxThreadNum(maxThreadNum);
 
         if (N.isNullOrEmpty(c)) {
@@ -8624,7 +8625,7 @@ public abstract class Stream<T>
         APPEND, PREPEND, CACHED, INDEXED, SKIP, SKIP_LAST, LIMIT, STEP, //
         QUEUED, MERGE, ZIP_WITH, PERSIST_FILE_OUTPUT_STREAM_WRITE, //
         COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, CARTESIAN_PRODUCT, //
-        COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, FOR_EACH_WITH_RESULT, //
+        COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, //
         COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
         LAST, HEAD, HEADD, TAIL, TAILL, HEAD_AND_TAIL, HEAD_AND_TAILL, //
         TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //

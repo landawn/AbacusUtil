@@ -106,19 +106,19 @@ public final class Index {
     }
 
     public static OptionalInt of(final String str, final int targetChar) {
-        return toOptionalInt(N.indexOf(str, targetChar));
+        return toOptionalInt(StringUtil.indexOf(str, targetChar));
     }
 
     public static OptionalInt of(final String str, final int fromIndex, final int targetChar) {
-        return toOptionalInt(N.indexOf(str, fromIndex, targetChar));
+        return toOptionalInt(StringUtil.indexOf(str, fromIndex, targetChar));
     }
 
     public static OptionalInt of(final String str, final String substr) {
-        return toOptionalInt(N.indexOf(str, substr));
+        return toOptionalInt(StringUtil.indexOf(str, substr));
     }
 
     public static OptionalInt of(final String str, final int fromIndex, final String substr) {
-        return toOptionalInt(N.indexOf(str, fromIndex, substr));
+        return toOptionalInt(StringUtil.indexOf(str, fromIndex, substr));
     }
 
     public static OptionalInt last(final boolean[] a, final boolean e) {
@@ -202,19 +202,19 @@ public final class Index {
     }
 
     public static OptionalInt last(final String str, final int targetChar) {
-        return toOptionalInt(N.lastIndexOf(str, targetChar));
+        return toOptionalInt(StringUtil.lastIndexOf(str, targetChar));
     }
 
     public static OptionalInt last(final String str, final int fromIndex, final int targetChar) {
-        return toOptionalInt(N.lastIndexOf(str, fromIndex, targetChar));
+        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, targetChar));
     }
 
     public static OptionalInt last(final String str, final String substr) {
-        return toOptionalInt(N.lastIndexOf(str, substr));
+        return toOptionalInt(StringUtil.lastIndexOf(str, substr));
     }
 
     public static OptionalInt last(final String str, final int fromIndex, final String substr) {
-        return toOptionalInt(N.lastIndexOf(str, fromIndex, substr));
+        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, substr));
     }
 
     private static OptionalInt toOptionalInt(int index) {

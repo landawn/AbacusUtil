@@ -42,8 +42,8 @@ public final class HashingOutputStream extends FilterOutputStream {
     // be (optionally) be combined with another if needed (with something like
     // MultiplexingOutputStream).
     public HashingOutputStream(HashFunction hashFunction, OutputStream out) {
-        super(N.requireNonNull(out));
-        this.hasher = N.requireNonNull(hashFunction.newHasher());
+        super(N.checkArgNotNull(out));
+        this.hasher = N.checkArgNotNull(hashFunction.newHasher());
     }
 
     @Override

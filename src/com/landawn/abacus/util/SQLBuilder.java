@@ -245,7 +245,7 @@ public abstract class SQLBuilder {
                         subEntityClassName = ClassUtil.getSimpleClassName(subEntityClass);
 
                         for (String pn : getPropNamesByClass(subEntityClass, false, null)) {
-                            entityPropNames.add(N.concat(subEntityClassName, WD.PERIOD, pn));
+                            entityPropNames.add(StringUtil.concat(subEntityClassName, WD.PERIOD, pn));
                         }
                     }
                 }
@@ -613,10 +613,10 @@ public abstract class SQLBuilder {
 
     public SQLBuilder from(String expr) {
         expr = expr.trim();
-        String tableName = expr.indexOf(WD._COMMA) > 0 ? N.substring(expr, 0, WD._COMMA).get() : expr;
+        String tableName = expr.indexOf(WD._COMMA) > 0 ? StringUtil.substring(expr, 0, WD._COMMA).get() : expr;
 
         if (tableName.indexOf(WD._SPACE) > 0) {
-            tableName = N.substring(tableName, 0, WD._SPACE).get();
+            tableName = StringUtil.substring(tableName, 0, WD._SPACE).get();
         }
 
         return from(tableName, tableName.indexOf(WD._SPACE) > 0 ? expr : formalizeName(expr));
@@ -631,7 +631,7 @@ public abstract class SQLBuilder {
         final String tableName = tableNames[0].trim();
 
         //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = N.substring(tableName, 0, D._SPACE).get();
+        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
         //        }
 
         return from(tableName, fromCause(Arrays.asList(tableNames)));
@@ -645,7 +645,7 @@ public abstract class SQLBuilder {
         final String tableName = tableNames.iterator().next().trim();
 
         //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = N.substring(tableName, 0, D._SPACE).get();
+        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
         //        }
 
         return from(tableName, fromCause(tableNames));
@@ -673,7 +673,7 @@ public abstract class SQLBuilder {
         final String tableName = tableAliases.keySet().iterator().next().trim();
 
         //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = N.substring(tableName, 0, D._SPACE).get();
+        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
         //        }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -721,7 +721,7 @@ public abstract class SQLBuilder {
 
         if (N.notNullOrEmpty(columnNames)) {
             if (columnNames.length == 1) {
-                final String columnName = N.trim(columnNames[0]);
+                final String columnName = StringUtil.trim(columnNames[0]);
                 int idx = columnName.indexOf(' ');
 
                 if (idx < 0) {
@@ -745,7 +745,7 @@ public abstract class SQLBuilder {
                 String columnName = null;
 
                 for (int i = 0, len = columnNames.length; i < len; i++) {
-                    columnName = N.trim(columnNames[i]);
+                    columnName = StringUtil.trim(columnNames[i]);
 
                     if (i > 0) {
                         sb.append(_COMMA_SPACE);
@@ -960,7 +960,7 @@ public abstract class SQLBuilder {
         for (int i = 0, len = words.size(); i < len; i++) {
             word = words.get(i);
 
-            if (!N.isAsciiAlpha(word.charAt(0))) {
+            if (!StringUtil.isAsciiAlpha(word.charAt(0))) {
                 sb.append(word);
             } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
                 sb.append(word);
@@ -2176,7 +2176,7 @@ public abstract class SQLBuilder {
 
             Object minValue = bt.getMinValue();
             if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
-                setParameter("min" + N.capitalize(propName), minValue);
+                setParameter("min" + StringUtil.capitalize(propName), minValue);
             } else {
                 setParameter(propName, minValue);
             }
@@ -2187,7 +2187,7 @@ public abstract class SQLBuilder {
 
             Object maxValue = bt.getMaxValue();
             if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
-                setParameter("max" + N.capitalize(propName), maxValue);
+                setParameter("max" + StringUtil.capitalize(propName), maxValue);
             } else {
                 setParameter(propName, maxValue);
             }

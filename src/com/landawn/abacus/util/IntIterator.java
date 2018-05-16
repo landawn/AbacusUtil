@@ -90,7 +90,7 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
      * @return
      */
     public static IntIterator generate(final IntSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new IntIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
      * @return
      */
     public static IntIterator generate(final BooleanSupplier hasNext, final IntSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new IntIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.IntConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextInt());

@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface LongTriConsumer extends Try.LongTriConsumer<RuntimeException> {
     void accept(long a, long b, long c);
 
     default LongTriConsumer andThen(LongTriConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> {
             accept(a, b, c);

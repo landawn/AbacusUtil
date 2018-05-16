@@ -24,7 +24,7 @@ public final class Try<T extends AutoCloseable> {
     private final T t;
 
     Try(final T t) {
-        N.requireNonNull(t);
+        N.checkArgNotNull(t);
 
         this.t = t;
     }
@@ -116,7 +116,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public static void run(final Try.Runnable<? extends Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
-        N.requireNonNull(actionOnError);
+        N.checkArgNotNull(actionOnError);
 
         try {
             cmd.run();
@@ -140,7 +140,7 @@ public final class Try<T extends AutoCloseable> {
     //
     //    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
-    //        N.requireNonNull(actionOnError);
+    //        N.checkArgNotNull(actionOnError);
     //
     //        try {
     //            cmd.accept(seed);
@@ -164,7 +164,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
-        N.requireNonNull(actionOnError);
+        N.checkArgNotNull(actionOnError);
 
         try {
             return cmd.call();
@@ -174,7 +174,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         try {
             return cmd.call();
@@ -201,8 +201,8 @@ public final class Try<T extends AutoCloseable> {
      */
     public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(supplier);
 
         try {
             return cmd.call();
@@ -225,7 +225,7 @@ public final class Try<T extends AutoCloseable> {
      */
     public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final R defaultValue) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         try {
             return cmd.call();
@@ -261,7 +261,7 @@ public final class Try<T extends AutoCloseable> {
     //     */
     //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
-    //        N.requireNonNull(actionOnError);
+    //        N.checkArgNotNull(actionOnError);
     //
     //        try {
     //            return cmd.apply(seed);
@@ -279,7 +279,7 @@ public final class Try<T extends AutoCloseable> {
     //     */
     //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Supplier<R> supplier) {
-    //        N.requireNonNull(supplier);
+    //        N.checkArgNotNull(supplier);
     //
     //        try {
     //            return cmd.apply(seed);
@@ -314,8 +314,8 @@ public final class Try<T extends AutoCloseable> {
     //     */
     //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final com.landawn.abacus.util.function.Supplier<R> supplier) {
-    //        N.requireNonNull(predicate);
-    //        N.requireNonNull(supplier);
+    //        N.checkArgNotNull(predicate);
+    //        N.checkArgNotNull(supplier);
     //
     //        try {
     //            return cmd.apply(seed);
@@ -339,7 +339,7 @@ public final class Try<T extends AutoCloseable> {
     //     */
     //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final R defaultValue) {
-    //        N.requireNonNull(predicate);
+    //        N.checkArgNotNull(predicate);
     //
     //        try {
     //            return cmd.apply(seed);
@@ -353,7 +353,7 @@ public final class Try<T extends AutoCloseable> {
     //    }
 
     //    public static <E extends Exception> Try.Callable<Void, E> callable(final Try.Runnable<E> cmd) {
-    //        N.requireNonNull(cmd);
+    //        N.checkArgNotNull(cmd);
     //
     //        return new Try.Callable<Void, E>() {
     //            @Override
@@ -379,7 +379,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public void run(final Try.Consumer<? super T, ? extends Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
-        N.requireNonNull(actionOnError);
+        N.checkArgNotNull(actionOnError);
 
         try {
             cmd.accept(t);
@@ -402,7 +402,7 @@ public final class Try<T extends AutoCloseable> {
 
     public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd,
             final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
-        N.requireNonNull(actionOnError);
+        N.checkArgNotNull(actionOnError);
 
         try {
             return cmd.apply(t);
@@ -414,7 +414,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         try {
             return cmd.apply(t);
@@ -437,8 +437,8 @@ public final class Try<T extends AutoCloseable> {
 
     public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final com.landawn.abacus.util.function.Supplier<R> supplier) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(supplier);
 
         try {
             return cmd.apply(t);
@@ -455,7 +455,7 @@ public final class Try<T extends AutoCloseable> {
 
     public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final R defaultValue) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         try {
             return cmd.apply(t);
@@ -474,13 +474,13 @@ public final class Try<T extends AutoCloseable> {
         void run() throws E;
 
         public static <E extends Exception> Runnable<E> of(final Runnable<E> runnable) {
-            N.requireNonNull(runnable);
+            N.checkArgNotNull(runnable);
 
             return runnable;
         }
 
         public static <R, E extends Exception> Runnable<E> create(final Callable<R, E> callable) {
-            N.requireNonNull(callable);
+            N.checkArgNotNull(callable);
 
             return new Runnable<E>() {
                 @Override
@@ -497,13 +497,13 @@ public final class Try<T extends AutoCloseable> {
         R call() throws E;
 
         public static <R, E extends Exception> Callable<R, E> of(final Callable<R, E> callable) {
-            N.requireNonNull(callable);
+            N.checkArgNotNull(callable);
 
             return callable;
         }
 
         public static <E extends Exception> Callable<Void, E> create(Runnable<E> cmd) {
-            N.requireNonNull(cmd);
+            N.checkArgNotNull(cmd);
 
             return new Callable<Void, E>() {
                 @Override
@@ -571,13 +571,13 @@ public final class Try<T extends AutoCloseable> {
         R apply(T t) throws E;
 
         public static <T, R, E extends Exception> Function<T, R, E> of(final Function<T, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return func;
         }
 
         public static <T, E extends Exception> Function<T, Void, E> create(final Consumer<T, E> consumer) {
-            N.requireNonNull(consumer);
+            N.checkArgNotNull(consumer);
 
             return new Function<T, Void, E>() {
                 @Override
@@ -594,13 +594,13 @@ public final class Try<T extends AutoCloseable> {
         R apply(T t, U u) throws E;
 
         public static <T, U, R, E extends Exception> BiFunction<T, U, R, E> of(final BiFunction<T, U, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return func;
         }
 
         public static <T, U, E extends Exception> BiFunction<T, U, Void, E> create(final BiConsumer<T, U, E> biConsumer) {
-            N.requireNonNull(biConsumer);
+            N.checkArgNotNull(biConsumer);
 
             return new BiFunction<T, U, Void, E>() {
                 @Override
@@ -617,13 +617,13 @@ public final class Try<T extends AutoCloseable> {
         R apply(A a, B b, C c) throws E;
 
         public static <A, B, C, R, E extends Exception> TriFunction<A, B, C, R, E> of(final TriFunction<A, B, C, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return func;
         }
 
         public static <A, B, C, E extends Exception> TriFunction<A, B, C, Void, E> create(final TriConsumer<A, B, C, E> triConsumer) {
-            N.requireNonNull(triConsumer);
+            N.checkArgNotNull(triConsumer);
 
             return new TriFunction<A, B, C, Void, E>() {
                 @Override
@@ -644,13 +644,13 @@ public final class Try<T extends AutoCloseable> {
         void accept(T t) throws E;
 
         public static <T, E extends Exception> Consumer<T, E> of(final Consumer<T, E> consumer) {
-            N.requireNonNull(consumer);
+            N.checkArgNotNull(consumer);
 
             return consumer;
         }
 
         public static <T, R, E extends Exception> Consumer<T, E> create(final Function<T, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return new Consumer<T, E>() {
                 @Override
@@ -665,13 +665,13 @@ public final class Try<T extends AutoCloseable> {
         void accept(T t, U u) throws E;
 
         public static <T, U, E extends Exception> BiConsumer<T, U, E> of(final BiConsumer<T, U, E> biConsumer) {
-            N.requireNonNull(biConsumer);
+            N.checkArgNotNull(biConsumer);
 
             return biConsumer;
         }
 
         public static <T, U, R, E extends Exception> BiConsumer<T, U, E> create(final BiFunction<T, U, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return new BiConsumer<T, U, E>() {
                 @Override
@@ -686,13 +686,13 @@ public final class Try<T extends AutoCloseable> {
         void accept(A a, B b, C c) throws E;
 
         public static <A, B, C, E extends Exception> TriConsumer<A, B, C, E> of(final TriConsumer<A, B, C, E> triConsumer) {
-            N.requireNonNull(triConsumer);
+            N.checkArgNotNull(triConsumer);
 
             return triConsumer;
         }
 
         public static <A, B, C, R, E extends Exception> TriConsumer<A, B, C, E> create(final TriFunction<A, B, C, R, E> func) {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return new TriConsumer<A, B, C, E>() {
                 @Override

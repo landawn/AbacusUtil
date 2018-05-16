@@ -2251,7 +2251,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        N.requireNonNull(targetClass);
+        N.checkArgNotNull(targetClass);
 
         return stream2(targetClass, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -2413,7 +2413,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        N.requireNonNull(targetClass);
+        N.checkArgNotNull(targetClass);
 
         return streamAll2(targetClass, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -2527,7 +2527,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        N.requireNonNull(targetClass);
+        N.checkArgNotNull(targetClass);
 
         return streamAll2(targetClass, sqls, statementSetter, jdbcSettings, parameters);
     }
@@ -3270,7 +3270,7 @@ public final class SQLExecutor implements Closeable {
          */
         public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-            N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
+            N.checkArgNotNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
             final Set<String> set = new HashSet<>();
 
@@ -3297,7 +3297,7 @@ public final class SQLExecutor implements Closeable {
          */
         public static void registerNonUpdatableProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-            N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
+            N.checkArgNotNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
             final Set<String> set = new HashSet<>();
 
@@ -3813,7 +3813,7 @@ public final class SQLExecutor implements Closeable {
 
         @SuppressWarnings("deprecation")
         public <E> E add(final Connection conn, final Object entity) {
-            N.requireNonNull(entity);
+            N.checkArgNotNull(entity);
 
             if (entity instanceof DirtyMarker && N.isNullOrEmpty(((DirtyMarker) entity).signedPropNames())) {
                 throw new IllegalArgumentException("No property value is signed to the specified entity");
@@ -3834,7 +3834,7 @@ public final class SQLExecutor implements Closeable {
          * @return the auto-generated id or null if there is no auto-generated id.
          */
         public <E> E add(final Connection conn, final Map<String, Object> props) {
-            N.requireNonNull(props);
+            N.checkArgNotNull(props);
 
             final SP pair = prepareAdd(props);
 
@@ -4043,7 +4043,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object id, final Map<String, Object> props) {
-            N.requireNonNull(id);
+            N.checkArgNotNull(id);
 
             return update(props, L.eq(idName, id));
         }
@@ -4054,7 +4054,7 @@ public final class SQLExecutor implements Closeable {
 
         @SuppressWarnings("deprecation")
         public int update(final Connection conn, final Object entity) {
-            N.requireNonNull(entity);
+            N.checkArgNotNull(entity);
 
             if (entity instanceof DirtyMarker && !((DirtyMarker) entity).isDirty()) {
                 return 0;
@@ -4072,14 +4072,14 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Connection conn, final Object id, final Map<String, Object> props) {
-            N.requireNonNull(id);
+            N.checkArgNotNull(id);
 
             return update(conn, props, L.eq(idName, id));
         }
 
         public int update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
-            N.requireNonNull(props);
-            N.requireNonNull(whereCause);
+            N.checkArgNotNull(props);
+            N.checkArgNotNull(whereCause);
 
             if (N.isNullOrEmpty(props)) {
                 return 0;
@@ -4290,7 +4290,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int delete(final Connection conn, final Object idOrEntity) {
-            N.requireNonNull(idOrEntity);
+            N.checkArgNotNull(idOrEntity);
 
             checkEntity(idOrEntity);
 
@@ -4301,7 +4301,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int delete(final Connection conn, final Condition whereCause) {
-            N.requireNonNull(whereCause);
+            N.checkArgNotNull(whereCause);
 
             if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
                 final Object id = ((Equal) whereCause).getPropValue();

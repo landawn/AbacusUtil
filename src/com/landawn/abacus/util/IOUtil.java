@@ -631,7 +631,7 @@ public final class IOUtil {
     public static String readString(final File file, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
         final char[] chs = readChars(file, offset, maxLen, encoding);
 
-        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
+        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : StringUtil.newString(chs, true);
     }
 
     public static String readString(final InputStream is) throws UncheckedIOException {
@@ -645,7 +645,7 @@ public final class IOUtil {
     public static String readString(final InputStream is, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
         final char[] chs = readChars(is, offset, maxLen, encoding);
 
-        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
+        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : StringUtil.newString(chs, true);
     }
 
     public static String readString(final Reader reader) throws UncheckedIOException {
@@ -655,7 +655,7 @@ public final class IOUtil {
     public static String readString(final Reader reader, final long offset, final int maxLen) throws UncheckedIOException {
         final char[] chs = readChars(reader, offset, maxLen);
 
-        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
+        return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : StringUtil.newString(chs, true);
     }
 
     public static String readLine(final File file) throws UncheckedIOException {
@@ -2043,7 +2043,7 @@ public final class IOUtil {
      * @return
      */
     public static MappedByteBuffer map(File file) {
-        N.requireNonNull(file);
+        N.checkArgNotNull(file);
 
         return map(file, MapMode.READ_ONLY);
     }
@@ -2068,8 +2068,8 @@ public final class IOUtil {
      * @since 2.0
      */
     public static MappedByteBuffer map(File file, MapMode mode) throws UncheckedIOException {
-        N.requireNonNull(file);
-        N.requireNonNull(mode);
+        N.checkArgNotNull(file);
+        N.checkArgNotNull(mode);
 
         if (!file.exists()) {
             throw new UncheckedIOException(file.toString() + " is not found");
@@ -2103,8 +2103,8 @@ public final class IOUtil {
      * @since 2.0
      */
     public static MappedByteBuffer map(File file, MapMode mode, long offset, long len) throws UncheckedIOException {
-        N.requireNonNull(file);
-        N.requireNonNull(mode);
+        N.checkArgNotNull(file);
+        N.checkArgNotNull(mode);
 
         RandomAccessFile raf = null;
 
@@ -2149,7 +2149,7 @@ public final class IOUtil {
         pathname = pathname.replace('\\', '/');
 
         // split the path apart
-        String[] components = N.split(pathname, '/', true);
+        String[] components = StringUtil.split(pathname, '/', true);
         List<String> path = new ArrayList<>();
 
         // resolve ., .., and //
@@ -2168,7 +2168,7 @@ public final class IOUtil {
         }
 
         // put it back together
-        String result = N.join(path, '/');
+        String result = StringUtil.join(path, '/');
 
         if (pathname.charAt(0) == '/') {
             result = "/" + result;
@@ -2197,7 +2197,7 @@ public final class IOUtil {
      * @since 11.0
      */
     public static String getFileExtension(String fullName) {
-        N.requireNonNull(fullName);
+        N.checkArgNotNull(fullName);
 
         String fileName = new File(fullName).getName();
         int dotIndex = fileName.lastIndexOf('.');
@@ -2217,7 +2217,7 @@ public final class IOUtil {
      * @since 14.0
      */
     public static String getNameWithoutExtension(String file) {
-        N.requireNonNull(file);
+        N.checkArgNotNull(file);
 
         String fileName = new File(file).getName();
         int dotIndex = fileName.lastIndexOf('.');
@@ -3081,7 +3081,7 @@ public final class IOUtil {
             input = new FileInputStream(file);
 
             for (int i = 0; i < numOfParts; i++) {
-                String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + fileName + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0');
+                String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + fileName + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0');
                 output = new FileOutputStream(new File(subFileNmae));
                 long partLength = sizeOfPart;
 
@@ -3142,7 +3142,7 @@ public final class IOUtil {
 
             br = ObjectFactory.createBufferedReader(is);
 
-            String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+            String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
             bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
 
             int lineCounter = 0;
@@ -3159,7 +3159,7 @@ public final class IOUtil {
                         bw = null;
                     }
 
-                    subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+                    subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
                     bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
                 }
             }
@@ -3867,6 +3867,6 @@ public final class IOUtil {
 
     @SuppressWarnings("deprecation")
     private static char[] toCharArray(CharSequence str) {
-        return str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str instanceof String ? (String) str : str.toString());
+        return str == null ? N.NULL_CHAR_ARRAY : StringUtil.getCharsForReadOnly(str instanceof String ? (String) str : str.toString());
     }
 }

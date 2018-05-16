@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -90,13 +89,13 @@ public interface ShortBiPredicate extends Try.ShortBiPredicate<RuntimeException>
     }
 
     default ShortBiPredicate and(ShortBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default ShortBiPredicate or(ShortBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

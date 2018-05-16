@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -76,13 +75,13 @@ public interface BooleanBiPredicate extends Try.BooleanBiPredicate<RuntimeExcept
     }
 
     default BooleanBiPredicate and(BooleanBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default BooleanBiPredicate or(BooleanBiPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

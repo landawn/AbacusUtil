@@ -30,7 +30,7 @@ public interface LongConsumer extends java.util.function.LongConsumer, Try.LongC
 
     @Override
     default LongConsumer andThen(java.util.function.LongConsumer after) {
-        N.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (long t) -> {
             accept(t);

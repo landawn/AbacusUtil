@@ -90,7 +90,7 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
      * @return
      */
     public static CharIterator generate(final CharSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new CharIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
      * @return
      */
     public static CharIterator generate(final BooleanSupplier hasNext, final CharSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new CharIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.CharConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextChar());

@@ -881,7 +881,7 @@ class IteratorCharStream extends AbstractCharStream {
 
         while (elements.hasNext()) {
             element = elements.nextChar();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

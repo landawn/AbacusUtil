@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,13 +29,13 @@ public interface IndexedFunction<T, R> extends Try.IndexedFunction<T, R, Runtime
     R apply(int idx, T e);
 
     default <V> IndexedFunction<V, R> compose(IndexedFunction<? super V, ? extends T> before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
 
         return (idx, v) -> apply(idx, before.apply(idx, v));
     }
 
     default <V> IndexedFunction<T, V> andThen(IndexedFunction<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (idx, t) -> after.apply(idx, apply(idx, t));
     }

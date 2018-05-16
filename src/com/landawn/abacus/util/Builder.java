@@ -34,7 +34,7 @@ public class Builder<T> {
     final T val;
 
     Builder(T val) {
-        N.requireNonNull(val);
+        N.checkArgNotNull(val);
 
         this.val = val;
     }

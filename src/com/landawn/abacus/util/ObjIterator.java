@@ -154,7 +154,7 @@ public abstract class ObjIterator<T> extends ImmutableIterator<T> {
      * @return
      */
     public static <T> ObjIterator<T> generate(final Supplier<T> supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new ObjIterator<T>() {
             @Override
@@ -176,8 +176,8 @@ public abstract class ObjIterator<T> extends ImmutableIterator<T> {
      * @return
      */
     public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new ObjIterator<T>() {
             @Override

@@ -90,7 +90,7 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
      * @return
      */
     public static DoubleIterator generate(final DoubleSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new DoubleIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
      * @return
      */
     public static DoubleIterator generate(final BooleanSupplier hasNext, final DoubleSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new DoubleIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.DoubleConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextDouble());

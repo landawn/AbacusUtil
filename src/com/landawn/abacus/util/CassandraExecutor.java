@@ -461,7 +461,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     static Condition ids2Cond(final Class<?> targetClass, final Object... ids) {
-        N.checkNullOrEmpty(ids, "ids");
+        N.checkArgNotNullOrEmpty(ids, "ids");
 
         final Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
 
@@ -656,7 +656,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SuppressWarnings("deprecation")
     public ResultSet update(final Object entity, final Collection<String> primaryKeyNames) {
-        N.checkNullOrEmpty(primaryKeyNames, "primaryKeyNames");
+        N.checkArgNotNullOrEmpty(primaryKeyNames, "primaryKeyNames");
 
         final Class<?> targetClass = entity.getClass();
         final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));

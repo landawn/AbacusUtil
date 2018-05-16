@@ -8,6 +8,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 ## Features:
 
 * Most daily used APIs: [N](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/N_view.html), 
+[StringUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/StringUtil_view.html), 
 [Array](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Array_view.html), 
 [Seq](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Seq_view.html), 
 [Iterators](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Iterators_view.html),

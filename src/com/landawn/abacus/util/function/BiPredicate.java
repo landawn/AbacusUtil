@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
@@ -38,13 +36,13 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>,
 
     @Override
     default BiPredicate<T, U> and(java.util.function.BiPredicate<? super T, ? super U> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
         return (T t, U u) -> test(t, u) && other.test(t, u);
     }
 
     @Override
     default BiPredicate<T, U> or(java.util.function.BiPredicate<? super T, ? super U> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
         return (T t, U u) -> test(t, u) || other.test(t, u);
     }
 
@@ -55,7 +53,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>,
      * @return
      */
     static <T, U> BiPredicate<T, U> of(final BiPredicate<T, U> predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }

@@ -90,7 +90,7 @@ public abstract class Observer<T> {
     }
 
     public static <T> Observer<T> of(final BlockingQueue<T> queue) {
-        N.requireNonNull(queue, "queue");
+        N.checkArgNotNull(queue, "queue");
 
         return new BlockingQueueObserver<>(queue);
     }
@@ -100,7 +100,7 @@ public abstract class Observer<T> {
     }
 
     public static <T> Observer<T> of(final Iterator<T> iter) {
-        N.requireNonNull(iter, "iterator");
+        N.checkArgNotNull(iter, "iterator");
 
         return new IteratorObserver<>(iter);
     }
@@ -124,7 +124,7 @@ public abstract class Observer<T> {
      */
     public static Observer<Long> timer(long delay, TimeUnit unit) {
         N.checkArgument(delay >= 0, "delay can't be negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         return new TimerObserver<>(delay, unit);
     }
@@ -171,7 +171,7 @@ public abstract class Observer<T> {
     public static Observer<Long> interval(long initialDelay, long period, TimeUnit unit) {
         N.checkArgument(initialDelay >= 0, "initialDelay can't be negative");
         N.checkArgument(period > 0, "period can't be 0 or negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         return new IntervalObserver<>(initialDelay, period, unit);
     }
@@ -195,7 +195,7 @@ public abstract class Observer<T> {
      */
     public Observer<T> debounce(final long intervalDuration, final TimeUnit unit) {
         N.checkArgument(intervalDuration >= 0, "Interval can't be negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         if (intervalDuration == 0) {
             return this;
@@ -281,7 +281,7 @@ public abstract class Observer<T> {
      */
     public Observer<T> throttleFirst(final long intervalDuration, final TimeUnit unit) {
         N.checkArgument(intervalDuration >= 0, "Interval can't be negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         if (intervalDuration == 0) {
             return this;
@@ -352,7 +352,7 @@ public abstract class Observer<T> {
      */
     public Observer<T> throttleLast(final long intervalDuration, final TimeUnit unit) {
         N.checkArgument(intervalDuration >= 0, "Delay can't be negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         if (intervalDuration == 0) {
             return this;
@@ -425,7 +425,7 @@ public abstract class Observer<T> {
      */
     public Observer<T> delay(final long delay, final TimeUnit unit) {
         N.checkArgument(delay >= 0, "Delay can't be negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
 
         if (delay == 0) {
             return this;
@@ -635,7 +635,7 @@ public abstract class Observer<T> {
      */
     public Observer<List<T>> buffer(final long timespan, final TimeUnit unit, final int count) {
         N.checkArgument(timespan > 0, "timespan can't be 0 or negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
         N.checkArgument(count > 0, "count can't be 0 or negative");
 
         dispatcher.append(new Dispatcher<Object>() {
@@ -705,7 +705,7 @@ public abstract class Observer<T> {
     public Observer<List<T>> buffer(final long timespan, final long timeskip, final TimeUnit unit, final int count) {
         N.checkArgument(timespan > 0, "timespan can't be 0 or negative");
         N.checkArgument(timeskip > 0, "timeskip can't be 0 or negative");
-        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgNotNull(unit, "Time unit can't be null");
         N.checkArgument(count > 0, "count can't be 0 or negative");
 
         dispatcher.append(new Dispatcher<Object>() {
@@ -869,7 +869,7 @@ public abstract class Observer<T> {
 
         @Override
         public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(action, "action");
+            N.checkArgNotNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -919,7 +919,7 @@ public abstract class Observer<T> {
 
         @Override
         public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(action, "action");
+            N.checkArgNotNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -971,7 +971,7 @@ public abstract class Observer<T> {
 
         @Override
         public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(action, "action");
+            N.checkArgNotNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -1009,7 +1009,7 @@ public abstract class Observer<T> {
 
         @Override
         public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(action, "action");
+            N.checkArgNotNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override

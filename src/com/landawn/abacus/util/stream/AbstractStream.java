@@ -156,7 +156,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new Predicate<T>() {
             @Override
@@ -168,7 +168,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return filter(new Predicate<T>() {
             @Override
@@ -180,8 +180,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate, final Consumer<? super T> action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return filter(new Predicate<T>() {
             @Override
@@ -198,8 +198,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return filter(new Predicate<T>() {
             @Override
@@ -216,8 +216,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return dropWhile(new Predicate<T>() {
             @Override
@@ -234,8 +234,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
-        N.requireNonNull(predicate);
-        N.requireNonNull(action);
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(action);
 
         return dropWhile(new Predicate<T>() {
             @Override
@@ -1648,7 +1648,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
-        N.requireNonNull(where);
+        N.checkArgNotNull(where);
 
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private Stream<T>[] a = null;

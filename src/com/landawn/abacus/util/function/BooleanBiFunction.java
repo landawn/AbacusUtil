@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface BooleanBiFunction<R> extends Try.BooleanBiFunction<R, RuntimeEx
     R apply(boolean t, boolean u);
 
     default <V> BooleanBiFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t, u) -> after.apply(apply(t, u));
     }

@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -48,13 +47,13 @@ public interface BooleanTriPredicate extends Try.BooleanTriPredicate<RuntimeExce
     }
 
     default BooleanTriPredicate and(BooleanTriPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) && other.test(a, b, c);
     }
 
     default BooleanTriPredicate or(BooleanTriPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
     }

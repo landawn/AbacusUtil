@@ -1343,14 +1343,14 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
     public String join(int fromIndex, int toIndex, char delimiter) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return N.join(elementData, fromIndex, toIndex, delimiter);
+        return StringUtil.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return N.join(elementData, fromIndex, toIndex, delimiter);
+        return StringUtil.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
@@ -1501,7 +1501,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
         A v = null;
 
         for (int i = 0; i < size; i++) {
-            key = N.requireNonNull(classifier.apply(elementData[i]), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(elementData[i]), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

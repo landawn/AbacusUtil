@@ -77,7 +77,7 @@ abstract class AbstractHasher implements Hasher {
 
     @Override
     public <T> Hasher put(T instance, BiConsumer<? super T, ? super Hasher> funnel) {
-        N.requireNonNull(funnel);
+        N.checkArgNotNull(funnel);
 
         funnel.accept(instance, this);
 

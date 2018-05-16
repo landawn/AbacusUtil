@@ -151,7 +151,7 @@ public abstract class Comparators {
 
     @SuppressWarnings("rawtypes")
     public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -163,7 +163,7 @@ public abstract class Comparators {
 
     @SuppressWarnings("rawtypes")
     public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -174,8 +174,8 @@ public abstract class Comparators {
     }
 
     public static <T, U> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor, final Comparator<? super U> keyComparator) {
-        N.requireNonNull(keyExtractor);
-        N.requireNonNull(keyComparator);
+        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(keyComparator);
 
         return new Comparator<T>() {
             @Override
@@ -186,7 +186,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingBoolean(final ToBooleanFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -197,7 +197,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingChar(final ToCharFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -208,7 +208,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingByte(final ToByteFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -219,7 +219,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingShort(final ToShortFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -230,7 +230,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingInt(final ToIntFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -241,7 +241,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingLong(final ToLongFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -252,7 +252,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingFloat(final ToFloatFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -263,7 +263,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingDouble(final ToDoubleFunction<? super T> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -278,7 +278,7 @@ public abstract class Comparators {
     }
 
     public static <T> Comparator<T> comparingIgnoreCase(final Function<? super T, String> keyExtractor) {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         return new Comparator<T>() {
             @Override
@@ -329,7 +329,7 @@ public abstract class Comparators {
     }
 
     public static <K, V> Comparator<Map.Entry<K, V>> comparingByKey(final Comparator<? super K> cmp) {
-        N.requireNonNull(cmp);
+        N.checkArgNotNull(cmp);
 
         return new Comparator<Map.Entry<K, V>>() {
             @Override
@@ -340,7 +340,7 @@ public abstract class Comparators {
     }
 
     public static <K, V> Comparator<Map.Entry<K, V>> comparingByValue(final Comparator<? super V> cmp) {
-        N.requireNonNull(cmp);
+        N.checkArgNotNull(cmp);
 
         return new Comparator<Map.Entry<K, V>>() {
             @Override
@@ -351,7 +351,7 @@ public abstract class Comparators {
     }
 
     public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByKey(final Comparator<? super K> cmp) {
-        N.requireNonNull(cmp);
+        N.checkArgNotNull(cmp);
 
         return new Comparator<Map.Entry<K, V>>() {
             @Override
@@ -362,7 +362,7 @@ public abstract class Comparators {
     }
 
     public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByValue(final Comparator<? super V> cmp) {
-        N.requireNonNull(cmp);
+        N.checkArgNotNull(cmp);
 
         return new Comparator<Map.Entry<K, V>>() {
             @Override

@@ -2385,7 +2385,7 @@ public final class Sheet<R, C, E> implements Cloneable {
 
         @Override
         public String toString() {
-            return N.concat("[", N.toString(rowKey), ", ", N.toString(columnKey), "]=", N.toString(value));
+            return StringUtil.concat("[", N.toString(rowKey), ", ", N.toString(columnKey), "]=", N.toString(value));
         }
     }
 

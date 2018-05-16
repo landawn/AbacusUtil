@@ -153,7 +153,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     public static <T, K, X extends Exception> SetMultimap<K, T> from(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, X> keyExtractor) throws X {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         final SetMultimap<K, T> multimap = N.newSetMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
@@ -168,8 +168,8 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     public static <T, K, E, X extends Exception, X2 extends Exception> SetMultimap<K, E> from(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, X> keyExtractor, final Try.Function<? super T, ? extends E, X2> valueExtractor) throws X, X2 {
-        N.requireNonNull(keyExtractor);
-        N.requireNonNull(valueExtractor);
+        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(valueExtractor);
 
         final SetMultimap<K, E> multimap = N.newSetMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
@@ -277,7 +277,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends Set<E>> SetMultimap<K, E> wrap(final Map<K, V> map) {
-        N.requireNonNull(map);
+        N.checkArgNotNull(map);
         N.checkArgument(N.anyNull(map.values()), "The specified map contains null value: %s", map);
 
         Class<? extends Set> valueType = HashSet.class;

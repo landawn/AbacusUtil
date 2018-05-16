@@ -313,7 +313,7 @@ public abstract class Maths {
      * Returns {@code true} if {@code x} represents a power of two.
      */
     public static boolean isPowerOfTwo(BigInteger x) {
-        N.requireNonNull(x);
+        N.checkArgNotNull(x);
         return x.signum() > 0 && x.getLowestSetBit() == x.bitLength() - 1;
     }
 
@@ -474,7 +474,7 @@ public abstract class Maths {
     @SuppressWarnings("fallthrough")
     // TODO(kevinb): remove after this warning is disabled globally
     public static int log2(BigInteger x, RoundingMode mode) {
-        checkPositive("x", N.requireNonNull(x));
+        checkPositive("x", N.checkArgNotNull(x));
         int logFloor = x.bitLength() - 1;
         switch (mode) {
             case UNNECESSARY:
@@ -1000,7 +1000,7 @@ public abstract class Maths {
      */
     @SuppressWarnings("fallthrough")
     public static int divide(int p, int q, RoundingMode mode) {
-        N.requireNonNull(mode);
+        N.checkArgNotNull(mode);
         if (q == 0) {
             throw new ArithmeticException("/ by zero"); // for GWT
         }
@@ -1064,7 +1064,7 @@ public abstract class Maths {
      */
     @SuppressWarnings("fallthrough")
     public static long divide(long p, long q, RoundingMode mode) {
-        N.requireNonNull(mode);
+        N.checkArgNotNull(mode);
         long div = p / q; // throws if q == 0
         long rem = p - q * div; // equals p % q
 

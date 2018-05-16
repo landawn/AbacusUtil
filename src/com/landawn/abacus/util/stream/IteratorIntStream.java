@@ -1367,7 +1367,7 @@ class IteratorIntStream extends AbstractIntStream {
 
         while (elements.hasNext()) {
             element = elements.nextInt();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

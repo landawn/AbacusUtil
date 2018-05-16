@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -93,13 +91,13 @@ public interface IntPredicate extends java.util.function.IntPredicate, Try.IntPr
 
     @Override
     default IntPredicate and(java.util.function.IntPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
         return (value) -> test(value) && other.test(value);
     }
 
     @Override
     default IntPredicate or(java.util.function.IntPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
         return (value) -> test(value) || other.test(value);
     }
 
@@ -110,7 +108,7 @@ public interface IntPredicate extends java.util.function.IntPredicate, Try.IntPr
      * @return
      */
     static IntPredicate of(final IntPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }

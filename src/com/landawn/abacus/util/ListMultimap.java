@@ -154,7 +154,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     public static <T, K, X extends Exception> ListMultimap<K, T> from(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, X> keyExtractor) throws X {
-        N.requireNonNull(keyExtractor);
+        N.checkArgNotNull(keyExtractor);
 
         final ListMultimap<K, T> multimap = N.newListMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
@@ -169,8 +169,8 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     public static <T, K, E, X extends Exception, X2 extends Exception> ListMultimap<K, E> from(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, X> keyExtractor, final Try.Function<? super T, ? extends E, X2> valueExtractor) throws X, X2 {
-        N.requireNonNull(keyExtractor);
-        N.requireNonNull(valueExtractor);
+        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(valueExtractor);
 
         final ListMultimap<K, E> multimap = N.newListMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
@@ -278,7 +278,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends List<E>> ListMultimap<K, E> wrap(final Map<K, V> map) {
-        N.requireNonNull(map);
+        N.checkArgNotNull(map);
         N.checkArgument(N.anyNull(map.values()), "The specified map contains null value: %s", map);
 
         Class<? extends List> valueType = ArrayList.class;

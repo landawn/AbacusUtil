@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -51,6 +50,7 @@ import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.SetMultimap;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
@@ -73,7 +73,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R>, Try.I
     R apply(int value);
 
     default <V> IntFunction<V> andThen(java.util.function.Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return t -> after.apply(apply(t));
     }

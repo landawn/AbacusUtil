@@ -173,7 +173,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt filter(Try.IntPredicate<E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -183,7 +183,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt map(final Try.IntUnaryOperator<E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalInt.of(mapper.applyAsInt(value));
@@ -193,7 +193,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.IntFunction<T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of(mapper.apply(value));
@@ -203,10 +203,10 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt flatMap(Try.IntFunction<OptionalInt, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -221,14 +221,14 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         return isPresent() ? value : 0;
     }
 
-    /**
-     * Same as {@code orZero}.
-     * 
-     * @return.
-     */
-    public int orElseZero() {
-        return isPresent() ? value : 0;
-    }
+    //    /**
+    //     * Same as {@code orZero}.
+    //     * 
+    //     * @return.
+    //     */
+    //    public int orElseZero() {
+    //        return isPresent() ? value : 0;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

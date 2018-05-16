@@ -169,7 +169,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     }
 
     public <E extends Exception> OptionalChar filter(Try.CharPredicate<E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -179,7 +179,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     }
 
     public <E extends Exception> OptionalChar map(final Try.CharUnaryOperator<E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalChar.of(mapper.applyAsChar(value));
@@ -189,7 +189,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.CharFunction<T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of(mapper.apply(value));
@@ -199,10 +199,10 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     }
 
     public <E extends Exception> OptionalChar flatMap(Try.CharFunction<OptionalChar, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -217,14 +217,14 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         return isPresent() ? value : 0;
     }
 
-    /**
-     * Same as {@code orZero}.
-     * 
-     * @return.
-     */
-    public char orElseZero() {
-        return isPresent() ? value : 0;
-    }
+    //    /**
+    //     * Same as {@code orZero}.
+    //     * 
+    //     * @return.
+    //     */
+    //    public char orElseZero() {
+    //        return isPresent() ? value : 0;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

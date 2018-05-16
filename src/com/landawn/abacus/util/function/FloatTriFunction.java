@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface FloatTriFunction<R> extends Try.FloatTriFunction<R, RuntimeExce
     R apply(float a, float b, float c);
 
     default <V> FloatTriFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
     }

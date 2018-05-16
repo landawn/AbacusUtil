@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
@@ -35,13 +33,13 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
     }
 
     default TriPredicate<A, B, C> and(TriPredicate<A, B, C> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) && other.test(a, b, c);
     }
 
     default TriPredicate<A, B, C> or(TriPredicate<A, B, C> other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
     }
@@ -53,8 +51,8 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
      * @return
      */
     static <A, B, C> TriPredicate<A, B, C> of(final TriPredicate<A, B, C> predicate) {
-        N.requireNonNull(predicate);
-    
+        N.checkArgNotNull(predicate);
+
         return predicate;
     }
 

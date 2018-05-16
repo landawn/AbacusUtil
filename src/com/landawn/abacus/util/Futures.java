@@ -118,8 +118,8 @@ public final class Futures {
             final Try.Function<? super FC, R, Exception> zipFunctionForGet,
             final Try.Function<? super Tuple3<FC, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
-        N.requireNonNull(zipFunctionForGet);
-        N.requireNonNull(zipFunctionTimeoutGet);
+        N.checkArgNotNull(zipFunctionForGet);
+        N.checkArgNotNull(zipFunctionTimeoutGet);
 
         return new CompletableFuture<>(new Future<R>() {
             @Override

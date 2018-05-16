@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface IndexedBiConsumer<U, T> extends Try.IndexedBiConsumer<U, T, Run
     void accept(U u, int idx, T e);
 
     default IndexedBiConsumer<U, T> andThen(IndexedBiConsumer<? super U, ? super T> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (u, idx, e) -> {
             accept(u, idx, e);

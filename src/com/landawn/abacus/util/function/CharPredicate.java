@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -65,7 +63,7 @@ public interface CharPredicate extends Try.CharPredicate<RuntimeException> {
      * @return
      */
     static CharPredicate of(final CharPredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }
@@ -75,13 +73,13 @@ public interface CharPredicate extends Try.CharPredicate<RuntimeException> {
     }
 
     default CharPredicate and(CharPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default CharPredicate or(CharPredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

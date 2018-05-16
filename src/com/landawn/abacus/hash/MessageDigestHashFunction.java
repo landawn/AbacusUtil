@@ -38,12 +38,12 @@ final class MessageDigestHashFunction extends AbstractStreamingHashFunction {
     MessageDigestHashFunction(String algorithmName, String toString) {
         this.prototype = getMessageDigest(algorithmName);
         this.bytes = prototype.getDigestLength();
-        this.toString = N.requireNonNull(toString);
+        this.toString = N.checkArgNotNull(toString);
         this.supportsClone = supportsClone(prototype);
     }
 
     MessageDigestHashFunction(String algorithmName, int bytes, String toString) {
-        this.toString = N.requireNonNull(toString);
+        this.toString = N.checkArgNotNull(toString);
         this.prototype = getMessageDigest(algorithmName);
         int maxLength = prototype.getDigestLength();
         N.checkArgument(bytes >= 4 && bytes <= maxLength, "bytes (%s) must be >= 4 and < %s", bytes, maxLength);

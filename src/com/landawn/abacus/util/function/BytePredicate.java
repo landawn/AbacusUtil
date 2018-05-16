@@ -3,8 +3,6 @@
  */
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -76,7 +74,7 @@ public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
      * @return
      */
     static BytePredicate of(final BytePredicate predicate) {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         return predicate;
     }
@@ -86,13 +84,13 @@ public interface BytePredicate extends Try.BytePredicate<RuntimeException> {
     }
 
     default BytePredicate and(BytePredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default BytePredicate or(BytePredicate other) {
-        Objects.requireNonNull(other);
+        N.checkArgNotNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

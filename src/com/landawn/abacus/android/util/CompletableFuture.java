@@ -1046,7 +1046,7 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public CompletableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
-        N.requireNonNull(executor);
+        N.checkArgNotNull(executor);
 
         return new CompletableFuture<T>(new Future<T>() {
             private final long delayEndTime = DateUtil.currentMillis() + unit.toMillis(delay);

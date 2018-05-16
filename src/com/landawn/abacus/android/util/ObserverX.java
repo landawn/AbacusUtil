@@ -55,9 +55,9 @@ public abstract class ObserverX<T> {
         }
 
         public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
@@ -105,9 +105,9 @@ public abstract class ObserverX<T> {
 
         public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
+            N.checkArgNotNull(onNext, "onNext");
+            N.checkArgNotNull(onError, "onError");
+            N.checkArgNotNull(onComplete, "onComplete");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override

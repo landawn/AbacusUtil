@@ -89,7 +89,7 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
      * @return
      */
     public static BooleanIterator generate(final BooleanSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new BooleanIterator() {
             @Override
@@ -105,8 +105,8 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
     }
 
     public static BooleanIterator generate(final BooleanSupplier hasNext, final BooleanSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new BooleanIterator() {
             @Override
@@ -156,7 +156,7 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.BooleanConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextBoolean());

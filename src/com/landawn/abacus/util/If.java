@@ -220,7 +220,7 @@ public final class If {
     }
 
     public <E extends Exception> Or then(final Try.Runnable<E> cmd) throws E {
-        N.requireNonNull(cmd);
+        N.checkArgNotNull(cmd);
 
         if (b) {
             cmd.run();
@@ -230,7 +230,7 @@ public final class If {
     }
 
     public <U, E extends Exception> Or then(final U seed, final Try.Consumer<? super U, E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         if (b) {
             action.accept(seed);
@@ -240,7 +240,7 @@ public final class If {
     }
 
     public <E extends Exception> Or thenThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-        N.requireNonNull(exceptionSupplier);
+        N.checkArgNotNull(exceptionSupplier);
 
         if (b) {
             throw exceptionSupplier.get();
@@ -276,7 +276,7 @@ public final class If {
         }
 
         public <E extends Exception> void orElse(final Try.Runnable<E> cmd) throws E {
-            N.requireNonNull(cmd);
+            N.checkArgNotNull(cmd);
 
             if (!b) {
                 cmd.run();
@@ -284,7 +284,7 @@ public final class If {
         }
 
         public <U, E extends Exception> void orElse(final U seed, final Try.Consumer<? super U, E> action) throws E {
-            N.requireNonNull(action);
+            N.checkArgNotNull(action);
 
             if (!b) {
                 action.accept(seed);
@@ -292,7 +292,7 @@ public final class If {
         }
 
         public <E extends Exception> void orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-            N.requireNonNull(exceptionSupplier);
+            N.checkArgNotNull(exceptionSupplier);
 
             if (!b) {
                 throw exceptionSupplier.get();
@@ -489,13 +489,13 @@ public final class If {
         }
 
         public <T, E extends Exception> Or<T> then(final Try.Callable<T, E> callable) throws E {
-            N.requireNonNull(callable);
+            N.checkArgNotNull(callable);
 
             return b ? new TrueOr<>(callable.call()) : FALSE_OR;
         }
 
         public <T, U, E extends Exception> Or<T> then(final U seed, final Try.Function<? super U, T, E> func) throws E {
-            N.requireNonNull(func);
+            N.checkArgNotNull(func);
 
             return b ? new TrueOr<>(func.apply(seed)) : FALSE_OR;
         }
@@ -520,21 +520,21 @@ public final class If {
 
             @Override
             public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
-                N.requireNonNull(callable);
+                N.checkArgNotNull(callable);
 
                 return result;
             }
 
             @Override
             public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
-                N.requireNonNull(func);
+                N.checkArgNotNull(func);
 
                 return result;
             }
 
             @Override
             public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-                N.requireNonNull(exceptionSupplier);
+                N.checkArgNotNull(exceptionSupplier);
 
                 return result;
             }

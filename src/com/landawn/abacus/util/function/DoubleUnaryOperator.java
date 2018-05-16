@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -31,13 +30,13 @@ public interface DoubleUnaryOperator extends java.util.function.DoubleUnaryOpera
 
     @Override
     default DoubleUnaryOperator compose(java.util.function.DoubleUnaryOperator before) {
-        Objects.requireNonNull(before);
+        N.checkArgNotNull(before);
         return (double v) -> applyAsDouble(before.applyAsDouble(v));
     }
 
     @Override
     default DoubleUnaryOperator andThen(java.util.function.DoubleUnaryOperator after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
         return (double t) -> after.applyAsDouble(applyAsDouble(t));
     }
 

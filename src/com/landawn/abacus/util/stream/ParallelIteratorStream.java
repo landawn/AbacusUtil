@@ -562,8 +562,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.requireNonNull(mapperForFirst);
-        N.requireNonNull(mapperForElse);
+        N.checkArgNotNull(mapperForFirst);
+        N.checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
             return super.mapFirstOrElse(mapperForFirst, mapperForElse);
@@ -582,8 +582,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.requireNonNull(mapperForLast);
-        N.requireNonNull(mapperForElse);
+        N.checkArgNotNull(mapperForLast);
+        N.checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
             return super.mapLastOrElse(mapperForLast, mapperForElse);
@@ -1948,7 +1948,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
 
-                            key = N.requireNonNull(classifier.apply(next), "element cannot be mapped to a null key");
+                            key = N.checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
                             value = map.get(key);
 
                             if (value == null) {

@@ -169,7 +169,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     public <E extends Exception> OptionalBoolean filter(Try.BooleanPredicate<E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -179,7 +179,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     public <E extends Exception> OptionalBoolean map(final Try.BooleanUnaryOperator<E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
@@ -189,7 +189,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.BooleanFunction<T, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
             return Nullable.of(mapper.apply(value));
@@ -199,10 +199,10 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     public <E extends Exception> OptionalBoolean flatMap(Try.BooleanFunction<OptionalBoolean, E> mapper) throws E {
-        N.requireNonNull(mapper);
+        N.checkArgNotNull(mapper);
 
         if (isPresent()) {
-            return N.requireNonNull(mapper.apply(value));
+            return N.checkArgNotNull(mapper.apply(value));
         } else {
             return empty();
         }
@@ -226,23 +226,23 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         return isPresent() ? value : true;
     }
 
-    /**
-     * Same as {@code orFalse}.
-     * 
-     * @return
-     */
-    public boolean orElseFalse() {
-        return isPresent() ? value : false;
-    }
-
-    /**
-     * Same as {@code orTrue}.
-     * 
-     * @return
-     */
-    public boolean orElseTrue() {
-        return isPresent() ? value : true;
-    }
+    //    /**
+    //     * Same as {@code orFalse}.
+    //     * 
+    //     * @return
+    //     */
+    //    public boolean orElseFalse() {
+    //        return isPresent() ? value : false;
+    //    }
+    //
+    //    /**
+    //     * Same as {@code orTrue}.
+    //     * 
+    //     * @return
+    //     */
+    //    public boolean orElseTrue() {
+    //        return isPresent() ? value : true;
+    //    }
 
     /**
      * If a value is present, returns the value, otherwise throws NoSuchElementException.

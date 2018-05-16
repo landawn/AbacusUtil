@@ -488,7 +488,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
         final int windowSize = 2;
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -505,7 +505,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
         final int windowSize = 3;
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -829,7 +829,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<T> filter(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return filter(new Try.Predicate<T, E>() {
             @Override
@@ -840,7 +840,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> List<T> takeWhile(Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         final List<T> result = new ArrayList<>(N.min(9, size()));
 
@@ -860,7 +860,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<T> takeWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return takeWhile(new Try.Predicate<T, E>() {
             @Override
@@ -871,7 +871,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> List<T> takeWhileInclusive(Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         final List<T> result = new ArrayList<>(N.min(9, size()));
 
@@ -891,7 +891,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<T> takeWhileInclusive(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return takeWhileInclusive(new Try.Predicate<T, E>() {
             @Override
@@ -902,7 +902,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> List<T> dropWhile(Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         final List<T> result = new ArrayList<>(N.min(9, size()));
 
@@ -930,7 +930,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<T> dropWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return dropWhile(new Try.Predicate<T, E>() {
             @Override
@@ -941,7 +941,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> List<T> skipUntil(final Try.Predicate<? super T, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return dropWhile(new Try.Predicate<T, E>() {
             @Override
@@ -952,7 +952,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<T> skipUntil(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.requireNonNull(filter);
+        N.checkArgNotNull(filter);
 
         return dropWhile(new Try.Predicate<T, E>() {
             @Override
@@ -999,7 +999,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, E extends Exception> List<R> flatMap(final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1015,7 +1015,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, E extends Exception> List<R> flattMap(final Try.Function<? super T, ? extends R[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1042,7 +1042,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> BooleanList flatMapToBoolean(final Try.Function<? super T, ? extends Collection<Boolean>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final BooleanList result = new BooleanList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1060,7 +1060,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> BooleanList flattMapToBoolean(final Try.Function<? super T, boolean[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final BooleanList result = new BooleanList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1076,7 +1076,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> CharList flatMapToChar(final Try.Function<? super T, ? extends Collection<Character>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final CharList result = new CharList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1094,7 +1094,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> CharList flattMapToChar(final Try.Function<? super T, char[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final CharList result = new CharList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1110,7 +1110,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> ByteList flatMapToByte(final Try.Function<? super T, ? extends Collection<Byte>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final ByteList result = new ByteList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1128,7 +1128,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> ByteList flattMapToByte(final Try.Function<? super T, byte[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final ByteList result = new ByteList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1144,7 +1144,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> ShortList flatMapToShort(final Try.Function<? super T, ? extends Collection<Short>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final ShortList result = new ShortList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1162,7 +1162,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> ShortList flattMapToShort(final Try.Function<? super T, short[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final ShortList result = new ShortList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1178,7 +1178,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> IntList flatMapToInt(final Try.Function<? super T, ? extends Collection<Integer>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final IntList result = new IntList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1196,7 +1196,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> IntList flattMapToInt(final Try.Function<? super T, int[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final IntList result = new IntList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1212,7 +1212,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> LongList flatMapToLong(final Try.Function<? super T, ? extends Collection<Long>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final LongList result = new LongList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1230,7 +1230,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> LongList flattMapToLong(final Try.Function<? super T, long[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final LongList result = new LongList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1246,7 +1246,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> FloatList flatMapToFloat(final Try.Function<? super T, ? extends Collection<Float>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final FloatList result = new FloatList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1264,7 +1264,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> FloatList flattMapToFloat(final Try.Function<? super T, float[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final FloatList result = new FloatList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1280,7 +1280,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> DoubleList flatMapToDouble(final Try.Function<? super T, ? extends Collection<Double>, E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final DoubleList result = new DoubleList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1298,7 +1298,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> DoubleList flattMapToDouble(final Try.Function<? super T, double[], E> func) throws E {
-        N.requireNonNull(func);
+        N.checkArgNotNull(func);
 
         final DoubleList result = new DoubleList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
@@ -1315,8 +1315,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public <U, R, E extends Exception, E2 extends Exception> List<R> flatMap(final Try.Function<? super T, ? extends Collection<U>, E> mapper,
             final Try.BiFunction<? super T, ? super U, ? extends R, E2> func) throws E, E2 {
-        N.requireNonNull(mapper);
-        N.requireNonNull(func);
+        N.checkArgNotNull(mapper);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<R>();
@@ -1339,9 +1339,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <T2, T3, R, E extends Exception, E2 extends Exception, E3 extends Exception> List<R> flatMap(
             final Try.Function<? super T, ? extends Collection<T2>, E> mapper2, final Try.Function<? super T2, ? extends Collection<T3>, E2> mapper3,
             final Try.TriFunction<? super T, ? super T2, ? super T3, R, E3> func) throws E, E2, E3 {
-        N.requireNonNull(mapper2);
-        N.requireNonNull(mapper3);
-        N.requireNonNull(func);
+        N.checkArgNotNull(mapper2);
+        N.checkArgNotNull(mapper3);
+        N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<R>();
@@ -1379,8 +1379,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <E extends Exception, E2 extends Exception> List<T> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible,
             final Try.BiFunction<? super T, ? super T, T, E2> mergeFunction) throws E, E2 {
-        N.requireNonNull(collapsible);
-        N.requireNonNull(mergeFunction);
+        N.checkArgNotNull(collapsible);
+        N.checkArgNotNull(mergeFunction);
 
         final List<T> result = new ArrayList<>();
 
@@ -1422,8 +1422,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <R, A, E extends Exception> List<R> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible, final Collector<? super T, A, R> collector)
             throws E {
-        N.requireNonNull(collapsible);
-        N.requireNonNull(collector);
+        N.checkArgNotNull(collapsible);
+        N.checkArgNotNull(collector);
 
         final List<R> result = new ArrayList<>();
 
@@ -1478,7 +1478,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return the new stream which has the extract same size as this stream.
      */
     public <E extends Exception> List<T> scan(final Try.BiFunction<? super T, ? super T, T, E> accumulator) throws E {
-        N.requireNonNull(accumulator);
+        N.checkArgNotNull(accumulator);
 
         final List<T> result = new ArrayList<>();
 
@@ -1526,7 +1526,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return the new stream which has the extract same size as this stream.
      */
     public <R, E extends Exception> List<R> scan(final R seed, final Try.BiFunction<? super R, ? super T, R, E> accumulator) throws E {
-        N.requireNonNull(accumulator);
+        N.checkArgNotNull(accumulator);
 
         final List<R> result = new ArrayList<>();
 
@@ -1567,7 +1567,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public <E extends Exception> Nullable<T> reduce(Try.BinaryOperator<T, E> accumulator) throws E {
-        N.requireNonNull(accumulator);
+        N.checkArgNotNull(accumulator);
 
         if (isEmpty()) {
             return Nullable.empty();
@@ -1607,7 +1607,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public <U, E extends Exception> U reduce(U identity, Try.BiFunction<U, ? super T, U, E> accumulator) throws E {
-        N.requireNonNull(accumulator);
+        N.checkArgNotNull(accumulator);
 
         if (isEmpty()) {
             return identity;
@@ -1624,8 +1624,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, E extends Exception> R collect(final Supplier<R> supplier, final Try.BiConsumer<R, ? super T, E> accumulator) throws E {
-        N.requireNonNull(supplier);
-        N.requireNonNull(accumulator);
+        N.checkArgNotNull(supplier);
+        N.checkArgNotNull(accumulator);
 
         final R result = supplier.get();
 
@@ -1639,7 +1639,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, A> R collect(final Collector<? super T, A, R> collector) {
-        N.requireNonNull(collector);
+        N.checkArgNotNull(collector);
 
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
         final A result = collector.supplier().get();
@@ -1779,7 +1779,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<List<T>> split(final Try.Predicate<? super T, E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
@@ -1797,7 +1797,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public <U, E extends Exception, E2 extends Exception> List<List<T>> split(final U identity, final Try.BiPredicate<? super T, ? super U, E> predicate,
             final Try.Consumer<? super U, E2> identityUpdate) throws E, E2 {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
@@ -1871,7 +1871,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> Pair<List<T>, List<T>> splitBy(final Try.Predicate<? super T, E> predicate) throws E {
-        N.requireNonNull(predicate);
+        N.checkArgNotNull(predicate);
 
         final List<T> left = new ArrayList<>();
         final List<T> right = new ArrayList<>();
@@ -1956,11 +1956,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public String join(final char delimiter) {
-        return N.join(coll, delimiter);
+        return StringUtil.join(coll, delimiter);
     }
 
     public String join(final String delimiter) {
-        return N.join(coll, delimiter);
+        return StringUtil.join(coll, delimiter);
     }
 
     @Override
@@ -2076,7 +2076,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         while (iter.hasNext()) {
             element = iter.next();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
@@ -2119,7 +2119,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         while (iter.hasNext()) {
             element = iter.next();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

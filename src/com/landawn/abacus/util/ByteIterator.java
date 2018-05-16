@@ -90,7 +90,7 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
      * @return
      */
     public static ByteIterator generate(final ByteSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new ByteIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
      * @return
      */
     public static ByteIterator generate(final BooleanSupplier hasNext, final ByteSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new ByteIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.ByteConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextByte());

@@ -73,6 +73,7 @@ import com.landawn.abacus.util.SQLBuilder.RE2;
 import com.landawn.abacus.util.SQLBuilder.RE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
+import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.WD;
 
 import android.content.ContentValues;
@@ -124,7 +125,7 @@ public final class SQLiteExecutor {
      */
     public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
         N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-        N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
+        N.checkArgNotNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
 
@@ -149,7 +150,7 @@ public final class SQLiteExecutor {
      */
     public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
         N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-        N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
+        N.checkArgNotNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
 
@@ -2069,7 +2070,7 @@ public final class SQLiteExecutor {
             for (int i = 0, len = words.size(); i < len; i++) {
                 word = words.get(i);
 
-                if (!N.isAsciiAlpha(word.charAt(0))) {
+                if (!StringUtil.isAsciiAlpha(word.charAt(0))) {
                     sb.append(word);
                 } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
                     sb.append(word);

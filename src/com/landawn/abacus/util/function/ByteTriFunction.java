@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface ByteTriFunction<R> extends Try.ByteTriFunction<R, RuntimeExcept
     R apply(byte a, byte b, byte c);
 
     default <V> ByteTriFunction<V> andThen(Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
     }

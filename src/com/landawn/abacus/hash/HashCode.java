@@ -242,7 +242,7 @@ public abstract class HashCode {
         final byte[] bytes;
 
         BytesHashCode(byte[] bytes) {
-            this.bytes = N.requireNonNull(bytes);
+            this.bytes = N.checkArgNotNull(bytes);
         }
 
         @Override

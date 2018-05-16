@@ -1341,8 +1341,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream iterate(final BooleanSupplier hasNext, final IntSupplier next) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(next);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(next);
 
         return new IteratorIntStream(new IntIteratorEx() {
             private boolean hasNextVal = false;
@@ -1369,8 +1369,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream iterate(final int seed, final BooleanSupplier hasNext, final IntUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorIntStream(new IntIteratorEx() {
             private int t = 0;
@@ -1414,8 +1414,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream iterate(final int seed, final IntPredicate hasNext, final IntUnaryOperator f) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(f);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(f);
 
         return new IteratorIntStream(new IntIteratorEx() {
             private int t = 0;
@@ -1456,7 +1456,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream iterate(final int seed, final IntUnaryOperator f) {
-        N.requireNonNull(f);
+        N.checkArgNotNull(f);
 
         return new IteratorIntStream(new IntIteratorEx() {
             private int t = 0;
@@ -1482,7 +1482,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream generate(final IntSupplier s) {
-        N.requireNonNull(s);
+        N.checkArgNotNull(s);
 
         return new IteratorIntStream(new IntIteratorEx() {
             @Override

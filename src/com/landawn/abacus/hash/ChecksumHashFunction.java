@@ -33,10 +33,10 @@ final class ChecksumHashFunction extends AbstractStreamingHashFunction implement
     private final String toString;
 
     ChecksumHashFunction(Supplier<? extends Checksum> checksumSupplier, int bits, String toString) {
-        this.checksumSupplier = N.requireNonNull(checksumSupplier);
+        this.checksumSupplier = N.checkArgNotNull(checksumSupplier);
         N.checkArgument(bits == 32 || bits == 64, "bits (%s) must be either 32 or 64", bits);
         this.bits = bits;
-        this.toString = N.requireNonNull(toString);
+        this.toString = N.checkArgNotNull(toString);
     }
 
     @Override
@@ -61,7 +61,7 @@ final class ChecksumHashFunction extends AbstractStreamingHashFunction implement
         private final Checksum checksum;
 
         private ChecksumHasher(Checksum checksum) {
-            this.checksum = N.requireNonNull(checksum);
+            this.checksum = N.checkArgNotNull(checksum);
         }
 
         @Override

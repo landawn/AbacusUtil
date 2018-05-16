@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface IndexedConsumer<T> extends Try.IndexedConsumer<T, RuntimeExcept
     void accept(int idx, T e);
 
     default IndexedConsumer<T> andThen(IndexedConsumer<? super T> after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (idx, e) -> {
             accept(idx, e);

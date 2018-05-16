@@ -14,8 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,7 +29,7 @@ public interface BooleanConsumer extends Try.BooleanConsumer<RuntimeException> {
     void accept(boolean t);
 
     default BooleanConsumer andThen(BooleanConsumer after) {
-        Objects.requireNonNull(after);
+        N.checkArgNotNull(after);
 
         return (t) -> {
             accept(t);

@@ -142,10 +142,10 @@ public class Joiner {
     }
 
     Joiner(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
-        N.requireNonNull(prefix, "The prefix must not be null");
-        N.requireNonNull(delimiter, "The delimiter must not be null");
-        N.requireNonNull(keyValueDelimiter, "The keyValueDelimiter must not be null");
-        N.requireNonNull(suffix, "The suffix must not be null");
+        N.checkArgNotNull(prefix, "The prefix must not be null");
+        N.checkArgNotNull(delimiter, "The delimiter must not be null");
+        N.checkArgNotNull(keyValueDelimiter, "The keyValueDelimiter must not be null");
+        N.checkArgNotNull(suffix, "The suffix must not be null");
         // make defensive copies of arguments
         this.prefix = prefix.toString();
         this.delimiter = delimiter.toString();
@@ -215,7 +215,7 @@ public class Joiner {
      *         {@code null}
      */
     public Joiner setEmptyValue(CharSequence emptyValue) {
-        this.emptyValue = N.requireNonNull(emptyValue, "The empty value must not be null").toString();
+        this.emptyValue = N.checkArgNotNull(emptyValue, "The empty value must not be null").toString();
 
         return this;
     }
@@ -1125,7 +1125,7 @@ public class Joiner {
      * @return This {@code StringJoiner}
      */
     public Joiner merge(Joiner other) {
-        N.requireNonNull(other);
+        N.checkArgNotNull(other);
         if (other.buffer != null) {
             final int length = other.buffer.length();
             // lock the length so that we can seize the data to be appended
@@ -1260,132 +1260,6 @@ public class Joiner {
         if (buffer != null && reuseStringBuilder) {
             ObjectFactory.recycle(buffer);
             buffer = null;
-        }
-    }
-
-    /**
-     * Returns {@code N.toString(a) + N.toString(b)}.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static String concat(final Object a, final Object b) {
-        return N.concat(N.toString(a), N.toString(b));
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @return
-     * @see #concat(Object, Object)
-     */
-    public static String concat(final Object a, final Object b, final Object c) {
-        return N.concat(N.toString(a), N.toString(b), N.toString(c));
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @return
-     * @see #concat(Object, Object)
-     */
-    public static String concat(final Object a, final Object b, final Object c, final Object d) {
-        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d));
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @param e
-     * @return
-     * @see #concat(Object, Object)
-     */
-    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e) {
-        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e));
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @param e
-     * @param f
-     * @return
-     * @see #concat(Object, Object)
-     */
-    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f) {
-        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f));
-    }
-
-    /**
-     * 
-     * Returns {@code N.toString(a) + N.toString(b) + N.toString(c) + N.toString(d) + N.toString(e) + N.toString(f) + N.toString(g)}.
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @param e
-     * @param f
-     * @param g
-     * @return
-     * @see #concat(Object, Object)
-     */
-    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
-        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g));
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @see #concat(Object, Object)
-     */
-    @SafeVarargs
-    public static String concat(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        } else if (a.getClass().equals(String[].class)) {
-            return N.concat((String[]) a);
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (Object e : a) {
-                sb.append(N.toString(e));
-            }
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final Collection<?> c) {
-        if (N.isNullOrEmpty(c)) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (Object e : c) {
-                sb.append(N.toString(e));
-            }
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
         }
     }
 }

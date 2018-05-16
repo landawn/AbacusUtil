@@ -766,9 +766,9 @@ public final class ClassUtil {
                     final String tmp = res.substring(i + 1, j);
 
                     if (tmp.substring(0, tmp.length() / 2).equals(tmp.substring(tmp.length() / 2 + 1))) {
-                        sb.append(N.reverse(tmp.substring(0, tmp.length() / 2)));
+                        sb.append(StringUtil.reverse(tmp.substring(0, tmp.length() / 2)));
                     } else {
-                        sb.append(N.reverse(tmp));
+                        sb.append(StringUtil.reverse(tmp));
                     }
 
                     i++;
@@ -2038,14 +2038,14 @@ public final class ClassUtil {
         String newPropName = formalizedPropNamePool.get(propName);
 
         if (newPropName == null) {
-            newPropName = N.isAllUpperCase(propName) ? propName.toLowerCase() : propName;
+            newPropName = StringUtil.isAllUpperCase(propName) ? propName.toLowerCase() : propName;
 
             boolean isFirstUnderScore = true;
             for (int i = 0, len = newPropName.length(); i < len;) {
                 if (newPropName.charAt(i) == WD._UNDERSCORE) {
                     if (i < len - 2) {
-                        if (isFirstUnderScore && i > 0 && N.isAllUpperCase(newPropName.substring(0, i))) {
-                            newPropName = N.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1))
+                        if (isFirstUnderScore && i > 0 && StringUtil.isAllUpperCase(newPropName.substring(0, i))) {
+                            newPropName = StringUtil.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1))
                                     + newPropName.substring(i + 2);
                             isFirstUnderScore = false;
                         } else {
@@ -2054,8 +2054,8 @@ public final class ClassUtil {
 
                         len -= 1;
                     } else if (i < len - 1) {
-                        if (isFirstUnderScore && i > 0 && N.isAllUpperCase(newPropName.substring(0, i))) {
-                            newPropName = N.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1));
+                        if (isFirstUnderScore && i > 0 && StringUtil.isAllUpperCase(newPropName.substring(0, i))) {
+                            newPropName = StringUtil.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1));
                             isFirstUnderScore = false;
                         } else {
                             newPropName = newPropName.substring(0, i) + Character.toUpperCase(newPropName.charAt(i + 1));
@@ -2075,7 +2075,7 @@ public final class ClassUtil {
             for (int i = 0, len = newPropName.length(); i < len; i++) {
                 if (Character.isLowerCase(newPropName.charAt(i))) {
                     if (i == 1) {
-                        newPropName = N.uncapitalize(newPropName);
+                        newPropName = StringUtil.uncapitalize(newPropName);
                     } else if (i > 1) {
                         newPropName = newPropName.substring(0, i - 1).toLowerCase() + newPropName.substring(i - 1);
                     }
@@ -2116,7 +2116,7 @@ public final class ClassUtil {
         String result = lowerCaseWithUnderscorePropNamePool.get(str);
 
         if (result == null) {
-            result = N.toLowerCaseWithUnderscore(str);
+            result = StringUtil.toLowerCaseWithUnderscore(str);
             lowerCaseWithUnderscorePropNamePool.put(str, result);
         }
 
@@ -2150,7 +2150,7 @@ public final class ClassUtil {
         String result = upperCaseWithUnderscorePropNamePool.get(str);
 
         if (result == null) {
-            result = N.toUpperCaseWithUnderscore(str);
+            result = StringUtil.toUpperCaseWithUnderscore(str);
             upperCaseWithUnderscorePropNamePool.put(str, result);
         }
 

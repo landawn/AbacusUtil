@@ -90,7 +90,7 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
      * @return
      */
     public static FloatIterator generate(final FloatSupplier supplier) {
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(supplier);
 
         return new FloatIterator() {
             @Override
@@ -112,8 +112,8 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
      * @return
      */
     public static FloatIterator generate(final BooleanSupplier hasNext, final FloatSupplier supplier) {
-        N.requireNonNull(hasNext);
-        N.requireNonNull(supplier);
+        N.checkArgNotNull(hasNext);
+        N.checkArgNotNull(supplier);
 
         return new FloatIterator() {
             @Override
@@ -163,7 +163,7 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
     }
 
     public <E extends Exception> void forEachRemaining(Try.FloatConsumer<E> action) throws E {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextFloat());

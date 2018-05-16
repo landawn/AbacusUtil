@@ -879,7 +879,7 @@ public final class CodeGenerator {
         String domainName = entityDefinitionFactory.domainName();
 
         if (N.notNullOrEmpty(domainName)) {
-            propNameTableClass = N.capitalize(domainName) + propNameTableClass;
+            propNameTableClass = StringUtil.capitalize(domainName) + propNameTableClass;
         }
 
         String pkgName = entityDefinitionFactory.getAttribute(EntityDefEle.PACKAGE);
@@ -1449,7 +1449,7 @@ public final class CodeGenerator {
         String columnNameTableClassName = POSTFIX_OF_COLUMN_NAME_LIST;
 
         if (N.notNullOrEmpty(domainName)) {
-            columnNameTableClassName = N.capitalize(domainName) + columnNameTableClassName;
+            columnNameTableClassName = StringUtil.capitalize(domainName) + columnNameTableClassName;
         }
 
         File columnNameTableClassFile = new File(classFilePath + columnNameTableClassName + POSTFIX_OF_JAVA_FILE);
@@ -1864,8 +1864,8 @@ public final class CodeGenerator {
             fieldTypes.put(entry.getKey(), type);
         }
 
-        final File dirFile = new File(
-                srcDir.getAbsolutePath() + (N.isNullOrEmpty(packageName) ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(packageName, ".", IOUtil.FILE_SEPARATOR)));
+        final File dirFile = new File(srcDir.getAbsolutePath()
+                + (N.isNullOrEmpty(packageName) ? "" : IOUtil.FILE_SEPARATOR + StringUtil.replaceAll(packageName, ".", IOUtil.FILE_SEPARATOR)));
 
         if (dirFile.exists() == false) {
             dirFile.mkdirs();
@@ -2074,7 +2074,7 @@ public final class CodeGenerator {
 
         final Package pkg = cls.getPackage();
         final String clsSourcePath = srcDir.getAbsolutePath()
-                + (pkg == null ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkg.getName(), ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
+                + (pkg == null ? "" : IOUtil.FILE_SEPARATOR + StringUtil.replaceAll(pkg.getName(), ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
                 + cls.getSimpleName() + ".java";
         final File clsSourceFile = new File(clsSourcePath);
 
@@ -2111,7 +2111,7 @@ public final class CodeGenerator {
             while (i < size && lines.get(i).indexOf(tmp) < 0) {
                 String line = lines.get(i);
                 if (line.startsWith("import ") && line.endsWith(";") && line.indexOf(" static ") < 0) {
-                    String clsName = N.substringBetween(line, ' ', line.lastIndexOf(';')).get();
+                    String clsName = StringUtil.substringBetween(line, ' ', line.lastIndexOf(';')).get();
                     importedClasses.put(clsName, ClassUtil.forClass(clsName));
                 }
                 i++;
@@ -2145,16 +2145,16 @@ public final class CodeGenerator {
 
                                     // for java.util.Date
                                     if (importedClasses.containsKey("java.util.Date")) {
-                                        typeName = N.replaceAll(typeName, "<Date>", "<java.util.Date>");
-                                        typeName = N.replaceAll(typeName, "<Date,", "<java.util.Date,");
-                                        typeName = N.replaceAll(typeName, " Date>", " java.util.Date>");
-                                        typeName = N.replaceAll(typeName, ",Date>", ",java.util.Date>");
-                                        typeName = N.replaceAll(typeName, " Date,", " java.util.Date,");
-                                        typeName = N.replaceAll(typeName, ",Date,", ",java.util.Date,");
+                                        typeName = StringUtil.replaceAll(typeName, "<Date>", "<java.util.Date>");
+                                        typeName = StringUtil.replaceAll(typeName, "<Date,", "<java.util.Date,");
+                                        typeName = StringUtil.replaceAll(typeName, " Date>", " java.util.Date>");
+                                        typeName = StringUtil.replaceAll(typeName, ",Date>", ",java.util.Date>");
+                                        typeName = StringUtil.replaceAll(typeName, " Date,", " java.util.Date,");
+                                        typeName = StringUtil.replaceAll(typeName, ",Date,", ",java.util.Date,");
 
-                                        typeName = N.replaceAll(typeName, "<Date[", "<java.util.Date[");
-                                        typeName = N.replaceAll(typeName, " Date[", " java.util.Date[");
-                                        typeName = N.replaceAll(typeName, ",Date[", ",java.util.Date[");
+                                        typeName = StringUtil.replaceAll(typeName, "<Date[", "<java.util.Date[");
+                                        typeName = StringUtil.replaceAll(typeName, " Date[", " java.util.Date[");
+                                        typeName = StringUtil.replaceAll(typeName, ",Date[", ",java.util.Date[");
                                     }
 
                                     fieldTypes.put(fieldName, N.typeOf(typeName));
@@ -2168,8 +2168,8 @@ public final class CodeGenerator {
 
         final String packageName = ClassUtil.getPackageName(cls);
 
-        final File dirFile = new File(
-                srcDir.getAbsolutePath() + (N.isNullOrEmpty(packageName) ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(packageName, ".", IOUtil.FILE_SEPARATOR)));
+        final File dirFile = new File(srcDir.getAbsolutePath()
+                + (N.isNullOrEmpty(packageName) ? "" : IOUtil.FILE_SEPARATOR + StringUtil.replaceAll(packageName, ".", IOUtil.FILE_SEPARATOR)));
 
         if (dirFile.exists() == false) {
             dirFile.mkdirs();
@@ -2286,7 +2286,7 @@ public final class CodeGenerator {
             }
 
             if (newLines.get(newLines.size() - 1).startsWith("}") && newLines.get(newLines.size() - 2).endsWith(IOUtil.LINE_SEPARATOR)) {
-                newLines.set(newLines.size() - 2, N.chop(newLines.get(newLines.size() - 2)));
+                newLines.set(newLines.size() - 2, StringUtil.chop(newLines.get(newLines.size() - 2)));
             }
 
             IOUtil.writeLines(clsSourceFile, newLines);
@@ -2572,7 +2572,7 @@ public final class CodeGenerator {
             //            final String getPrefix = boolean.class.equals(entry.getValue().getTypeClass()) || Boolean.class.equals(entry.getValue().getTypeClass()) ? "is"
             //                    : "get"; 
             final String postfix = fieldName2MethodName.containsKey(fieldName) ? fieldName2MethodName.get(fieldName)
-                    : (N.isAllUpperCase(fieldName) ? fieldName : N.capitalize(fieldName));
+                    : (StringUtil.isAllUpperCase(fieldName) ? fieldName : StringUtil.capitalize(fieldName));
 
             IOUtil.writeLine(writer, N.EMPTY_STRING);
 
@@ -2896,7 +2896,7 @@ public final class CodeGenerator {
      */
     public static void writeUtilClassForHashEqualsToString(final File srcDir, final String pkgName, final String utilClassName) {
         final String utilClassFilePath = srcDir.getAbsolutePath()
-                + (N.isNullOrEmpty(pkgName) ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkgName, ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
+                + (N.isNullOrEmpty(pkgName) ? "" : IOUtil.FILE_SEPARATOR + StringUtil.replaceAll(pkgName, ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
                 + utilClassName + ".java";
         final File utilClassFile = new File(utilClassFilePath);
 
@@ -3009,7 +3009,7 @@ public final class CodeGenerator {
      * @return String
      */
     static String tableName2EntityName(final String tableName) {
-        return N.capitalize(formalizePropName(tableName));
+        return StringUtil.capitalize(formalizePropName(tableName));
     }
 
     /**
@@ -3034,7 +3034,7 @@ public final class CodeGenerator {
     }
 
     static String propName2MethodName(final String propName) {
-        return N.capitalize(propName);
+        return StringUtil.capitalize(propName);
     }
 
     static String propName2FieldName(final String propName) {
@@ -3118,7 +3118,7 @@ public final class CodeGenerator {
             nst = st;
         }
 
-        return N.uncapitalize(nst);
+        return StringUtil.uncapitalize(nst);
     }
 
     private static void writeFileHead(final Writer fileWrite) throws IOException {
@@ -4503,7 +4503,7 @@ public final class CodeGenerator {
         }
 
         if (typeClass.isArray()) {
-            String componentClassName = N.substring(typeName, 0, typeName.indexOf('[')).get();
+            String componentClassName = StringUtil.substring(typeName, 0, typeName.indexOf('[')).get();
             if (importedClasses.containsKey(componentClassName)) {
                 typeName = typeName.replaceAll(componentClassName.substring(0, componentClassName.lastIndexOf('.') + 1), "");
             }

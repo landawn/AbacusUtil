@@ -250,7 +250,7 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
     Set<Characteristics> characteristics();
 
     public static <T, A, R> Collector<T, A, R> of(java.util.stream.Collector<T, A, R> collector) {
-        N.requireNonNull(collector);
+        N.checkArgNotNull(collector);
 
         final Supplier<A> supplier = () -> collector.supplier().get();
         final BiConsumer<A, T> accumulator = (t, u) -> collector.accumulator().accept(t, u);
@@ -263,10 +263,10 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
     @SafeVarargs
     public static <T, R> Collector<T, R, R> of(Supplier<R> supplier, BiConsumer<R, T> accumulator, BinaryOperator<R> combiner,
             Characteristics... characteristics) {
-        N.requireNonNull(supplier);
-        N.requireNonNull(accumulator);
-        N.requireNonNull(combiner);
-        N.requireNonNull(characteristics);
+        N.checkArgNotNull(supplier);
+        N.checkArgNotNull(accumulator);
+        N.checkArgNotNull(combiner);
+        N.checkArgNotNull(characteristics);
 
         final Set<Characteristics> cs = (characteristics.length == 0) ? Collectors.CH_ID
                 : Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH, characteristics));
@@ -277,10 +277,10 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
     @SafeVarargs
     public static <T, A, R> Collector<T, A, R> of(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher,
             Characteristics... characteristics) {
-        N.requireNonNull(supplier);
-        N.requireNonNull(accumulator);
-        N.requireNonNull(combiner);
-        N.requireNonNull(characteristics);
+        N.checkArgNotNull(supplier);
+        N.checkArgNotNull(accumulator);
+        N.checkArgNotNull(combiner);
+        N.checkArgNotNull(characteristics);
 
         Set<Characteristics> cs = Collectors.CH_NOID;
 

@@ -997,7 +997,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> void forEach(Try.BiConsumer<? super K, ? super V, X> action) throws X {
-        N.requireNonNull(action);
+        N.checkArgNotNull(action);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue());
@@ -1028,7 +1028,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <X extends Exception> V computeIfAbsent(K key, Try.Function<? super K, ? extends V, X> mappingFunction) throws X {
-        N.requireNonNull(mappingFunction);
+        N.checkArgNotNull(mappingFunction);
 
         final V oldValue = get(key);
 
@@ -1071,7 +1071,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <X extends Exception> V computeIfPresent(K key, Try.BiFunction<? super K, ? super V, ? extends V, X> remappingFunction) throws X {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         final V oldValue = get(key);
 
@@ -1113,7 +1113,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <X extends Exception> V compute(K key, Try.BiFunction<? super K, ? super V, ? extends V, X> remappingFunction) throws X {
-        N.requireNonNull(remappingFunction);
+        N.checkArgNotNull(remappingFunction);
 
         final V oldValue = get(key);
         final V newValue = remappingFunction.apply(key, oldValue);
@@ -1153,8 +1153,8 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <X extends Exception> V merge(K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, X> remappingFunction) throws X {
-        N.requireNonNull(remappingFunction);
-        N.requireNonNull(value);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(value);
 
         final V oldValue = get(key);
         final V newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
@@ -1200,8 +1200,8 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <X extends Exception> V merge(K key, E e, Try.BiFunction<? super V, ? super E, ? extends V, X> remappingFunction) throws X {
-        N.requireNonNull(remappingFunction);
-        N.requireNonNull(e);
+        N.checkArgNotNull(remappingFunction);
+        N.checkArgNotNull(e);
 
         final V oldValue = get(key);
 
