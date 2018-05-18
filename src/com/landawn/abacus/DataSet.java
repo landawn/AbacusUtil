@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.Builder.DataSetBuilder;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
@@ -31,7 +32,10 @@ import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
+import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.Collector;
@@ -484,6 +488,44 @@ public interface DataSet {
             throws E;
 
     /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * @param newColumnName
+     * @param fromColumnNames
+     * @param func
+     */
+    <E extends Exception> void addColumn(String newColumnName, Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func) throws E;
+
+    /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * 
+     * @param columnIndex
+     * @param newColumnName
+     * @param fromColumnNames
+     * @param func
+     */
+    <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func)
+            throws E;
+
+    /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * @param newColumnName
+     * @param fromColumnNames
+     * @param func
+     */
+    <E extends Exception> void addColumn(String newColumnName, Tuple3<String, String, String> fromColumnNames, Try.TriFunction<?, ?, ?, ?, E> func) throws E;
+
+    /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * 
+     * @param columnIndex
+     * @param newColumnName
+     * @param fromColumnNames
+     * @param func
+     */
+    <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple3<String, String, String> fromColumnNames,
+            Try.TriFunction<?, ?, ?, ?, E> func) throws E;
+
+    /**
      * Remove the column with the specified columnName from this DataSet.
      *
      * @param columnName
@@ -546,6 +588,11 @@ public interface DataSet {
     void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
 
     <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc) throws E;
+
+    <E extends Exception> void combineColumn(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc) throws E;
+
+    <E extends Exception> void combineColumn(Tuple3<String, String, String> columnNames, String newColumnName, Try.TriFunction<?, ?, ?, ?, E> combineFunc)
+            throws E;
 
     <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
 
@@ -859,6 +906,15 @@ public interface DataSet {
      */
     <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action,
             boolean shareRowArray) throws E;
+
+    <E extends Exception> void forEach(Tuple2<String, String> columnNames, Try.BiConsumer<?, ?, E> action) throws E;
+
+    <E extends Exception> void forEach(Tuple2<String, String> columnNames, int fromRowIndex, int toRowIndex, Try.BiConsumer<?, ?, E> action) throws E;
+
+    <E extends Exception> void forEach(Tuple3<String, String, String> columnNames, Try.TriConsumer<?, ?, ?, E> action) throws E;
+
+    <E extends Exception> void forEach(Tuple3<String, String, String> columnNames, int fromRowIndex, int toRowIndex, Try.TriConsumer<?, ?, ?, E> action)
+            throws E;
 
     //    /**
     //     *
@@ -4333,6 +4389,16 @@ public interface DataSet {
     DataSet clone(boolean freeze);
 
     ObjIterator<Object[]> iterator();
+
+    ObjIterator<Object[]> iterator(int fromRowIndex, int toRowIndex);
+
+    <A, B> BiIterator<A, B> iterator(String columnNameA, String columnNameB);
+
+    <A, B> BiIterator<A, B> iterator(String columnNameA, String columnNameB, int fromRowIndex, int toRowIndex);
+
+    <A, B, C> TriIterator<A, B, C> iterator(String columnNameA, String columnNameB, String columnNameC);
+
+    <A, B, C> TriIterator<A, B, C> iterator(String columnNameA, String columnNameB, String columnNameC, int fromRowIndex, int toRowIndex);
 
     /**
      * Method paginate.

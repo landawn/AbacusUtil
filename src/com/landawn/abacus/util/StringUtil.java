@@ -49,8 +49,8 @@ import com.landawn.abacus.util.function.IntUnaryOperator;
  * @author haiyangl
  *
  */
-public final class StringUtil {
-    public static final String EMPTY_STRING = N.EMPTY_STRING;
+public abstract class StringUtil {
+    // public static final String EMPTY_STRING = N.EMPTY_STRING;
 
     /**
      * A regex pattern for recognizing blocks of whitespace characters. The
@@ -4788,7 +4788,7 @@ public final class StringUtil {
 
     /**
      * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllSubstringsBetween("3[a2[c]]2[a]", '[', ']') = [a2[c], a]</code>
      * 
      * @param str
      * @param prefix
@@ -4801,7 +4801,7 @@ public final class StringUtil {
 
     /**
      * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllSubstringsBetween("3[a2[c]]2[a]", '[', ']') = [a2[c], a]</code>
      * 
      * @param str
      * @param fromIndex
@@ -4823,7 +4823,7 @@ public final class StringUtil {
 
     /**
      * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllSubstringsBetween("3[a2[c]]2[a]", '[', ']') = [a2[c], a]</code>
      * 
      * @param str
      * @param prefix
@@ -4836,7 +4836,7 @@ public final class StringUtil {
 
     /**
      * 
-     * <code>findAllIndicesBetween("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * <code>findAllSubstringsBetween("3[a2[c]]2[a]", '[', ']') = [a2[c], a]</code>
      * 
      * @param str
      * @param fromIndex
@@ -4905,6 +4905,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -4979,6 +4981,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5053,6 +5057,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5127,6 +5133,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5201,6 +5209,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5275,6 +5285,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5349,6 +5361,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5423,6 +5437,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5477,6 +5493,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return trim ? N.toString(a[fromIndex]).trim() : N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5505,6 +5523,8 @@ public final class StringUtil {
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
+        } else if (toIndex - fromIndex == 1) {
+            return trim ? N.toString(a[fromIndex]).trim() : N.toString(a[fromIndex]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5557,7 +5577,7 @@ public final class StringUtil {
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
         N.checkFromToIndex(fromIndex, toIndex, N.len(c));
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -5592,7 +5612,7 @@ public final class StringUtil {
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
         N.checkFromToIndex(fromIndex, toIndex, N.len(c));
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -5708,9 +5728,9 @@ public final class StringUtil {
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
             final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
+        N.checkFromToIndex(fromIndex, toIndex, N.len(m));
 
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
+        if (N.isNullOrEmpty(m) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -5746,9 +5766,9 @@ public final class StringUtil {
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
             final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
+        N.checkFromToIndex(fromIndex, toIndex, N.len(m));
 
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
+        if (N.isNullOrEmpty(m) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -5849,6 +5869,8 @@ public final class StringUtil {
     public static String concat(final String... a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
+        } else if (a.length == 1) {
+            return N.toString(a[0]);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
@@ -5921,7 +5943,7 @@ public final class StringUtil {
      * @param d
      * @param e
      * @param f
-     * @return
+     * @return 
      * @see #concat(Object, Object)
      */
     public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f) {
@@ -5940,54 +5962,63 @@ public final class StringUtil {
      * @param f
      * @param g
      * @return
-     * @see #concat(Object, Object)
+     * @see #concat(Object, Object) 
      */
     public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
         return StringUtil.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g));
     }
 
-    /**
-     * 
-     * @param a
-     * @return
-     * @see #concat(Object, Object)
-     */
-    @SafeVarargs
-    public static String concat(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_STRING;
-        } else if (a.getClass().equals(String[].class)) {
-            return StringUtil.concat((String[]) a);
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (Object e : a) {
-                sb.append(N.toString(e));
-            }
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static String concat(final Collection<?> c) {
-        if (N.isNullOrEmpty(c)) {
-            return N.EMPTY_STRING;
-        }
-
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-
-        try {
-            for (Object e : c) {
-                sb.append(N.toString(e));
-            }
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-        }
-    }
+    //    /**
+    //     * 
+    //     * @param a
+    //     * @return
+    //     * @see #concat(Object, Object)
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    @SafeVarargs
+    //    public static String concat(final Object... a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return N.EMPTY_STRING;
+    //        } else if (a.getClass().equals(String[].class)) {
+    //            return StringUtil.concat((String[]) a);
+    //        }
+    //
+    //        final StringBuilder sb = ObjectFactory.createStringBuilder();
+    //
+    //        try {
+    //            for (Object e : a) {
+    //                sb.append(N.toString(e));
+    //            }
+    //            return sb.toString();
+    //        } finally {
+    //            ObjectFactory.recycle(sb);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param c
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public static String concat(final Collection<?> c) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return N.EMPTY_STRING;
+    //        }
+    //
+    //        final StringBuilder sb = ObjectFactory.createStringBuilder();
+    //
+    //        try {
+    //            for (Object e : c) {
+    //                sb.append(N.toString(e));
+    //            }
+    //            return sb.toString();
+    //        } finally {
+    //            ObjectFactory.recycle(sb);
+    //        }
+    //    }
 
     /**
      * <p>
@@ -6284,7 +6315,8 @@ public final class StringUtil {
             switch (lastChar) {
                 case 'l':
                 case 'L':
-                    if (dec == null && exp == null && (numeric.charAt(0) == '-' && StringUtil.isNumeric(numeric.substring(1)) || StringUtil.isNumeric(numeric))) {
+                    if (dec == null && exp == null
+                            && (numeric.charAt(0) == '-' && StringUtil.isNumeric(numeric.substring(1)) || StringUtil.isNumeric(numeric))) {
 
                         op = createLong(numeric).boxed();
 
@@ -6469,6 +6501,13 @@ public final class StringUtil {
             }
         } else {
             return String.valueOf(a);
+        }
+    }
+
+    public static final class StrUtil extends StringUtil {
+
+        private StrUtil() {
+            // Singleton.
         }
     }
 }

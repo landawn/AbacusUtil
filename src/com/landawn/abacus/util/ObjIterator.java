@@ -148,7 +148,7 @@ public abstract class ObjIterator<T> extends ImmutableIterator<T> {
     }
 
     /**
-     * Returns an infinite {@code ByteIterator}.
+     * Returns an infinite {@code ObjIterator}.
      * 
      * @param supplier
      * @return
