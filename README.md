@@ -212,14 +212,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 // JDK 1.8 or above:
 compile 'com.landawn:abacus-util:1.2.10'
 
-// JDK 1.8 or above with kryo-3.0.3, snappy-java-1.1.5.6 and lz4-1.3.0:
-compile 'com.landawn:abacus-util-all:1.2.10'
-
 // JDK 1.7:
 compile 'com.landawn:abacus-util-jdk7:1.2.10'
-
-// JDK 1.7 with kryo-3.0.3, snappy-java-1.1.5.6 and lz4-1.3.0:
-compile 'com.landawn:abacus-util-all-jdk7:1.2.10'
 
 // Android (Java 1.7):
 compile 'abacus-android-jdk7:1.2.10'
