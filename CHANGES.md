@@ -1,3 +1,8 @@
+### 1.2.11
+
+* Improvements and bug fix.
+
+
 ### 1.2.10
 
 * Add `Functions.pairToList/pairToSet/tripleToList/tripleToSet`.
