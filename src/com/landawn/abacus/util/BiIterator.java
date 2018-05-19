@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BiFunction;
@@ -29,7 +30,36 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public abstract class BiIterator<A, B> extends ObjIterator<Pair<A, B>> {
+public abstract class BiIterator<A, B> extends ImmutableIterator<Pair<A, B>> {
+
+    @SuppressWarnings("rawtypes")
+    private static final BiIterator EMPTY = new BiIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void forEachRemaining(Try.BiConsumer action) throws Exception {
+            N.checkArgNotNull(action);
+        }
+
+        @Override
+        public ObjIterator map(BiFunction mapper) {
+            N.checkArgNotNull(mapper);
+
+            return ObjIterator.empty();
+        }
+    };
+
+    public static <A, B> BiIterator<A, B> empty() {
+        return EMPTY;
+    }
 
     /**
      * Returns an infinite {@code BiIterator}.
@@ -171,6 +201,119 @@ public abstract class BiIterator<A, B> extends ObjIterator<Pair<A, B>> {
                 };
             }
         };
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final Iterator<A> iterA, final Iterator<B> iterB) {
+        if (iterA == null || iterB == null) {
+            return empty();
+        }
+
+        return new BiIterator<A, B>() {
+            @Override
+            public boolean hasNext() {
+                return iterA.hasNext() && iterB.hasNext();
+            }
+
+            @Override
+            public Pair<A, B> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return Pair.of(iterA.next(), iterB.next());
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<A, B, E> action) throws E {
+                N.checkArgNotNull(action);
+
+                while (iterA.hasNext() && iterB.hasNext()) {
+                    action.accept(iterA.next(), iterB.next());
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final BiFunction<A, B, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    @Override
+                    public boolean hasNext() {
+                        return iterA.hasNext() && iterB.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(iterA.next(), iterB.next());
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final Iterator<A> iterA, final Iterator<B> iterB, final A valueForNoneA, final B valueForNoneB) {
+        final Iterator<A> iter1 = iterA == null ? ObjIterator.<A> empty() : iterA;
+        final Iterator<B> iter2 = iterB == null ? ObjIterator.<B> empty() : iterB;
+
+        return new BiIterator<A, B>() {
+            @Override
+            public boolean hasNext() {
+                return iter1.hasNext() || iter2.hasNext();
+            }
+
+            @Override
+            public Pair<A, B> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return Pair.of(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB);
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<A, B, E> action) throws E {
+                N.checkArgNotNull(action);
+
+                while (iter1.hasNext() || iter2.hasNext()) {
+                    action.accept(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB);
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final BiFunction<A, B, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter1.hasNext() || iter2.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB);
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * It's preferred to call <code>forEachRemaining(Try.BiConsumer)</code> to avoid the create the unnecessary <code>Pair</code> Objects.
+     * 
+     * @deprecated
+     */
+    @Deprecated
+    public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
+        super.forEachRemaining(action);
     }
 
     public abstract <E extends Exception> void forEachRemaining(final Try.BiConsumer<A, B, E> action) throws E;

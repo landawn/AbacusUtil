@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -29,7 +30,35 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public abstract class TriIterator<A, B, C> extends ObjIterator<Triple<A, B, C>> {
+public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B, C>> {
+    @SuppressWarnings("rawtypes")
+    private static final TriIterator EMPTY = new TriIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void forEachRemaining(Try.TriConsumer action) throws Exception {
+            N.checkArgNotNull(action);
+        }
+
+        @Override
+        public ObjIterator map(TriFunction mapper) {
+            N.checkArgNotNull(mapper);
+
+            return ObjIterator.empty();
+        }
+    };
+
+    public static <A, B, C> TriIterator<A, B, C> empty() {
+        return EMPTY;
+    }
 
     /**
      * Returns an infinite {@code BiIterator}.
@@ -171,6 +200,124 @@ public abstract class TriIterator<A, B, C> extends ObjIterator<Triple<A, B, C>> 
                 };
             }
         };
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final Iterator<A> iterA, final Iterator<B> iterB, final Iterator<C> iterC) {
+        if (iterA == null || iterB == null || iterC == null) {
+            return empty();
+        }
+
+        return new TriIterator<A, B, C>() {
+            @Override
+            public boolean hasNext() {
+                return iterA.hasNext() && iterB.hasNext() && iterC.hasNext();
+            }
+
+            @Override
+            public Triple<A, B, C> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return Triple.of(iterA.next(), iterB.next(), iterC.next());
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+                N.checkArgNotNull(action);
+
+                while (iterA.hasNext() && iterB.hasNext() && iterC.hasNext()) {
+                    action.accept(iterA.next(), iterB.next(), iterC.next());
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    @Override
+                    public boolean hasNext() {
+                        return iterA.hasNext() && iterB.hasNext() && iterC.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(iterA.next(), iterB.next(), iterC.next());
+                    }
+                };
+            }
+        };
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final Iterator<A> iterA, final Iterator<B> iterB, final Iterator<C> iterC, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC) {
+        final Iterator<A> iter1 = iterA == null ? ObjIterator.<A> empty() : iterA;
+        final Iterator<B> iter2 = iterB == null ? ObjIterator.<B> empty() : iterB;
+        final Iterator<C> iter3 = iterC == null ? ObjIterator.<C> empty() : iterC;
+
+        return new TriIterator<A, B, C>() {
+            @Override
+            public boolean hasNext() {
+                return iter1.hasNext() || iter2.hasNext() || iter3.hasNext();
+            }
+
+            @Override
+            public Triple<A, B, C> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return Triple.of(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB,
+                        iter3.hasNext() ? iter3.next() : valueForNoneC);
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+                N.checkArgNotNull(action);
+
+                while (iter1.hasNext() || iter2.hasNext() || iter3.hasNext()) {
+                    action.accept(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB,
+                            iter3.hasNext() ? iter3.next() : valueForNoneC);
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter1.hasNext() || iter2.hasNext() || iter3.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(iter1.hasNext() ? iter1.next() : valueForNoneA, iter2.hasNext() ? iter2.next() : valueForNoneB,
+                                iter3.hasNext() ? iter3.next() : valueForNoneC);
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * It's preferred to call <code>forEachRemaining(Try.TriConsumer)</code> to avoid the create the unnecessary <code>Triple</code> Objects.
+     * 
+     * @deprecated
+     */
+    @Deprecated
+    public void forEachRemaining(Consumer<? super Triple<A, B, C>> action) {
+        super.forEachRemaining(action);
     }
 
     public abstract <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E;
