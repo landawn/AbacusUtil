@@ -1112,7 +1112,7 @@ public class Builder<T> {
         }
 
         public <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
-            val.updateColumn(columnNames, func);
+            val.updateColumnAll(columnNames, func);
         }
 
         public void convertColumn(String columnName, Class<?> targetType) {
@@ -1141,9 +1141,8 @@ public class Builder<T> {
             val.combineColumn(columnNameFilter, newColumnName, combineFunc);
         }
 
-        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames,
-                Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
-            val.divideColumn(columnName, newColumnNames, divideFunc);
+        public <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E {
+            val.divideColumn(columnName, newColumnNames, output);
         }
 
         public <E extends Exception> void updateAll(Try.Function<?, ?, E> func) throws E {

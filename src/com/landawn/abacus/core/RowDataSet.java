@@ -91,6 +91,7 @@ import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
+import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -883,7 +884,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> void updateColumn(final Collection<String> columnNames, final Try.Function<?, ?, E> func) throws E {
+    public <T, E extends Exception> void updateColumnAll(final Collection<String> columnNames, final Try.Function<?, ?, E> func) throws E {
         checkColumnName(columnNames);
 
         final Try.Function<Object, Object, E> func2 = (Try.Function<Object, Object, E>) func;
@@ -974,8 +975,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames,
-            Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
+    public <E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames, Try.Function<?, ? extends List<?>, E> divideFunc)
+            throws E {
         checkFrozen();
 
         final int columnIndex = this.checkColumnName(columnName);
@@ -1012,6 +1013,127 @@ public class RowDataSet implements DataSet, Cloneable {
 
         _columnList.remove(columnIndex);
         _columnList.addAll(columnIndex, newColumns);
+
+        _columnIndexMap = null;
+        _columnIndexes = null;
+
+        modCount++;
+    }
+
+    @Override
+    public <E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E {
+        checkFrozen();
+
+        final int columnIndex = this.checkColumnName(columnName);
+
+        if (N.isNullOrEmpty(newColumnNames)) {
+            throw new IllegalArgumentException("New column names can't be null or empty.");
+        }
+
+        if (N.disjoint(_columnNameList, newColumnNames) == false) {
+            throw new IllegalArgumentException("Column names: " + N.intersection(_columnNameList, newColumnNames) + " already are included in this data set.");
+        }
+
+        @SuppressWarnings("rawtypes")
+        final Try.BiConsumer<Object, Object[], E> output2 = (Try.BiConsumer) output;
+        final int newColumnsLen = newColumnNames.size();
+        final List<List<Object>> newColumns = new ArrayList<>(newColumnsLen);
+
+        for (int i = 0; i < newColumnsLen; i++) {
+            newColumns.add(new ArrayList<>(size()));
+        }
+
+        final List<Object> column = _columnList.get(columnIndex);
+        final Object[] tmp = new Object[newColumnsLen];
+
+        for (Object val : column) {
+            output2.accept(val, tmp);
+
+            for (int i = 0; i < newColumnsLen; i++) {
+                newColumns.get(i).add(tmp[i]);
+            }
+        }
+
+        _columnNameList.remove(columnIndex);
+        _columnNameList.addAll(columnIndex, newColumnNames);
+
+        _columnList.remove(columnIndex);
+        _columnList.addAll(columnIndex, newColumns);
+
+        _columnIndexMap = null;
+        _columnIndexes = null;
+
+        modCount++;
+    }
+
+    @Override
+    public <E extends Exception> void divideColumn(final String columnName, final Tuple2<String, String> newColumnNames,
+            final Try.BiConsumer<?, Pair<Object, Object>, E> output) throws E {
+        checkFrozen();
+
+        final int columnIndex = this.checkColumnName(columnName);
+        this.checkNewColumnName(newColumnNames._1);
+        this.checkNewColumnName(newColumnNames._2);
+
+        @SuppressWarnings("rawtypes")
+        final Try.BiConsumer<Object, Pair<Object, Object>, E> output2 = (Try.BiConsumer) output;
+        final List<Object> newColumn1 = new ArrayList<>(size());
+        final List<Object> newColumn2 = new ArrayList<>(size());
+
+        final List<Object> column = _columnList.get(columnIndex);
+        final Pair<Object, Object> tmp = new Pair<>();
+
+        for (Object val : column) {
+            output2.accept(val, tmp);
+
+            newColumn1.add(tmp.left);
+            newColumn2.add(tmp.right);
+        }
+
+        _columnNameList.remove(columnIndex);
+        _columnNameList.addAll(columnIndex, Arrays.asList(newColumnNames._1, newColumnNames._2));
+
+        _columnList.remove(columnIndex);
+        _columnList.addAll(columnIndex, Arrays.asList(newColumn1, newColumn2));
+
+        _columnIndexMap = null;
+        _columnIndexes = null;
+
+        modCount++;
+    }
+
+    @Override
+    public <E extends Exception> void divideColumn(final String columnName, final Tuple3<String, String, String> newColumnNames,
+            final Try.BiConsumer<?, Triple<Object, Object, Object>, E> output) throws E {
+        checkFrozen();
+
+        final int columnIndex = this.checkColumnName(columnName);
+        this.checkNewColumnName(newColumnNames._1);
+        this.checkNewColumnName(newColumnNames._2);
+        this.checkNewColumnName(newColumnNames._3);
+
+        @SuppressWarnings("rawtypes")
+        final Try.BiConsumer<Object, Triple<Object, Object, Object>, E> output2 = (Try.BiConsumer) output;
+        final List<Object> newColumn1 = new ArrayList<>(size());
+        final List<Object> newColumn2 = new ArrayList<>(size());
+        final List<Object> newColumn3 = new ArrayList<>(size());
+
+        final List<Object> column = _columnList.get(columnIndex);
+        final Triple<Object, Object, Object> tmp = new Triple<>();
+
+        for (Object val : column) {
+            output2.accept(val, tmp);
+
+            newColumn1.add(tmp.left);
+            newColumn2.add(tmp.middle);
+            newColumn3.add(tmp.right);
+        }
+
+        _columnNameList.remove(columnIndex);
+        _columnNameList.addAll(columnIndex, Arrays.asList(newColumnNames._1, newColumnNames._2, newColumnNames._3));
+
+        _columnList.remove(columnIndex);
+        _columnList.addAll(columnIndex, Arrays.asList(newColumn1, newColumn2, newColumn3));
 
         _columnIndexMap = null;
         _columnIndexes = null;
@@ -1185,7 +1307,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void updateRow(int[] indices, Try.Function<?, ?, E> func) throws E {
+    public <E extends Exception> void updateRowAll(int[] indices, Try.Function<?, ?, E> func) throws E {
         checkFrozen();
 
         for (int rowIndex : indices) {
@@ -7878,10 +8000,14 @@ public class RowDataSet implements DataSet, Cloneable {
             final int otherColumnIndex = other.getColumnIndex(commonColumnNameList.get(0));
 
             final List<Object> column = _columnList.get(columnIndex);
-            final Multiset<Object> rowSet = Multiset.from(other.getColumn(otherColumnIndex));
+            final Multiset<Object> rowSet = new Multiset<>();
+
+            for (Object val : other.getColumn(otherColumnIndex)) {
+                rowSet.add(getHashKey(val));
+            }
 
             for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-                if ((rowSet.getAndRemove(column.get(rowIndex)) > 0) == retain) {
+                if ((rowSet.getAndRemove(getHashKey(column.get(rowIndex))) > 0) == retain) {
                     for (int i = 0; i < newColumnCount; i++) {
                         newColumnList.get(i).add(_columnList.get(i).get(rowIndex));
                     }
@@ -7980,10 +8106,14 @@ public class RowDataSet implements DataSet, Cloneable {
             final int otherColumnIndex = other.getColumnIndex(commonColumnNameList.get(0));
 
             final List<Object> column = _columnList.get(columnIndex);
-            final Set<Object> rowSet = new HashSet<>(other.getColumn(otherColumnIndex));
+            final Set<Object> rowSet = new HashSet<>();
+
+            for (Object e : other.getColumn(otherColumnIndex)) {
+                rowSet.add(getHashKey(e));
+            }
 
             for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-                if (rowSet.contains(column.get(rowIndex)) == retain) {
+                if (rowSet.contains(getHashKey(column.get(rowIndex))) == retain) {
                     for (int i = 0; i < newColumnCount; i++) {
                         newColumnList.get(i).add(_columnList.get(i).get(rowIndex));
                     }
@@ -8171,6 +8301,44 @@ public class RowDataSet implements DataSet, Cloneable {
     //
     //        return N.split(list, size);
     //    }
+
+    @Override
+    public Stream<DataSet> splitt(final int size) {
+        return splitt(_columnNameList, size);
+    }
+
+    @Override
+    public Stream<DataSet> splitt(final Collection<String> columnNames, final int size) {
+        return splitt(columnNames, 0, size(), size);
+    }
+
+    @Override
+    public Stream<DataSet> splitt(final int fromRowIndex, final int toRowIndex, final int size) {
+        return splitt(_columnNameList, fromRowIndex, toRowIndex, size);
+    }
+
+    @Override
+    public Stream<DataSet> splitt(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex, final int size) {
+        checkColumnName(columnNames);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, size());
+        N.checkArgPositive(size, "size");
+
+        final int expectedModCount = modCount;
+        final int len = toRowIndex - fromRowIndex;
+
+        return IntStream.range(0, len % size == 0 ? len / size : (len / size) + 1).mapToObj(new IntFunction<DataSet>() {
+            @Override
+            public DataSet apply(int t) {
+                if (modCount != expectedModCount) {
+                    throw new ConcurrentModificationException();
+                }
+
+                final int from = fromRowIndex + t * size;
+                final int to = from <= toRowIndex - size ? from + size : toRowIndex;
+                return RowDataSet.this.copy(columnNames, from, to);
+            }
+        });
+    }
 
     @Override
     public PaginatedDataSet paginate(final int pageSize) {
@@ -8794,6 +8962,7 @@ public class RowDataSet implements DataSet, Cloneable {
      * @version $Revision: 0.8 $ 07/01/15
      */
     private class PaginatedRowDataSet implements PaginatedDataSet {
+        private final int expectedModCount = modCount;
         private final Map<Integer, DataSet> pagePool = new HashMap<>();
         private final int pageSize;
         private final int pageCount;
@@ -8844,6 +9013,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
         @Override
         public DataSet getPage(final int pageNum) {
+            checkForComodification();
             checkPageNumber(pageNum);
 
             synchronized (pagePool) {
@@ -8893,6 +9063,12 @@ public class RowDataSet implements DataSet, Cloneable {
             return Stream.of(iterator());
         }
 
+        final void checkForComodification() {
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
+
         private void checkPageNumber(final int pageNumber) {
             if ((pageNumber < 0) || (pageNumber >= pageCount())) {
                 throw new IllegalArgumentException(pageNumber + " out of page index [0, " + pageCount() + ")");
@@ -8901,7 +9077,6 @@ public class RowDataSet implements DataSet, Cloneable {
 
         private class Itr implements Iterator<DataSet> {
             int cursor = 0;
-            int expectedModCount = modCount;
 
             @Override
             public boolean hasNext() {
@@ -8926,12 +9101,6 @@ public class RowDataSet implements DataSet, Cloneable {
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
-            }
-
-            final void checkForComodification() {
-                if (modCount != expectedModCount) {
-                    throw new ConcurrentModificationException();
-                }
             }
         }
     }

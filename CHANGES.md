@@ -1,6 +1,11 @@
 ### 1.2.11
 
+* Rename `DataSet.updateColumn(Collection...)/updateRow(int[]...)` to `updateColumnAll/updateRowAll`.
+
+* Add `DataSet.divideColumn(...BiConsumer)`.
+
 * Improvements and bug fix.
+
 
 
 ### 1.2.10

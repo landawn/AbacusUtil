@@ -30,9 +30,11 @@ import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.TriIterator;
+import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
@@ -553,7 +555,7 @@ public interface DataSet {
      * @param columnNames
      * @param func
      */
-    <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
+    <T, E extends Exception> void updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Convert the specified column to target type.
@@ -599,7 +601,15 @@ public interface DataSet {
     <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
             Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2;
 
-    <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<T, ? extends List<?>, E> divideFunc) throws E;
+    <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<?, ? extends List<?>, E> divideFunc) throws E;
+
+    <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E;
+
+    <E extends Exception> void divideColumn(String columnName, Tuple2<String, String> newColumnNames, Try.BiConsumer<?, Pair<Object, Object>, E> output)
+            throws E;
+
+    <E extends Exception> void divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
+            Try.BiConsumer<?, Triple<Object, Object, Object>, E> output) throws E;
 
     /**
      * 
@@ -646,7 +656,7 @@ public interface DataSet {
      * @param indices
      * @param func
      */
-    <E extends Exception> void updateRow(int[] indices, Try.Function<?, ?, E> func) throws E;
+    <E extends Exception> void updateRowAll(int[] indices, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Update all the values in this DataSet with the specified function.
@@ -4335,6 +4345,44 @@ public interface DataSet {
     //     * @see List#subList(int, int).
     //     */
     //    DataSet slice(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param size
+     * @return
+     */
+    Stream<DataSet> splitt(int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param size
+     * @param columnNames
+     * @return
+     */
+    Stream<DataSet> splitt(Collection<String> columnNames, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param size
+     * @return
+     */
+    Stream<DataSet> splitt(int fromRowIndex, int toRowIndex, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param size
+     * @return
+     */
+    Stream<DataSet> splitt(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns the copy of this <code>DataSet</code>.
