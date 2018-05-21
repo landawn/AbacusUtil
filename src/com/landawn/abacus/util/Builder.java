@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1111,7 +1113,7 @@ public class Builder<T> {
             val.updateColumn(columnName, func);
         }
 
-        public <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
+        public <T, E extends Exception> void updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
             val.updateColumnAll(columnNames, func);
         }
 
@@ -1132,6 +1134,16 @@ public class Builder<T> {
             val.combineColumn(columnNames, newColumnName, combineFunc);
         }
 
+        public <E extends Exception> void combineColumn(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc)
+                throws E {
+            val.combineColumn(columnNames, newColumnName, combineFunc);
+        }
+
+        public <E extends Exception> void combineColumn(Tuple3<String, String, String> columnNames, String newColumnName,
+                Try.TriFunction<?, ?, ?, ?, E> combineFunc) throws E {
+            val.combineColumn(columnNames, newColumnName, combineFunc);
+        }
+
         public <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
             val.combineColumn(columnNameFilter, newColumnName, newColumnClass);
         }
@@ -1141,7 +1153,23 @@ public class Builder<T> {
             val.combineColumn(columnNameFilter, newColumnName, combineFunc);
         }
 
-        public <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E {
+        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames,
+                Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
+            val.divideColumn(columnName, newColumnNames, divideFunc);
+        }
+
+        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<T, Object[], E> output)
+                throws E {
+            val.divideColumn(columnName, newColumnNames, output);
+        }
+
+        public <T, E extends Exception> void divideColumn(String columnName, Tuple2<String, String> newColumnNames,
+                Try.BiConsumer<T, Pair<Object, Object>, E> output) throws E {
+            val.divideColumn(columnName, newColumnNames, output);
+        }
+
+        public <T, E extends Exception> void divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
+                Try.BiConsumer<T, Triple<Object, Object, Object>, E> output) throws E {
             val.divideColumn(columnName, newColumnNames, output);
         }
 

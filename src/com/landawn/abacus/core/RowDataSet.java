@@ -78,6 +78,7 @@ import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Try.TriConsumer;
 import com.landawn.abacus.util.Try.TriFunction;
+import com.landawn.abacus.util.Try.TriPredicate;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.WD;
@@ -87,7 +88,6 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
@@ -975,8 +975,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames, Try.Function<?, ? extends List<?>, E> divideFunc)
-            throws E {
+    public <T, E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames,
+            Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
         checkFrozen();
 
         final int columnIndex = this.checkColumnName(columnName);
@@ -1021,7 +1021,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E {
+    public <T, E extends Exception> void divideColumn(final String columnName, Collection<String> newColumnNames, Try.BiConsumer<T, Object[], E> output)
+            throws E {
         checkFrozen();
 
         final int columnIndex = this.checkColumnName(columnName);
@@ -1067,8 +1068,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void divideColumn(final String columnName, final Tuple2<String, String> newColumnNames,
-            final Try.BiConsumer<?, Pair<Object, Object>, E> output) throws E {
+    public <T, E extends Exception> void divideColumn(final String columnName, final Tuple2<String, String> newColumnNames,
+            final Try.BiConsumer<T, Pair<Object, Object>, E> output) throws E {
         checkFrozen();
 
         final int columnIndex = this.checkColumnName(columnName);
@@ -1103,8 +1104,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void divideColumn(final String columnName, final Tuple3<String, String, String> newColumnNames,
-            final Try.BiConsumer<?, Triple<Object, Object, Object>, E> output) throws E {
+    public <T, E extends Exception> void divideColumn(final String columnName, final Tuple3<String, String, String> newColumnNames,
+            final Try.BiConsumer<T, Triple<Object, Object, Object>, E> output) throws E {
         checkFrozen();
 
         final int columnIndex = this.checkColumnName(columnName);
@@ -1345,7 +1346,8 @@ public class RowDataSet implements DataSet, Cloneable {
     public <E extends Exception> void replaceIf(Try.Predicate<?, E> predicate, Object newValue) throws E {
         checkFrozen();
 
-        final Predicate<Object> Predicate2 = (Predicate<Object>) predicate;
+        @SuppressWarnings("rawtypes")
+        final Try.Predicate<Object, E> Predicate2 = (Try.Predicate) predicate;
         final int size = size();
         Object val = null;
 
@@ -1758,7 +1760,6 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> void forEach(Tuple3<String, String, String> columnNames, TriConsumer<?, ?, ?, E> action) throws E {
         forEach(columnNames, 0, size(), action);
-
     }
 
     @Override
@@ -3607,10 +3608,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private <T> void sort(final String columnName, final Comparator<T> cmp, final boolean isParallelSort) {
-        final int columnIndex = checkColumnName(columnName);
-
         checkFrozen();
 
+        final int columnIndex = checkColumnName(columnName);
         final int size = size();
 
         if (size == 0) {
@@ -3684,10 +3684,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @SuppressWarnings("rawtypes")
     private void sort(final Collection<String> columnNames, final Comparator<? super Object[]> cmp, final boolean isParallelSort) {
-        final int[] columnIndexes = checkColumnName(columnNames);
-
         checkFrozen();
 
+        final int[] columnIndexes = checkColumnName(columnNames);
         final int size = size();
 
         if (size == 0) {
@@ -5510,7 +5509,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> DataSet filter(final Try.Predicate<? super Object[], E> filter) throws E {
-        return filter(filter, Integer.MAX_VALUE);
+        return filter(filter, size());
     }
 
     @Override
@@ -5520,7 +5519,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> DataSet filter(final int fromRowIndex, final int toRowIndex, final Try.Predicate<? super Object[], E> filter) throws E {
-        return filter(fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+        return filter(fromRowIndex, toRowIndex, filter, size());
     }
 
     @Override
@@ -5529,8 +5528,130 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
+    public <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, Try.BiPredicate<?, ?, E> filter) throws E {
+        return filter(columnNames, filter, size());
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, Try.BiPredicate<?, ?, E> filter, int max) throws E {
+        return filter(columnNames, 0, size(), filter, max);
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, int fromRowIndex, int toRowIndex, Try.BiPredicate<?, ?, E> filter)
+            throws E {
+        return filter(columnNames, fromRowIndex, toRowIndex, filter, size());
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, int fromRowIndex, int toRowIndex, Try.BiPredicate<?, ?, E> filter, int max)
+            throws E {
+        final int columnIndexA = checkColumnName(columnNames._1);
+        final int columnIndexB = checkColumnName(columnNames._2);
+        checkRowIndex(fromRowIndex, toRowIndex);
+        N.checkArgNotNull(filter);
+
+        @SuppressWarnings("rawtypes")
+        final Try.BiPredicate<Object, Object, E> filter2 = (Try.BiPredicate) filter;
+        final int size = size();
+        final int columnCount = _columnNameList.size();
+        final List<String> newColumnNameList = new ArrayList<>(_columnNameList);
+        final List<List<Object>> newColumnList = new ArrayList<>(columnCount);
+
+        for (int i = 0; i < columnCount; i++) {
+            newColumnList.add(new ArrayList<>(N.min(max, (size == 0) ? 0 : ((int) (size * 0.8) + 1))));
+        }
+
+        final Properties<String, Object> newProperties = N.isNullOrEmpty(_properties) ? null : _properties.copy();
+
+        if (size == 0 || max == 0) {
+            return new RowDataSet(newColumnNameList, newColumnList, newProperties);
+        }
+
+        final List<Object> columnA = _columnList.get(columnIndexA);
+        final List<Object> columnB = _columnList.get(columnIndexB);
+        int count = max;
+
+        for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
+            if (filter2.test(columnA.get(rowIndex), columnB.get(rowIndex))) {
+                if (--count < 0) {
+                    break;
+                }
+
+                for (int j = 0; j < columnCount; j++) {
+                    newColumnList.get(j).add(_columnList.get(j).get(rowIndex));
+                }
+            }
+        }
+
+        return new RowDataSet(newColumnNameList, newColumnList, newProperties);
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, Try.TriPredicate<?, ?, ?, E> filter) throws E {
+        return filter(columnNames, filter, size());
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, Try.TriPredicate<?, ?, ?, E> filter, int max) throws E {
+        return filter(columnNames, 0, size(), filter, max);
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, int fromRowIndex, int toRowIndex,
+            Try.TriPredicate<?, ?, ?, E> filter) throws E {
+        return filter(columnNames, fromRowIndex, toRowIndex, filter, size());
+    }
+
+    @Override
+    public <E extends Exception> DataSet filter(final Tuple3<String, String, String> columnNames, final int fromRowIndex, final int toRowIndex,
+            final Try.TriPredicate<?, ?, ?, E> filter, final int max) throws E {
+        final int columnIndexA = checkColumnName(columnNames._1);
+        final int columnIndexB = checkColumnName(columnNames._2);
+        final int columnIndexC = checkColumnName(columnNames._3);
+        checkRowIndex(fromRowIndex, toRowIndex);
+        N.checkArgNotNull(filter);
+
+        @SuppressWarnings("rawtypes")
+        final TriPredicate<Object, Object, Object, E> filter2 = (Try.TriPredicate) filter;
+        final int size = size();
+        final int columnCount = _columnNameList.size();
+        final List<String> newColumnNameList = new ArrayList<>(_columnNameList);
+        final List<List<Object>> newColumnList = new ArrayList<>(columnCount);
+
+        for (int i = 0; i < columnCount; i++) {
+            newColumnList.add(new ArrayList<>(N.min(max, (size == 0) ? 0 : ((int) (size * 0.8) + 1))));
+        }
+
+        final Properties<String, Object> newProperties = N.isNullOrEmpty(_properties) ? null : _properties.copy();
+
+        if (size == 0 || max == 0) {
+            return new RowDataSet(newColumnNameList, newColumnList, newProperties);
+        }
+
+        final List<Object> columnA = _columnList.get(columnIndexA);
+        final List<Object> columnB = _columnList.get(columnIndexB);
+        final List<Object> columnC = _columnList.get(columnIndexC);
+        int count = max;
+
+        for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
+            if (filter2.test(columnA.get(rowIndex), columnB.get(rowIndex), columnC.get(rowIndex))) {
+                if (--count < 0) {
+                    break;
+                }
+
+                for (int j = 0; j < columnCount; j++) {
+                    newColumnList.get(j).add(_columnList.get(j).get(rowIndex));
+                }
+            }
+        }
+
+        return new RowDataSet(newColumnNameList, newColumnList, newProperties);
+    }
+
+    @Override
     public <T, E extends Exception> DataSet filter(final String columnName, final Try.Predicate<T, E> filter) throws E {
-        return filter(columnName, filter, Integer.MAX_VALUE);
+        return filter(columnName, filter, size());
     }
 
     @Override
@@ -5541,7 +5662,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T, E extends Exception> DataSet filter(final String columnName, final int fromRowIndex, final int toRowIndex, final Try.Predicate<T, E> filter)
             throws E {
-        return filter(columnName, fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+        return filter(columnName, fromRowIndex, toRowIndex, filter, size());
     }
 
     @Override
@@ -5594,7 +5715,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> DataSet filter(final Collection<String> columnNames, final Try.Predicate<? super Object[], E> filter) throws E {
-        return filter(columnNames, filter, Integer.MAX_VALUE);
+        return filter(columnNames, filter, size());
     }
 
     @Override
@@ -5605,7 +5726,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> DataSet filter(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final Try.Predicate<? super Object[], E> filter) throws E {
-        return filter(columnNames, fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+        return filter(columnNames, fromRowIndex, toRowIndex, filter, size());
     }
 
     @Override
@@ -5666,7 +5787,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final Try.Predicate<? super Object[], E> filter) throws E {
-    //        return filter(rowClass, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, filter, size());
     //    }
     //
     //    @Override
@@ -5676,7 +5797,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final int fromRowIndex, final int toRowIndex, final Try.Predicate<? super Object[], E> filter) throws E {
-    //        return filter(rowClass, fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, fromRowIndex, toRowIndex, filter, size());
     //    }
     //
     //    @Override
@@ -5686,7 +5807,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final String columnName, final Try.Predicate<T, E> filter) throws E {
-    //        return filter(rowClass, columnName, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, columnName, filter, size());
     //    }
     //
     //    @Override
@@ -5696,7 +5817,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final String columnName, final int fromRowIndex, final int toRowIndex, final Try.Predicate<T, E> filter) throws E {
-    //        return filter(rowClass, columnName, fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, columnName, fromRowIndex, toRowIndex, filter, size());
     //    }
     //
     //    @Override
@@ -5853,7 +5974,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final Collection<String> columnNames, final Try.Predicate<? super Object[], E> filter) throws E {
-    //        return filter(rowClass, columnNames, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, columnNames, filter, size());
     //    }
     //
     //    @Override
@@ -5864,7 +5985,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //    @Override
     //    public <T> List<T> filter(final Class<T> rowClass, final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
     //            final Try.Predicate<? super Object[], E> filter) throws E {
-    //        return filter(rowClass, columnNames, fromRowIndex, toRowIndex, filter, Integer.MAX_VALUE);
+    //        return filter(rowClass, columnNames, fromRowIndex, toRowIndex, filter, size());
     //    }
     //
     //    @Override

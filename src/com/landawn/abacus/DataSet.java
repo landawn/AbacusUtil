@@ -38,7 +38,7 @@ import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
-import com.landawn.abacus.util.function.Function;
+// import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Stream;
@@ -542,7 +542,7 @@ public interface DataSet {
     void removeColumnAll(Collection<String> columnNames);
 
     /**
-     * Update the values of the specified column by the specified function.
+     * Update the values of the specified column by the specified Try.Function.
      *
      * @param columnName
      * @param func
@@ -550,7 +550,7 @@ public interface DataSet {
     <T, E extends Exception> void updateColumn(String columnName, Try.Function<T, ?, E> func) throws E;
 
     /**
-     * Update the values of the specified columns one by one with the specified function.
+     * Update the values of the specified columns one by one with the specified Try.Function.
      *
      * @param columnNames
      * @param func
@@ -601,15 +601,15 @@ public interface DataSet {
     <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
             Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2;
 
-    <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<?, ? extends List<?>, E> divideFunc) throws E;
+    <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<T, ? extends List<?>, E> divideFunc) throws E;
 
-    <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<?, Object[], E> output) throws E;
+    <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<T, Object[], E> output) throws E;
 
-    <E extends Exception> void divideColumn(String columnName, Tuple2<String, String> newColumnNames, Try.BiConsumer<?, Pair<Object, Object>, E> output)
+    <T, E extends Exception> void divideColumn(String columnName, Tuple2<String, String> newColumnNames, Try.BiConsumer<T, Pair<Object, Object>, E> output)
             throws E;
 
-    <E extends Exception> void divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
-            Try.BiConsumer<?, Triple<Object, Object, Object>, E> output) throws E;
+    <T, E extends Exception> void divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
+            Try.BiConsumer<T, Triple<Object, Object, Object>, E> output) throws E;
 
     /**
      * 
@@ -643,7 +643,7 @@ public interface DataSet {
     void removeRowRange(int inclusiveFromRowIndex, int exclusiveToRowIndex);
 
     /**
-     * Update the values in the specified row with the specified function.
+     * Update the values in the specified row with the specified Try.Function.
      * 
      * @param rowIndex
      * @param func
@@ -651,7 +651,7 @@ public interface DataSet {
     <E extends Exception> void updateRow(int rowIndex, Try.Function<?, ?, E> func) throws E;
 
     /**
-     * Update the values in the specified rows one by one with the specified function.
+     * Update the values in the specified rows one by one with the specified Try.Function.
      * 
      * @param indices
      * @param func
@@ -659,7 +659,7 @@ public interface DataSet {
     <E extends Exception> void updateRowAll(int[] indices, Try.Function<?, ?, E> func) throws E;
 
     /**
-     * Update all the values in this DataSet with the specified function.
+     * Update all the values in this DataSet with the specified Try.Function.
      * 
      * @param func
      */
@@ -2112,7 +2112,7 @@ public interface DataSet {
      * @param columnName specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName,
@@ -2130,7 +2130,7 @@ public interface DataSet {
      * @param columnName specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
@@ -2149,7 +2149,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName,
@@ -2168,7 +2168,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <K, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName,
@@ -2265,7 +2265,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2285,7 +2285,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2306,7 +2306,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor,
@@ -2327,7 +2327,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <K, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor,
@@ -2409,7 +2409,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
@@ -2427,7 +2427,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
@@ -2446,7 +2446,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -2465,7 +2465,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -2564,7 +2564,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2584,7 +2584,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2605,7 +2605,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -2627,7 +2627,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -2710,7 +2710,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
@@ -2728,7 +2728,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
@@ -2747,7 +2747,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -2766,7 +2766,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -2865,7 +2865,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2885,7 +2885,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -2906,7 +2906,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -2928,7 +2928,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -3011,7 +3011,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
@@ -3029,7 +3029,7 @@ public interface DataSet {
      * @param columnNames specifying the column to group by.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
@@ -3048,7 +3048,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -3067,7 +3067,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
@@ -3166,7 +3166,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -3186,7 +3186,7 @@ public interface DataSet {
      * @param toRowIndex
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
@@ -3207,7 +3207,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -3229,7 +3229,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Function.apply(Stream s)} is reusable.
+     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
      * @return
      */
     <E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
@@ -3269,6 +3269,77 @@ public interface DataSet {
      * @return
      */
     <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max) throws E;
+
+    /**
+     *
+     * @param filter
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, Try.BiPredicate<?, ?, E> filter) throws E;
+
+    /**
+     * 
+     * @param filter
+     * @param max
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, Try.BiPredicate<?, ?, E> filter, int max) throws E;
+
+    /**
+     *
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param filter
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, int fromRowIndex, int toRowIndex, Try.BiPredicate<?, ?, E> filter) throws E;
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param filter
+     * @param max
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple2<String, String> columnNames, int fromRowIndex, int toRowIndex, Try.BiPredicate<?, ?, E> filter, int max)
+            throws E;
+
+    /**
+     *
+     * @param filter
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, Try.TriPredicate<?, ?, ?, E> filter) throws E;
+
+    /**
+     * 
+     * @param filter
+     * @param max
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, Try.TriPredicate<?, ?, ?, E> filter, int max) throws E;
+
+    /**
+     *
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param filter
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, int fromRowIndex, int toRowIndex, Try.TriPredicate<?, ?, ?, E> filter)
+            throws E;
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param filter
+     * @param max
+     * @return
+     */
+    <E extends Exception> DataSet filter(Tuple3<String, String, String> columnNames, int fromRowIndex, int toRowIndex, Try.TriPredicate<?, ?, ?, E> filter,
+            int max) throws E;
 
     /**
      *
