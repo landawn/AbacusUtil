@@ -295,7 +295,7 @@ public class RowDataSet implements DataSet, Cloneable {
         for (Map.Entry<String, String> entry : oldNewNames.entrySet()) {
             checkColumnName(entry.getKey());
 
-            if (_columnNameList.contains(entry.getValue())) {
+            if (_columnNameList.contains(entry.getValue()) && !entry.getKey().equals(entry.getValue())) {
                 throw new IllegalArgumentException("The new property name is already included: " + _columnNameList + ". ");
             }
         }
@@ -321,6 +321,11 @@ public class RowDataSet implements DataSet, Cloneable {
         }
 
         renameColumn(map);
+    }
+
+    @Override
+    public <E extends Exception> void renameColumn(final Try.Function<String, String, E> func) throws E {
+        renameColumn(_columnNameList, func);
     }
 
     @Override

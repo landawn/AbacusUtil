@@ -367,6 +367,7 @@ public final class ClassUtil {
         SYMBOL_OF_PRIMITIVE_ARRAY_CLASS_NAME.put(double.class.getName(), "D");
     }
 
+    private static final Map<String, String> camelCasePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
     private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
     private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
 
@@ -2038,53 +2039,7 @@ public final class ClassUtil {
         String newPropName = formalizedPropNamePool.get(propName);
 
         if (newPropName == null) {
-            newPropName = StringUtil.isAllUpperCase(propName) ? propName.toLowerCase() : propName;
-
-            boolean isFirstUnderScore = true;
-            for (int i = 0, len = newPropName.length(); i < len;) {
-                if (newPropName.charAt(i) == WD._UNDERSCORE) {
-                    if (i < len - 2) {
-                        if (isFirstUnderScore && i > 0 && StringUtil.isAllUpperCase(newPropName.substring(0, i))) {
-                            newPropName = StringUtil.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1))
-                                    + newPropName.substring(i + 2);
-                            isFirstUnderScore = false;
-                        } else {
-                            newPropName = newPropName.substring(0, i) + Character.toUpperCase(newPropName.charAt(i + 1)) + newPropName.substring(i + 2);
-                        }
-
-                        len -= 1;
-                    } else if (i < len - 1) {
-                        if (isFirstUnderScore && i > 0 && StringUtil.isAllUpperCase(newPropName.substring(0, i))) {
-                            newPropName = StringUtil.toLowerCase(newPropName.substring(0, i)) + Character.toUpperCase(newPropName.charAt(i + 1));
-                            isFirstUnderScore = false;
-                        } else {
-                            newPropName = newPropName.substring(0, i) + Character.toUpperCase(newPropName.charAt(i + 1));
-                        }
-
-                        break;
-                    } else {
-                        newPropName = newPropName.substring(0, i);
-
-                        break;
-                    }
-                } else {
-                    i++;
-                }
-            }
-
-            for (int i = 0, len = newPropName.length(); i < len; i++) {
-                if (Character.isLowerCase(newPropName.charAt(i))) {
-                    if (i == 1) {
-                        newPropName = StringUtil.uncapitalize(newPropName);
-                    } else if (i > 1) {
-                        newPropName = newPropName.substring(0, i - 1).toLowerCase() + newPropName.substring(i - 1);
-                    }
-
-                    break;
-                } else if ((i + 1) == newPropName.length()) {
-                    newPropName = newPropName.toLowerCase();
-                }
-            }
+            newPropName = toCamelCase(propName);
 
             for (String keyWord : keyWordMapper.keySet()) {
                 if (keyWord.equalsIgnoreCase(newPropName)) {
@@ -2094,12 +2049,41 @@ public final class ClassUtil {
                 }
             }
 
-            newPropName = NameUtil.getCachedName(newPropName);
-
             formalizedPropNamePool.put(propName, newPropName);
         }
 
         return newPropName;
+    }
+
+    /**
+     * It's designed for field/method/class/column/table names. and source and target Strings will be cached.
+     * 
+     * @param str
+     * @return
+     */
+    public static String toCamelCase(final String propName) {
+        String newPropName = camelCasePropNamePool.get(propName);
+
+        if (newPropName == null) {
+            newPropName = StringUtil.toCamelCase(propName);
+            newPropName = NameUtil.getCachedName(newPropName);
+            camelCasePropNamePool.put(propName, newPropName);
+        }
+
+        return newPropName;
+    }
+
+    public static void toCamelCase(final Map<String, Object> props) {
+        final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
+
+        for (Map.Entry<String, Object> entry : props.entrySet()) {
+            tmp.put(ClassUtil.toCamelCase(entry.getKey()), entry.getValue());
+        }
+
+        props.clear();
+        props.putAll(tmp);
+
+        ObjectFactory.recycle(tmp);
     }
 
     /**

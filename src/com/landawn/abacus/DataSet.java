@@ -151,6 +151,12 @@ public interface DataSet {
      */
     <E extends Exception> void renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E;
 
+    /**
+     * 
+     * @param func
+     */
+    <E extends Exception> void renameColumn(Try.Function<String, String, E> func) throws E;
+
     void moveColumn(String columnName, int newPosition);
 
     void moveColumn(Map<String, Integer> columnNameNewPositionMap);

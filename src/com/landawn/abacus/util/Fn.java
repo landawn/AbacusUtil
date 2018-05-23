@@ -221,6 +221,41 @@ public final class Fn extends Comparators {
         }
     };
 
+    private static final Function<String, String> TO_CAMEL_CASE = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return StringUtil.toCamelCase(t);
+        }
+    };
+
+    private static final Function<String, String> TO_LOWER_CASE = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return StringUtil.toLowerCase(t);
+        }
+    };
+
+    private static final Function<String, String> TO_LOWER_CASE_WITH_UNDERSCORE = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return StringUtil.toLowerCaseWithUnderscore(t);
+        }
+    };
+
+    private static final Function<String, String> TO_UPPER_CASE = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return StringUtil.toUpperCase(t);
+        }
+    };
+
+    private static final Function<String, String> TO_UPPER_CASE_WITH_UNDERSCORE = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return StringUtil.toUpperCaseWithUnderscore(t);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final BiFunction COMPARE = new BiFunction<Comparable, Comparable, Integer>() {
         @Override
@@ -547,6 +582,26 @@ public final class Fn extends Comparators {
 
     public static <T> Function<T, String> toStr() {
         return TO_STRING;
+    }
+
+    public static Function<String, String> toCamelCase() {
+        return TO_CAMEL_CASE;
+    }
+
+    public static Function<String, String> toLowerCase() {
+        return TO_LOWER_CASE;
+    }
+
+    public static Function<String, String> toLowerCaseWithUnderscore() {
+        return TO_LOWER_CASE_WITH_UNDERSCORE;
+    }
+
+    public static Function<String, String> toUpperCase() {
+        return TO_UPPER_CASE;
+    }
+
+    public static Function<String, String> toUpperCaseWithUnderscore() {
+        return TO_UPPER_CASE_WITH_UNDERSCORE;
     }
 
     public static <T> Function<T, T> identity() {
@@ -910,6 +965,28 @@ public final class Fn extends Comparators {
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable> BiPredicate<T, T> lessEqual() {
         return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
+    }
+
+    public static <T> Predicate<T> not(final Predicate<T> predicate) {
+        N.checkArgNotNull(predicate);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return !predicate.test(t);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> not(final BiPredicate<T, U> biPredicate) {
+        N.checkArgNotNull(biPredicate);
+
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return !biPredicate.test(t, u);
+            }
+        };
     }
 
     public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second) {

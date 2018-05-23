@@ -1075,6 +1075,10 @@ public class Builder<T> {
             val.renameColumn(columnNames, func);
         }
 
+        public <E extends Exception> void renameColumn(Try.Function<String, String, E> func) throws E {
+            val.renameColumn(func);
+        }
+
         public void addColumn(String columnName, List<?> column) {
             val.addColumn(columnName, column);
         }
@@ -1098,6 +1102,25 @@ public class Builder<T> {
 
         public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
                 Try.Function<? super Object[], ?, E> func) throws E {
+            val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+        }
+
+        public <E extends Exception> void addColumn(String newColumnName, Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func) throws E {
+            val.addColumn(newColumnName, fromColumnNames, func);
+        }
+
+        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple2<String, String> fromColumnNames,
+                Try.BiFunction<?, ?, ?, E> func) throws E {
+            val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+        }
+
+        public <E extends Exception> void addColumn(String newColumnName, Tuple3<String, String, String> fromColumnNames, Try.TriFunction<?, ?, ?, ?, E> func)
+                throws E {
+            val.addColumn(newColumnName, fromColumnNames, func);
+        }
+
+        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple3<String, String, String> fromColumnNames,
+                Try.TriFunction<?, ?, ?, ?, E> func) throws E {
             val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
         }
 

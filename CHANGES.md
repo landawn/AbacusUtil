@@ -4,8 +4,9 @@
 
 * Add `DataSet.divideColumn(...BiConsumer)`.
 
-* Improvements and bug fix.
+* Add `Fn.not(predicate)`.
 
+* Improvements and bug fix.
 
 
 ### 1.2.10

@@ -640,6 +640,54 @@ public abstract class StringUtil {
         }
     }
 
+    /** 
+     * 
+     * @param str
+     * @return
+     */
+    public static String toCamelCase(final String str) {
+        if (N.isNullOrEmpty(str)) {
+            return str;
+        }
+
+        if (str.indexOf(WD._UNDERSCORE) >= 0) {
+            String[] substrs = StringUtil.split(str, WD._UNDERSCORE);
+            final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+            try {
+
+                for (String substr : substrs) {
+                    if (N.notNullOrEmpty(substr)) {
+                        sb.append(StringUtil.toLowerCase(substr));
+                        if (sb.length() > substr.length()) {
+                            sb.setCharAt(sb.length() - substr.length(), Character.toTitleCase(substr.charAt(0)));
+                        }
+                    }
+                }
+
+                return sb.toString();
+            } finally {
+                ObjectFactory.recycle(sb);
+            }
+        }
+
+        for (int i = 0, len = str.length(); i < len; i++) {
+            if (Character.isLowerCase(str.charAt(i))) {
+                if (i == 1) {
+                    return StringUtil.uncapitalize(str);
+                } else if (i > 1) {
+                    return str.substring(0, i - 1).toLowerCase() + str.substring(i - 1);
+                }
+
+                break;
+            } else if ((i + 1) == str.length()) {
+                return str.toLowerCase();
+            }
+        }
+
+        return str;
+    }
+
     public static char swapCase(final char ch) {
         return Character.isLowerCase(ch) ? Character.toUpperCase(ch) : Character.toLowerCase(ch);
     }
