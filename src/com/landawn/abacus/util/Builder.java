@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.Try.Predicate;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.function.Supplier;
@@ -1130,6 +1131,10 @@ public class Builder<T> {
 
         public void removeColumnAll(Collection<String> columnNames) {
             val.removeColumnAll(columnNames);
+        }
+
+        public <E extends Exception> void removeColumnIf(Predicate<String, E> filter) throws E {
+            val.removeColumnIf(filter);
         }
 
         public <T, E extends Exception> void updateColumn(String columnName, Try.Function<T, ?, E> func) throws E {

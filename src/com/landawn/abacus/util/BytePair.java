@@ -1,6 +1,6 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.ByteStream;
 
 public class BytePair {
     public final byte _1;
@@ -74,8 +74,8 @@ public class BytePair {
         return predicate.test(this) ? Optional.of(this) : Optional.<BytePair> empty();
     }
 
-    public Stream<BytePair> stream() {
-        return Stream.of(this);
+    public ByteStream stream() {
+        return ByteStream.of(_1, _2);
     }
 
     @Override

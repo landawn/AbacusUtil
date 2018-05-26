@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.Try.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -555,7 +556,7 @@ public final class Iterators {
         };
     };
 
-    public static <T> ObjIterator<T> repeatEle(final Collection<T> c, final int n) {
+    public static <T> ObjIterator<T> repeatEach(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0 || N.isNullOrEmpty(c)) {
@@ -625,7 +626,7 @@ public final class Iterators {
         };
     };
 
-    public static <T> ObjIterator<T> repeatEleToSize(final Collection<T> c, final int size) {
+    public static <T> ObjIterator<T> repeatEachToSize(final Collection<T> c, final int size) {
         N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
         N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
@@ -1183,6 +1184,155 @@ public final class Iterators {
     }
 
     @SafeVarargs
+    public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ObjIterator.empty();
+        }
+
+        return concat(N.asList(a));
+    }
+
+    @SafeVarargs
+    public static <A, B> BiIterator<A, B> concat(final BiIterator<A, B>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return BiIterator.empty();
+        }
+
+        return new BiIterator<A, B>() {
+            private final Iterator<BiIterator<A, B>> iter = Arrays.asList(a).iterator();
+            private BiIterator<A, B> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public Pair<A, B> next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final BiConsumer<A, B, E> action) throws E {
+                while (hasNext()) {
+                    cur.forEachRemaining(action);
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final BiFunction<A, B, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    private ObjIterator<R> mappedIter = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (mappedIter == null || mappedIter.hasNext() == false) {
+                            while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                                cur = iter.next();
+                            }
+
+                            if (cur != null) {
+                                mappedIter = cur.map(mapper);
+                            }
+                        }
+
+                        return mappedIter != null && mappedIter.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mappedIter.next();
+                    }
+                };
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static <A, B, C> TriIterator<A, B, C> concat(final TriIterator<A, B, C>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return TriIterator.empty();
+        }
+
+        return new TriIterator<A, B, C>() {
+            private final Iterator<TriIterator<A, B, C>> iter = Arrays.asList(a).iterator();
+            private TriIterator<A, B, C> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public Triple<A, B, C> next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+                while (hasNext()) {
+                    cur.forEachRemaining(action);
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    private ObjIterator<R> mappedIter = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (mappedIter == null || mappedIter.hasNext() == false) {
+                            while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                                cur = iter.next();
+                            }
+
+                            if (cur != null) {
+                                mappedIter = cur.map(mapper);
+                            }
+                        }
+
+                        return mappedIter != null && mappedIter.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mappedIter.next();
+                    }
+                };
+            }
+        };
+    }
+
+    @SafeVarargs
     public static <T> ObjIterator<T> concat(final Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return ObjIterator.empty();
@@ -1197,15 +1347,6 @@ public final class Iterators {
         }
 
         return concat(list);
-    }
-
-    @SafeVarargs
-    public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return ObjIterator.empty();
-        }
-
-        return concat(N.asList(a));
     }
 
     public static <T> ObjIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {

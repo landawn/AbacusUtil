@@ -928,6 +928,17 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static Predicate<String> contains(final String str) {
+        N.checkArgNotNull(str);
+
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value.contains(str);
+            }
+        };
+    }
+
     public static Predicate<CharSequence> matches(final Pattern pattern) {
         N.checkArgNotNull(pattern);
 
@@ -1236,7 +1247,9 @@ public final class Fn extends Comparators {
      * 
      * @param predicate
      * @return
+     * @deprecated replaced by {@link Fn#p(Predicate)}.
      */
+    @Deprecated
     public static <T> Predicate<T> test(final Predicate<T> predicate) {
         return predicate;
     }
@@ -1246,7 +1259,9 @@ public final class Fn extends Comparators {
      * 
      * @param predicate
      * @return
+     * @deprecated replaced by {@link Fn#p(BiPredicate)}.
      */
+    @Deprecated
     public static <T, U> BiPredicate<T, U> test(final BiPredicate<T, U> predicate) {
         return predicate;
     }
@@ -1256,7 +1271,9 @@ public final class Fn extends Comparators {
      * 
      * @param predicate
      * @return
+     * @deprecated
      */
+    @Deprecated
     public static <A, B, C> TriPredicate<A, B, C> test(final TriPredicate<A, B, C> predicate) {
         return predicate;
     }

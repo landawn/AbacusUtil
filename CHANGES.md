@@ -2,9 +2,13 @@
 
 * Rename `DataSet.updateColumn(Collection...)/updateRow(int[]...)` to `updateColumnAll/updateRowAll`.
 
+* Rename `N/Iterators.repeatEle/repeatEleToSize` to `N/Iterators.repeatEach/repeatEachToSize`.
+
 * Add `DataSet.divideColumn(...BiConsumer)`.
 
-* Add `Fn.not(predicate)`.
+* Add `Fn.not(predicate)/contains`.
+
+* Refactoring: change `Stream<IntPair> IntPair.stream()/...` to `IntStream IntPair.stream()/...`.
 
 * Improvements and bug fix.
 

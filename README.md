@@ -45,6 +45,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Clazz](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Clazz_view.html), 
 [Base64](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Base64_view.html), 
 [Hex](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Hex_view.html), 
+[JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
+[CSVUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CSVUtil_view.html), 
 [DigestUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DigestUtil_view.html), 
 [JSONUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JSONUtil_view.html), 
 [URLEncodedUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/URLEncodedUtil_view.html), 
@@ -136,8 +138,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [SQLExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLExecutor_view.html), 
 [Mapper](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Mapper_view.html), 
 [SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
-[JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
-[CSVUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CSVUtil_view.html)...
+[DynamicSQLBuilder](https://static.javadoc.io/com.landawn/abacus-util/1.2.10/com/landawn/abacus/util/DynamicSQLBuilder.html)...
 
 * ORMs for NoSQL: 
 [MongoDBExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MongoDBExecutor_view.html), 

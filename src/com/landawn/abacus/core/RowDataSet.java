@@ -76,6 +76,7 @@ import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.Try.Predicate;
 import com.landawn.abacus.util.Try.TriConsumer;
 import com.landawn.abacus.util.Try.TriFunction;
 import com.landawn.abacus.util.Try.TriPredicate;
@@ -854,6 +855,11 @@ public class RowDataSet implements DataSet, Cloneable {
         _columnIndexes = null;
 
         modCount++;
+    }
+
+    @Override
+    public <E extends Exception> void removeColumnIf(Predicate<String, E> filter) throws E {
+        removeColumnAll(columnNames(filter));
     }
 
     @Override

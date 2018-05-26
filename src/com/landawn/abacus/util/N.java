@@ -1281,6 +1281,14 @@ public final class N {
         return new RowDataSet(new ArrayList<String>(), new ArrayList<List<Object>>());
     }
 
+    public static DataSet newEmptyDataSet(final Collection<String> columnNames) {
+        if (N.isNullOrEmpty(columnNames)) {
+            return newEmptyDataSet();
+        }
+
+        return new RowDataSet(new ArrayList<String>(columnNames), new ArrayList<List<Object>>());
+    }
+
     /**
      * Convert the specified Map to a two columns <code>DataSet</code>: one column is for keys and one column is for values
      *
@@ -1305,9 +1313,9 @@ public final class N {
     }
 
     /**
-     * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
+     * Converts a list of row(which can be: Map/Entity) into a <code>DataSet</code>.
      * 
-     * @param rows list of row which can be: Map/Entity/Array/Collection.
+     * @param rows list of row which can be: Map/Entity.
      */
     public static <T> DataSet newDataSet(final Collection<T> rows) {
         return newDataSet(null, rows);
@@ -1317,15 +1325,16 @@ public final class N {
      * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
      * 
      * @param columnNames
-     * @param rows list of row which can be: Map/Entity/Array/Collection.
+     * @param rows list of row which can be: Map/Entity or Array/Collection if {@code columnNames} is null or empty.
      * @return
      */
     @SuppressWarnings("deprecation")
     public static <T> DataSet newDataSet(Collection<String> columnNames, Collection<T> rowList) {
         if (N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(rowList)) {
             // throw new IllegalArgumentException("Column name list and row list can not be both null or empty");
-
             return new RowDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
+        } else if (N.isNullOrEmpty(rowList)) {
+            return new RowDataSet(new ArrayList<String>(columnNames), new ArrayList<List<Object>>(0));
         }
 
         final int rowSize = rowList.size();
@@ -8174,7 +8183,7 @@ public final class N {
      * @param n
      * @return
      */
-    public static <T> List<T> repeatEle(final Collection<T> c, final int n) {
+    public static <T> List<T> repeatEach(final Collection<T> c, final int n) {
         checkArgument(n >= 0, "'n' can not be negative: %s", n);
 
         if (n == 0 || isNullOrEmpty(c)) {
@@ -8231,7 +8240,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> List<T> repeatEleToSize(final Collection<T> c, final int size) {
+    public static <T> List<T> repeatEachToSize(final Collection<T> c, final int size) {
         checkArgument(size >= 0, "'size' can not be negative: %s", size);
         checkArgument(size == 0 || notNullOrEmpty(c), "Collection can not be empty or null when size > 0");
 

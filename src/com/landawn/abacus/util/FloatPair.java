@@ -1,6 +1,6 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.FloatStream;
 
 public final class FloatPair {
     public final float _1;
@@ -74,8 +74,8 @@ public final class FloatPair {
         return predicate.test(this) ? Optional.of(this) : Optional.<FloatPair> empty();
     }
 
-    public Stream<FloatPair> stream() {
-        return Stream.of(this);
+    public FloatStream stream() {
+        return FloatStream.of(_1, _2);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.CharStream;
 
 public final class CharPair {
     public final char _1;
@@ -74,8 +74,8 @@ public final class CharPair {
         return predicate.test(this) ? Optional.of(this) : Optional.<CharPair> empty();
     }
 
-    public Stream<CharPair> stream() {
-        return Stream.of(this);
+    public CharStream stream() {
+        return CharStream.of(_1, _2);
     }
 
     @Override

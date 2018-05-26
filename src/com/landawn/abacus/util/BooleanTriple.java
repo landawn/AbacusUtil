@@ -63,8 +63,8 @@ public class BooleanTriple {
         return predicate.test(this) ? Optional.of(this) : Optional.<BooleanTriple> empty();
     }
 
-    public Stream<BooleanTriple> stream() {
-        return Stream.of(this);
+    public Stream<Boolean> stream() {
+        return Stream.of(_1, _2, _3);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.ShortStream;
 
 public class ShortPair {
     public final short _1;
@@ -74,8 +74,8 @@ public class ShortPair {
         return predicate.test(this) ? Optional.of(this) : Optional.<ShortPair> empty();
     }
 
-    public Stream<ShortPair> stream() {
-        return Stream.of(this);
+    public ShortStream stream() {
+        return ShortStream.of(_1, _2);
     }
 
     @Override

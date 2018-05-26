@@ -548,6 +548,13 @@ public interface DataSet {
     void removeColumnAll(Collection<String> columnNames);
 
     /**
+     * Remove the column(s) whose name matches the specified {@code filter}
+     *
+     * @param filter column name filter
+     */
+    <E extends Exception> void removeColumnIf(Try.Predicate<String, E> filter) throws E;
+
+    /**
      * Update the values of the specified column by the specified Try.Function.
      *
      * @param columnName

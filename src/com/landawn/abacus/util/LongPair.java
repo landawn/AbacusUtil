@@ -1,6 +1,6 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.LongStream;
 
 public final class LongPair {
     public final long _1;
@@ -74,8 +74,8 @@ public final class LongPair {
         return predicate.test(this) ? Optional.of(this) : Optional.<LongPair> empty();
     }
 
-    public Stream<LongPair> stream() {
-        return Stream.of(this);
+    public LongStream stream() {
+        return LongStream.of(_1, _2);
     }
 
     @Override
