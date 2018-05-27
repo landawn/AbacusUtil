@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -69,12 +70,22 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     }
 
     @SafeVarargs
-    public static ShortList of(short... a) {
-        return a == null ? new ShortList() : new ShortList(a);
+    public static ShortList of(final short... a) {
+        return new ShortList(N.nullToEmpty(a));
     }
 
-    public static ShortList of(short[] a, int size) {
-        return a == null && size == 0 ? new ShortList() : new ShortList(a, size);
+    public static ShortList of(final short[] a, final int size) {
+        N.checkFromIndexSize(0, size, N.len(a));
+
+        return new ShortList(N.nullToEmpty(a), size);
+    }
+
+    public static ShortList copyOf(final short[] a) {
+        return of(N.clone(a));
+    }
+
+    public static ShortList copyOf(final short[] a, final int fromIndex, final int toIndex) {
+        return of(N.copyOfRange(a, fromIndex, toIndex));
     }
 
     public static ShortList from(Collection<Short> c) {
@@ -98,6 +109,49 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         }
 
         return of(a);
+    }
+
+    public static ShortList from(final Collection<Short> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return new ShortList();
+        }
+
+        return from(c, fromIndex, toIndex, (short) 0);
+    }
+
+    public static ShortList from(final Collection<Short> c, final int fromIndex, final int toIndex, short defaultValueForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (fromIndex == toIndex) {
+            return new ShortList();
+        } else if (c instanceof List) {
+            return from(((List<Short>) c).subList(fromIndex, toIndex), defaultValueForNull);
+        }
+
+        final Iterator<Short> iter = c.iterator();
+        int idx = 0;
+
+        while (idx < fromIndex) {
+            iter.next();
+            idx++;
+        }
+
+        final ShortList result = new ShortList(toIndex - fromIndex);
+        Short next = null;
+
+        for (; idx < toIndex; idx++) {
+            next = iter.next();
+
+            if (next == null) {
+                result.add(defaultValueForNull);
+            } else {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 
     public static ShortList range(short startInclusive, final short endExclusive) {

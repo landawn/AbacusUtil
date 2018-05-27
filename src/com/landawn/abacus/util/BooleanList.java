@@ -19,6 +19,7 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -68,12 +69,22 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
     }
 
     @SafeVarargs
-    public static BooleanList of(boolean... a) {
-        return a == null ? new BooleanList() : new BooleanList(a);
+    public static BooleanList of(final boolean... a) {
+        return new BooleanList(N.nullToEmpty(a));
     }
 
-    public static BooleanList of(boolean[] a, int size) {
-        return a == null && size == 0 ? new BooleanList() : new BooleanList(a, size);
+    public static BooleanList of(final boolean[] a, final int size) {
+        N.checkFromIndexSize(0, size, N.len(a));
+
+        return new BooleanList(N.nullToEmpty(a), size);
+    }
+
+    public static BooleanList copyOf(final boolean[] a) {
+        return of(N.clone(a));
+    }
+
+    public static BooleanList copyOf(final boolean[] a, final int fromIndex, final int toIndex) {
+        return of(N.copyOfRange(a, fromIndex, toIndex));
     }
 
     public static BooleanList from(Collection<Boolean> c) {
@@ -97,6 +108,49 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
         }
 
         return of(a);
+    }
+
+    public static BooleanList from(final Collection<Boolean> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return new BooleanList();
+        }
+
+        return from(c, fromIndex, toIndex, false);
+    }
+
+    public static BooleanList from(final Collection<Boolean> c, final int fromIndex, final int toIndex, boolean defaultValueForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (fromIndex == toIndex) {
+            return new BooleanList();
+        } else if (c instanceof List) {
+            return from(((List<Boolean>) c).subList(fromIndex, toIndex), defaultValueForNull);
+        }
+
+        final Iterator<Boolean> iter = c.iterator();
+        int idx = 0;
+
+        while (idx < fromIndex) {
+            iter.next();
+            idx++;
+        }
+
+        final BooleanList result = new BooleanList(toIndex - fromIndex);
+        Boolean next = null;
+
+        for (; idx < toIndex; idx++) {
+            next = iter.next();
+
+            if (next == null) {
+                result.add(defaultValueForNull);
+            } else {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 
     public static BooleanList repeat(boolean element, final int len) {

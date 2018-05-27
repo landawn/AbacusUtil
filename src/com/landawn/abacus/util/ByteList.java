@@ -19,6 +19,7 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -68,15 +69,25 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     @SafeVarargs
-    public static ByteList of(byte... a) {
-        return a == null ? new ByteList() : new ByteList(a);
+    public static ByteList of(final byte... a) {
+        return new ByteList(N.nullToEmpty(a));
     }
 
-    public static ByteList of(byte[] a, int size) {
-        return a == null && size == 0 ? new ByteList() : new ByteList(a, size);
+    public static ByteList of(final byte[] a, final int size) {
+        N.checkFromIndexSize(0, size, N.len(a));
+
+        return new ByteList(N.nullToEmpty(a), size);
     }
 
-    public static ByteList from(Collection<Byte> c) {
+    public static ByteList copyOf(final byte[] a) {
+        return of(N.clone(a));
+    }
+
+    public static ByteList copyOf(final byte[] a, final int fromIndex, final int toIndex) {
+        return of(N.copyOfRange(a, fromIndex, toIndex));
+    }
+
+    public static ByteList from(final Collection<Byte> c) {
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
         }
@@ -84,7 +95,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         return from(c, (byte) 0);
     }
 
-    public static ByteList from(Collection<Byte> c, byte defaultValueForNull) {
+    public static ByteList from(final Collection<Byte> c, final byte defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
         }
@@ -97,6 +108,49 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         }
 
         return of(a);
+    }
+
+    public static ByteList from(final Collection<Byte> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return new ByteList();
+        }
+
+        return from(c, fromIndex, toIndex, (byte) 0);
+    }
+
+    public static ByteList from(final Collection<Byte> c, final int fromIndex, final int toIndex, byte defaultValueForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (fromIndex == toIndex) {
+            return new ByteList();
+        } else if (c instanceof List) {
+            return from(((List<Byte>) c).subList(fromIndex, toIndex), defaultValueForNull);
+        }
+
+        final Iterator<Byte> iter = c.iterator();
+        int idx = 0;
+
+        while (idx < fromIndex) {
+            iter.next();
+            idx++;
+        }
+
+        final ByteList result = new ByteList(toIndex - fromIndex);
+        Byte next = null;
+
+        for (; idx < toIndex; idx++) {
+            next = iter.next();
+
+            if (next == null) {
+                result.add(defaultValueForNull);
+            } else {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 
     public static ByteList range(byte startInclusive, final byte endExclusive) {

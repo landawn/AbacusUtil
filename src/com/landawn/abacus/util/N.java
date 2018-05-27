@@ -1676,6 +1676,166 @@ public final class N {
         }
     }
 
+    public static List<Boolean> toList(final boolean[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Boolean> toList(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Boolean> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Character> toList(final char[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Character> toList(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Character> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Byte> toList(final byte[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Byte> toList(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Byte> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Short> toList(final short[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Short> toList(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Short> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Integer> toList(final int[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Integer> toList(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Integer> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Long> toList(final long[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Long> toList(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Long> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Float> toList(final float[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Float> toList(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Float> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static List<Double> toList(final double[] a) {
+        return toList(a, 0, len(a));
+    }
+
+    public static List<Double> toList(final double[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new ArrayList<>();
+        }
+
+        final List<Double> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
     public static <T> List<T> toList(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
@@ -1687,13 +1847,173 @@ public final class N {
     public static <T> List<T> toList(final T[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (fromIndex == toIndex) {
             return new ArrayList<>();
         } else if (fromIndex == 0 && toIndex == a.length) {
             return N.asList(a);
         }
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Boolean> toSet(final boolean[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Boolean> toSet(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Boolean> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Character> toSet(final char[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Character> toSet(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Character> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Byte> toSet(final byte[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Byte> toSet(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Byte> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Short> toSet(final short[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Short> toSet(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Short> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Integer> toSet(final int[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Integer> toSet(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Integer> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Long> toSet(final long[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Long> toSet(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Long> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Float> toSet(final float[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Float> toSet(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Float> result = new HashSet<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Set<Double> toSet(final double[] a) {
+        return toSet(a, 0, len(a));
+    }
+
+    public static Set<Double> toSet(final double[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return new HashSet<>();
+        }
+
+        final Set<Double> result = new HashSet<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(a[i]);
@@ -1713,11 +2033,171 @@ public final class N {
     public static <T> Set<T> toSet(final T[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (fromIndex == toIndex) {
             return new HashSet<>();
         }
 
         final Set<T> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Character>> C toCollection(final char[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Character>> C toCollection(final char[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Short>> C toCollection(final short[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Short>> C toCollection(final short[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Integer>> C toCollection(final int[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Integer>> C toCollection(final int[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Long>> C toCollection(final long[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Long>> C toCollection(final long[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Float>> C toCollection(final float[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Float>> C toCollection(final float[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <C extends Collection<Double>> C toCollection(final double[] a, final IntFunction<C> supplier) {
+        return toCollection(a, 0, len(a), supplier);
+    }
+
+    public static <C extends Collection<Double>> C toCollection(final double[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+        N.checkFromToIndex(fromIndex, toIndex, len(a));
+
+        if (fromIndex == toIndex) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(a[i]);
@@ -1737,7 +2217,7 @@ public final class N {
     public static <T, C extends Collection<T>> C toCollection(final T[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (fromIndex == toIndex) {
             return supplier.apply(0);
         } else if (fromIndex == 0 && toIndex == a.length && a.length >= MIN_SIZE_FOR_COPY_ALL) {
             final C result = supplier.apply(a.length);
@@ -27652,7 +28132,7 @@ public final class N {
 
         @Override
         public int size() {
-            return Maths.factorial(inputList.size());
+            return Matth.factorial(inputList.size());
         }
 
         @Override
@@ -27738,7 +28218,7 @@ public final class N {
 
                 if (comparison < 0) {
                     // We move to the next non-repeated element.
-                    permutations *= Maths.binomial(n, r);
+                    permutations *= Matth.binomial(n, r);
                     r = 0;
                     if (!isPositiveInt(permutations)) {
                         return Integer.MAX_VALUE;
@@ -27749,7 +28229,7 @@ public final class N {
                 r++;
             }
 
-            permutations *= Maths.binomial(n, r);
+            permutations *= Matth.binomial(n, r);
 
             if (!isPositiveInt(permutations)) {
                 return Integer.MAX_VALUE;
@@ -27791,7 +28271,7 @@ public final class N {
 
             try {
                 for (int i = axes.length - 1; i >= 0; i--) {
-                    axesSizeProduct[i] = Maths.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
+                    axesSizeProduct[i] = Matth.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
                 }
             } catch (ArithmeticException e) {
                 throw new IllegalArgumentException("Cartesian product too large; must have size at most Integer.MAX_VALUE");

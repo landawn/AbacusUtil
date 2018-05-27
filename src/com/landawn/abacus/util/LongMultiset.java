@@ -411,7 +411,7 @@ public final class LongMultiset<T> implements Iterable<T> {
         long sum = 0;
 
         for (MutableLong count : valueMap.values()) {
-            sum = Maths.addExact(sum, count.value());
+            sum = Matth.addExact(sum, count.value());
         }
 
         return sum;

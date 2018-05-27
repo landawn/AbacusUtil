@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -69,12 +70,22 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     @SafeVarargs
-    public static FloatList of(float... a) {
-        return new FloatList(a);
+    public static FloatList of(final float... a) {
+        return new FloatList(N.nullToEmpty(a));
     }
 
-    public static FloatList of(float[] a, int size) {
-        return a == null && size == 0 ? new FloatList() : new FloatList(a, size);
+    public static FloatList of(final float[] a, final int size) {
+        N.checkFromIndexSize(0, size, N.len(a));
+
+        return new FloatList(N.nullToEmpty(a), size);
+    }
+
+    public static FloatList copyOf(final float[] a) {
+        return of(N.clone(a));
+    }
+
+    public static FloatList copyOf(final float[] a, final int fromIndex, final int toIndex) {
+        return of(N.copyOfRange(a, fromIndex, toIndex));
     }
 
     public static FloatList from(Collection<Float> c) {
@@ -98,6 +109,49 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         }
 
         return of(a);
+    }
+
+    public static FloatList from(final Collection<Float> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return new FloatList();
+        }
+
+        return from(c, fromIndex, toIndex, 0);
+    }
+
+    public static FloatList from(final Collection<Float> c, final int fromIndex, final int toIndex, float defaultValueForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (fromIndex == toIndex) {
+            return new FloatList();
+        } else if (c instanceof List) {
+            return from(((List<Float>) c).subList(fromIndex, toIndex), defaultValueForNull);
+        }
+
+        final Iterator<Float> iter = c.iterator();
+        int idx = 0;
+
+        while (idx < fromIndex) {
+            iter.next();
+            idx++;
+        }
+
+        final FloatList result = new FloatList(toIndex - fromIndex);
+        Float next = null;
+
+        for (; idx < toIndex; idx++) {
+            next = iter.next();
+
+            if (next == null) {
+                result.add(defaultValueForNull);
+            } else {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 
     public static FloatList repeat(float element, final int len) {

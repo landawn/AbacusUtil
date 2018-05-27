@@ -4,11 +4,14 @@
 
 * Rename `N/Iterators.repeatEle/repeatEleToSize` to `N/Iterators.repeatEach/repeatEachToSize`.
 
+* Rename `Maths` to `Matth`.
+
+* Refactoring: change `Stream<IntPair> IntPair.stream()/...` to `IntStream IntPair.stream()/...`.
+
 * Add `DataSet.divideColumn(...BiConsumer)`.
 
 * Add `Fn.not(predicate)/contains`.
 
-* Refactoring: change `Stream<IntPair> IntPair.stream()/...` to `IntStream IntPair.stream()/...`.
 
 * Improvements and bug fix.
 

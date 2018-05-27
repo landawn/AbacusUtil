@@ -19,6 +19,7 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -68,12 +69,22 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
     }
 
     @SafeVarargs
-    public static CharList of(char... a) {
-        return a == null ? new CharList() : new CharList(a);
+    public static CharList of(final char... a) {
+        return new CharList(N.nullToEmpty(a));
     }
 
-    public static CharList of(char[] a, int size) {
-        return a == null && size == 0 ? new CharList() : new CharList(a, size);
+    public static CharList of(final char[] a, final int size) {
+        N.checkFromIndexSize(0, size, N.len(a));
+
+        return new CharList(N.nullToEmpty(a), size);
+    }
+
+    public static CharList copyOf(final char[] a) {
+        return of(N.clone(a));
+    }
+
+    public static CharList copyOf(final char[] a, final int fromIndex, final int toIndex) {
+        return of(N.copyOfRange(a, fromIndex, toIndex));
     }
 
     public static CharList from(Collection<Character> c) {
@@ -97,6 +108,49 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         }
 
         return of(a);
+    }
+
+    public static CharList from(final Collection<Character> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return new CharList();
+        }
+
+        return from(c, fromIndex, toIndex, (char) 0);
+    }
+
+    public static CharList from(final Collection<Character> c, final int fromIndex, final int toIndex, char defaultValueForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+
+        if (fromIndex == toIndex) {
+            return new CharList();
+        } else if (c instanceof List) {
+            return from(((List<Character>) c).subList(fromIndex, toIndex), defaultValueForNull);
+        }
+
+        final Iterator<Character> iter = c.iterator();
+        int idx = 0;
+
+        while (idx < fromIndex) {
+            iter.next();
+            idx++;
+        }
+
+        final CharList result = new CharList(toIndex - fromIndex);
+        Character next = null;
+
+        for (; idx < toIndex; idx++) {
+            next = iter.next();
+
+            if (next == null) {
+                result.add(defaultValueForNull);
+            } else {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 
     public static CharList range(char startInclusive, final char endExclusive) {
