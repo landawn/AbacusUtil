@@ -79,11 +79,11 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
         return rs;
     }
 
-    public int getColumnCount() {
+    public int columnCount() {
         return columnCount;
     }
 
-    public List<String> getColumnLabelList() throws UncheckedSQLException {
+    public List<String> columnLabels() throws UncheckedSQLException {
         if (columnLabelList == null) {
             columnLabelList = ImmutableList.of(JdbcUtil.getColumnLabelList(rs));
         }

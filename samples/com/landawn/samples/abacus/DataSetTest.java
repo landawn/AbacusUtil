@@ -24,7 +24,7 @@ public class DataSetTest {
         ds2.println();
         ds2.renameColumn("id", "contactId");
 
-        DataSet ds3 = ds1.join(ds2, N.asMap("id", "accountId"));
+        DataSet ds3 = ds1.innerJoin(ds2, N.asMap("id", "accountId"));
         ds3.println();
     }
 

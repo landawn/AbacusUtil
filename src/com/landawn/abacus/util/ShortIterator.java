@@ -43,7 +43,8 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
         return EMPTY;
     }
 
-    public static ShortIterator of(final short[] a) {
+    @SafeVarargs
+    public static ShortIterator of(final short... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 

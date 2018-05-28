@@ -927,7 +927,9 @@ public final class SQLiteExecutor {
      * @return
      * 
      * @since 0.8.10
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public <T> List<Long> insert(Collection<T> records, boolean withTransaction) {
         return insert(this.getTableNameByEntity(records.iterator().next()), records, withTransaction);
     }
@@ -939,8 +941,44 @@ public final class SQLiteExecutor {
      * @param records
      * @param withTransaction
      * @return
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public <T> List<Long> insert(String table, Collection<T> records, boolean withTransaction) {
+        if (N.isNullOrEmpty(records)) {
+            return new ArrayList<>();
+        }
+
+        final List<Long> ret = new ArrayList<>(records.size());
+
+        table = formatName(table);
+
+        if (withTransaction) {
+            beginTransaction();
+        }
+
+        try {
+            for (Object e : records) {
+                ret.add(insert(table, e));
+            }
+
+            if (withTransaction) {
+                sqliteDB.setTransactionSuccessful();
+            }
+        } finally {
+            if (withTransaction) {
+                endTransaction();
+            }
+        }
+
+        return ret;
+    }
+
+    public <T> List<Long> insertAll(Collection<T> records, boolean withTransaction) {
+        return insertAll(this.getTableNameByEntity(records.iterator().next()), records, withTransaction);
+    }
+
+    public <T> List<Long> insertAll(String table, Collection<T> records, boolean withTransaction) {
         if (N.isNullOrEmpty(records)) {
             return new ArrayList<>();
         }

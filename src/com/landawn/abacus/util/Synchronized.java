@@ -25,7 +25,9 @@ import com.landawn.abacus.util.function.Runnable;
  * @since 0.8
  * 
  * @author Haiyang Li
+ * @deprecated replaced by {@code Fn#sp(Object, Predicate), Fn#sc(Object, Consumer), Fn#sf(Object, Function)}
  */
+@Deprecated
 public final class Synchronized<T> {
     private final T target;
 

@@ -146,8 +146,23 @@ public final class Retry<T> {
         return result;
     }
 
+    /**
+     * 
+     * @param iter
+     * @return
+     * @deprecated replaced by {@code Retry#iterate(Iterator, int)}.
+     */
+    @Deprecated
     public <E> Iterator<E> iterate(final Iterator<E> iter) {
+        return iterate(iter, Integer.MAX_VALUE);
+    }
+
+    public <E> Iterator<E> iterate(final Iterator<E> iter, final int totalRetryTimes) {
+        N.checkArgPositive(totalRetryTimes, "totalRetryTimes");
+
         return new Iterator<E>() {
+            private int totalRetriedTimes = 0;
+
             @Override
             public boolean hasNext() {
                 try {
@@ -158,8 +173,10 @@ public final class Retry<T> {
                     int retriedTimes = 0;
                     RuntimeException throwable = e;
 
-                    while (retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
+                    while (totalRetriedTimes < totalRetryTimes && retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
                             || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
+                        totalRetriedTimes++;
+
                         try {
                             if (retryInterval > 0) {
                                 N.sleep(retryInterval);
@@ -187,8 +204,10 @@ public final class Retry<T> {
                     int retriedTimes = 0;
                     RuntimeException throwable = e;
 
-                    while (retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
+                    while (totalRetriedTimes < totalRetryTimes && retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
                             || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
+                        totalRetriedTimes++;
+
                         try {
                             if (retryInterval > 0) {
                                 N.sleep(retryInterval);
@@ -216,8 +235,10 @@ public final class Retry<T> {
                     int retriedTimes = 0;
                     RuntimeException throwable = e;
 
-                    while (retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
+                    while (totalRetriedTimes < totalRetryTimes && retriedTimes++ < retryTimes && ((retryCondition != null && retryCondition.test(throwable))
                             || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
+                        totalRetriedTimes++;
+
                         try {
                             if (retryInterval > 0) {
                                 N.sleep(retryInterval);

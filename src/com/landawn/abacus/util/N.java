@@ -4115,6 +4115,14 @@ public final class N {
         return result;
     }
 
+    /**
+     * 
+     * @param arrayClass
+     * @param c
+     * @return
+     * @deprecated replaced by {@code N#toArray(Class, Collection)}
+     */
+    @Deprecated
     public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
         if (c == null) {
             return N.newArray(arrayClass.getComponentType(), 0);
@@ -4123,6 +4131,13 @@ public final class N {
         return (T) N.typeOf(arrayClass).collection2Array(c);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @deprecated replaced by {@code N#toList(Object[])}
+     */
+    @Deprecated
     public static <T> List<T> array2List(final Object a) {
         if (a == null) {
             return asList();
@@ -4135,6 +4150,13 @@ public final class N {
         return c;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @deprecated replaced by {@code N#toSet(Object[])}
+     */
+    @Deprecated
     public static <T> Set<T> array2Set(final Object a) {
         if (a == null) {
             return asSet();
@@ -4152,7 +4174,9 @@ public final class N {
      * @param c
      * @param a
      * @return the input collection.
+     * @deprecated replaced by {@code N#toCollection(Object[], IntFunction)}
      */
+    @Deprecated
     @SuppressWarnings({ "unchecked" })
     public static <T extends Collection<?>> T array2Collection(final T c, final Object a) {
         if (a == null) {
@@ -8627,7 +8651,9 @@ public final class N {
      * @param entityClass entity class with getter/setter methods
      * @param len
      * @return
+     * @deprecated
      */
+    @Deprecated
     public static <T> List<T> fill(Class<T> entityClass, int len) {
         if (N.isEntity(entityClass) == false) {
             throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");

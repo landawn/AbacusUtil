@@ -6648,25 +6648,25 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public DataSet join(final DataSet right, final String columnName, final String refColumnName) {
+    public DataSet innerJoin(final DataSet right, final String columnName, final String refColumnName) {
         final Map<String, String> onColumnNames = N.asMap(columnName, refColumnName);
 
-        return join(right, onColumnNames);
+        return innerJoin(right, onColumnNames);
     }
 
     @Override
-    public DataSet join(final DataSet right, final Map<String, String> onColumnNames) {
+    public DataSet innerJoin(final DataSet right, final Map<String, String> onColumnNames) {
         return join(right, onColumnNames, false);
     }
 
     @Override
-    public DataSet join(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass) {
+    public DataSet innerJoin(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass) {
         return join(right, onColumnNames, newColumnName, newColumnClass, false);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public DataSet join(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
+    public DataSet innerJoin(final DataSet right, final Map<String, String> onColumnNames, final String newColumnName, final Class<?> newColumnClass,
             final IntFunction<? extends Collection> collSupplier) {
         return join(right, onColumnNames, newColumnName, newColumnClass, collSupplier, false);
     }

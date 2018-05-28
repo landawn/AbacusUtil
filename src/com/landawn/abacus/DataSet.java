@@ -4019,7 +4019,7 @@ public interface DataSet {
      * @param refColumnName
      * @return a new DataSet
      */
-    DataSet join(DataSet right, String columnName, String refColumnName);
+    DataSet innerJoin(DataSet right, String columnName, String refColumnName);
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.
@@ -4028,7 +4028,7 @@ public interface DataSet {
      * @param onColumnNames
      * @return a new DataSet
      */
-    DataSet join(DataSet right, Map<String, String> onColumnNames);
+    DataSet innerJoin(DataSet right, Map<String, String> onColumnNames);
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.
@@ -4039,7 +4039,7 @@ public interface DataSet {
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return a new DataSet
      */
-    DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
+    DataSet innerJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.
@@ -4052,7 +4052,7 @@ public interface DataSet {
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
-    DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
+    DataSet innerJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass,
             IntFunction<? extends Collection> collSupplier);
 
     /**

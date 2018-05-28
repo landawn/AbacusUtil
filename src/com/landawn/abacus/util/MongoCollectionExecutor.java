@@ -454,7 +454,9 @@ public final class MongoCollectionExecutor {
     /**
      *
      * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public void insert(final Collection<?> objList) {
         insert(objList, null);
     }
@@ -463,8 +465,27 @@ public final class MongoCollectionExecutor {
      *
      * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
      * @param options
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public void insert(final Collection<?> objList, final InsertManyOptions options) {
+        insertAll(objList, options);
+    }
+
+    /**
+     *
+     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     */
+    public void insertAll(final Collection<?> objList) {
+        insertAll(objList, null);
+    }
+
+    /**
+     *
+     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     * @param options
+     */
+    public void insertAll(final Collection<?> objList, final InsertManyOptions options) {
         List<Document> docs = null;
 
         if (objList.iterator().next() instanceof Document) {

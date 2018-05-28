@@ -1,3 +1,14 @@
+### 1.2.12
+
+* Rename `DataSet.join` to `DataSet.innerJoin`.
+
+* Rename `RowIterator.getColumnCount/getColumnLabelList` to `RowIterator.columnCount/columnLabels`.
+
+* Add `Fn.sp/sf/sc` to replace `Synchronized`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.11
 
 * Rename `DataSet.updateColumn(Collection...)/updateRow(int[]...)` to `updateColumnAll/updateRowAll`.
@@ -11,7 +22,6 @@
 * Add `DataSet.divideColumn(...BiConsumer)`.
 
 * Add `Fn.not(predicate)/contains`.
-
 
 * Improvements and bug fix.
 

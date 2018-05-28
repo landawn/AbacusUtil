@@ -914,7 +914,9 @@ public final class MongoDBExecutor {
      *
      * @param collectionName
      * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public void insert(final String collectionName, final Collection<?> objList) {
         collExecutor(collectionName).insert(objList);
     }
@@ -924,9 +926,30 @@ public final class MongoDBExecutor {
      * @param collectionName
      * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
      * @param options
+     * @deprecated replaced with {@code insertAll}.
      */
+    @Deprecated
     public void insert(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
         collExecutor(collectionName).insert(objList, options);
+    }
+
+    /**
+     *
+     * @param collectionName
+     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     */
+    public void insertAll(final String collectionName, final Collection<?> objList) {
+        collExecutor(collectionName).insertAll(objList);
+    }
+
+    /**
+     *
+     * @param collectionName
+     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
+     * @param options
+     */
+    public void insertAll(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
+        collExecutor(collectionName).insertAll(objList, options);
     }
 
     /**

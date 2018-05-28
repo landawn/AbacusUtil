@@ -18,6 +18,7 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.zip.Adler32;
@@ -526,6 +527,14 @@ public final class Hashing {
         }
     }
 
+    public static HashCode combineOrdered(final HashCode first, final HashCode second) {
+        return combineOrdered(Arrays.asList(first, second));
+    }
+
+    public static HashCode combineOrdered(final HashCode first, final HashCode second, final HashCode third) {
+        return combineOrdered(Arrays.asList(first, second, third));
+    }
+
     /**
      * Returns a hash code, having the same bit length as each of the input hash codes, that combines
      * the information of these hash codes in an ordered fashion. That is, whenever two equal hash
@@ -548,6 +557,14 @@ public final class Hashing {
             }
         }
         return HashCode.fromBytesNoCopy(resultBytes);
+    }
+
+    public static HashCode combineUnordered(final HashCode first, final HashCode second) {
+        return combineUnordered(Arrays.asList(first, second));
+    }
+
+    public static HashCode combineUnordered(final HashCode first, final HashCode second, final HashCode third) {
+        return combineUnordered(Arrays.asList(first, second, third));
     }
 
     /**
@@ -581,26 +598,12 @@ public final class Hashing {
         return (bits + 31) & ~31;
     }
 
-    /**
-     * Returns a hash function which computes its hash code by concatenating the hash codes of the
-     * underlying hash functions together. This can be useful if you need to generate hash codes of a
-     * specific length.
-     *
-     * <p>For example, if you need 1024-bit hash codes, you could join two {@link Hashing#sha512} hash
-     * functions together: {@code Hashing.concatenating(Hashing.sha512(), Hashing.sha512())}.
-     *
-     * @since 19.0
-     */
-    @SafeVarargs
-    public static HashFunction concatenating(HashFunction first, HashFunction second, HashFunction... rest) {
-        // We can't use Lists.asList() here because there's no hash->collect dependency
-        List<HashFunction> list = new ArrayList<HashFunction>();
-        list.add(first);
-        list.add(second);
-        for (HashFunction hashFunc : rest) {
-            list.add(hashFunc);
-        }
-        return new ConcatenatedHashFunction(list.toArray(new HashFunction[0]));
+    public static HashFunction concatenating(final HashFunction first, final HashFunction second) {
+        return new ConcatenatedHashFunction(N.asArray(first, second));
+    }
+
+    public static HashFunction concatenating(HashFunction first, HashFunction second, HashFunction third) {
+        return new ConcatenatedHashFunction(N.asArray(first, second, third));
     }
 
     /**
@@ -616,12 +619,25 @@ public final class Hashing {
     public static HashFunction concatenating(Iterable<HashFunction> hashFunctions) {
         N.checkArgNotNull(hashFunctions);
         // We can't use Iterables.toArray() here because there's no hash->collect dependency
-        List<HashFunction> list = new ArrayList<HashFunction>();
-        for (HashFunction hashFunction : hashFunctions) {
-            list.add(hashFunction);
+
+        HashFunction[] a = null;
+
+        if (hashFunctions instanceof Collection) {
+            final Collection<HashFunction> c = (Collection<HashFunction>) hashFunctions;
+            a = c.toArray(new HashFunction[c.size()]);
+        } else {
+            List<HashFunction> list = new ArrayList<HashFunction>();
+
+            for (HashFunction hashFunction : hashFunctions) {
+                list.add(hashFunction);
+            }
+
+            a = list.toArray(new HashFunction[list.size()]);
         }
-        N.checkArgument(list.size() > 0, "number of hash functions (%s) must be > 0", list.size());
-        return new ConcatenatedHashFunction(list.toArray(new HashFunction[0]));
+
+        N.checkArgument(N.len(a) > 0, "number of hash functions (%s) must be > 0");
+
+        return new ConcatenatedHashFunction(a);
     }
 
     private static final class ConcatenatedHashFunction extends AbstractCompositeHashFunction {

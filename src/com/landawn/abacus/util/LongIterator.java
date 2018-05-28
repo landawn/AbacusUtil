@@ -43,7 +43,8 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
         return EMPTY;
     }
 
-    public static LongIterator of(final long[] a) {
+    @SafeVarargs
+    public static LongIterator of(final long... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 

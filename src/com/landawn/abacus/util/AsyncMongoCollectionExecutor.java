@@ -587,6 +587,13 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
+    /**
+     * 
+     * @param objList
+     * @return
+     * @deprecated replaced with {@code insertAll}.
+     */
+    @Deprecated
     public CompletableFuture<Void> insert(final Collection<?> objList) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -597,11 +604,39 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
+    /**
+     * 
+     * @param objList
+     * @param options
+     * @return
+     * @deprecated replaced with {@code insertAll}.
+     */
+    @Deprecated
     public CompletableFuture<Void> insert(final Collection<?> objList, final InsertManyOptions options) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 collExecutor.insert(objList, options);
+                return null;
+            }
+        });
+    }
+
+    public CompletableFuture<Void> insertAll(final Collection<?> objList) {
+        return asyncExecutor.execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                collExecutor.insertAll(objList);
+                return null;
+            }
+        });
+    }
+
+    public CompletableFuture<Void> insertAll(final Collection<?> objList, final InsertManyOptions options) {
+        return asyncExecutor.execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                collExecutor.insertAll(objList, options);
                 return null;
             }
         });

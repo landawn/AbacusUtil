@@ -328,6 +328,21 @@ public final class Fn extends Comparators {
         }
     };
 
+    private static final Function<String, Integer> LENGTH = new Function<String, Integer>() {
+        @Override
+        public Integer apply(String t) {
+            return N.len(t);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Function<Collection, Integer> SIZE = new Function<Collection, Integer>() {
+        @Override
+        public Integer apply(Collection t) {
+            return N.len(t);
+        }
+    };
+
     private static final Function<Map.Entry<Object, Object>, Object> KEY = new Function<Map.Entry<Object, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
@@ -741,6 +756,15 @@ public final class Fn extends Comparators {
     @SuppressWarnings("rawtypes")
     public static <K, V> Function<Map<K, V>, Map<K, V>> nullToEmptyM() {
         return (Function) NULL_TO_EMPTY_M;
+    }
+
+    public static Function<String, Integer> length() {
+        return LENGTH;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Collection> Function<T, Integer> size() {
+        return (Function<T, Integer>) SIZE;
     }
 
     public static <T, U> Function<T, U> cast(final Class<U> clazz) {
@@ -1700,72 +1724,6 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <T, E extends Exception> Try.Predicate<T, E> ep(final Try.Predicate<T, E> predicate) {
-        return predicate;
-    }
-
-    @Beta
-    public static <U, T, E extends Exception> Try.Predicate<T, E> ep(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
-        N.checkArgNotNull(biPredicate);
-
-        return new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return biPredicate.test(t, u);
-            }
-        };
-    }
-
-    @Beta
-    public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> ep(final Try.BiPredicate<T, U, E> biPredicate) {
-        return biPredicate;
-    }
-
-    @Beta
-    public static <T, E extends Exception> Try.Consumer<T, E> ec(final Try.Consumer<T, E> consumer) {
-        return consumer;
-    }
-
-    @Beta
-    public static <U, T, E extends Exception> Try.Consumer<T, E> ec(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
-        N.checkArgNotNull(biConsumer);
-
-        return new Try.Consumer<T, E>() {
-            @Override
-            public void accept(T t) throws E {
-                biConsumer.accept(t, u);
-            }
-        };
-    }
-
-    @Beta
-    public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> ec(final Try.BiConsumer<T, U, E> biConsumer) {
-        return biConsumer;
-    }
-
-    @Beta
-    public static <T, R, E extends Exception> Try.Function<T, R, E> ef(final Try.Function<T, R, E> function) {
-        return function;
-    }
-
-    @Beta
-    public static <U, T, R, E extends Exception> Try.Function<T, R, E> ef(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
-        N.checkArgNotNull(biFunction);
-
-        return new Try.Function<T, R, E>() {
-            @Override
-            public R apply(T t) throws E {
-                return biFunction.apply(t, u);
-            }
-        };
-    }
-
-    @Beta
-    public static <U, T, R, E extends Exception> Try.BiFunction<T, U, R, E> ef(final Try.BiFunction<T, U, R, E> biFunction) {
-        return biFunction;
-    }
-
-    @Beta
     public static <T, E extends Exception> Predicate<T> pp(final Try.Predicate<T, E> predicate) {
         N.checkArgNotNull(predicate);
 
@@ -1904,6 +1862,273 @@ public final class Fn extends Comparators {
                     return biFunction.apply(t, u);
                 } catch (Exception e) {
                     throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <T, E extends Exception> Try.Predicate<T, E> ep(final Try.Predicate<T, E> predicate) {
+        return predicate;
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Try.Predicate<T, E> ep(final U u, final Try.BiPredicate<T, U, E> biPredicate) {
+        N.checkArgNotNull(biPredicate);
+
+        return new Try.Predicate<T, E>() {
+            @Override
+            public boolean test(T t) throws E {
+                return biPredicate.test(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> ep(final Try.BiPredicate<T, U, E> biPredicate) {
+        return biPredicate;
+    }
+
+    @Beta
+    public static <T, E extends Exception> Try.Consumer<T, E> ec(final Try.Consumer<T, E> consumer) {
+        return consumer;
+    }
+
+    @Beta
+    public static <U, T, E extends Exception> Try.Consumer<T, E> ec(final U u, final Try.BiConsumer<T, U, E> biConsumer) {
+        N.checkArgNotNull(biConsumer);
+
+        return new Try.Consumer<T, E>() {
+            @Override
+            public void accept(T t) throws E {
+                biConsumer.accept(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> ec(final Try.BiConsumer<T, U, E> biConsumer) {
+        return biConsumer;
+    }
+
+    @Beta
+    public static <T, R, E extends Exception> Try.Function<T, R, E> ef(final Try.Function<T, R, E> function) {
+        return function;
+    }
+
+    @Beta
+    public static <U, T, R, E extends Exception> Try.Function<T, R, E> ef(final U u, final Try.BiFunction<T, U, R, E> biFunction) {
+        N.checkArgNotNull(biFunction);
+
+        return new Try.Function<T, R, E>() {
+            @Override
+            public R apply(T t) throws E {
+                return biFunction.apply(t, u);
+            }
+        };
+    }
+
+    @Beta
+    public static <U, T, R, E extends Exception> Try.BiFunction<T, U, R, E> ef(final Try.BiFunction<T, U, R, E> biFunction) {
+        return biFunction;
+    }
+
+    /**
+     * Synchronized {@code Predicate}
+     * 
+     * @param target to synchronized on
+     * @param predicate 
+     * @return
+     */
+    @Beta
+    public static <T> Predicate<T> sp(final Object target, final Predicate<T> predicate) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(predicate, "predicate");
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                synchronized (target) {
+                    return predicate.test(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Predicate}
+     * 
+     * @param target to synchronized on
+     * @param u
+     * @param biPredicate
+     * @return
+     */
+    @Beta
+    public static <U, T> Predicate<T> sp(final Object target, final U u, final BiPredicate<T, U> biPredicate) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biPredicate, "biPredicate");
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                synchronized (target) {
+                    return biPredicate.test(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code BiPredicate}
+     * 
+     * @param target to synchronized on
+     * @param biPredicate
+     * @return
+     */
+    @Beta
+    public static <T, U> BiPredicate<T, U> sp(final Object target, final BiPredicate<T, U> biPredicate) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biPredicate, "biPredicate");
+
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                synchronized (target) {
+                    return biPredicate.test(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Consumer}
+     * 
+     * @param target to synchronized on
+     * @param consumer
+     * @return
+     */
+    @Beta
+    public static <T> Consumer<T> sc(final Object target, final Consumer<T> consumer) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(consumer, "consumer");
+
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                synchronized (target) {
+                    consumer.accept(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Consumer}
+     * 
+     * @param target to synchronized on
+     * @param u
+     * @param biConsumer
+     * @return
+     */
+    @Beta
+    public static <U, T> Consumer<T> sc(final Object target, final U u, final BiConsumer<T, U> biConsumer) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biConsumer, "biConsumer");
+
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                synchronized (target) {
+                    biConsumer.accept(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code BiConsumer}
+     * 
+     * @param target to synchronized on
+     * @param biConsumer
+     * @return
+     */
+    @Beta
+    public static <T, U> BiConsumer<T, U> sc(final Object target, final BiConsumer<T, U> biConsumer) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biConsumer, "biConsumer");
+
+        return new BiConsumer<T, U>() {
+            @Override
+            public void accept(T t, U u) {
+                synchronized (target) {
+                    biConsumer.accept(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Function}
+     * 
+     * @param target to synchronized on
+     * @param function
+     * @return
+     */
+    @Beta
+    public static <T, R> Function<T, R> sf(final Object target, final Function<T, R> function) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(function, "function");
+
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                synchronized (target) {
+                    return function.apply(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Function}
+     * 
+     * @param target to synchronized on
+     * @param u
+     * @param biFunction
+     * @return
+     */
+    @Beta
+    public static <U, T, R> Function<T, R> sf(final Object target, final U u, final BiFunction<T, U, R> biFunction) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biFunction, "biFunction");
+
+        return new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                synchronized (target) {
+                    return biFunction.apply(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code BiFunction}
+     * 
+     * @param target to synchronized on
+     * @param biFunction
+     * @return
+     */
+    @Beta
+    public static <T, U, R> BiFunction<T, U, R> sf(final Object target, final BiFunction<T, U, R> biFunction) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(biFunction, "biFunction");
+
+        return new BiFunction<T, U, R>() {
+            @Override
+            public R apply(T t, U u) {
+                synchronized (target) {
+                    return biFunction.apply(t, u);
                 }
             }
         };

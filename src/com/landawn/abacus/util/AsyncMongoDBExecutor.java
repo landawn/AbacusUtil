@@ -603,6 +603,14 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
+    /**
+     * 
+     * @param collectionName
+     * @param objList
+     * @return
+     * @deprecated replaced with {@code insertAll}.
+     */
+    @Deprecated
     public CompletableFuture<Void> insert(final String collectionName, final Collection<?> objList) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -613,11 +621,40 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
+    /**
+     * 
+     * @param collectionName
+     * @param objList
+     * @param options
+     * @return
+     * @deprecated replaced with {@code insertAll}.
+     */
+    @Deprecated
     public CompletableFuture<Void> insert(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 dbExecutor.insert(collectionName, objList, options);
+                return null;
+            }
+        });
+    }
+
+    public CompletableFuture<Void> insertAll(final String collectionName, final Collection<?> objList) {
+        return asyncExecutor.execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                dbExecutor.insertAll(collectionName, objList);
+                return null;
+            }
+        });
+    }
+
+    public CompletableFuture<Void> insertAll(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
+        return asyncExecutor.execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                dbExecutor.insertAll(collectionName, objList, options);
                 return null;
             }
         });

@@ -2373,8 +2373,8 @@ public abstract class Stream<T>
 
         N.checkArgument(type.isMap() || type.isEntity(), "target class must be Map or entity with getter/setter methods");
 
-        final int columnCount = rowIterator.getColumnCount();
-        final String[] columnLabels = rowIterator.getColumnLabelList().toArray(new String[columnCount]);
+        final int columnCount = rowIterator.columnCount();
+        final String[] columnLabels = rowIterator.columnLabels().toArray(new String[columnCount]);
 
         final boolean isMap = type.isMap();
         final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
