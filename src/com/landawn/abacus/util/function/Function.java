@@ -41,29 +41,4 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Try.F
         N.checkArgNotNull(after);
         return (T t) -> after.apply(apply(t));
     }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param func
-     * @return
-     */
-    public static <T, R> Function<T, R> of(final Function<T, R> func) {
-        N.checkArgNotNull(func);
-
-        return func;
-    }
-
-    public static <T> Function<T, Void> create(final Consumer<T> consumer) {
-        N.checkArgNotNull(consumer);
-
-        return new Function<T, Void>() {
-            @Override
-            public Void apply(T t) {
-                consumer.accept(t);
-
-                return null;
-            }
-        };
-    }
 }

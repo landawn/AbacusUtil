@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -44,49 +43,5 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>,
     default BiPredicate<T, U> or(java.util.function.BiPredicate<? super T, ? super U> other) {
         N.checkArgNotNull(other);
         return (T t, U u) -> test(t, u) || other.test(t, u);
-    }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param predicate
-     * @return
-     */
-    static <T, U> BiPredicate<T, U> of(final BiPredicate<T, U> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return predicate;
-    }
-
-    static <T, U> BiPredicate<T, U> alwaysTrue() {
-        return Fn.BiPredicates.alwaysTrue();
-    }
-
-    static <T, U> BiPredicate<T, U> alwaysFalse() {
-        return Fn.BiPredicates.alwaysFalse();
-    }
-
-    static <T, U> BiPredicate<T, U> equal() {
-        return Fn.equal();
-    }
-
-    static <T, U> BiPredicate<T, U> notEqual() {
-        return Fn.notEqual();
-    }
-
-    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
-        return Fn.greaterThan();
-    }
-
-    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
-        return Fn.greaterEqual();
-    }
-
-    static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
-        return Fn.lessThan();
-    }
-
-    static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
-        return Fn.lessEqual();
     }
 }

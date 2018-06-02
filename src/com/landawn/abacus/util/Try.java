@@ -570,12 +570,6 @@ public final class Try<T extends AutoCloseable> {
     public static interface Function<T, R, E extends Exception> {
         R apply(T t) throws E;
 
-        public static <T, R, E extends Exception> Function<T, R, E> of(final Function<T, R, E> func) {
-            N.checkArgNotNull(func);
-
-            return func;
-        }
-
         public static <T, E extends Exception> Function<T, Void, E> create(final Consumer<T, E> consumer) {
             N.checkArgNotNull(consumer);
 
@@ -593,12 +587,6 @@ public final class Try<T extends AutoCloseable> {
     public static interface BiFunction<T, U, R, E extends Exception> {
         R apply(T t, U u) throws E;
 
-        public static <T, U, R, E extends Exception> BiFunction<T, U, R, E> of(final BiFunction<T, U, R, E> func) {
-            N.checkArgNotNull(func);
-
-            return func;
-        }
-
         public static <T, U, E extends Exception> BiFunction<T, U, Void, E> create(final BiConsumer<T, U, E> biConsumer) {
             N.checkArgNotNull(biConsumer);
 
@@ -615,12 +603,6 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface TriFunction<A, B, C, R, E extends Exception> {
         R apply(A a, B b, C c) throws E;
-
-        public static <A, B, C, R, E extends Exception> TriFunction<A, B, C, R, E> of(final TriFunction<A, B, C, R, E> func) {
-            N.checkArgNotNull(func);
-
-            return func;
-        }
 
         public static <A, B, C, E extends Exception> TriFunction<A, B, C, Void, E> create(final TriConsumer<A, B, C, E> triConsumer) {
             N.checkArgNotNull(triConsumer);
@@ -643,12 +625,6 @@ public final class Try<T extends AutoCloseable> {
     public static interface Consumer<T, E extends Exception> {
         void accept(T t) throws E;
 
-        public static <T, E extends Exception> Consumer<T, E> of(final Consumer<T, E> consumer) {
-            N.checkArgNotNull(consumer);
-
-            return consumer;
-        }
-
         public static <T, R, E extends Exception> Consumer<T, E> create(final Function<T, R, E> func) {
             N.checkArgNotNull(func);
 
@@ -664,12 +640,6 @@ public final class Try<T extends AutoCloseable> {
     public static interface BiConsumer<T, U, E extends Exception> {
         void accept(T t, U u) throws E;
 
-        public static <T, U, E extends Exception> BiConsumer<T, U, E> of(final BiConsumer<T, U, E> biConsumer) {
-            N.checkArgNotNull(biConsumer);
-
-            return biConsumer;
-        }
-
         public static <T, U, R, E extends Exception> BiConsumer<T, U, E> create(final BiFunction<T, U, R, E> func) {
             N.checkArgNotNull(func);
 
@@ -684,12 +654,6 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface TriConsumer<A, B, C, E extends Exception> {
         void accept(A a, B b, C c) throws E;
-
-        public static <A, B, C, E extends Exception> TriConsumer<A, B, C, E> of(final TriConsumer<A, B, C, E> triConsumer) {
-            N.checkArgNotNull(triConsumer);
-
-            return triConsumer;
-        }
 
         public static <A, B, C, R, E extends Exception> TriConsumer<A, B, C, E> create(final TriFunction<A, B, C, R, E> func) {
             N.checkArgNotNull(func);

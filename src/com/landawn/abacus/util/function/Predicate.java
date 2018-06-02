@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -38,67 +37,5 @@ public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predi
     default Predicate<T> and(java.util.function.Predicate<? super T> other) {
         N.checkArgNotNull(other);
         return (t) -> test(t) && other.test(t);
-    }
-
-    @Override
-    default Predicate<T> or(java.util.function.Predicate<? super T> other) {
-        N.checkArgNotNull(other);
-        return (t) -> test(t) || other.test(t);
-    }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param predicate
-     * @return
-     */
-    static <T> Predicate<T> of(final Predicate<T> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return predicate;
-    }
-
-    static <T> Predicate<T> alwaysTrue() {
-        return Fn.alwaysTrue();
-    }
-
-    static <T> Predicate<T> alwaysFalse() {
-        return Fn.alwaysFalse();
-    }
-
-    static <T> Predicate<T> isNull() {
-        return Fn.isNull();
-    }
-
-    static <T> Predicate<T> notNull() {
-        return Fn.notNull();
-    }
-
-    static <T> Predicate<T> equal(Object targetRef) {
-        return Fn.equal(targetRef);
-    }
-
-    static <T> Predicate<T> notEqual(Object targetRef) {
-        return Fn.notEqual(targetRef);
-    }
-
-    static <T extends Comparable<? super T>> Predicate<T> greaterThan(T targetRef) {
-        return Fn.greaterThan(targetRef);
-    }
-
-    static <T extends Comparable<? super T>> Predicate<T> greaterEqual(T targetRef) {
-        return Fn.greaterEqual(targetRef);
-    }
-
-    static <T extends Comparable<? super T>> Predicate<T> lessThan(T targetRef) {
-        return Fn.lessThan(targetRef);
-    }
-
-    static <T extends Comparable<? super T>> Predicate<T> lessEqual(T targetRef) {
-        return Fn.lessEqual(targetRef);
-    }
-
-    static <T extends Comparable<? super T>> Predicate<T> between(T minValue, T maxValue) {
-        return value -> N.compare(value, minValue) > 0 && N.compare(value, maxValue) < 0;
     }
 }

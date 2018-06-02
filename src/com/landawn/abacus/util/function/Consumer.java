@@ -37,27 +37,4 @@ public interface Consumer<T> extends java.util.function.Consumer<T>, Try.Consume
             after.accept(t);
         };
     }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param consumer
-     * @return
-     */
-    public static <T> Consumer<T> of(final Consumer<T> consumer) {
-        N.checkArgNotNull(consumer);
-
-        return consumer;
-    }
-
-    public static <T, R> Consumer<T> create(final Function<T, R> func) {
-        N.checkArgNotNull(func);
-
-        return new Consumer<T>() {
-            @Override
-            public void accept(T t) {
-                func.apply(t);
-            }
-        };
-    }
 }

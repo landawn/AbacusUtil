@@ -16,6 +16,7 @@ package com.landawn.abacus.util.function;
 
 import java.util.function.Function;
 
+import com.landawn.abacus.util.Fn.UnaryOperators;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -27,6 +28,6 @@ import com.landawn.abacus.util.Try;
 public interface UnaryOperator<T> extends Function<T, T>, java.util.function.UnaryOperator<T>, Try.UnaryOperator<T, RuntimeException> {
 
     static <T> UnaryOperator<T> identity() {
-        return t -> t;
+        return UnaryOperators.identity();
     }
 }

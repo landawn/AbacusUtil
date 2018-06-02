@@ -2658,8 +2658,7 @@ public final class Fn extends Comparators {
         return Collectors.combine(collector1, collector2, collector3);
     }
 
-    public static final class Factory {
-
+    public static class Factory {
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
             @Override
             public boolean[] apply(int len) {
@@ -3180,6 +3179,12 @@ public final class Fn extends Comparators {
         @Deprecated
         public static IntFunction<ImmutableMap<?, ?>> ofImmutableMap() {
             throw new UnsupportedOperationException();
+        }
+
+        public static final class IntFunctions extends Factory {
+            private IntFunctions() {
+                // singleton.
+            }
         }
     }
 

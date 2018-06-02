@@ -36,27 +36,4 @@ public interface TriConsumer<A, B, C> extends Try.TriConsumer<A, B, C, RuntimeEx
             after.accept(a, b, c);
         };
     }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param triConsumer
-     * @return
-     */
-    public static <A, B, C> TriConsumer<A, B, C> of(final TriConsumer<A, B, C> triConsumer) {
-        N.checkArgNotNull(triConsumer);
-
-        return triConsumer;
-    }
-
-    public static <A, B, C, R> TriConsumer<A, B, C> create(final TriFunction<A, B, C, R> func) {
-        N.checkArgNotNull(func);
-
-        return new TriConsumer<A, B, C>() {
-            @Override
-            public void accept(A a, B b, C c) {
-                func.apply(a, b, c);
-            }
-        };
-    }
 }

@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -42,25 +41,5 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
         N.checkArgNotNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
-    }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param predicate
-     * @return
-     */
-    static <A, B, C> TriPredicate<A, B, C> of(final TriPredicate<A, B, C> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return predicate;
-    }
-
-    static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {
-        return Fn.TriPredicates.alwaysTrue();
-    }
-
-    static <A, B, C> TriPredicate<A, B, C> alwaysFalse() {
-        return Fn.TriPredicates.alwaysFalse();
     }
 }

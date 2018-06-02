@@ -14,10 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Collection;
-import java.util.Map;
-
-import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -36,50 +32,5 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
     default <V> BiFunction<T, U, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
         N.checkArgNotNull(after);
         return (T t, U u) -> after.apply(apply(t, u));
-    }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param func
-     * @return
-     */
-    public static <T, U, R> BiFunction<T, U, R> of(final BiFunction<T, U, R> func) {
-        N.checkArgNotNull(func);
-
-        return func;
-    }
-
-    public static <T, U> BiFunction<T, U, Void> create(final BiConsumer<T, U> biConsumer) {
-        N.checkArgNotNull(biConsumer);
-
-        return new BiFunction<T, U, Void>() {
-            @Override
-            public Void apply(T t, U u) {
-                biConsumer.accept(t, u);
-
-                return null;
-            }
-        };
-    }
-
-    static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
-        return Fn.BiFunctions.ofAdd();
-    }
-
-    static <T, C extends Collection<T>> BiFunction<C, C, C> ofAddAll() {
-        return Fn.BiFunctions.ofAddAll();
-    }
-
-    static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofRemove() {
-        return Fn.BiFunctions.ofRemove();
-    }
-
-    static <T, C extends Collection<T>> BiFunction<C, C, C> ofRemoveAll() {
-        return Fn.BiFunctions.ofRemoveAll();
-    }
-
-    static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
-        return Fn.BiFunctions.ofPutAll();
     }
 }

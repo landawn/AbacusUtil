@@ -14,10 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Collection;
-import java.util.Map;
-
-import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
@@ -37,52 +33,5 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U>, T
             accept(l, r);
             after.accept(l, r);
         };
-    }
-
-    /**
-     * Returns the specified instance
-     * 
-     * @param biConsumer
-     * @return
-     */
-    public static <T, U> BiConsumer<T, U> of(final BiConsumer<T, U> biConsumer) {
-        N.checkArgNotNull(biConsumer);
-
-        return biConsumer;
-    }
-
-    public static <T, U, R> BiConsumer<T, U> create(final BiFunction<T, U, R> func) {
-        N.checkArgNotNull(func);
-
-        return new BiConsumer<T, U>() {
-            @Override
-            public void accept(T t, U u) {
-                func.apply(t, u);
-            }
-        };
-    }
-
-    static <T, U> BiConsumer<T, U> doNothing() {
-        return Fn.BiConsumers.doNothing();
-    }
-
-    static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
-        return Fn.BiConsumers.ofAdd();
-    }
-
-    static <T, C extends Collection<T>> BiConsumer<C, C> ofAddAll() {
-        return Fn.BiConsumers.ofAddAll();
-    }
-
-    static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
-        return Fn.BiConsumers.ofRemove();
-    }
-
-    static <T, C extends Collection<T>> BiConsumer<C, C> ofRemoveAll() {
-        return Fn.BiConsumers.ofRemoveAll();
-    }
-
-    static <K, V, M extends Map<K, V>> BiConsumer<M, M> ofPutAll() {
-        return Fn.BiConsumers.ofPutAll();
     }
 }
