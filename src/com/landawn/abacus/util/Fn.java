@@ -1689,6 +1689,18 @@ public final class Fn extends Comparators {
     }
 
     @Beta
+    public static <A, B, T> Predicate<T> p(final A a, final B b, final TriPredicate<T, A, B> triPredicate) {
+        N.checkArgNotNull(triPredicate);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return triPredicate.test(t, a, b);
+            }
+        };
+    }
+
+    @Beta
     public static <T, U> BiPredicate<T, U> p(final BiPredicate<T, U> biPredicate) {
         return biPredicate;
     }
@@ -1748,6 +1760,22 @@ public final class Fn extends Comparators {
             public boolean test(T t) {
                 try {
                     return biPredicate.test(t, u);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
+    }
+
+    @Beta
+    public static <A, B, T, E extends Exception> Predicate<T> pp(final A a, final B b, final Try.TriPredicate<T, A, B, E> triPredicate) {
+        N.checkArgNotNull(triPredicate);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                try {
+                    return triPredicate.test(t, a, b);
                 } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
@@ -1885,6 +1913,18 @@ public final class Fn extends Comparators {
     }
 
     @Beta
+    public static <A, B, T, E extends Exception> Try.Predicate<T, E> ep(final A a, final B b, final Try.TriPredicate<T, A, B, E> triPredicate) {
+        N.checkArgNotNull(triPredicate);
+
+        return new Try.Predicate<T, E>() {
+            @Override
+            public boolean test(T t) throws E {
+                return triPredicate.test(t, a, b);
+            }
+        };
+    }
+
+    @Beta
     public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> ep(final Try.BiPredicate<T, U, E> biPredicate) {
         return biPredicate;
     }
@@ -1973,6 +2013,30 @@ public final class Fn extends Comparators {
             public boolean test(T t) {
                 synchronized (target) {
                     return biPredicate.test(t, u);
+                }
+            }
+        };
+    }
+
+    /**
+     * Synchronized {@code Predicate}
+     * 
+     * @param target to synchronized on
+     * @param a
+     * @param b
+     * @param triPredicate
+     * @return
+     */
+    @Beta
+    public static <A, B, T> Predicate<T> sp(final Object target, final A a, final B b, final TriPredicate<T, A, B> triPredicate) {
+        N.checkArgNotNull(target, "target");
+        N.checkArgNotNull(triPredicate, "triPredicate");
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                synchronized (target) {
+                    return triPredicate.test(t, a, b);
                 }
             }
         };
@@ -4391,7 +4455,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private static final BinaryOperator<Collection<Object>> ADD_ALL = new BinaryOperator<Collection<Object>>() {
+        private static final BinaryOperator<Collection<Object>> ADD_ALL_TO_FIRST = new BinaryOperator<Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.addAll(u);
@@ -4399,7 +4463,20 @@ public final class Fn extends Comparators {
             }
         };
 
-        private static final BinaryOperator<Collection<Object>> REMOVE_ALL = new BinaryOperator<Collection<Object>>() {
+        private static final BinaryOperator<Collection<Object>> ADD_ALL_TO_BIGGER = new BinaryOperator<Collection<Object>>() {
+            @Override
+            public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
+                if (t.size() >= u.size()) {
+                    t.addAll(u);
+                    return t;
+                } else {
+                    u.addAll(t);
+                    return u;
+                }
+            }
+        };
+
+        private static final BinaryOperator<Collection<Object>> REMOVE_ALL_FROM_FIRST = new BinaryOperator<Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.removeAll(u);
@@ -4407,7 +4484,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private static final BinaryOperator<Map<Object, Object>> PUT_ALL = new BinaryOperator<Map<Object, Object>>() {
+        private static final BinaryOperator<Map<Object, Object>> PUT_ALL_TO_FIRST = new BinaryOperator<Map<Object, Object>>() {
             @Override
             public Map<Object, Object> apply(Map<Object, Object> t, Map<Object, Object> u) {
                 t.putAll(u);
@@ -4415,17 +4492,52 @@ public final class Fn extends Comparators {
             }
         };
 
-        private static final BinaryOperator<Joiner> MERGE = new BinaryOperator<Joiner>() {
+        private static final BinaryOperator<Map<Object, Object>> PUT_ALL_TO_BIGGER = new BinaryOperator<Map<Object, Object>>() {
+            @Override
+            public Map<Object, Object> apply(Map<Object, Object> t, Map<Object, Object> u) {
+                if (t.size() >= u.size()) {
+                    t.putAll(u);
+                    return t;
+                } else {
+                    u.putAll(t);
+                    return u;
+                }
+            }
+        };
+
+        private static final BinaryOperator<Joiner> MERGE_TO_FIRST = new BinaryOperator<Joiner>() {
             @Override
             public Joiner apply(Joiner t, Joiner u) {
                 return t.merge(u);
             }
         };
 
-        private static final BinaryOperator<StringBuilder> APPEND = new BinaryOperator<StringBuilder>() {
+        private static final BinaryOperator<Joiner> MERGE_TO_BIGGER = new BinaryOperator<Joiner>() {
+            @Override
+            public Joiner apply(Joiner t, Joiner u) {
+                if (t.length() >= u.length()) {
+                    return t.merge(u);
+                } else {
+                    return u.merge(t);
+                }
+            }
+        };
+
+        private static final BinaryOperator<StringBuilder> APPEND_TO_FIRST = new BinaryOperator<StringBuilder>() {
             @Override
             public StringBuilder apply(StringBuilder t, StringBuilder u) {
                 return t.append(u);
+            }
+        };
+
+        private static final BinaryOperator<StringBuilder> APPEND_TO_BIGGER = new BinaryOperator<StringBuilder>() {
+            @Override
+            public StringBuilder apply(StringBuilder t, StringBuilder u) {
+                if (t.length() >= u.length()) {
+                    return t.append(u);
+                } else {
+                    return u.append(t);
+                }
             }
         };
 
@@ -4491,27 +4603,98 @@ public final class Fn extends Comparators {
             // singleton.
         }
 
+        /**
+         * 
+         * @return
+         * @deprecated replaced by {@code #ofAddAllToFirst()}
+         */
+        @Deprecated
         @SuppressWarnings("unchecked")
         public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
-            return (BinaryOperator<C>) ADD_ALL;
+            return (BinaryOperator<C>) ADD_ALL_TO_FIRST;
         }
 
+        @SuppressWarnings("unchecked")
+        public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAllToFirst() {
+            return (BinaryOperator<C>) ADD_ALL_TO_FIRST;
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAllToBigger() {
+            return (BinaryOperator<C>) ADD_ALL_TO_BIGGER;
+        }
+
+        /**
+         * 
+         * @return
+         * @deprecated replaced by {@code #ofRemoveAllFromFirst()}.
+         */
+        @Deprecated
         @SuppressWarnings("unchecked")
         public static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAll() {
-            return (BinaryOperator<C>) REMOVE_ALL;
+            return (BinaryOperator<C>) REMOVE_ALL_FROM_FIRST;
         }
 
         @SuppressWarnings("unchecked")
+        public static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAllFromFirst() {
+            return (BinaryOperator<C>) REMOVE_ALL_FROM_FIRST;
+        }
+
+        /**
+         * 
+         * @return
+         * @deprecated replaced by {@code #ofPutAllToFirst()}
+         */
+        @Deprecated
+        @SuppressWarnings("unchecked")
         public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
-            return (BinaryOperator<M>) PUT_ALL;
+            return (BinaryOperator<M>) PUT_ALL_TO_FIRST;
         }
 
+        @SuppressWarnings("unchecked")
+        public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAllToFirst() {
+            return (BinaryOperator<M>) PUT_ALL_TO_FIRST;
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAllToBigger() {
+            return (BinaryOperator<M>) PUT_ALL_TO_BIGGER;
+        }
+
+        /**
+         * 
+         * @return
+         * @deprecated replaced by {@code #ofMergeToFirst}.
+         */
+        @Deprecated
         public static BinaryOperator<Joiner> ofMerge() {
-            return MERGE;
+            return MERGE_TO_FIRST;
         }
 
+        public static BinaryOperator<Joiner> ofMergeToFirst() {
+            return MERGE_TO_FIRST;
+        }
+
+        public static BinaryOperator<Joiner> ofMergeToBigger() {
+            return MERGE_TO_BIGGER;
+        }
+
+        /**
+         * 
+         * @return
+         * @deprecated replaced by {@code #ofAppendToFirst()}
+         */
+        @Deprecated
         public static BinaryOperator<StringBuilder> ofAppend() {
-            return APPEND;
+            return APPEND_TO_FIRST;
+        }
+
+        public static BinaryOperator<StringBuilder> ofAppendToFirst() {
+            return APPEND_TO_FIRST;
+        }
+
+        public static BinaryOperator<StringBuilder> ofAppendToBigger() {
+            return APPEND_TO_BIGGER;
         }
 
         public static BinaryOperator<String> ofConcat() {

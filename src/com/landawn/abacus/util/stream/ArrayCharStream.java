@@ -196,9 +196,62 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public CharStream step(final long step) {
+        N.checkArgPositive(step, "step");
+
+        if (step == 1 || fromIndex == toIndex) {
+            return this;
+        }
+
+        return newStream(new CharIteratorEx() {
+            private final int stepp = (int) N.min(step, Integer.MAX_VALUE);
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final char res = elements[cursor];
+                cursor = cursor > toIndex - stepp ? toIndex : cursor + stepp;
+                return res;
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) % stepp == 0 ? (toIndex - cursor) / stepp : ((toIndex - cursor) / stepp) + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
+                }
+            }
+
+            @Override
+            public char[] toArray() {
+                final char[] a = new char[(int) count()];
+
+                for (int i = 0, len = a.length; i < len; i++, cursor += stepp) {
+                    a[i] = elements[cursor];
+                }
+
+                return a;
+            }
+        }, sorted);
+    }
+
+    @Override
     public CharStream map(final CharUnaryOperator mapper) {
         return newStream(new CharIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -240,7 +293,7 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public IntStream mapToInt(final CharToIntFunction mapper) {
         return newStream(new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -282,7 +335,7 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public <U> Stream<U> mapToObj(final CharFunction<? extends U> mapper) {
         return newStream(new ObjIteratorEx<U>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -860,7 +913,7 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public CharStream peek(final CharConsumer action) {
         return newStream(new CharIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

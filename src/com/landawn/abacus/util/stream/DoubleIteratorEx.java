@@ -76,7 +76,7 @@ public abstract class DoubleIteratorEx extends DoubleIterator implements Iterato
         }
 
         return new DoubleIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

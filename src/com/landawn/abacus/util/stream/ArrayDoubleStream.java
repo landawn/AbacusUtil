@@ -200,9 +200,62 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public DoubleStream step(final long step) {
+        N.checkArgPositive(step, "step");
+
+        if (step == 1 || fromIndex == toIndex) {
+            return this;
+        }
+
+        return newStream(new DoubleIteratorEx() {
+            private final int stepp = (int) N.min(step, Integer.MAX_VALUE);
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final double res = elements[cursor];
+                cursor = cursor > toIndex - stepp ? toIndex : cursor + stepp;
+                return res;
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) % stepp == 0 ? (toIndex - cursor) / stepp : ((toIndex - cursor) / stepp) + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
+                }
+            }
+
+            @Override
+            public double[] toArray() {
+                final double[] a = new double[(int) count()];
+
+                for (int i = 0, len = a.length; i < len; i++, cursor += stepp) {
+                    a[i] = elements[cursor];
+                }
+
+                return a;
+            }
+        }, sorted);
+    }
+
+    @Override
     public DoubleStream map(final DoubleUnaryOperator mapper) {
         return newStream(new DoubleIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -244,7 +297,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public IntStream mapToInt(final DoubleToIntFunction mapper) {
         return newStream(new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -286,7 +339,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public LongStream mapToLong(final DoubleToLongFunction mapper) {
         return newStream(new LongIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -328,7 +381,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public FloatStream mapToFloat(final DoubleToFloatFunction mapper) {
         return newStream(new FloatIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -370,7 +423,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
         return newStream(new ObjIteratorEx<U>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -1102,7 +1155,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
         return newStream(new DoubleIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

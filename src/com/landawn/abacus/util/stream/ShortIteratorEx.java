@@ -76,7 +76,7 @@ public abstract class ShortIteratorEx extends ShortIterator implements IteratorE
         }
 
         return new ShortIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

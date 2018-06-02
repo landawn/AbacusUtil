@@ -136,8 +136,8 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
     }
 
-    public <E extends Exception> Nullable<T> filterIfNotNull(final Try.Predicate<? super T, E> predicate) throws E {
-        return isNotNull() && predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
+    public <E extends Exception> Optional<T> filterIfNotNull(final Try.Predicate<? super T, E> predicate) throws E {
+        return isNotNull() && predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
     }
 
     public Stream<T> stream() {
@@ -167,7 +167,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      *
      * @param other a {@code Supplier} whose result is returned if not present or null
      * @return the value if not present or null otherwise the result of {@code other.get()}
-     * @throws NullPointerException if value is not present and {@code other} is null
+     * @throws IllegalArgumentException if value is not present and {@code other} is null
      */
     public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
         return isNotNull() ? value : other.get();
@@ -184,7 +184,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @param exceptionSupplier The supplier which will return the exception to be thrown
      * @return the present value
      * @throws X if not present or null
-     * @throws NullPointerException if not present or null and
+     * @throws IllegalArgumentException if not present or null and
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {

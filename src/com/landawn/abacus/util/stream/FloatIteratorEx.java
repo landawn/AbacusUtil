@@ -76,7 +76,7 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
         }
 
         return new FloatIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

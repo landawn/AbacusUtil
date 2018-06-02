@@ -200,9 +200,62 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public FloatStream step(final long step) {
+        N.checkArgPositive(step, "step");
+
+        if (step == 1 || fromIndex == toIndex) {
+            return this;
+        }
+
+        return newStream(new FloatIteratorEx() {
+            private final int stepp = (int) N.min(step, Integer.MAX_VALUE);
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final float res = elements[cursor];
+                cursor = cursor > toIndex - stepp ? toIndex : cursor + stepp;
+                return res;
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) % stepp == 0 ? (toIndex - cursor) / stepp : ((toIndex - cursor) / stepp) + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
+                }
+            }
+
+            @Override
+            public float[] toArray() {
+                final float[] a = new float[(int) count()];
+
+                for (int i = 0, len = a.length; i < len; i++, cursor += stepp) {
+                    a[i] = elements[cursor];
+                }
+
+                return a;
+            }
+        }, sorted);
+    }
+
+    @Override
     public FloatStream map(final FloatUnaryOperator mapper) {
         return newStream(new FloatIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -244,7 +297,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public IntStream mapToInt(final FloatToIntFunction mapper) {
         return newStream(new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -286,7 +339,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public LongStream mapToLong(final FloatToLongFunction mapper) {
         return newStream(new LongIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -328,7 +381,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public DoubleStream mapToDouble(final FloatToDoubleFunction mapper) {
         return newStream(new DoubleIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -370,7 +423,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public <U> Stream<U> mapToObj(final FloatFunction<? extends U> mapper) {
         return newStream(new ObjIteratorEx<U>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -1102,7 +1155,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream peek(final FloatConsumer action) {
         return newStream(new FloatIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

@@ -8455,6 +8455,54 @@ public final class N {
         Collections.swap(list, i, j);
     }
 
+    /**
+     * 
+     * @param pair
+     * @throws NullPointerExceptoin if the specified {@code pair} is {@code null}.
+     */
+    public static <T> void swap(final Pair<T, T> pair) {
+        pair.set(pair.right, pair.left);
+    }
+
+    /**
+     * 
+     * @param pair
+     * @param predicate
+     * @throws NullPointerExceptoin if the specified {@code pair} or {@code predicate} is {@code null}.
+     * @throws E
+     */
+    public static <T, E extends Exception> void swapIf(final Pair<T, T> pair, Try.Predicate<? super Pair<T, T>, E> predicate) throws E {
+        if (predicate.test(pair)) {
+            pair.set(pair.right, pair.left);
+        }
+    }
+
+    /**
+     * 
+     * @param triple
+     * @throws NullPointerExceptoin if the specified {@code pair} is {@code null}.
+     */
+    public static <T, M> void swap(final Triple<T, M, T> triple) {
+        final T left = triple.left;
+        triple.setLeft(triple.right);
+        triple.setRight(left);
+    }
+
+    /**
+     * 
+     * @param triple
+     * @param predicate
+     * @throws NullPointerExceptoin if the specified {@code triple} or {@code predicate} is {@code null}.
+     * @throws E
+     */
+    public static <T, M, E extends Exception> void swapIf(final Triple<T, M, T> triple, Try.Predicate<? super Triple<T, M, T>, E> predicate) throws E {
+        if (predicate.test(triple)) {
+            final T left = triple.left;
+            triple.setLeft(triple.right);
+            triple.setRight(left);
+        }
+    }
+
     public static void fill(final boolean[] a, final boolean val) {
         Arrays.fill(a, val);
     }

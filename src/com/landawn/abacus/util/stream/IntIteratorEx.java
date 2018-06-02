@@ -76,7 +76,7 @@ public abstract class IntIteratorEx extends IntIterator implements IteratorEx<In
         }
 
         return new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

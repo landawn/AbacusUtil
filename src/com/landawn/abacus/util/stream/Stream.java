@@ -795,6 +795,17 @@ public abstract class Stream<T>
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
+     * <p>Example:
+     * <pre>
+     * <code>
+     * Stream.of(new Integer[0]).collapse((a, b) -> a < b, (a, b) -> a + b) => []
+     * Stream.of(1).collapse((a, b) -> a < b, (a, b) -> a + b) => [1]
+     * Stream.of(1, 2).collapse((a, b) -> a < b, (a, b) -> a + b) => [3]
+     * Stream.of(1, 2, 3).collapse((a, b) -> a < b, (a, b) -> a + b) => [6]
+     * Stream.of(1, 2, 3, 3, 2, 1).collapse((a, b) -> a < b, (a, b) -> a + b) => [6, 3, 2, 1]
+     * </code>
+     * </pre>
+     * 
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
@@ -808,6 +819,17 @@ public abstract class Stream<T>
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
+     * 
+     * <p>Example:
+     * <pre>
+     * <code>
+     * Stream.of(new Integer[0]).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => []
+     * Stream.of(1).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [1]
+     * Stream.of(1, 2).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [3]
+     * Stream.of(1, 2, 3).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [6]
+     * Stream.of(1, 2, 3, 3, 2, 1).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [6, 3, 2, 1]
+     * </code>
+     * </pre>
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -829,9 +851,13 @@ public abstract class Stream<T>
      *
      * <p>Example:
      * <pre>
-     * accumulator: (a, b) -&gt; a + b
-     * stream: [1, 2, 3, 4, 5]
-     * result: [1, 3, 6, 10, 15]
+     * <code>
+     * Stream.of(new Integer[0]).scan((a, b) -> a + b) => []
+     * Stream.of(1).scan((a, b) -> a + b) => [1]
+     * Stream.of(1, 2).scan((a, b) -> a + b) => [1, 3]
+     * Stream.of(1, 2, 3).scan((a, b) -> a + b) => [1, 3, 6]
+     * Stream.of(1, 2, 3, 3, 2, 1).scan((a, b) -> a + b) => [1, 3, 6, 9, 11, 12]
+     * </code>
      * </pre>
      * 
      * <br />
@@ -853,10 +879,13 @@ public abstract class Stream<T>
      *
      * <p>Example:
      * <pre>
-     * seed:10
-     * accumulator: (a, b) -&gt; a + b
-     * stream: [1, 2, 3, 4, 5]
-     * result: [11, 13, 16, 20, 25]
+     * <code>
+     * Stream.of(new Integer[0]).scan(10, (a, b) -> a + b) => []
+     * Stream.of(1).scan(10, (a, b) -> a + b) => [11]
+     * Stream.of(1, 2).scan(10, (a, b) -> a + b) => [11, 13]
+     * Stream.of(1, 2, 3).scan(10, (a, b) -> a + b) => [11, 13, 16]
+     * Stream.of(1, 2, 3, 3, 2, 1).scan(10, (a, b) -> a + b) => [11, 13, 16, 19, 21, 22]
+     * </code>
      * </pre>
      * 
      * <br />

@@ -278,7 +278,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         action.accept(left, right);
     }
 
-    public <E extends Exception> void accept(final Try.Consumer<Pair<L, R>, E> action) throws E {
+    public <E extends Exception> void accept(final Try.Consumer<? super Pair<L, R>, E> action) throws E {
         action.accept(this);
     }
 
@@ -286,7 +286,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return mapper.apply(left, right);
     }
 
-    public <U, E extends Exception> U map(final Try.Function<Pair<L, R>, U, E> mapper) throws E {
+    public <U, E extends Exception> U map(final Try.Function<? super Pair<L, R>, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
@@ -294,7 +294,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return predicate.test(left, right) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
     }
 
-    public <E extends Exception> Optional<Pair<L, R>> filter(final Try.Predicate<Pair<L, R>, E> predicate) throws E {
+    public <E extends Exception> Optional<Pair<L, R>> filter(final Try.Predicate<? super Pair<L, R>, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
     }
 

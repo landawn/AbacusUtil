@@ -196,9 +196,62 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public ByteStream step(final long step) {
+        N.checkArgPositive(step, "step");
+
+        if (step == 1 || fromIndex == toIndex) {
+            return this;
+        }
+
+        return newStream(new ByteIteratorEx() {
+            private final int stepp = (int) N.min(step, Integer.MAX_VALUE);
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final byte res = elements[cursor];
+                cursor = cursor > toIndex - stepp ? toIndex : cursor + stepp;
+                return res;
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) % stepp == 0 ? (toIndex - cursor) / stepp : ((toIndex - cursor) / stepp) + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
+                }
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] a = new byte[(int) count()];
+
+                for (int i = 0, len = a.length; i < len; i++, cursor += stepp) {
+                    a[i] = elements[cursor];
+                }
+
+                return a;
+            }
+        }, sorted);
+    }
+
+    @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
         return newStream(new ByteIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -240,7 +293,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
         return newStream(new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -282,7 +335,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
         return newStream(new ObjIteratorEx<U>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -860,7 +913,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public ByteStream peek(final ByteConsumer action) {
         return newStream(new ByteIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

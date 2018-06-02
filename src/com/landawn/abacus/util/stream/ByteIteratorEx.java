@@ -76,7 +76,7 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
         }
 
         return new ByteIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

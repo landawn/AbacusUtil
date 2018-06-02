@@ -76,7 +76,7 @@ public abstract class CharIteratorEx extends CharIterator implements IteratorEx<
         }
 
         return new CharIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

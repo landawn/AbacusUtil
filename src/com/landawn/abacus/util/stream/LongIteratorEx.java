@@ -76,7 +76,7 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
         }
 
         return new LongIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

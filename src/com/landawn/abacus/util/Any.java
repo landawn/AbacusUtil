@@ -99,7 +99,7 @@ abstract class Any<T> {
      * otherwise do nothing.
      *
      * @param consumer block to be executed if a value is present
-     * @throws NullPointerException if value is present and {@code consumer} is
+     * @throws IllegalArgumentException if value is present and {@code consumer} is
      * null
      */
     public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> consumer) throws E {
@@ -127,7 +127,7 @@ abstract class Any<T> {
      * otherwise do nothing.
      *
      * @param consumer block to be executed if a value is not null.
-     * @throws NullPointerException if value is present and {@code consumer} is
+     * @throws IllegalArgumentException if value is present and {@code consumer} is
      * null
      */
     public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
@@ -159,7 +159,7 @@ abstract class Any<T> {
      * @return an {@code Any} describing the value of this {@code Any}
      * if a value is present and the value matches the given predicate,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the predicate is null
+     * @throws IllegalArgumentException if the predicate is null
      */
     public abstract <E extends Exception> Any<T> filter(Try.Predicate<? super T, E> predicate) throws E;
 
@@ -188,7 +188,7 @@ abstract class Any<T> {
      * @return an {@code Any} describing the result of applying a mapping
      * function to the value of this {@code Any}, if a value is present,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the mapping function is null
+     * @throws IllegalArgumentException if the mapping function is null
      */
     public abstract <U, E extends Exception> Any<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
@@ -286,7 +286,7 @@ abstract class Any<T> {
      * @return the result of applying an {@code Any}-bearing mapping
      * function to the value of this {@code Any}, if a value is present,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the mapping function is null or returns
+     * @throws IllegalArgumentException if the mapping function is null or returns
      * a null result
      */
     public abstract <U, E extends Exception> Any<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
@@ -300,9 +300,9 @@ abstract class Any<T> {
      * @return an {@code Any} describing the value of this {@code Any}
      * if a value is present and the value matches the given predicate,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the predicate is null
+     * @throws IllegalArgumentException if the predicate is null
      */
-    public abstract <E extends Exception> Any<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E;
+    public abstract <E extends Exception> Optional<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
      * If a value is not null, apply the provided mapping function to it,
@@ -329,7 +329,7 @@ abstract class Any<T> {
      * @return an {@code Any} describing the result of applying a mapping
      * function to the value of this {@code Any}, if a value is not null,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the mapping function is null
+     * @throws IllegalArgumentException if the mapping function is null
      */
     public abstract <U, E extends Exception> Any<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
@@ -427,7 +427,7 @@ abstract class Any<T> {
      * @return the result of applying an {@code Any}-bearing mapping
      * function to the value of this {@code Any}, if a value is not null,
      * otherwise an empty {@code Any}
-     * @throws NullPointerException if the mapping function is null or returns
+     * @throws IllegalArgumentException if the mapping function is null or returns
      * a null result
      */
     public abstract <U, E extends Exception> Any<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
@@ -488,7 +488,7 @@ abstract class Any<T> {
      *
      * @param other a {@code Supplier} whose result is returned if no value is present
      * @return the value if present otherwise the result of {@code other.get()}
-     * @throws NullPointerException if value is not present and {@code other} is
+     * @throws IllegalArgumentException if value is not present and {@code other} is
      * null
      */
     public <E extends Exception> T orElseGet(Try.Supplier<? extends T, E> other) throws E {
@@ -507,7 +507,7 @@ abstract class Any<T> {
      * be thrown
      * @return the present value
      * @throws X if there is no value present
-     * @throws NullPointerException if no value is present and
+     * @throws IllegalArgumentException if no value is present and
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
@@ -533,7 +533,7 @@ abstract class Any<T> {
      *
      * @param other a {@code Supplier} whose result is returned if not present or null
      * @return the value if not present or null otherwise the result of {@code other.get()}
-     * @throws NullPointerException if value is not present and {@code other} is null
+     * @throws IllegalArgumentException if value is not present and {@code other} is null
      */
     public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
         return isNotNull() ? value : other.get();
@@ -550,7 +550,7 @@ abstract class Any<T> {
      * @param exceptionSupplier The supplier which will return the exception to be thrown
      * @return the present value
      * @throws X if not present or null
-     * @throws NullPointerException if not present or null and
+     * @throws IllegalArgumentException if not present or null and
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {

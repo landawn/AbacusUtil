@@ -309,7 +309,7 @@ public final class Triple<L, M, R> {
         action.accept(left, middle, right);
     }
 
-    public <E extends Exception> void accept(final Try.Consumer<Triple<L, M, R>, E> action) throws E {
+    public <E extends Exception> void accept(final Try.Consumer<? super Triple<L, M, R>, E> action) throws E {
         action.accept(this);
     }
 
@@ -317,7 +317,7 @@ public final class Triple<L, M, R> {
         return mapper.apply(left, middle, right);
     }
 
-    public <U, E extends Exception> U map(final Try.Function<Triple<L, M, R>, U, E> mapper) throws E {
+    public <U, E extends Exception> U map(final Try.Function<? super Triple<L, M, R>, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
@@ -325,7 +325,7 @@ public final class Triple<L, M, R> {
         return predicate.test(left, middle, right) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
     }
 
-    public <E extends Exception> Optional<Triple<L, M, R>> filter(final Try.Predicate<Triple<L, M, R>, E> predicate) throws E {
+    public <E extends Exception> Optional<Triple<L, M, R>> filter(final Try.Predicate<? super Triple<L, M, R>, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
     }
 

@@ -112,7 +112,7 @@ public final class Nullable<T> extends Any<T> {
      * @return an {@code Nullable} describing the value of this {@code Nullable}
      * if a value is present and the value matches the given predicate,
      * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the predicate is null
+     * @throws IllegalArgumentException if the predicate is null
      */
     @Override
     public <E extends Exception> Nullable<T> filter(Try.Predicate<? super T, E> predicate) throws E {
@@ -150,7 +150,7 @@ public final class Nullable<T> extends Any<T> {
      * @return an {@code Nullable} describing the result of applying a mapping
      * function to the value of this {@code Nullable}, if a value is present,
      * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the mapping function is null
+     * @throws IllegalArgumentException if the mapping function is null
      */
     @Override
     public <U, E extends Exception> Nullable<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E {
@@ -177,7 +177,7 @@ public final class Nullable<T> extends Any<T> {
      * @return the result of applying an {@code Nullable}-bearing mapping
      * function to the value of this {@code Nullable}, if a value is present,
      * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the mapping function is null or returns
+     * @throws IllegalArgumentException if the mapping function is null or returns
      * a null result
      */
     @Override
@@ -194,23 +194,23 @@ public final class Nullable<T> extends Any<T> {
 
     /**
      * If a value is not null, and the value matches the given predicate,
-     * return an {@code Nullable} describing the value, otherwise return an
-     * empty {@code Nullable}.
+     * return an {@code Optional} describing the value, otherwise return an
+     * empty {@code Optional}.
      *
      * @param predicate a predicate to apply to the value, if present
-     * @return an {@code Nullable} describing the value of this {@code Nullable}
+     * @return an {@code Optional} describing the value of this {@code Optional}
      * if a value is present and the value matches the given predicate,
-     * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the predicate is null
+     * otherwise an empty {@code Optional}
+     * @throws IllegalArgumentException if the predicate is null
      */
     @Override
-    public <E extends Exception> Nullable<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E {
         N.checkArgNotNull(predicate);
 
         if (isNotNull() && predicate.test(value)) {
-            return this;
+            return Optional.of(value);
         } else {
-            return empty();
+            return Optional.empty();
         }
     }
 
@@ -239,7 +239,7 @@ public final class Nullable<T> extends Any<T> {
      * @return an {@code Nullable} describing the result of applying a mapping
      * function to the value of this {@code Nullable}, if a value is not null,
      * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the mapping function is null
+     * @throws IllegalArgumentException if the mapping function is null
      */
     @Override
     public <U, E extends Exception> Nullable<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E {
@@ -266,7 +266,7 @@ public final class Nullable<T> extends Any<T> {
      * @return the result of applying an {@code Nullable}-bearing mapping
      * function to the value of this {@code Nullable}, if a value is not null,
      * otherwise an empty {@code Nullable}
-     * @throws NullPointerException if the mapping function is null or returns
+     * @throws IllegalArgumentException if the mapping function is null or returns
      * a null result
      */
     @Override

@@ -207,9 +207,63 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> step(final long step) {
+        N.checkArgPositive(step, "step");
+
+        if (step == 1 || fromIndex == toIndex) {
+            return this;
+        }
+
+        return newStream(new ObjIteratorEx<T>() {
+            private final int stepp = (int) N.min(step, Integer.MAX_VALUE);
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final T res = elements[cursor];
+                cursor = cursor > toIndex - stepp ? toIndex : cursor + stepp;
+                return res;
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) % stepp == 0 ? (toIndex - cursor) / stepp : ((toIndex - cursor) / stepp) + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
+                }
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                final int len = (int) count();
+                a = a.length >= len ? a : (A[]) N.newArray(a.getClass().getComponentType(), len);
+
+                for (int i = 0; i < len; i++, cursor += stepp) {
+                    a[i] = (A) elements[cursor];
+                }
+
+                return a;
+            }
+        }, sorted, cmp);
+    }
+
+    @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
         return newStream(new ObjIteratorEx<R>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -703,7 +757,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         return newStream(new CharIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -745,7 +799,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
         return newStream(new ByteIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -787,7 +841,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
         return newStream(new ShortIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -829,7 +883,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
         return newStream(new IntIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -871,7 +925,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
         return newStream(new LongIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -913,7 +967,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
         return newStream(new FloatIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -955,7 +1009,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
         return newStream(new DoubleIteratorEx() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
@@ -2000,7 +2054,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
         return newStream(new ObjIteratorEx<T>() {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

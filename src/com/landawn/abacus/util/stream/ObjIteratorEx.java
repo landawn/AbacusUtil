@@ -73,7 +73,7 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
         }
 
         return new QueuedIterator<T>(toIndex - fromIndex) {
-            int cursor = fromIndex;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {

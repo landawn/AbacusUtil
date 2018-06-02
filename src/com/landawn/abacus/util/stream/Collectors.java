@@ -274,8 +274,13 @@ public class Collectors {
     static final BinaryOperator<ByteList> ByteList_Combiner = new BinaryOperator<ByteList>() {
         @Override
         public ByteList apply(ByteList a, ByteList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -296,8 +301,13 @@ public class Collectors {
     static final BinaryOperator<ShortList> ShortList_Combiner = new BinaryOperator<ShortList>() {
         @Override
         public ShortList apply(ShortList a, ShortList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -318,8 +328,13 @@ public class Collectors {
     static final BinaryOperator<IntList> IntList_Combiner = new BinaryOperator<IntList>() {
         @Override
         public IntList apply(IntList a, IntList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -340,8 +355,13 @@ public class Collectors {
     static final BinaryOperator<LongList> LongList_Combiner = new BinaryOperator<LongList>() {
         @Override
         public LongList apply(LongList a, LongList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -362,8 +382,13 @@ public class Collectors {
     static final BinaryOperator<FloatList> FloatList_Combiner = new BinaryOperator<FloatList>() {
         @Override
         public FloatList apply(FloatList a, FloatList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -384,8 +409,13 @@ public class Collectors {
     static final BinaryOperator<DoubleList> DoubleList_Combiner = new BinaryOperator<DoubleList>() {
         @Override
         public DoubleList apply(DoubleList a, DoubleList b) {
-            a.addAll(b);
-            return a;
+            if (a.size() >= b.size()) {
+                a.addAll(b);
+                return a;
+            } else {
+                b.addAll(a);
+                return b;
+            }
         }
     };
 
@@ -406,9 +436,15 @@ public class Collectors {
     static final BinaryOperator<Joiner> Joiner_Combiner = new BinaryOperator<Joiner>() {
         @Override
         public Joiner apply(Joiner a, Joiner b) {
-            a.merge(b);
-            b.close();
-            return a;
+            if (a.length() > b.length()) {
+                a.merge(b);
+                b.close();
+                return a;
+            } else {
+                b.merge(a);
+                a.close();
+                return b;
+            }
         }
     };
 
@@ -1023,7 +1059,7 @@ public class Collectors {
      */
     public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<C> collectionFactory) {
         final BiConsumer<C, T> accumulator = BiConsumers.ofAdd();
-        final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAll();
+        final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAllToBigger();
 
         return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
     }
@@ -1200,7 +1236,7 @@ public class Collectors {
         final Supplier<List<A>> supplier = Suppliers.<A> ofList();
         @SuppressWarnings("rawtypes")
         final BiConsumer<List<A>, T> accumulator = (BiConsumer) BiConsumers.ofAdd();
-        final BinaryOperator<List<A>> combiner = BinaryOperators.<A, List<A>> ofAddAll();
+        final BinaryOperator<List<A>> combiner = BinaryOperators.<A, List<A>> ofAddAllToBigger();
         final Function<List<A>, A[]> finisher = new Function<List<A>, A[]>() {
             @Override
             public A[] apply(List<A> t) {

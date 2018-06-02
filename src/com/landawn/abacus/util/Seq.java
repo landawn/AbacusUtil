@@ -32,6 +32,7 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -68,6 +69,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     Seq(final Collection<T> c) {
         super(c);
+    }
+
+    public static <T> Seq<T> empty() {
+        return EMPTY;
     }
 
     public static <T> Seq<T> just(T t) {
@@ -1366,12 +1371,120 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> List<R> filterThenMap(final Try.Predicate<? super T, E> filter,
+            final Try.Function<? super T, ? extends R, E2> mapper) throws E, E2 {
+        N.checkArgNotNull(filter);
+        N.checkArgNotNull(mapper);
+
+        final List<R> result = new ArrayList<>();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                result.add(mapper.apply(e));
+            }
+        }
+
+        return result;
+    }
+
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> List<R> filterThenFlatMap(final Try.Predicate<? super T, E> filter,
+            final Try.Function<? super T, ? extends Collection<? extends R>, E2> mapper) throws E, E2 {
+        N.checkArgNotNull(filter);
+        N.checkArgNotNull(mapper);
+
+        final List<R> result = new ArrayList<>();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        Collection<? extends R> c = null;
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                c = mapper.apply(e);
+
+                if (N.notNullOrEmpty(c)) {
+                    result.addAll(c);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> List<R> mapThenFilter(final Try.Function<? super T, ? extends R, E> mapper,
+            final Try.Predicate<? super R, E2> filter) throws E, E2 {
+        N.checkArgNotNull(mapper);
+        N.checkArgNotNull(filter);
+
+        final List<R> result = new ArrayList<>();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        R r = null;
+        for (T e : coll) {
+            r = mapper.apply(e);
+
+            if (filter.test(r)) {
+                result.add(r);
+            }
+        }
+
+        return result;
+    }
+
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> List<R> flatMapThenFilter(final Try.Function<? super T, ? extends Collection<? extends R>, E> mapper,
+            final Try.Predicate<? super R, E2> filter) throws E, E2 {
+        N.checkArgNotNull(mapper);
+        N.checkArgNotNull(filter);
+
+        final List<R> result = new ArrayList<>();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        Collection<? extends R> c = null;
+
+        for (T e : coll) {
+            c = mapper.apply(e);
+
+            if (N.notNullOrEmpty(c)) {
+                for (R r : c) {
+                    if (filter.test(r)) {
+                        result.add(r);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
+     * Merge series of adjacent elements which satisfy the given predicate using the merger function.
      * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
+     * <p>Example:
+     * <pre>
+     * <code>
+     * Seq.of(new Integer[0]).collapse((a, b) -> a < b, (a, b) -> a + b) => []
+     * Seq.of(1).collapse((a, b) -> a < b, (a, b) -> a + b) => [1]
+     * Seq.of(1, 2).collapse((a, b) -> a < b, (a, b) -> a + b) => [3]
+     * Seq.of(1, 2, 3).collapse((a, b) -> a < b, (a, b) -> a + b) => [6]
+     * Seq.of(1, 2, 3, 3, 2, 1).collapse((a, b) -> a < b, (a, b) -> a + b) => [6, 3, 2, 1]
+     * </code>
+     * </pre>
      * 
      * @param collapsible
      * @param mergeFunction
@@ -1410,11 +1523,18 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
+     * Merge series of adjacent elements which satisfy the given predicate using the merger function.
      * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
+     * <p>Example:
+     * <pre>
+     * <code>
+     * Seq.of(new Integer[0]).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => []
+     * Seq.of(1).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [1]
+     * Seq.of(1, 2).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [3]
+     * Seq.of(1, 2, 3).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [6]
+     * Seq.of(1, 2, 3, 3, 2, 1).collapse((a, b) -> a < b, Collectors.summingInt(Fn.unboxI())) => [6, 3, 2, 1]
+     * </code>
+     * </pre>
      * 
      * @param collapsible
      * @param collector
@@ -1462,20 +1582,19 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
      * {@code acc(acc(identity, value1), value2)}, etc.
      *
-     * <p>This is an intermediate operation.
-     *
      * <p>Example:
      * <pre>
-     * accumulator: (a, b) -&gt; a + b
-     * stream: [1, 2, 3, 4, 5]
-     * result: [1, 3, 6, 10, 15]
+     * <code>
+     * Seq.of(new Integer[0]).scan((a, b) -> a + b) => []
+     * Seq.of(1).scan((a, b) -> a + b) => [1]
+     * Seq.of(1, 2).scan((a, b) -> a + b) => [1, 3]
+     * Seq.of(1, 2, 3).scan((a, b) -> a + b) => [1, 3, 6]
+     * Seq.of(1, 2, 3, 3, 2, 1).scan((a, b) -> a + b) => [1, 3, 6, 9, 11, 12]
+     * </code>
      * </pre>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
      *
-     * @param accumulator  the accumulation function
-     * @return the new stream which has the extract same size as this stream.
+     * @param accumulator the accumulation function
+     * @return
      */
     public <E extends Exception> List<T> scan(final Try.BiFunction<? super T, ? super T, T, E> accumulator) throws E {
         N.checkArgNotNull(accumulator);
@@ -1506,24 +1625,22 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
      * {@code acc(acc(identity, value1), value2)}, etc.
      *
-     * <p>This is an intermediate operation.
-     *
      * <p>Example:
      * <pre>
-     * seed:10
-     * accumulator: (a, b) -&gt; a + b
-     * stream: [1, 2, 3, 4, 5]
-     * result: [11, 13, 16, 20, 25]
+     * <code>
+     * Seq.of(new Integer[0]).scan(10, (a, b) -> a + b) => []
+     * Seq.of(1).scan(10, (a, b) -> a + b) => [11]
+     * Seq.of(1, 2).scan(10, (a, b) -> a + b) => [11, 13]
+     * Seq.of(1, 2, 3).scan(10, (a, b) -> a + b) => [11, 13, 16]
+     * Seq.of(1, 2, 3, 3, 2, 1).scan(10, (a, b) -> a + b) => [11, 13, 16, 19, 21, 22]
+     * </code>
      * </pre>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
      *
      * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
      * It will be ignored if this stream is empty and won't be the first element of the returned stream.
      * 
-     * @param accumulator  the accumulation function
-     * @return the new stream which has the extract same size as this stream.
+     * @param accumulator the accumulation function
+     * @return
      */
     public <R, E extends Exception> List<R> scan(final R seed, final Try.BiFunction<? super R, ? super T, R, E> accumulator) throws E {
         N.checkArgNotNull(accumulator);

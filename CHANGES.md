@@ -1,3 +1,14 @@
+### 1.2.13
+
+* Add `N.swap(Pair/Triple)`, `N.swapIf(Pair/Triple, Predicate)`.
+
+* Add `Seq.filterThenMap/filterThenFlatMap/mapThenFilter/flatMapThenFilter`.
+
+* Refactoring: Change `Nullable<T> Holder/Nullable.filterIfNotNull(...)` to `Optional<T> Holder/Nullable.filterIfNotNull(...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.12
 
 * Rename `DataSet.join` to `DataSet.innerJoin`.
