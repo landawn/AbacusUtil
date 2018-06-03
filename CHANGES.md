@@ -4,7 +4,7 @@
 
 * Add `Seq.filterThenMap/filterThenFlatMap/mapThenFilter/flatMapThenFilter`.
 
-* Remove some static method from functional interfaces in package `com.landawn.abacus.util.function`.
+* Remove some static method from functional interfaces in package `com.landawn.abacus.util.function`, replaced by the methods in `Fn`.
 
 * Refactoring: Change `Nullable<T> Holder/Nullable.filterIfNotNull(...)` to `Optional<T> Holder/Nullable.filterIfNotNull(...)`.
 
