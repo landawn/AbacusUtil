@@ -1,10 +1,10 @@
 ### 1.2.13
 
-* Add `N.swap(Pair/Triple)`, `N.swapIf(Pair/Triple, Predicate)`.
+* Add `N.swap(Pair/Triple)` and `N.swapIf(Pair/Triple, Predicate)`.
 
 * Add `Seq.filterThenMap/filterThenFlatMap/mapThenFilter/flatMapThenFilter`.
 
-* Remove some static method from functional interfaces in package `com.landawn.abacus.util.function`, replaced by the methods in `Fn`.
+* Remove static method from some functional interfaces in package `com.landawn.abacus.util.function`, replaced by the methods in `Fn`.
 
 * Refactoring: Change `Nullable<T> Holder/Nullable.filterIfNotNull(...)` to `Optional<T> Holder/Nullable.filterIfNotNull(...)`.
 
