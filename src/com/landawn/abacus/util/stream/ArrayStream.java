@@ -2020,35 +2020,82 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> top(int n, Comparator<? super T> comparator) {
+    public Stream<T> top(final int n, final Comparator<? super T> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return new ArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, closeHandlers);
-        } else {
-            // return new ArrayStream<>(N.top(elements, fromIndex, toIndex, n, comparator), sorted, cmp, closeHandlers);
+            return newStream(elements, toIndex - n, toIndex, sorted, cmp);
+        }
 
-            final List<T> c = N.top(elements, fromIndex, toIndex, n, comparator);
+        return newStream(new ObjIteratorEx<T>() {
+            private boolean initialized = false;
+            private T[] aar;
+            private int cursor = 0;
+            private int len;
 
-            if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
-                T[] array = null;
-
-                try {
-                    array = (T[]) listElementDataField.get(c);
-                } catch (Throwable e) {
-                    // ignore;
-                    isListElementDataFieldGettable = false;
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
                 }
 
-                if (array != null) {
-                    return new ArrayStream<>(array, sorted, cmp, closeHandlers);
-                }
+                return cursor < len;
             }
 
-            return new IteratorStream<>(c.iterator(), sorted, cmp, closeHandlers);
-        }
+            @Override
+            public T next() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return len - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > len - cursor ? len : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                if (initialized == false) {
+                    init();
+                }
+
+                a = a.length >= (len - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (len - cursor));
+
+                N.copy(aar, cursor, a, 0, toIndex - cursor);
+
+                return a;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = (T[]) N.top(elements, fromIndex, toIndex, n, comparator).toArray();
+                    len = aar.length;
+                }
+            }
+        }, false, null);
     }
 
     @Override
@@ -2199,8 +2246,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R extends Collection<T>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<T>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

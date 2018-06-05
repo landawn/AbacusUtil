@@ -280,29 +280,86 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         @Override
         public Object apply(Object t, Object u) {
             if (t instanceof Multiset) {
-                ((Multiset) t).addAll((Multiset) u);
-                return t;
+                final Multiset a = (Multiset) t;
+                final Multiset b = (Multiset) u;
+
+                if (a.size() >= b.size()) {
+                    a.addAll(b);
+                    return a;
+                } else {
+                    b.addAll(a);
+                    return b;
+                }
             } else if (t instanceof LongMultiset) {
-                ((LongMultiset) t).addAll((LongMultiset) u);
-                return t;
+                final LongMultiset a = (LongMultiset) t;
+                final LongMultiset b = (LongMultiset) u;
+
+                if (a.size() >= b.size()) {
+                    a.addAll(b);
+                    return a;
+                } else {
+                    b.addAll(a);
+                    return b;
+                }
             } else if (t instanceof Multimap) {
-                ((Multimap) t).putAll((Multimap) u);
-                return t;
+                final Multimap a = (Multimap) t;
+                final Multimap b = (Multimap) u;
+
+                if (a.size() >= b.size()) {
+                    a.putAll(b);
+                    return a;
+                } else {
+                    b.putAll(a);
+                    return b;
+                }
             } else if (t instanceof Collection) {
-                ((Collection) t).addAll((Collection) u);
-                return t;
+                final Collection a = (Collection) t;
+                final Collection b = (Collection) u;
+
+                if (a.size() >= b.size()) {
+                    a.addAll(b);
+                    return a;
+                } else {
+                    b.addAll(a);
+                    return b;
+                }
             } else if (t instanceof Map) {
-                ((Map) t).putAll((Map) u);
-                return t;
+                final Map a = (Map) t;
+                final Map b = (Map) u;
+
+                if (a.size() >= b.size()) {
+                    a.putAll(b);
+                    return a;
+                } else {
+                    b.putAll(a);
+                    return b;
+                }
             } else if (t instanceof Object[]) {
                 return N.concat((Object[]) t, (Object[]) u);
             } else if (t instanceof StringBuilder) {
-                return ((StringBuilder) t).append((StringBuilder) u);
+                final StringBuilder a = (StringBuilder) t;
+                final StringBuilder b = (StringBuilder) u;
+
+                if (a.length() >= b.length()) {
+                    a.append(b);
+                    return a;
+                } else {
+                    b.append(a);
+                    return b;
+                }
             } else if (t instanceof String) {
                 return (String) t + (String) u;
             } else if (t instanceof Sheet) {
-                ((Sheet) t).putAll((Sheet) u);
-                return t;
+                final Sheet a = (Sheet) t;
+                final Sheet b = (Sheet) u;
+
+                if (a.rowLength() >= b.rowLength()) {
+                    a.putAll(b);
+                    return a;
+                } else {
+                    b.putAll(a);
+                    return b;
+                }
             } else {
                 final Class<?> cls = t.getClass();
                 final Integer num = clsNum.get(cls);
@@ -329,30 +386,102 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
                         return N.concat((float[]) t, (float[]) u);
                     case 7:
                         return N.concat((double[]) t, (double[]) u);
-                    case 8:
-                        ((BooleanList) t).addAll((BooleanList) u);
-                        return t;
-                    case 9:
-                        ((CharList) t).addAll((CharList) u);
-                        return t;
-                    case 10:
-                        ((ByteList) t).addAll((ByteList) u);
-                        return t;
-                    case 11:
-                        ((ShortList) t).addAll((ShortList) u);
-                        return t;
-                    case 12:
-                        ((IntList) t).addAll((IntList) u);
-                        return t;
-                    case 13:
-                        ((LongList) t).addAll((LongList) u);
-                        return t;
-                    case 14:
-                        ((FloatList) t).addAll((FloatList) u);
-                        return t;
-                    case 15:
-                        ((DoubleList) t).addAll((DoubleList) u);
-                        return t;
+                    case 8: {
+                        final BooleanList a = (BooleanList) t;
+                        final BooleanList b = (BooleanList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 9: {
+                        final CharList a = (CharList) t;
+                        final CharList b = (CharList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 10: {
+                        final ByteList a = (ByteList) t;
+                        final ByteList b = (ByteList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 11: {
+                        final ShortList a = (ShortList) t;
+                        final ShortList b = (ShortList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 12: {
+                        final IntList a = (IntList) t;
+                        final IntList b = (IntList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 13: {
+                        final LongList a = (LongList) t;
+                        final LongList b = (LongList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 14: {
+                        final FloatList a = (FloatList) t;
+                        final FloatList b = (FloatList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
+                    case 15: {
+                        final DoubleList a = (DoubleList) t;
+                        final DoubleList b = (DoubleList) u;
+
+                        if (a.size() >= b.size()) {
+                            a.addAll(b);
+                            return a;
+                        } else {
+                            b.addAll(a);
+                            return b;
+                        }
+                    }
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
@@ -748,10 +877,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     }
 
     protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
+        return newStream(a, 0, a.length, sorted, comparator);
+    }
+
+    protected <E> Stream<E> newStream(final E[] a, final int fromIndex, final int toIndex, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelArrayStream<>(a, 0, a.length, sorted, comparator, this.maxThreadNum(), this.splitor(), closeHandlers);
+            return new ParallelArrayStream<>(a, fromIndex, toIndex, sorted, comparator, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayStream<>(a, sorted, comparator, closeHandlers);
+            return new ArrayStream<>(a, fromIndex, toIndex, sorted, comparator, closeHandlers);
         }
     }
 

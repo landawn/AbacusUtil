@@ -1,3 +1,8 @@
+### 1.2.14
+
+* Improvements and bug fix.
+
+
 ### 1.2.13
 
 * Add `N.swap(Pair/Triple)` and `N.swapIf(Pair/Triple, Predicate)`.

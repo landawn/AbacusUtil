@@ -1591,8 +1591,8 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <R extends Collection<Integer>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<Integer>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

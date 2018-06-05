@@ -79,129 +79,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
         this.s = (Stream<Map.Entry<K, V>>) s;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    static <K, V> Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapFunc() {
-        return (Function) mapper_func;
-    }
-
-    public static <K, V> EntryStream<K, V> empty() {
-        return EMPTY;
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1) {
-        return of(Stream.of(Tuple.of(k1, v1)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6)));
-    }
-
-    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6), Tuple.of(k7, v7)));
-    }
-
-    static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
-        return new EntryStream<K, V>(s);
-    }
-
-    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
-        return new EntryStream<K, V>(Stream.of(iterator));
-    }
-
-    public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
-        return new EntryStream<K, V>(map, Stream.of(map));
-    }
-
-    public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {
-        return new EntryStream<K, V>(Stream.of(entries));
-    }
-
-    //    @SafeVarargs
-    //    public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
-    //        return new EntryStream<K, V>(Stream.of(entries));
-    //    }
-
-    public static <E> EntryStream<E, Integer> of(final Multiset<E> multiset) {
-        return multiset == null ? EntryStream.<E, Integer> empty() : multiset.entryStream();
-    }
-
-    public static <E> EntryStream<E, Long> of(final LongMultiset<E> multiset) {
-        return multiset == null ? EntryStream.<E, Long> empty() : multiset.entryStream();
-    }
-
-    public static <K, E, V extends Collection<E>> EntryStream<K, V> of(final Multimap<K, E, V> mulitmap) {
-        return mulitmap == null ? EntryStream.<K, V> empty() : mulitmap.entryStream();
-    }
-
-    public static <K, T> EntryStream<K, T> of(final Collection<? extends T> c, final Function<? super T, K> keyExtractor) {
-        final Function<T, T> valueMapper = Fn.identity();
-
-        return Stream.of(c).mapToEntry(keyExtractor, valueMapper);
-    }
-
-    public static <K, T> EntryStream<K, T> of(final T[] a, final Function<? super T, K> keyExtractor) {
-        final Function<T, T> valueMapper = Fn.identity();
-
-        return Stream.of(a).mapToEntry(keyExtractor, valueMapper);
-    }
-
-    @SafeVarargs
-    public static <K, V> EntryStream<K, V> concat(final Map<K, V>... maps) {
-        final Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapper = mapFunc();
-
-        return Stream.of(maps).flatMapToEntry(mapper);
-    }
-
-    public static <K, V> EntryStream<K, V> concat(final Collection<? extends Map<K, V>> maps) {
-        final Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapper = mapFunc();
-
-        return Stream.of(maps).flatMapToEntry(mapper);
-    }
-
-    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
-        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
-
-        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
-    }
-
-    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values, K valueForNonKey, V valueForNonValue) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
-        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
-
-        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
-    }
-
-    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
-        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
-
-        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
-    }
-
-    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values, K valueForNonKey, V valueForNonValue) {
-        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
-        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
-
-        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
-    }
-
     public Stream<K> keys() {
         if (m != null) {
             return Stream.of(m.keySet());
@@ -230,6 +107,40 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = Fn.inverse();
 
         return map(mapper);
+    }
+
+    /**
+     * Returns a stream consisting of the elements of this stream which keys are
+     * instances of given class.
+     *
+     * <p>
+     * This is an <a href="package-summary.html#StreamOps">intermediate</a>
+     * operation.
+     *
+     * @param <KK> a type of keys to select.
+     * @param clazz a class to filter the keys.
+     * @return the new stream
+     */
+    @SuppressWarnings({ "unchecked" })
+    public <KK> EntryStream<KK, V> selectByKey(Class<KK> clazz) {
+        return (EntryStream<KK, V>) filterByKey(Fn.instanceOf(clazz));
+    }
+
+    /**
+     * Returns a stream consisting of the elements of this stream which values
+     * are instances of given class.
+     *
+     * <p>
+     * This is an <a href="package-summary.html#StreamOps">intermediate</a>
+     * operation.
+     *
+     * @param <VV> a type of values to select.
+     * @param clazz a class to filter the values.
+     * @return the new stream
+     */
+    @SuppressWarnings({ "unchecked" })
+    public <VV> EntryStream<K, VV> selectByValue(Class<VV> clazz) {
+        return (EntryStream<K, VV>) filterByValue(Fn.instanceOf(clazz));
     }
 
     public <KK> EntryStream<K, V> filter(final Predicate<Map.Entry<K, V>> predicate) {
@@ -1173,6 +1084,135 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @Override
     public void close() {
         s.close();
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    static <K, V> Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapFunc() {
+        return (Function) mapper_func;
+    }
+
+    public static <K, V> EntryStream<K, V> empty() {
+        return EMPTY;
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1) {
+        return of(Stream.of(Tuple.of(k1, v1)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6), Tuple.of(k7, v7)));
+    }
+
+    static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
+        return new EntryStream<K, V>(s);
+    }
+
+    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
+        return new EntryStream<K, V>(Stream.of(iterator));
+    }
+
+    public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
+        return new EntryStream<K, V>(map, Stream.of(map));
+    }
+
+    public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {
+        return new EntryStream<K, V>(Stream.of(entries));
+    }
+
+    //    @SafeVarargs
+    //    public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
+    //        return new EntryStream<K, V>(Stream.of(entries));
+    //    }
+
+    public static <E> EntryStream<E, Integer> of(final Multiset<E> multiset) {
+        return multiset == null ? EntryStream.<E, Integer> empty() : multiset.entryStream();
+    }
+
+    public static <E> EntryStream<E, Long> of(final LongMultiset<E> multiset) {
+        return multiset == null ? EntryStream.<E, Long> empty() : multiset.entryStream();
+    }
+
+    public static <K, E, V extends Collection<E>> EntryStream<K, V> of(final Multimap<K, E, V> mulitmap) {
+        return mulitmap == null ? EntryStream.<K, V> empty() : mulitmap.entryStream();
+    }
+
+    public static <K, T> EntryStream<K, T> of(final T[] a, final Function<? super T, K> keyExtractor) {
+        final Function<T, T> valueMapper = Fn.identity();
+
+        return Stream.of(a).mapToEntry(keyExtractor, valueMapper);
+    }
+
+    public static <K, T> EntryStream<K, T> of(final Collection<? extends T> c, final Function<? super T, K> keyExtractor) {
+        final Function<T, T> valueMapper = Fn.identity();
+
+        return Stream.of(c).mapToEntry(keyExtractor, valueMapper);
+    }
+
+    public static <K, T> EntryStream<K, T> of(final Iterator<? extends T> iter, final Function<? super T, K> keyExtractor) {
+        final Function<T, T> valueMapper = Fn.identity();
+
+        return Stream.of(iter).mapToEntry(keyExtractor, valueMapper);
+    }
+
+    @SafeVarargs
+    public static <K, V> EntryStream<K, V> concat(final Map<K, V>... maps) {
+        final Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapper = mapFunc();
+
+        return Stream.of(maps).flatMapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> concat(final Collection<? extends Map<K, V>> maps) {
+        final Function<Map<K, V>, Stream<Map.Entry<K, V>>> mapper = mapFunc();
+
+        return Stream.of(maps).flatMapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values, K valueForNonKey, V valueForNonValue) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values, K valueForNonKey, V valueForNonValue) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = Fn.entry();
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
     }
 
     static class ReusableEntry<K, V> implements Map.Entry<K, V> {

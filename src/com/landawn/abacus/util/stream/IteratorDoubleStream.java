@@ -1014,8 +1014,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <R extends Collection<Double>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<Double>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextDouble());

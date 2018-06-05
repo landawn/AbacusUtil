@@ -1015,8 +1015,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <R extends Collection<Long>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<Long>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextLong());

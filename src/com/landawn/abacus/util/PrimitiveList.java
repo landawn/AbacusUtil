@@ -254,11 +254,11 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
         return toCollection(fromIndex, toIndex, Fn.Factory.<B> ofSet());
     }
 
-    public <C extends Collection<B>> C toCollection(final IntFunction<C> supplier) {
+    public <C extends Collection<B>> C toCollection(final IntFunction<? extends C> supplier) {
         return toCollection(0, size(), supplier);
     }
 
-    public abstract <C extends Collection<B>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier);
+    public abstract <C extends Collection<B>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier);
 
     public Multiset<B> toMultiset() {
         return toMultiset(0, size());

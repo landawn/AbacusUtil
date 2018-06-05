@@ -1057,11 +1057,11 @@ public class Collectors {
      * @return a {@code Collector} which collects all the input elements into a
      * {@code Collection}, in encounter order
      */
-    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<C> collectionFactory) {
+    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<? extends C> collectionFactory) {
         final BiConsumer<C, T> accumulator = BiConsumers.ofAdd();
         final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAllToBigger();
 
-        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
+        return new CollectorImpl<>((Supplier<C>) collectionFactory, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -1140,7 +1140,7 @@ public class Collectors {
         return toCollection(supplier);
     }
 
-    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(final Supplier<C> collectionFactory, final int atMostSize) {
+    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(final Supplier<? extends C> collectionFactory, final int atMostSize) {
         final BiConsumer<C, T> accumulator = new BiConsumer<C, T>() {
             @Override
             public void accept(C c, T t) {
@@ -1175,7 +1175,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
+        return new CollectorImpl<>((Supplier<C>) collectionFactory, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, List<T>> toList(final int atMostSize) {

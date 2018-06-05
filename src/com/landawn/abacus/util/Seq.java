@@ -2108,7 +2108,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return coll == null ? new HashSet<T>() : new HashSet<T>(coll);
     }
 
-    public <C extends Collection<T>> C toCollection(final IntFunction<C> supplier) {
+    public <C extends Collection<T>> C toCollection(final IntFunction<? extends C> supplier) {
         final C result = supplier.apply(size());
 
         if (N.notNullOrEmpty(coll)) {

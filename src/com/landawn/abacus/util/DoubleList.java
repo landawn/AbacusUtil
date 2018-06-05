@@ -1368,7 +1368,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     @Override
-    public <C extends Collection<Double>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public <C extends Collection<Double>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
         final C c = supplier.apply(toIndex - fromIndex);

@@ -2388,41 +2388,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> top(int n) {
-        return top(n, NATURAL_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
-
-        if (n >= toIndex - fromIndex) {
-            return this;
-        } else if (sorted && isSameComparator(comparator, cmp)) {
-            return new ParallelArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        } else {
-            final List<T> c = N.top(elements, fromIndex, toIndex, n, comparator);
-
-            if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
-                T[] array = null;
-
-                try {
-                    array = (T[]) listElementDataField.get(c);
-                } catch (Throwable e) {
-                    // ignore;
-                    isListElementDataFieldGettable = false;
-                }
-
-                if (array != null) {
-                    return new ParallelArrayStream<>(array, 0, array.length, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-                }
-            }
-
-            return new ParallelIteratorStream<>(c.iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @Override
     public Stream<T> peek(final Consumer<? super T> action) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);

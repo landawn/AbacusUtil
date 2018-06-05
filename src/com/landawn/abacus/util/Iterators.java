@@ -157,7 +157,7 @@ public final class Iterators {
         return result;
     }
 
-    public static <T, C extends Collection<T>> C toCollection(final Iterator<? extends T> iter, final Supplier<C> collectionFactory) {
+    public static <T, C extends Collection<T>> C toCollection(final Iterator<? extends T> iter, final Supplier<? extends C> collectionFactory) {
         final C c = collectionFactory.get();
 
         if (iter == null) {

@@ -1379,7 +1379,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     @Override
-    public <C extends Collection<Float>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public <C extends Collection<Float>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
         final C c = supplier.apply(toIndex - fromIndex);

@@ -2046,11 +2046,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Boolean>> C toCollection(final boolean[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2066,11 +2067,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Character>> C toCollection(final char[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Character>> C toCollection(final char[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Character>> C toCollection(final char[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Character>> C toCollection(final char[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2086,11 +2088,11 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Byte>> C toCollection(final byte[] a, final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2106,11 +2108,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Short>> C toCollection(final short[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Short>> C toCollection(final short[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Short>> C toCollection(final short[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Short>> C toCollection(final short[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2126,11 +2129,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Integer>> C toCollection(final int[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Integer>> C toCollection(final int[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Integer>> C toCollection(final int[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Integer>> C toCollection(final int[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2146,11 +2150,11 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Long>> C toCollection(final long[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Long>> C toCollection(final long[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Long>> C toCollection(final long[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Long>> C toCollection(final long[] a, final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2166,11 +2170,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Float>> C toCollection(final float[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Float>> C toCollection(final float[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Float>> C toCollection(final float[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Float>> C toCollection(final float[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2186,11 +2191,12 @@ public final class N {
         return result;
     }
 
-    public static <C extends Collection<Double>> C toCollection(final double[] a, final IntFunction<C> supplier) {
+    public static <C extends Collection<Double>> C toCollection(final double[] a, final IntFunction<? extends C> supplier) {
         return toCollection(a, 0, len(a), supplier);
     }
 
-    public static <C extends Collection<Double>> C toCollection(final double[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <C extends Collection<Double>> C toCollection(final double[] a, final int fromIndex, final int toIndex,
+            final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {
@@ -2206,7 +2212,7 @@ public final class N {
         return result;
     }
 
-    public static <T, C extends Collection<T>> C toCollection(final T[] a, final IntFunction<C> supplier) {
+    public static <T, C extends Collection<T>> C toCollection(final T[] a, final IntFunction<? extends C> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -2214,7 +2220,7 @@ public final class N {
         return toCollection(a, 0, a.length, supplier);
     }
 
-    public static <T, C extends Collection<T>> C toCollection(final T[] a, final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public static <T, C extends Collection<T>> C toCollection(final T[] a, final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         N.checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (fromIndex == toIndex) {

@@ -758,7 +758,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     ImmutableSet<T> toImmutableSet();
 
     @SequentialOnly
-    <R extends Collection<T>> R toCollection(Supplier<R> supplier);
+    <CC extends Collection<T>> CC toCollection(Supplier<? extends CC> supplier);
 
     @SequentialOnly
     Multiset<T> toMultiset();

@@ -1597,16 +1597,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Stream<T> top(int n) {
-        return top(n, NATURAL_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        return super.top(n, comparator);
-    }
-
-    @Override
     public Stream<T> peek(final Consumer<? super T> action) {
         if (maxThreadNum <= 1) {
             return super.peek(action);

@@ -1254,8 +1254,8 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <R extends Collection<Float>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<Float>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

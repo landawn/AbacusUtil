@@ -1024,6 +1024,17 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static <A, B, C> TriPredicate<A, B, C> not(final TriPredicate<A, B, C> triPredicate) {
+        N.checkArgNotNull(triPredicate);
+
+        return new TriPredicate<A, B, C>() {
+            @Override
+            public boolean test(A a, B b, C c) {
+                return !triPredicate.test(a, b, c);
+            }
+        };
+    }
+
     public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second) {
         N.checkArgNotNull(first);
         N.checkArgNotNull(second);
@@ -1525,16 +1536,7 @@ public final class Fn extends Comparators {
      * @return
      */
     public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return new Predicate<T>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public boolean test(T t) {
-                return predicate.test(idx.getAndIncrement(), t);
-            }
-        };
+        return Predicates.indexed(predicate);
     }
 
     /**
@@ -1542,18 +1544,11 @@ public final class Fn extends Comparators {
      * 
      * @param predicate
      * @return
+     * @deprecated replaced by {@code BiPredicates#indexed(IndexedBiPredicate)}.
      */
+    @Deprecated
     public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return new BiPredicate<U, T>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public boolean test(U u, T t) {
-                return predicate.test(u, idx.getAndIncrement(), t);
-            }
-        };
+        return BiPredicates.indexed(predicate);
     }
 
     /**
@@ -1561,18 +1556,11 @@ public final class Fn extends Comparators {
      * 
      * @param func
      * @return
+     * @deprecated replaced by {@code Functions#indexed(IndexedFunction)}.
      */
+    @Deprecated
     public static <T, R> Function<T, R> indexedd(final IndexedFunction<T, R> func) {
-        N.checkArgNotNull(func);
-
-        return new Function<T, R>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public R apply(T t) {
-                return func.apply(idx.getAndIncrement(), t);
-            }
-        };
+        return Functions.indexed(func);
     }
 
     /**
@@ -1580,18 +1568,11 @@ public final class Fn extends Comparators {
      * 
      * @param func
      * @return
+     * @deprecated replaced by {@code BiFunctions#indexed(IndexedBiFunction)}.
      */
+    @Deprecated
     public static <U, T, R> BiFunction<U, T, R> indexedd(final IndexedBiFunction<U, T, R> func) {
-        N.checkArgNotNull(func);
-
-        return new BiFunction<U, T, R>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public R apply(U u, T t) {
-                return func.apply(u, idx.getAndIncrement(), t);
-            }
-        };
+        return BiFunctions.indexed(func);
     }
 
     /**
@@ -1599,18 +1580,11 @@ public final class Fn extends Comparators {
      * 
      * @param action
      * @return
+     * @deprecated replaced by {@code Consumers#indexed(IndexedConsumer)}.
      */
+    @Deprecated
     public static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
-        N.checkArgNotNull(action);
-
-        return new Consumer<T>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public void accept(T t) {
-                action.accept(idx.getAndIncrement(), t);
-            }
-        };
+        return Consumers.indexed(action);
     }
 
     /**
@@ -1618,18 +1592,11 @@ public final class Fn extends Comparators {
      * 
      * @param action
      * @return
+     * @deprecated replaced by {@code BiConsumers#indexed(IndexedBiConsumer)}.
      */
+    @Deprecated
     public static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
-        N.checkArgNotNull(action);
-
-        return new BiConsumer<U, T>() {
-            private final MutableInt idx = new MutableInt(0);
-
-            @Override
-            public void accept(U u, T t) {
-                action.accept(u, idx.getAndIncrement(), t);
-            }
-        };
+        return BiConsumers.indexed(action);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2210,10 +2177,22 @@ public final class Fn extends Comparators {
         return BinaryOperators.REPLACING_MERGER;
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code BiConsumers#ofAddAll()}
+     */
+    @Deprecated
     public static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
         return BiConsumers.<T, C> ofAddAll();
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code BiConsumers#ofPutAll()}
+     */
+    @Deprecated
     public static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
         return BiConsumers.<K, V, M> ofPutAll();
     }
@@ -2254,7 +2233,7 @@ public final class Fn extends Comparators {
         return Collectors.toImmutableSet();
     }
 
-    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<C> collectionFactory) {
+    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<? extends C> collectionFactory) {
         return Collectors.toCollection(collectionFactory);
     }
 
@@ -3783,7 +3762,16 @@ public final class Fn extends Comparators {
         }
 
         public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
-            return Fn.indexed(predicate);
+            N.checkArgNotNull(predicate);
+
+            return new Predicate<T>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public boolean test(T t) {
+                    return predicate.test(idx.getAndIncrement(), t);
+                }
+            };
         }
     }
 
@@ -3866,7 +3854,16 @@ public final class Fn extends Comparators {
         }
 
         public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
-            return Fn.indexed(predicate);
+            N.checkArgNotNull(predicate);
+
+            return new BiPredicate<U, T>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public boolean test(U u, T t) {
+                    return predicate.test(u, idx.getAndIncrement(), t);
+                }
+            };
         }
     }
 
@@ -3937,7 +3934,16 @@ public final class Fn extends Comparators {
         }
 
         public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
-            return Fn.indexeed(action);
+            N.checkArgNotNull(action);
+
+            return new Consumer<T>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public void accept(T t) {
+                    action.accept(idx.getAndIncrement(), t);
+                }
+            };
         }
     }
 
@@ -4102,7 +4108,16 @@ public final class Fn extends Comparators {
         }
 
         public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
-            return Fn.indexeed(action);
+            N.checkArgNotNull(action);
+
+            return new BiConsumer<U, T>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public void accept(U u, T t) {
+                    action.accept(u, idx.getAndIncrement(), t);
+                }
+            };
         }
     }
 
@@ -4200,7 +4215,16 @@ public final class Fn extends Comparators {
         }
 
         public static <T, R> Function<T, R> indexed(final IndexedFunction<T, R> func) {
-            return Fn.indexedd(func);
+            N.checkArgNotNull(func);
+
+            return new Function<T, R>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public R apply(T t) {
+                    return func.apply(idx.getAndIncrement(), t);
+                }
+            };
         }
 
         @SuppressWarnings("rawtypes")
@@ -4405,7 +4429,16 @@ public final class Fn extends Comparators {
         }
 
         public static <U, T, R> BiFunction<U, T, R> indexed(final IndexedBiFunction<U, T, R> func) {
-            return Fn.indexedd(func);
+            N.checkArgNotNull(func);
+
+            return new BiFunction<U, T, R>() {
+                private final MutableInt idx = new MutableInt(0);
+
+                @Override
+                public R apply(U u, T t) {
+                    return func.apply(u, idx.getAndIncrement(), t);
+                }
+            };
         }
     }
 

@@ -1404,7 +1404,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
     }
 
     @Override
-    public <C extends Collection<Long>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public <C extends Collection<Long>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
         final C c = supplier.apply(toIndex - fromIndex);

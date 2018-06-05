@@ -37,7 +37,6 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -1708,43 +1707,23 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                     a = (T[]) queue.toArray();
                 } else {
-                    final Comparator<Indexed<T>> pairCmp = new Comparator<Indexed<T>>() {
-                        @Override
-                        public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                            return comparator.compare(o1.value(), o2.value());
-                        }
-                    };
+                    final Queue<T> heap = new PriorityQueue<>(n, comparator);
 
-                    final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
-
-                    Indexed<T> pair = null;
-                    for (long i = 0; elements.hasNext(); i++) {
-                        pair = Indexed.of(elements.next(), i);
+                    T next = null;
+                    while (elements.hasNext()) {
+                        next = elements.next();
 
                         if (heap.size() >= n) {
-                            if (pairCmp.compare(pair, heap.peek()) > 0) {
+                            if (comparator.compare(next, heap.peek()) > 0) {
                                 heap.poll();
-                                heap.offer(pair);
+                                heap.offer(next);
                             }
                         } else {
-                            heap.offer(pair);
+                            heap.offer(next);
                         }
                     }
 
-                    final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
-
-                    N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
-                        @Override
-                        public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                            return N.compare(o1.longIndex(), o2.longIndex());
-                        }
-                    });
-
-                    a = (T[]) new Object[arrayOfPair.length];
-
-                    for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-                        a[i] = arrayOfPair[i].value();
-                    }
+                    a = (T[]) heap.toArray();
                 }
 
                 toIndex = a.length;
@@ -1968,8 +1947,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R extends Collection<T>> R toCollection(Supplier<R> supplier) {
-        final R result = supplier.get();
+    public <C extends Collection<T>> C toCollection(Supplier<? extends C> supplier) {
+        final C result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.next());

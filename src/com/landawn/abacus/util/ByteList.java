@@ -1376,7 +1376,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     @Override
-    public <C extends Collection<Byte>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<C> supplier) {
+    public <C extends Collection<Byte>> C toCollection(final int fromIndex, final int toIndex, final IntFunction<? extends C> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
         final C c = supplier.apply(toIndex - fromIndex);

@@ -49,7 +49,7 @@ abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
         return set;
     }
 
-    public <C extends Collection<T>> C toCollection(final Supplier<C> supplier) {
+    public <C extends Collection<T>> C toCollection(final Supplier<? extends C> supplier) {
         final C c = supplier.get();
 
         while (hasNext()) {
