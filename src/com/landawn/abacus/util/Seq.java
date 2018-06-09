@@ -1371,6 +1371,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param filter
+     * @param mapper
+     * @return
+     * @throws E
+     * @throws E2
+     */
     @Beta
     public <R, E extends Exception, E2 extends Exception> List<R> filterThenMap(final Try.Predicate<? super T, E> filter,
             final Try.Function<? super T, ? extends R, E2> mapper) throws E, E2 {
@@ -1392,6 +1401,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param filter
+     * @param mapper
+     * @return
+     * @throws E
+     * @throws E2
+     */
     @Beta
     public <R, E extends Exception, E2 extends Exception> List<R> filterThenFlatMap(final Try.Predicate<? super T, E> filter,
             final Try.Function<? super T, ? extends Collection<? extends R>, E2> mapper) throws E, E2 {
@@ -1419,6 +1437,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param mapper
+     * @param filter
+     * @return
+     * @throws E
+     * @throws E2
+     */
     @Beta
     public <R, E extends Exception, E2 extends Exception> List<R> mapThenFilter(final Try.Function<? super T, ? extends R, E> mapper,
             final Try.Predicate<? super R, E2> filter) throws E, E2 {
@@ -1443,6 +1470,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param mapper
+     * @param filter
+     * @return
+     * @throws E
+     * @throws E2
+     */
     @Beta
     public <R, E extends Exception, E2 extends Exception> List<R> flatMapThenFilter(final Try.Function<? super T, ? extends Collection<? extends R>, E> mapper,
             final Try.Predicate<? super R, E2> filter) throws E, E2 {

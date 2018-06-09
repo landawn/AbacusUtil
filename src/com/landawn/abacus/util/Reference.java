@@ -108,10 +108,31 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return value != null;
     }
 
+    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
+        if (isNotNull()) {
+            consumer.accept(value);
+        }
+    }
+
+    public <E extends Exception, E2 extends Exception> void ifNotNullOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        if (isNotNull()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
+        }
+    }
+
     public <E extends Exception> void accept(final Try.Consumer<? super T, E> action) throws E {
         action.accept(value);
     }
 
+    /**
+     * 
+     * @param action
+     * @throws E
+     * @deprecated replaced with {@code #ifNotNull(com.landawn.abacus.util.Try.Consumer)}.
+     */
+    @Deprecated
     public <E extends Exception> void acceptIfNotNull(final Try.Consumer<? super T, E> action) throws E {
         if (isNotNull()) {
             action.accept(value);
@@ -193,6 +214,24 @@ abstract class Reference<T, R extends Reference<T, R>> {
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * Returns a non-empty {@code Nullable} with the {@code value}.
+     * 
+     * @return
+     */
+    public Nullable<T> toNullable() {
+        return Nullable.of(value);
+    }
+
+    /**
+     * Returns an {@code Optional} with the {@code value} if {@code value} is not null, otherwise an empty {@code Optional} is returned.
+     * 
+     * @return
+     */
+    public Optional<T> toOptional() {
+        return Optional.ofNullable(value);
     }
 
     @Override

@@ -1127,7 +1127,7 @@ public final class f {
 
     public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <A, B, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b,
@@ -1187,8 +1187,8 @@ public final class f {
 
     public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), cls, a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), cls, a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, zipFunction);
     }
 
     private static <A, B, C, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
@@ -1390,7 +1390,22 @@ public final class f {
         }
     }
 
-    private static <T> int maxLen(T[][] a) {
+    public static <T> int minSubArrayLen(T[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static <T> int maxSubArrayLen(T[][] a) {
         if (a == null) {
             return 0;
         }
@@ -1689,7 +1704,7 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final boolean valueForNoneA, final boolean valueForNoneB,
             final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> boolean[][] zip(final int len, final int rowLen, final boolean[][] a, final boolean[][] b, final boolean valueForNoneA,
@@ -1739,8 +1754,8 @@ public final class f {
 
     public static <E extends Exception> boolean[][] zip(final boolean[][] a, final boolean[][] b, final boolean[][] c, final boolean valueForNoneA,
             final boolean valueForNoneB, final boolean valueForNoneC, final Try.BooleanTriFunction<Boolean, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> boolean[][] zip(final int len, final int rowLen, final boolean[][] a, final boolean[][] b, final boolean[][] c,
@@ -1980,7 +1995,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(boolean[][] a) {
+    public static int minSubArrayLen(boolean[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(boolean[][] a) {
         if (a == null) {
             return 0;
         }
@@ -2398,7 +2428,7 @@ public final class f {
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final char valueForNoneA, final char valueForNoneB,
             final Try.CharBiFunction<Character, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> char[][] zip(final int len, final int rowLen, final char[][] a, final char[][] b, final char valueForNoneA,
@@ -2448,8 +2478,8 @@ public final class f {
 
     public static <E extends Exception> char[][] zip(final char[][] a, final char[][] b, final char[][] c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final Try.CharTriFunction<Character, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> char[][] zip(final int len, final int rowLen, final char[][] a, final char[][] b, final char[][] c,
@@ -2687,7 +2717,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(char[][] a) {
+    public static int minSubArrayLen(char[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(char[][] a) {
         if (a == null) {
             return 0;
         }
@@ -3100,7 +3145,7 @@ public final class f {
     }
 
     public static byte[][] add(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
@@ -3148,7 +3193,8 @@ public final class f {
 
     public static byte[][] add(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
@@ -3348,7 +3394,7 @@ public final class f {
     }
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
@@ -3396,7 +3442,8 @@ public final class f {
 
     public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
@@ -3597,7 +3644,7 @@ public final class f {
     }
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA,
@@ -3646,7 +3693,8 @@ public final class f {
 
     public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
@@ -3847,7 +3895,7 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
@@ -3895,7 +3943,8 @@ public final class f {
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
@@ -4098,7 +4147,7 @@ public final class f {
     }
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB, final byte defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB,
@@ -4147,8 +4196,8 @@ public final class f {
 
     public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final byte defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
@@ -4354,7 +4403,7 @@ public final class f {
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB,
             final Try.ByteBiFunction<Byte, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> byte[][] zip(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA,
@@ -4404,8 +4453,8 @@ public final class f {
 
     public static <E extends Exception> byte[][] zip(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final Try.ByteTriFunction<Byte, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> byte[][] zip(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c,
@@ -4643,7 +4692,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(byte[][] a) {
+    public static int minSubArrayLen(byte[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(byte[][] a) {
         if (a == null) {
             return 0;
         }
@@ -5057,7 +5121,7 @@ public final class f {
     }
 
     public static short[][] add(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
@@ -5105,7 +5169,8 @@ public final class f {
 
     public static short[][] add(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
@@ -5305,7 +5370,7 @@ public final class f {
     }
 
     public static short[][] subtract(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
@@ -5354,7 +5419,8 @@ public final class f {
 
     public static short[][] subtract(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
@@ -5555,7 +5621,7 @@ public final class f {
     }
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
@@ -5604,7 +5670,8 @@ public final class f {
 
     public static short[][] multipliedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
@@ -5805,7 +5872,7 @@ public final class f {
     }
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
@@ -5854,7 +5921,8 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
@@ -6058,7 +6126,7 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB,
             final short defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
@@ -6107,8 +6175,8 @@ public final class f {
 
     public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final short defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
@@ -6315,7 +6383,7 @@ public final class f {
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB,
             final Try.ShortBiFunction<Short, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> short[][] zip(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
@@ -6365,8 +6433,8 @@ public final class f {
 
     public static <E extends Exception> short[][] zip(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
             final short valueForNoneB, final short valueForNoneC, final Try.ShortTriFunction<Short, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> short[][] zip(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c,
@@ -6604,7 +6672,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(short[][] a) {
+    public static int minSubArrayLen(short[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(short[][] a) {
         if (a == null) {
             return 0;
         }
@@ -7017,7 +7100,7 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
@@ -7064,7 +7147,8 @@ public final class f {
     }
 
     public static int[][] add(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
@@ -7263,7 +7347,7 @@ public final class f {
     }
 
     public static int[][] subtract(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
@@ -7311,7 +7395,8 @@ public final class f {
 
     public static int[][] subtract(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
@@ -7511,7 +7596,7 @@ public final class f {
     }
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
@@ -7559,7 +7644,8 @@ public final class f {
 
     public static int[][] multipliedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
@@ -7759,7 +7845,7 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
@@ -7807,7 +7893,8 @@ public final class f {
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
@@ -8010,7 +8097,7 @@ public final class f {
     }
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB,
@@ -8059,8 +8146,8 @@ public final class f {
 
     public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final int defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
@@ -8265,7 +8352,7 @@ public final class f {
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB,
             final Try.IntBiFunction<Integer, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> int[][] zip(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA,
@@ -8315,8 +8402,8 @@ public final class f {
 
     public static <E extends Exception> int[][] zip(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final Try.IntTriFunction<Integer, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> int[][] zip(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c,
@@ -8554,7 +8641,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(int[][] a) {
+    public static int minSubArrayLen(int[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(int[][] a) {
         if (a == null) {
             return 0;
         }
@@ -8967,7 +9069,7 @@ public final class f {
     }
 
     public static long[][] add(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
@@ -9015,7 +9117,8 @@ public final class f {
 
     public static long[][] add(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
@@ -9215,7 +9318,7 @@ public final class f {
     }
 
     public static long[][] subtract(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
@@ -9263,7 +9366,8 @@ public final class f {
 
     public static long[][] subtract(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
@@ -9464,7 +9568,7 @@ public final class f {
     }
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA,
@@ -9513,7 +9617,8 @@ public final class f {
 
     public static long[][] multipliedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
@@ -9714,7 +9819,7 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
@@ -9762,7 +9867,8 @@ public final class f {
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
@@ -9965,7 +10071,7 @@ public final class f {
     }
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB, final long defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB,
@@ -10014,8 +10120,8 @@ public final class f {
 
     public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final long defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
@@ -10221,7 +10327,7 @@ public final class f {
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB,
             final Try.LongBiFunction<Long, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> long[][] zip(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA,
@@ -10271,8 +10377,8 @@ public final class f {
 
     public static <E extends Exception> long[][] zip(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final Try.LongTriFunction<Long, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> long[][] zip(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c,
@@ -10510,7 +10616,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(long[][] a) {
+    public static int minSubArrayLen(long[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(long[][] a) {
         if (a == null) {
             return 0;
         }
@@ -10924,7 +11045,7 @@ public final class f {
     }
 
     public static float[][] add(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
@@ -10972,7 +11093,8 @@ public final class f {
 
     public static float[][] add(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
@@ -11172,7 +11294,7 @@ public final class f {
     }
 
     public static float[][] subtract(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
@@ -11221,7 +11343,8 @@ public final class f {
 
     public static float[][] subtract(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
@@ -11422,7 +11545,7 @@ public final class f {
     }
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
@@ -11471,7 +11594,8 @@ public final class f {
 
     public static float[][] multipliedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
@@ -11672,7 +11796,7 @@ public final class f {
     }
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
@@ -11721,7 +11845,8 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
@@ -11925,7 +12050,7 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB,
             final float defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
@@ -11974,8 +12099,8 @@ public final class f {
 
     public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final float defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
@@ -12182,7 +12307,7 @@ public final class f {
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB,
             final Try.FloatBiFunction<Float, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> float[][] zip(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
@@ -12232,8 +12357,8 @@ public final class f {
 
     public static <E extends Exception> float[][] zip(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
             final float valueForNoneB, final float valueForNoneC, final Try.FloatTriFunction<Float, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> float[][] zip(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c,
@@ -12471,7 +12596,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(float[][] a) {
+    public static int minSubArrayLen(float[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(float[][] a) {
         if (a == null) {
             return 0;
         }
@@ -12885,7 +13025,7 @@ public final class f {
     }
 
     public static double[][] add(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return add(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return add(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -12934,7 +13074,8 @@ public final class f {
 
     public static double[][] add(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return add(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
@@ -13134,7 +13275,7 @@ public final class f {
     }
 
     public static double[][] subtract(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return subtract(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return subtract(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -13183,7 +13324,8 @@ public final class f {
 
     public static double[][] subtract(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return subtract(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
@@ -13384,7 +13526,7 @@ public final class f {
     }
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return multipliedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -13433,7 +13575,8 @@ public final class f {
 
     public static double[][] multipliedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return multipliedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c,
@@ -13634,7 +13777,7 @@ public final class f {
     }
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -13683,7 +13826,8 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
@@ -13888,7 +14032,7 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB,
             final double defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -13937,8 +14081,8 @@ public final class f {
 
     public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final double defaultValueForZero) {
-        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                defaultValueForZero);
+        return dividedBy(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA,
+                valueForNoneB, valueForNoneC, defaultValueForZero);
     }
 
     private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
@@ -14145,7 +14289,7 @@ public final class f {
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB,
             final Try.DoubleBiFunction<Double, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     private static <E extends Exception> double[][] zip(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
@@ -14195,8 +14339,8 @@ public final class f {
 
     public static <E extends Exception> double[][] zip(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final Try.DoubleTriFunction<Double, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), a, b, c, valueForNoneA, valueForNoneB,
+                valueForNoneC, zipFunction);
     }
 
     private static <E extends Exception> double[][] zip(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c,
@@ -14435,7 +14579,22 @@ public final class f {
         }
     }
 
-    private static int maxLen(double[][] a) {
+    public static int minSubArrayLen(double[][] a) {
+        if (a == null) {
+            return 0;
+        }
+
+        final int len = a.length;
+        int minLen = 0;
+
+        for (int i = 0; i < len; i++) {
+            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+        }
+
+        return minLen;
+    }
+
+    public static int maxSubArrayLen(double[][] a) {
         if (a == null) {
             return 0;
         }

@@ -2992,6 +2992,38 @@ public abstract class Stream<T>
         return of(iter);
     }
 
+    public static <T> Stream<T> ofKeys(Map<T, ?> map) {
+        if (map == null || map.size() == 0) {
+            return Stream.empty();
+        }
+
+        return of(map.keySet());
+    }
+
+    public static <T, V> Stream<T> ofKeys(Map<T, V> map, Predicate<? super V> valueFilter) {
+        if (map == null || map.size() == 0) {
+            return StreamEx.empty();
+        }
+
+        return EntryStream.of(map).filterByValue(valueFilter).keys();
+    }
+
+    public static <T> Stream<T> ofValues(Map<?, T> map) {
+        if (map == null || map.size() == 0) {
+            return Stream.empty();
+        }
+
+        return of(map.values());
+    }
+
+    public static <K, T> Stream<T> ofValues(Map<K, T> map, Predicate<? super K> keyFilter) {
+        if (map == null || map.size() == 0) {
+            return Stream.empty();
+        }
+
+        return EntryStream.of(map).filterByKey(keyFilter).values();
+    }
+
     public static <T> Stream<T> repeat(final T element, final long n) {
         N.checkArgNotNegative(n, "n");
 

@@ -180,6 +180,29 @@ public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, 
 
     public abstract PL flatten();
 
+    /**
+     * <pre>
+     * <code>
+     * for (int i = 0; i < rows; i++) {
+     *      for (int j = 0; j < cols; j++) {
+     *          action.accept(i, j);
+     *      }
+     *  }
+     * </code>
+     * </pre>
+     * 
+     * 
+     * @param action
+     * @throws E
+     */
+    public <E extends Exception> void forEach(Try.IntBiConsumer<E> action) throws E {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                action.accept(i, j);
+            }
+        }
+    }
+
     public Stream<IntPair> pointsLU2RD() {
         N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 

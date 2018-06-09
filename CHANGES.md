@@ -1,5 +1,9 @@
 ### 1.2.14
 
+* Add `Stream.ofKeys/ofValues(Map)`.
+
+* Add `Matrix.forEach(Try.IntBiConsumer<E>)`.
+
 * Improvements and bug fix.
 
 
