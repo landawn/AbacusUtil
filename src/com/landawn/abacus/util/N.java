@@ -5238,6 +5238,12 @@ public final class N {
         }
     }
 
+    public static <E extends Exception> void checkArgument(boolean b, Try.Supplier<String, E> errorMessageSupplier) throws E {
+        if (!b) {
+            throw new IllegalArgumentException(errorMessageSupplier.get());
+        }
+    }
+
     /**
      *
      * @param obj
@@ -5767,6 +5773,12 @@ public final class N {
     public static void checkState(boolean b, String errorMessageTemplate, Object p1, Object p2, Object p3) {
         if (!b) {
             throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    public static <E extends Exception> void checkState(boolean b, Try.Supplier<String, E> errorMessageSupplier) throws E {
+        if (!b) {
+            throw new IllegalStateException(errorMessageSupplier.get());
         }
     }
 

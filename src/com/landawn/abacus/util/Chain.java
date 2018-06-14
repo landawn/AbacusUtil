@@ -54,6 +54,18 @@ public final class Chain {
     }
 
     /**
+     * 
+     * @param left
+     * @param right
+     * @param func
+     * @return
+     * @throws E
+     */
+    public static <T, E extends Exception> ComparisonChain compare(T left, T right, Try.BiFunction<? super T, ? super T, Integer, E> func) throws E {
+        return new ComparisonChain().compare(left, right, func);
+    }
+
+    /**
      * Compares two {@code int} values as specified by {@link N#compare},
      * <i>if</i> the result of this comparison chain has not already been
      * determined.
@@ -145,6 +157,10 @@ public final class Chain {
         return new EquivalenceChain().equals(left, right);
     }
 
+    public static <T, E extends Exception> EquivalenceChain equals(T left, T right, Try.BiFunction<? super T, ? super T, Boolean, E> func) throws E {
+        return new EquivalenceChain().equals(left, right, func);
+    }
+
     /**
      * Compares two {@code int} values as specified by {@code left == right},
      * <i>if</i> the result of this equivalence chain has not already been
@@ -218,6 +234,10 @@ public final class Chain {
      */
     public static HashCodeChain hash(Object value) {
         return new HashCodeChain().hash(value);
+    }
+
+    public static <T, E extends Exception> HashCodeChain hash(T value, Try.ToIntFunction<? super T, E> func) throws E {
+        return new HashCodeChain().hash(value, func);
     }
 
     /**
@@ -305,6 +325,16 @@ public final class Chain {
         public <T> ComparisonChain compare(T left, T right, Comparator<T> comparator) {
             if (result == 0) {
                 result = N.compare(left, right, comparator);
+            }
+
+            return this;
+        }
+
+        public <T, E extends Exception> ComparisonChain compare(T left, T right, Try.BiFunction<? super T, ? super T, Integer, E> func) throws E {
+            N.checkArgNotNull(func, "func");
+
+            if (result == 0) {
+                result = func.apply(left, right);
             }
 
             return this;
@@ -441,6 +471,16 @@ public final class Chain {
             return this;
         }
 
+        public <T, E extends Exception> EquivalenceChain equals(T left, T right, Try.BiFunction<? super T, ? super T, Boolean, E> func) throws E {
+            N.checkArgNotNull(func, "func");
+
+            if (result) {
+                result = func.apply(left, right);
+            }
+
+            return this;
+        }
+
         /**
          * Compares two {@code int} values as specified by {@code left == right},
          * <i>if</i> the result of this equivalence chain has not already been
@@ -546,6 +586,14 @@ public final class Chain {
          */
         public HashCodeChain hash(Object value) {
             result = result * 31 + N.hashCode(value);
+
+            return this;
+        }
+
+        public <T, E extends Exception> HashCodeChain hash(T value, Try.ToIntFunction<? super T, E> func) throws E {
+            N.checkArgNotNull(func, "func");
+
+            result = result * 31 + func.applyAsInt(value);
 
             return this;
         }
