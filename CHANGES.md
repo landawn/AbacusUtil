@@ -4,6 +4,10 @@
 
 * Add `Matrix.forEach(Try.IntBiConsumer<E>)`.
 
+* Add `SQLExecutor/Mapper.queryForList`.
+
+* Add `Mapper.update(entity, updateNames)`.
+
 * Improvements and bug fix.
 
 

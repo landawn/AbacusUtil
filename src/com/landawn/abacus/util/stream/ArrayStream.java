@@ -2015,11 +2015,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> top(int n) {
-        return top(n, NATURAL_COMPARATOR);
-    }
-
-    @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
@@ -2033,7 +2028,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             private boolean initialized = false;
             private T[] aar;
             private int cursor = 0;
-            private int len;
+            private int toIndex;
 
             @Override
             public boolean hasNext() {
@@ -2041,7 +2036,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                return cursor < len;
+                return cursor < toIndex;
             }
 
             @Override
@@ -2050,7 +2045,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                if (cursor >= len) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -2063,7 +2058,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                return len - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -2072,7 +2067,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                cursor = n > len - cursor ? len : cursor + (int) n;
+                cursor = n > toIndex - cursor ? toIndex : cursor + (int) n;
             }
 
             @Override
@@ -2081,7 +2076,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                a = a.length >= (len - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (len - cursor));
+                a = a.length >= (toIndex - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (toIndex - cursor));
 
                 N.copy(aar, cursor, a, 0, toIndex - cursor);
 
@@ -2092,7 +2087,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 if (initialized == false) {
                     initialized = true;
                     aar = (T[]) N.top(elements, fromIndex, toIndex, n, comparator).toArray();
-                    len = aar.length;
+                    toIndex = aar.length;
                 }
             }
         }, false, null);
@@ -2440,7 +2435,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<>(elements, fromIndex + 1, toIndex, sorted, cmp, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted, cmp);
     }
 
     @Override
@@ -2449,7 +2444,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<>(elements, fromIndex, toIndex - 1, sorted, cmp, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted, cmp);
     }
 
     @Override
@@ -2465,7 +2460,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, closeHandlers);
+        return newStream(elements, toIndex - n, toIndex, sorted, cmp);
     }
 
     @Override
@@ -2476,7 +2471,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<>(elements, fromIndex, N.max(fromIndex, toIndex - n), sorted, cmp, closeHandlers);
+        return newStream(elements, fromIndex, N.max(fromIndex, toIndex - n), sorted, cmp);
     }
 
     @Override

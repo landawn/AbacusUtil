@@ -890,6 +890,48 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
+    public final <T> CompletableFuture<List<T>> queryForList(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.queryForList(sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> queryForList(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.queryForList(sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> queryForList(final Connection conn, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.queryForList(conn, sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> queryForList(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.queryForList(conn, sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
     public final CompletableFuture<DataSet> query(final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override

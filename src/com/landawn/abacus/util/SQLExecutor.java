@@ -209,6 +209,27 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
+    static final ResultSetExtractor<List<Object>> LIST_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<List<Object>>() {
+        @Override
+        public List<Object> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            N.checkArgument(rs.getMetaData().getColumnCount() == 1, "Multiple columns selected in sql %s", namedSQL.getPureSQL());
+
+            long offset = jdbcSettings.getOffset();
+            long count = jdbcSettings.getCount();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            final List<Object> result = new ArrayList<>((int) N.min(count, 16));
+
+            while (count-- > 0 && rs.next()) {
+                result.add(rs.getObject(1));
+            }
+
+            return result;
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final ResultSetExtractor ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<Object>() {
         @SuppressWarnings("deprecation")
@@ -1821,6 +1842,65 @@ public final class SQLExecutor implements Closeable {
         final T result = (T) query(targetClass, conn, sql, statementSetter, ENTITY_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
         return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
+    }
+
+    /**
+     * Query single column.
+     * 
+     * @param sql
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final <T> List<T> queryForList(final String sql, final Object... parameters) {
+        return queryForList(sql, null, null, parameters);
+    }
+
+    /**
+     * Query single column.
+     * 
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final <T> List<T> queryForList(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return queryForList(null, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    /**
+     * Query single column.
+     * 
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object... parameters) {
+        return queryForList(conn, sql, null, null, parameters);
+    }
+
+    /**
+     * Query single column.
+     * 
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @throws ClassCastException
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SafeVarargs
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        final List<Object> result = query(conn, sql, statementSetter, LIST_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
+
+        return (List) result;
     }
 
     @SafeVarargs
@@ -3688,6 +3768,24 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.queryForEntity(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
+        public <E> List<E> queryForList(final String propName, final Condition whereCause) {
+            return queryForList(propName, whereCause, null);
+        }
+
+        public <E> List<E> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return queryForList(null, propName, whereCause, jdbcSettings);
+        }
+
+        public <E> List<E> queryForList(final Connection conn, final String propName, final Condition whereCause) {
+            return queryForList(conn, propName, whereCause, null);
+        }
+
+        public <E> List<E> queryForList(final Connection conn, final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause);
+
+            return sqlExecutor.queryForList(conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
         public Try<Stream<T>> stream(final Condition whereCause) {
             return stream(null, whereCause);
         }
@@ -4039,28 +4137,34 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object entity) {
-            return update(null, entity);
+            return update(entity, (Collection<String>) null);
+        }
+
+        public int update(final Object entity, final Collection<String> updatePropNames) {
+            return update((Connection) null, entity, updatePropNames);
         }
 
         public int update(final Object id, final Map<String, Object> props) {
-            N.checkArgNotNull(id);
-
-            return update(props, L.eq(idName, id));
+            return update((Connection) null, id, props);
         }
 
         public int update(final Map<String, Object> props, final Condition whereCause) {
-            return update(null, props, whereCause);
+            return update((Connection) null, props, whereCause);
+        }
+
+        public int update(final Connection conn, final Object entity) {
+            return update(conn, entity, (Collection<String>) null);
         }
 
         @SuppressWarnings("deprecation")
-        public int update(final Connection conn, final Object entity) {
+        public int update(final Connection conn, final Object entity, final Collection<String> updatePropNames) {
             N.checkArgNotNull(entity);
 
-            if (entity instanceof DirtyMarker && !((DirtyMarker) entity).isDirty()) {
+            if (updatePropNames == null && entity instanceof DirtyMarker && !((DirtyMarker) entity).isDirty()) {
                 return 0;
             }
 
-            final SP pair = prepareUpdate(entity);
+            final SP pair = prepareUpdate(entity, updatePropNames);
 
             final int updateCount = sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
 
@@ -4096,19 +4200,27 @@ public final class SQLExecutor implements Closeable {
          * @param entities
          * @return
          */
-
         public int updateAll(final Collection<?> entities) {
-            return updateAll(entities, IsolationLevel.DEFAULT);
+            return updateAll(entities, (Collection<String>) null);
+        }
+
+        public int updateAll(final Collection<?> entities, final Collection<String> updatePropNames) {
+            return updateAll(entities, updatePropNames, IsolationLevel.DEFAULT);
+        }
+
+        public int updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            return updateAll(entities, (Collection<String>) null, isolationLevel);
         }
 
         /**
          * Update All the records one by one in transaction.
          * 
          * @param entities
+         * @param updatePropNames
          * @param isolationLevel
          * @return
          */
-        public int updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+        public int updateAll(final Collection<?> entities, final Collection<String> updatePropNames, final IsolationLevel isolationLevel) {
             if (N.isNullOrEmpty(entities)) {
                 return 0;
             }
@@ -4120,7 +4232,7 @@ public final class SQLExecutor implements Closeable {
 
             try {
                 for (Object entity : entities) {
-                    result += update(conn, entity);
+                    result += update(conn, entity, updatePropNames);
                 }
 
                 isOk = true;
@@ -4137,26 +4249,31 @@ public final class SQLExecutor implements Closeable {
             return result;
         }
 
+        public int updateAll(final Connection conn, final Collection<?> entities) {
+            return updateAll(conn, entities, (Collection<String>) null);
+        }
+
         /**
          * Update All the records one by one with specified {@code Connection}.
          * 
          * @param conn
          * @param entities
+         * @param updatePropNames
          * @return
          */
-        public int updateAll(final Connection conn, final Collection<?> entities) {
+        public int updateAll(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
             if (N.isNullOrEmpty(entities)) {
                 return 0;
             }
 
             if (conn == null) {
-                return updateAll(entities);
+                return updateAll(entities, updatePropNames);
             }
 
             int result = 0;
 
             for (Object entity : entities) {
-                result += update(conn, entity);
+                result += update(conn, entity, updatePropNames);
             }
 
             return result;
@@ -4169,40 +4286,69 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int batchUpdate(final Collection<?> entities) {
-            return batchUpdate(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+            return batchUpdate(entities, (Collection<String>) null);
+        }
+
+        /**
+         * 
+         * @param entities
+         * @param updatePropNames
+         * @return
+         */
+        public int batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames) {
+            return batchUpdate(entities, updatePropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        public int batchUpdate(final Collection<?> entities, final int batchSize) {
+            return batchUpdate(entities, (Collection<String>) null, batchSize);
         }
 
         /**
          * Update All the records by batch operation.
          * 
          * @param entities which must have the same updated properties set.
+         * @param updatePropNames
          * @param batchSize Default value is 200.
          * @return
          */
-        public int batchUpdate(final Collection<?> entities, final int batchSize) {
-            return batchUpdate(entities, batchSize, IsolationLevel.DEFAULT);
+        public int batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize) {
+            return batchUpdate(entities, updatePropNames, batchSize, IsolationLevel.DEFAULT);
         }
 
         public int batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            return batchUpdate(null, entities, batchSize, isolationLevel);
+            return batchUpdate(entities, (Collection<String>) null, batchSize, isolationLevel);
+        }
+
+        public int batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize,
+                final IsolationLevel isolationLevel) {
+            return batchUpdate((Connection) null, entities, updatePropNames, batchSize, isolationLevel);
         }
 
         public int batchUpdate(final Connection conn, final Collection<?> entities) {
-            return batchUpdate(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+            return batchUpdate(conn, entities, (Collection<String>) null);
+        }
+
+        public int batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
+            return batchUpdate(conn, entities, updatePropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
         public int batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize) {
-            return batchUpdate(conn, entities, batchSize, IsolationLevel.DEFAULT);
+            return batchUpdate(conn, entities, (Collection<String>) null, batchSize);
         }
 
-        private int batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public int batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize) {
+            return batchUpdate(conn, entities, updatePropNames, batchSize, IsolationLevel.DEFAULT);
+        }
+
+        private int batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize,
+                final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
 
             if (N.isNullOrEmpty(entities)) {
                 return 0;
             }
 
-            final SP pair = prepareUpdate(entities.iterator().next());
+            final SP pair = prepareUpdate(entities.iterator().next(), updatePropNames);
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
@@ -4218,28 +4364,26 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SuppressWarnings("deprecation")
-        private SP prepareUpdate(final Object entity) {
+        private SP prepareUpdate(final Object entity, final Collection<String> updatePropNames) {
             checkEntity(entity);
 
             final boolean isDirtyMarkerEntity = entity instanceof DirtyMarker;
             final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
 
-            Map<String, Object> props = null;
+            Collection<String> updatingpropNames = updatePropNames;
 
-            if (isDirtyMarkerEntity) {
-                final Set<String> dirtyPropNames = ((DirtyMarker) entity).dirtyPropNames();
-                props = N.newHashMap(N.initHashCapacity(dirtyPropNames.size()));
-
-                for (String propName : dirtyPropNames) {
-                    props.put(propName, ClassUtil.getPropValue(entity, propName));
+            if (updatingpropNames == null) {
+                if (isDirtyMarkerEntity) {
+                    updatingpropNames = ((DirtyMarker) entity).dirtyPropNames();
+                } else {
+                    updatingpropNames = SQLBuilder.getPropNamesByClass(entity.getClass(), false, nonUpdatablePropNames);
                 }
-            } else {
-                final Collection<String> propNames = SQLBuilder.getPropNamesByClass(entity.getClass(), false, nonUpdatablePropNames);
-                props = N.newHashMap(N.initHashCapacity(propNames.size()));
+            }
 
-                for (String propName : propNames) {
-                    props.put(propName, ClassUtil.getPropValue(entity, propName));
-                }
+            final Map<String, Object> props = N.newHashMap(N.initHashCapacity(updatingpropNames.size()));
+
+            for (String propName : updatingpropNames) {
+                props.put(propName, ClassUtil.getPropValue(entity, propName));
             }
 
             final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);
@@ -4985,6 +5129,43 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public <E> CompletableFuture<List<E>> queryForList(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.queryForList(propName, whereCause);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.queryForList(propName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.queryForList(conn, propName, whereCause);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.queryForList(conn, propName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
         public CompletableFuture<Try<Stream<T>>> stream(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
@@ -5167,6 +5348,15 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Integer> update(final Object entity, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.update(entity, updatePropNames);
+                }
+            });
+        }
+
         public CompletableFuture<Integer> update(final Object id, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -5190,6 +5380,15 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.update(conn, entity);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> update(final Connection conn, final Object entity, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.update(conn, entity, updatePropNames);
                 }
             });
         }
@@ -5221,11 +5420,30 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.updateAll(entities, updatePropNames);
+                }
+            });
+        }
+
         public CompletableFuture<Integer> updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.updateAll(entities, isolationLevel);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames,
+                final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.updateAll(entities, updatePropNames, isolationLevel);
                 }
             });
         }
@@ -5239,11 +5457,29 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Integer> updateAll(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.updateAll(conn, entities, updatePropNames);
+                }
+            });
+        }
+
         public CompletableFuture<Integer> batchUpdate(final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.batchUpdate(entities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(entities, updatePropNames);
                 }
             });
         }
@@ -5257,11 +5493,30 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(entities, updatePropNames, batchSize);
+                }
+            });
+        }
+
         public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.batchUpdate(entities, batchSize, isolationLevel);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize,
+                final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(entities, updatePropNames, batchSize, isolationLevel);
                 }
             });
         }
@@ -5275,11 +5530,30 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(conn, entities, updatePropNames);
+                }
+            });
+        }
+
         public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.batchUpdate(conn, entities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames,
+                final int batchSize) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(conn, entities, updatePropNames, batchSize);
                 }
             });
         }

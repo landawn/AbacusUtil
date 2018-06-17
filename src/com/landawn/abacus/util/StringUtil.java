@@ -4118,7 +4118,7 @@ public abstract class StringUtil {
      * @return the index where cs1 and cs2 begin to differ; -1 if they are equal
      */
     public static int indexOfDifference(final String a, final String b) {
-        if (a == b || (N.isNullOrEmpty(a) && N.isNullOrEmpty(b))) {
+        if (N.equals(a, b) || (N.isNullOrEmpty(a) && N.isNullOrEmpty(b))) {
             return N.INDEX_NOT_FOUND;
         }
 

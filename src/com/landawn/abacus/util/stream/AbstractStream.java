@@ -2029,6 +2029,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> top(int n) {
+        return top(n, NATURAL_COMPARATOR);
+    }
+
+    @Override
     public Optional<Map<Percentage, T>> percentiles() {
         final Object[] a = sorted().toArray();
 

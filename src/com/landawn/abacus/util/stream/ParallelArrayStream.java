@@ -3510,46 +3510,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> last(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (toIndex - fromIndex <= n) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> skipLast(int n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex, N.max(fromIndex, toIndex - n), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public Nullable<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
             return Nullable.empty();

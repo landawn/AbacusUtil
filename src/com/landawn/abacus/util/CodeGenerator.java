@@ -3424,7 +3424,7 @@ public final class CodeGenerator {
             throws IOException {
         boolean isSerializable = isSerializable(extendedClass, implementedInterfaces);
 
-        if (isSerializable || entityMode == EntityMode.EXTEND_DIRTY_MARKER) {
+        if (isSerializable) {
             writeSerialVersionUID(entityDef, headSpace, fileWrite);
         }
 

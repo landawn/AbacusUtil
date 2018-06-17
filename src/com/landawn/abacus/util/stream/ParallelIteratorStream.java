@@ -14,14 +14,11 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -2394,107 +2391,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         }
 
         return finisher.apply(container == NONE ? supplier.get() : container);
-    }
-
-    @Override
-    public Nullable<T> head() {
-        if (tail == null) {
-            head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
-            tail = new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public Stream<T> tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
-            tail = new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public Stream<T> headd() {
-        if (head2 == null) {
-            final Object[] a = this.toArray();
-            head2 = new ParallelArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public Nullable<T> taill() {
-        if (head2 == null) {
-            final Object[] a = this.toArray();
-            head2 = new ParallelArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public Stream<T> last(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return new ParallelIteratorStream<>(ObjIteratorEx.EMPTY, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-
-        final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
-
-        while (elements.hasNext()) {
-            if (dqueue.size() >= n) {
-                dqueue.pollFirst();
-            }
-
-            dqueue.offerLast(elements.next());
-        }
-
-        return new ParallelIteratorStream<>(dqueue.iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> skipLast(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        return new ParallelIteratorStream<>(new ObjIteratorEx<T>() {
-            private Deque<T> dqueue = null;
-
-            @Override
-            public boolean hasNext() {
-                if (dqueue == null) {
-                    dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
-
-                    while (dqueue.size() < n && elements.hasNext()) {
-                        dqueue.offerLast(elements.next());
-                    }
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                dqueue.offerLast(elements.next());
-
-                return dqueue.pollFirst();
-            }
-
-        }, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

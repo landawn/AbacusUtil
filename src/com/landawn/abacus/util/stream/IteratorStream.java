@@ -1627,11 +1627,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> top(int n) {
-        return top(n, NATURAL_COMPARATOR);
-    }
-
-    @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
@@ -2129,7 +2124,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Nullable<T> head() {
         if (head == null) {
             head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
-            tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
+            tail = newStream(elements, sorted, cmp);
         }
 
         return head;
@@ -2139,7 +2134,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> tail() {
         if (tail == null) {
             head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
-            tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
+            tail = newStream(elements, sorted, cmp);
         }
 
         return tail;
@@ -2149,7 +2144,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> headd() {
         if (head2 == null) {
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
+            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
             tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
         }
 
@@ -2160,7 +2155,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Nullable<T> taill() {
         if (tail2 == null) {
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
+            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
             tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
         }
 
@@ -2185,7 +2180,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             dqueue.offerLast(elements.next());
         }
 
-        return new IteratorStream<>(dqueue.iterator(), sorted, cmp, closeHandlers);
+        return newStream(dqueue.iterator(), sorted, cmp);
     }
 
     @Override

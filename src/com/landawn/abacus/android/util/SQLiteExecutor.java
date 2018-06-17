@@ -1810,16 +1810,16 @@ public final class SQLiteExecutor {
     @SuppressWarnings("rawtypes")
     public DataSet query(String table, Map<String, Class> selectColumnNameTypeMap, Condition whereClause, String groupBy, String having, String orderBy,
             int offset, int count) {
-        final String[] selectColumnNames = selectColumnNameTypeMap == null ? null : new String[selectColumnNameTypeMap.size()];
-        final Class[] selectColumnTypes = selectColumnNameTypeMap == null ? null : new Class[selectColumnNameTypeMap.size()];
+        N.checkArgNotNullOrEmpty(selectColumnNameTypeMap, "selectColumnNameTypeMap");
 
-        if (N.notNullOrEmpty(selectColumnNameTypeMap)) {
-            int i = 0;
-            for (Map.Entry<String, Class> entry : selectColumnNameTypeMap.entrySet()) {
-                selectColumnNames[i] = entry.getKey();
-                selectColumnTypes[i] = entry.getValue();
-                i++;
-            }
+        final String[] selectColumnNames = new String[selectColumnNameTypeMap.size()];
+        final Class[] selectColumnTypes = new Class[selectColumnNameTypeMap.size()];
+
+        int i = 0;
+        for (Map.Entry<String, Class> entry : selectColumnNameTypeMap.entrySet()) {
+            selectColumnNames[i] = entry.getKey();
+            selectColumnTypes[i] = entry.getValue();
+            i++;
         }
 
         return this.query(table, selectColumnNames, selectColumnTypes, whereClause, groupBy, having, orderBy, offset, count);
