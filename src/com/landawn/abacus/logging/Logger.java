@@ -87,6 +87,12 @@ public interface Logger {
      */
     public void trace(String msg);
 
+    public void trace(String template, Object arg);
+
+    public void trace(String template, Object arg1, Object arg2);
+
+    public void trace(String template, Object arg1, Object arg2, Object arg3);
+
     /**
      * Log a message at the TRACE level according to the specified format and arguments.
      * 
@@ -94,14 +100,16 @@ public interface Logger {
      * This form avoids superfluous object creation when the logger is disabled for the TRACE level.
      * </p>
      * 
-     * @param format
-     *            the format string
+     * @param template
+     *            the template string
      * @param args
      *            an array of arguments
      * 
      * @since 1.4
+     * @deprecated {@link #trace(Supplier)} is recommended
      */
-    public void trace(String format, Object... args);
+    @Deprecated
+    public void trace(String template, Object... args);
 
     /**
      * Log an exception (throwable) at the TRACE level with an accompanying message.
@@ -115,9 +123,26 @@ public interface Logger {
      */
     public void trace(String msg, Throwable t);
 
+    public void trace(Throwable t, String msg);
+
+    public void trace(Throwable t, String template, Object arg);
+
+    public void trace(Throwable t, String template, Object arg1, Object arg2);
+
+    public void trace(Throwable t, String template, Object arg1, Object arg2, Object arg3);
+
     public void trace(Supplier<String> supplier);
 
+    /**
+     * 
+     * @param supplier
+     * @param t
+     * @deprecated replaced by {@link #trace(Throwable, Supplier)}
+     */
+    @Deprecated
     public void trace(Supplier<String> supplier, Throwable t);
+
+    public void trace(Throwable t, Supplier<String> supplier);
 
     /**
      * Is the logger instance enabled for the DEBUG level?
@@ -132,22 +157,33 @@ public interface Logger {
      * 
      * @param msg
      *            the message string to be logged
+     * @since 1.4
      */
     public void debug(String msg);
+
+    public void debug(String template, Object arg);
+
+    public void debug(String template, Object arg1, Object arg2);
+
+    public void debug(String template, Object arg1, Object arg2, Object arg3);
 
     /**
      * Log a message at the DEBUG level according to the specified format and arguments.
      * 
      * <p>
-     * This form avoids superfluous object creation when the logger is disabled for the DEBUG level.
+     * This form avoids superfluous object creation when the logger is disabled for the      level.
      * </p>
      * 
-     * @param format
-     *            the format string
+     * @param template
+     *            the template string
      * @param args
      *            an array of arguments
+     * 
+     * @since 1.4
+     * @deprecated {@link #debug(Supplier)} is recommended
      */
-    public void debug(String format, Object... args);
+    @Deprecated
+    public void debug(String template, Object... args);
 
     /**
      * Log an exception (throwable) at the DEBUG level with an accompanying message.
@@ -156,12 +192,31 @@ public interface Logger {
      *            the message accompanying the exception
      * @param t
      *            the exception (throwable) to log
+     * 
+     * @since 1.4
      */
     public void debug(String msg, Throwable t);
 
+    public void debug(Throwable t, String msg);
+
+    public void debug(Throwable t, String template, Object arg);
+
+    public void debug(Throwable t, String template, Object arg1, Object arg2);
+
+    public void debug(Throwable t, String template, Object arg1, Object arg2, Object arg3);
+
     public void debug(Supplier<String> supplier);
 
+    /**
+     * 
+     * @param supplier
+     * @param t
+     * @deprecated replaced by {@link #debug(Throwable, Supplier)}
+     */
+    @Deprecated
     public void debug(Supplier<String> supplier, Throwable t);
+
+    public void debug(Throwable t, Supplier<String> supplier);
 
     /**
      * Is the logger instance enabled for the INFO level?
@@ -175,8 +230,15 @@ public interface Logger {
      * 
      * @param msg
      *            the message string to be logged
+     * @since 1.4
      */
     public void info(String msg);
+
+    public void info(String template, Object arg);
+
+    public void info(String template, Object arg1, Object arg2);
+
+    public void info(String template, Object arg1, Object arg2, Object arg3);
 
     /**
      * Log a message at the INFO level according to the specified format and arguments.
@@ -185,12 +247,16 @@ public interface Logger {
      * This form avoids superfluous object creation when the logger is disabled for the INFO level.
      * </p>
      * 
-     * @param format
-     *            the format string
+     * @param template
+     *            the template string
      * @param args
      *            an array of arguments
+     * 
+     * @since 1.4
+     * @deprecated {@link #info(Supplier)} is recommended
      */
-    public void info(String format, Object... args);
+    @Deprecated
+    public void info(String template, Object... args);
 
     /**
      * Log an exception (throwable) at the INFO level with an accompanying message.
@@ -199,12 +265,31 @@ public interface Logger {
      *            the message accompanying the exception
      * @param t
      *            the exception (throwable) to log
+     * 
+     * @since 1.4
      */
     public void info(String msg, Throwable t);
 
+    public void info(Throwable t, String msg);
+
+    public void info(Throwable t, String template, Object arg);
+
+    public void info(Throwable t, String template, Object arg1, Object arg2);
+
+    public void info(Throwable t, String template, Object arg1, Object arg2, Object arg3);
+
     public void info(Supplier<String> supplier);
 
+    /**
+     * 
+     * @param supplier
+     * @param t
+     * @deprecated replaced by {@link #info(Throwable, Supplier)}
+     */
+    @Deprecated
     public void info(Supplier<String> supplier, Throwable t);
+
+    public void info(Throwable t, Supplier<String> supplier);
 
     /**
      * Is the logger instance enabled for the WARN level?
@@ -214,40 +299,70 @@ public interface Logger {
     public boolean isWarnEnabled();
 
     /**
-     * Log a message at the WARN level.
+     * Log a message at the WARNING level.
      * 
      * @param msg
      *            the message string to be logged
+     * @since 1.4
      */
     public void warn(String msg);
 
-    /**
-     * Log a message at the WARN level according to the specified format and arguments.
-     * 
-     * <p>
-     * This form avoids superfluous object creation when the logger is disabled for the WARN level.
-     * </p>
-     * 
-     * @param format
-     *            the format string
-     * @param args
-     *            an array of arguments
-     */
-    public void warn(String format, Object... args);
+    public void warn(String template, Object arg);
+
+    public void warn(String template, Object arg1, Object arg2);
+
+    public void warn(String template, Object arg1, Object arg2, Object arg3);
 
     /**
-     * Log an exception (throwable) at the WARN level with an accompanying message.
+     * Log a message at the WARNING level according to the specified format and arguments.
+     * 
+     * <p>
+     * This form avoids superfluous object creation when the logger is disabled for the WARNING level.
+     * </p>
+     * 
+     * @param template
+     *            the template string
+     * @param args
+     *            an array of arguments
+     * 
+     * @since 1.4
+     * @deprecated {@link #warn(Supplier)} is recommended
+     */
+    @Deprecated
+    public void warn(String template, Object... args);
+
+    /**
+     * Log an exception (throwable) at the WARNING level with an accompanying message.
      * 
      * @param msg
      *            the message accompanying the exception
      * @param t
      *            the exception (throwable) to log
+     * 
+     * @since 1.4
      */
     public void warn(String msg, Throwable t);
 
+    public void warn(Throwable t, String msg);
+
+    public void warn(Throwable t, String template, Object arg);
+
+    public void warn(Throwable t, String template, Object arg1, Object arg2);
+
+    public void warn(Throwable t, String template, Object arg1, Object arg2, Object arg3);
+
     public void warn(Supplier<String> supplier);
 
+    /**
+     * 
+     * @param supplier
+     * @param t
+     * @deprecated replaced by {@link #warn(Throwable, Supplier)}
+     */
+    @Deprecated
     public void warn(Supplier<String> supplier, Throwable t);
+
+    public void warn(Throwable t, Supplier<String> supplier);
 
     /**
      * Is the logger instance enabled for the ERROR level?
@@ -261,8 +376,15 @@ public interface Logger {
      * 
      * @param msg
      *            the message string to be logged
+     * @since 1.4
      */
     public void error(String msg);
+
+    public void error(String template, Object arg);
+
+    public void error(String template, Object arg1, Object arg2);
+
+    public void error(String template, Object arg1, Object arg2, Object arg3);
 
     /**
      * Log a message at the ERROR level according to the specified format and arguments.
@@ -271,12 +393,16 @@ public interface Logger {
      * This form avoids superfluous object creation when the logger is disabled for the ERROR level.
      * </p>
      * 
-     * @param format
-     *            the format string
+     * @param template
+     *            the template string
      * @param args
      *            an array of arguments
+     * 
+     * @since 1.4
+     * @deprecated {@link #error(Supplier)} is recommended
      */
-    public void error(String format, Object... args);
+    @Deprecated
+    public void error(String template, Object... args);
 
     /**
      * Log an exception (throwable) at the ERROR level with an accompanying message.
@@ -285,11 +411,30 @@ public interface Logger {
      *            the message accompanying the exception
      * @param t
      *            the exception (throwable) to log
+     * 
+     * @since 1.4
      */
     public void error(String msg, Throwable t);
 
+    public void error(Throwable t, String msg);
+
+    public void error(Throwable t, String template, Object arg);
+
+    public void error(Throwable t, String template, Object arg1, Object arg2);
+
+    public void error(Throwable t, String template, Object arg1, Object arg2, Object arg3);
+
     public void error(Supplier<String> supplier);
 
+    /**
+     * 
+     * @param supplier
+     * @param t
+     * @deprecated replaced by {@link #error(Throwable, Supplier)}
+     */
+    @Deprecated
     public void error(Supplier<String> supplier, Throwable t);
+
+    public void error(Throwable t, Supplier<String> supplier);
 
 }

@@ -1,3 +1,12 @@
+### 1.2.15
+
+* Add `Stream.of(resultSet, columnIndex/columnName)`.
+
+* Add `Collectors.onlyOne`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.14
 
 * Add `Stream.ofKeys/ofValues(Map)`.

@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
@@ -2474,6 +2476,123 @@ public abstract class Stream<T>
 
     public static <T> Try<Stream<T>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
         return closeResultSet ? of(targetClass, resultSet).onClose(newCloseHandle(resultSet)).tried() : of(targetClass, resultSet).tried();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnIndex starts from 0, not 1.
+     * @return
+     */
+    public static <T> Stream<T> of(final ResultSet resultSet, final int columnIndex) {
+        N.checkArgNotNegative(columnIndex, "columnIndex");
+
+        final ObjIterator<T> iter = new ObjIterator<T>() {
+            private final int newColumnIndex = columnIndex + 1;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false) {
+                    try {
+                        hasNext = resultSet.next();
+                    } catch (SQLException e) {
+                        throw new UncheckedSQLException(e);
+                    }
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("No more rows");
+                }
+
+                T next = null;
+
+                try {
+                    next = (T) resultSet.getObject(newColumnIndex);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+
+                hasNext = false;
+
+                return next;
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * 
+     * @param resultSet
+     * @param columnIndex starts from 0, not 1.
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> Try<Stream<T>> of(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
+        if (closeResultSet) {
+            return ((Stream<T>) of(resultSet, columnIndex)).onClose(newCloseHandle(resultSet)).tried();
+        } else {
+            return ((Stream<T>) of(resultSet, columnIndex)).tried();
+        }
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnName
+     * @return
+     */
+    public static <T> Stream<T> of(final ResultSet resultSet, final String columnName) {
+        return of(resultSet, getColumnIndex(resultSet, columnName));
+    }
+
+    private static int getColumnIndex(final ResultSet resultSet, final String columnName) {
+        N.checkArgNotNull(columnName, "columnName");
+
+        int columnIndex = -1;
+
+        try {
+            final ResultSetMetaData metaData = resultSet.getMetaData();
+            final int columnCount = metaData.getColumnCount();
+
+            for (int i = 1; i <= columnCount; i++) {
+                if (metaData.getColumnLabel(i).equals(columnName)) {
+                    columnIndex = i - 1;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        }
+
+        N.checkArgument(columnIndex >= 0, "No column found by name %s", columnName);
+
+        return columnIndex;
+    }
+
+    /**
+     * 
+     * @param resultSet
+     * @param columnName
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> Try<Stream<T>> of(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
+        final int columnIndex = getColumnIndex(resultSet, columnName);
+
+        if (closeResultSet) {
+            return ((Stream<T>) of(resultSet, columnIndex)).onClose(newCloseHandle(resultSet)).tried();
+        } else {
+            return ((Stream<T>) of(resultSet, columnIndex)).tried();
+        }
     }
 
     public static Try<Stream<String>> of(final File file) {

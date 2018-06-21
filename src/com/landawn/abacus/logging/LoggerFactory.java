@@ -98,31 +98,13 @@ public final class LoggerFactory {
 
                 case 3:
                     if (logger == null) {
-                        try {
-                            logger = new Log4Jv1Logger(name);
-
-                            if (initialized == false) {
-                                jdkLogger.info("Initialized with Log4j v1 Logger");
-                            }
-
-                            logType = 3;
-                            initialized = true;
-
-                            break;
-                        } catch (Throwable e) {
-                            // ignore
-                        }
-                    }
-
-                case 4:
-                    if (logger == null) {
                         logger = new JDKLogger(name);
 
                         if (initialized == false) {
                             jdkLogger.info("Initialized with JDK Logger");
                         }
 
-                        logType = 4;
+                        logType = 3;
                         initialized = true;
 
                         break;

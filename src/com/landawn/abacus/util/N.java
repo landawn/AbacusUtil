@@ -5782,6 +5782,159 @@ public final class N {
         }
     }
 
+    static String format(String template, Object arg) {
+        template = String.valueOf(template); // null -> "null"
+
+        // start substituting the arguments into the '%s' placeholders
+        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16);
+
+        String placeholder = "{}";
+        int placeholderStart = template.indexOf(placeholder);
+
+        if (placeholderStart < 0) {
+            placeholder = "%s";
+            placeholderStart = template.indexOf(placeholder);
+        }
+
+        if (placeholderStart >= 0) {
+            sb.append(template, 0, placeholderStart);
+            sb.append(N.toString(arg));
+            sb.append(template, placeholderStart + 2, template.length());
+        } else {
+            sb.append(" [");
+            sb.append(N.toString(arg));
+            sb.append(']');
+        }
+
+        final String result = sb.toString();
+
+        ObjectFactory.recycle(sb);
+
+        return result;
+    }
+
+    static String format(String template, Object arg1, Object arg2) {
+        template = String.valueOf(template); // null -> "null"
+
+        // start substituting the arguments into the '%s' placeholders
+        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 32);
+
+        String placeholder = "{}";
+        int placeholderStart = template.indexOf(placeholder);
+
+        if (placeholderStart < 0) {
+            placeholder = "%s";
+            placeholderStart = template.indexOf(placeholder);
+        }
+
+        int templateStart = 0;
+        int cnt = 0;
+
+        if (placeholderStart >= 0) {
+            cnt++;
+            sb.append(template, templateStart, placeholderStart);
+            sb.append(N.toString(arg1));
+            templateStart = placeholderStart + 2;
+            placeholderStart = template.indexOf(placeholder, templateStart);
+
+            if (placeholderStart >= 0) {
+                cnt++;
+                sb.append(template, templateStart, placeholderStart);
+                sb.append(N.toString(arg2));
+                templateStart = placeholderStart + 2;
+            }
+
+            sb.append(template, templateStart, template.length());
+        }
+
+        if (cnt == 0) {
+            sb.append(" [");
+            sb.append(N.toString(arg1));
+            sb.append(", ");
+            sb.append(N.toString(arg2));
+            sb.append(']');
+        } else if (cnt == 1) {
+            sb.append(" [");
+            sb.append(N.toString(arg2));
+            sb.append(']');
+        }
+
+        final String result = sb.toString();
+
+        ObjectFactory.recycle(sb);
+
+        return result;
+    }
+
+    static String format(String template, Object arg1, Object arg2, Object arg3) {
+        template = String.valueOf(template); // null -> "null"
+
+        // start substituting the arguments into the '%s' placeholders
+        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 48);
+
+        String placeholder = "{}";
+        int placeholderStart = template.indexOf(placeholder);
+
+        if (placeholderStart < 0) {
+            placeholder = "%s";
+            placeholderStart = template.indexOf(placeholder);
+        }
+
+        int templateStart = 0;
+        int cnt = 0;
+
+        if (placeholderStart >= 0) {
+            cnt++;
+            sb.append(template, templateStart, placeholderStart);
+            sb.append(N.toString(arg1));
+            templateStart = placeholderStart + 2;
+            placeholderStart = template.indexOf(placeholder, templateStart);
+
+            if (placeholderStart >= 0) {
+                cnt++;
+                sb.append(template, templateStart, placeholderStart);
+                sb.append(N.toString(arg2));
+                templateStart = placeholderStart + 2;
+                placeholderStart = template.indexOf(placeholder, templateStart);
+
+                if (placeholderStart >= 0) {
+                    cnt++;
+                    sb.append(template, templateStart, placeholderStart);
+                    sb.append(N.toString(arg3));
+                    templateStart = placeholderStart + 2;
+                }
+            }
+
+            sb.append(template, templateStart, template.length());
+        }
+
+        if (cnt == 0) {
+            sb.append(" [");
+            sb.append(N.toString(arg1));
+            sb.append(", ");
+            sb.append(N.toString(arg2));
+            sb.append(", ");
+            sb.append(N.toString(arg3));
+            sb.append(']');
+        } else if (cnt == 1) {
+            sb.append(" [");
+            sb.append(N.toString(arg2));
+            sb.append(", ");
+            sb.append(N.toString(arg3));
+            sb.append(']');
+        } else if (cnt == 2) {
+            sb.append(" [");
+            sb.append(N.toString(arg3));
+            sb.append(']');
+        }
+
+        final String result = sb.toString();
+
+        ObjectFactory.recycle(sb);
+
+        return result;
+    }
+
     /**
      * Substitutes each {@code %s} in {@code template} with an argument. These are matched by
      * position: the first {@code %s} gets {@code args[0]}, etc. If there are more arguments than
@@ -5796,33 +5949,48 @@ public final class N {
     static String format(String template, Object... args) {
         template = String.valueOf(template); // null -> "null"
 
+        if (N.isNullOrEmpty(args)) {
+            return template;
+        }
+
         // start substituting the arguments into the '%s' placeholders
-        StringBuilder builder = new StringBuilder(template.length() + 16 * args.length);
+        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16 * args.length);
         int templateStart = 0;
         int i = 0;
-        while (i < args.length) {
-            int placeholderStart = template.indexOf("%s", templateStart);
-            if (placeholderStart == -1) {
-                break;
-            }
-            builder.append(template, templateStart, placeholderStart);
-            builder.append(args[i++]);
-            templateStart = placeholderStart + 2;
+
+        String placeholder = "{}";
+        int placeholderStart = template.indexOf(placeholder);
+
+        if (placeholderStart < 0) {
+            placeholder = "%s";
+            placeholderStart = template.indexOf(placeholder);
         }
-        builder.append(template, templateStart, template.length());
+
+        while (placeholderStart >= 0 && i < args.length) {
+            sb.append(template, templateStart, placeholderStart);
+            sb.append(N.toString(args[i++]));
+            templateStart = placeholderStart + 2;
+            placeholderStart = template.indexOf(placeholder, templateStart);
+        }
+
+        sb.append(template, templateStart, template.length());
 
         // if we run out of placeholders, append the extra args in square braces
         if (i < args.length) {
-            builder.append(" [");
-            builder.append(args[i++]);
+            sb.append(" [");
+            sb.append(N.toString(args[i++]));
             while (i < args.length) {
-                builder.append(", ");
-                builder.append(args[i++]);
+                sb.append(", ");
+                sb.append(N.toString(args[i++]));
             }
-            builder.append(']');
+            sb.append(']');
         }
 
-        return builder.toString();
+        final String result = sb.toString();
+
+        ObjectFactory.recycle(sb);
+
+        return result;
     }
 
     /**

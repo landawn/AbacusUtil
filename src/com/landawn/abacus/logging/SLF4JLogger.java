@@ -14,9 +14,14 @@
 
 package com.landawn.abacus.logging;
 
+import static org.slf4j.spi.LocationAwareLogger.ERROR_INT;
+import static org.slf4j.spi.LocationAwareLogger.WARN_INT;
+
 import org.slf4j.helpers.NOPLoggerFactory;
+import org.slf4j.spi.LocationAwareLogger;
 
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -25,7 +30,10 @@ import com.landawn.abacus.exception.AbacusException;
  * @author Haiyang Li
  */
 class SLF4JLogger extends AbstractLogger {
+    private static final String FQCN = SLF4JLogger.class.getName();
+
     private final org.slf4j.Logger loggerImpl;
+    private final LocationAwareLogger locationAwareLogger;
 
     public SLF4JLogger(String name) {
         super(name);
@@ -34,6 +42,7 @@ class SLF4JLogger extends AbstractLogger {
         }
 
         loggerImpl = org.slf4j.LoggerFactory.getLogger(name);
+        locationAwareLogger = loggerImpl instanceof LocationAwareLogger ? ((LocationAwareLogger) loggerImpl) : null;
     }
 
     @Override
@@ -88,12 +97,20 @@ class SLF4JLogger extends AbstractLogger {
 
     @Override
     public void warn(String msg) {
-        loggerImpl.warn(msg);
+        if (locationAwareLogger == null) {
+            loggerImpl.warn(msg);
+        } else {
+            locationAwareLogger.log(null, FQCN, WARN_INT, msg, null, null);
+        }
     }
 
     @Override
     public void warn(String msg, Throwable t) {
-        loggerImpl.warn(msg, t);
+        if (locationAwareLogger == null) {
+            loggerImpl.warn(msg, t);
+        } else {
+            locationAwareLogger.log(null, FQCN, WARN_INT, msg, null, t);
+        }
     }
 
     @Override
@@ -103,11 +120,399 @@ class SLF4JLogger extends AbstractLogger {
 
     @Override
     public void error(String msg) {
-        loggerImpl.error(msg);
+        if (locationAwareLogger == null) {
+            loggerImpl.error(msg);
+        } else {
+            locationAwareLogger.log(null, FQCN, ERROR_INT, msg, null, null);
+        }
     }
 
     @Override
     public void error(String msg, Throwable t) {
-        loggerImpl.error(msg, t);
+        if (locationAwareLogger == null) {
+            loggerImpl.error(msg, t);
+        } else {
+            locationAwareLogger.log(null, FQCN, ERROR_INT, msg, null, t);
+        }
+    }
+
+    @Override
+    public void trace(String template, Object arg) {
+        if (isTraceEnabled()) {
+            trace(format(template, arg));
+        }
+    }
+
+    @Override
+    public void trace(String template, Object arg1, Object arg2) {
+        if (isTraceEnabled()) {
+            trace(format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void trace(String template, Object arg1, Object arg2, Object arg3) {
+        if (isTraceEnabled()) {
+            trace(format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    @SafeVarargs
+    public final void trace(String template, Object... args) {
+        if (isTraceEnabled()) {
+            trace(format(template, args));
+        }
+    }
+
+    @Override
+    public void trace(Throwable t, String msg) {
+        trace(msg, t);
+    }
+
+    @Override
+    public void trace(Throwable t, String template, Object arg) {
+        if (isTraceEnabled()) {
+            trace(t, format(template, arg));
+        }
+    }
+
+    @Override
+    public void trace(Throwable t, String template, Object arg1, Object arg2) {
+        if (isTraceEnabled()) {
+            trace(t, format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void trace(Throwable t, String template, Object arg1, Object arg2, Object arg3) {
+        if (isTraceEnabled()) {
+            trace(t, format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    public void trace(Supplier<String> supplier) {
+        if (isTraceEnabled()) {
+            trace(supplier.get());
+        }
+    }
+
+    @Override
+    public void trace(Supplier<String> supplier, Throwable t) {
+        if (isTraceEnabled()) {
+            trace(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void trace(Throwable t, Supplier<String> supplier) {
+        if (isTraceEnabled()) {
+            trace(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void debug(String template, Object arg) {
+        if (isDebugEnabled()) {
+            debug(format(template, arg));
+        }
+    }
+
+    @Override
+    public void debug(String template, Object arg1, Object arg2) {
+        if (isDebugEnabled()) {
+            debug(format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void debug(String template, Object arg1, Object arg2, Object arg3) {
+        if (isDebugEnabled()) {
+            debug(format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    @SafeVarargs
+    public final void debug(String template, Object... args) {
+        if (isDebugEnabled()) {
+            debug(format(template, args));
+        }
+    }
+
+    @Override
+    public void debug(Throwable t, String msg) {
+        debug(msg, t);
+    }
+
+    @Override
+    public void debug(Throwable t, String template, Object arg) {
+        if (isDebugEnabled()) {
+            debug(t, format(template, arg));
+        }
+    }
+
+    @Override
+    public void debug(Throwable t, String template, Object arg1, Object arg2) {
+        if (isDebugEnabled()) {
+            debug(t, format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void debug(Throwable t, String template, Object arg1, Object arg2, Object arg3) {
+        if (isDebugEnabled()) {
+            debug(t, format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    public void debug(Supplier<String> supplier) {
+        if (isDebugEnabled()) {
+            debug(supplier.get());
+        }
+    }
+
+    @Override
+    public void debug(Supplier<String> supplier, Throwable t) {
+        if (isDebugEnabled()) {
+            debug(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void debug(Throwable t, Supplier<String> supplier) {
+        if (isDebugEnabled()) {
+            debug(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void info(String template, Object arg) {
+        if (isInfoEnabled()) {
+            info(format(template, arg));
+        }
+    }
+
+    @Override
+    public void info(String template, Object arg1, Object arg2) {
+        if (isInfoEnabled()) {
+            info(format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void info(String template, Object arg1, Object arg2, Object arg3) {
+        if (isInfoEnabled()) {
+            info(format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    @SafeVarargs
+    public final void info(String template, Object... args) {
+        if (isInfoEnabled()) {
+            info(format(template, args));
+        }
+    }
+
+    @Override
+    public void info(Throwable t, String msg) {
+        info(msg, t);
+    }
+
+    @Override
+    public void info(Throwable t, String template, Object arg) {
+        if (isInfoEnabled()) {
+            info(t, format(template, arg));
+        }
+    }
+
+    @Override
+    public void info(Throwable t, String template, Object arg1, Object arg2) {
+        if (isInfoEnabled()) {
+            info(t, format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void info(Throwable t, String template, Object arg1, Object arg2, Object arg3) {
+        if (isInfoEnabled()) {
+            info(t, format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    public void info(Supplier<String> supplier) {
+        if (isInfoEnabled()) {
+            info(supplier.get());
+        }
+    }
+
+    @Override
+    public void info(Supplier<String> supplier, Throwable t) {
+        if (isInfoEnabled()) {
+            info(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void info(Throwable t, Supplier<String> supplier) {
+        if (isInfoEnabled()) {
+            info(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void warn(String template, Object arg) {
+        if (isWarnEnabled()) {
+            warn(format(template, arg));
+        }
+    }
+
+    @Override
+    public void warn(String template, Object arg1, Object arg2) {
+        if (isWarnEnabled()) {
+            warn(format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void warn(String template, Object arg1, Object arg2, Object arg3) {
+        if (isWarnEnabled()) {
+            warn(format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    @SafeVarargs
+    public final void warn(String template, Object... args) {
+        if (isWarnEnabled()) {
+            warn(format(template, args));
+        }
+    }
+
+    @Override
+    public void warn(Throwable t, String msg) {
+        warn(msg, t);
+    }
+
+    @Override
+    public void warn(Throwable t, String template, Object arg) {
+        if (isWarnEnabled()) {
+            warn(t, format(template, arg));
+        }
+    }
+
+    @Override
+    public void warn(Throwable t, String template, Object arg1, Object arg2) {
+        if (isWarnEnabled()) {
+            warn(t, format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void warn(Throwable t, String template, Object arg1, Object arg2, Object arg3) {
+        if (isWarnEnabled()) {
+            warn(t, format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    public void warn(Supplier<String> supplier) {
+        if (isWarnEnabled()) {
+            warn(supplier.get());
+        }
+    }
+
+    @Override
+    public void warn(Supplier<String> supplier, Throwable t) {
+        if (isWarnEnabled()) {
+            warn(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void warn(Throwable t, Supplier<String> supplier) {
+        if (isWarnEnabled()) {
+            warn(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void error(String template, Object arg) {
+        if (isErrorEnabled()) {
+            error(format(template, arg));
+        }
+    }
+
+    @Override
+    public void error(String template, Object arg1, Object arg2) {
+        if (isErrorEnabled()) {
+            error(format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void error(String template, Object arg1, Object arg2, Object arg3) {
+        if (isErrorEnabled()) {
+            error(format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    @SafeVarargs
+    public final void error(String template, Object... args) {
+        if (isErrorEnabled()) {
+            error(format(template, args));
+        }
+    }
+
+    @Override
+    public void error(Throwable t, String msg) {
+        error(msg, t);
+    }
+
+    @Override
+    public void error(Throwable t, String template, Object arg) {
+        if (isErrorEnabled()) {
+            error(t, format(template, arg));
+        }
+    }
+
+    @Override
+    public void error(Throwable t, String template, Object arg1, Object arg2) {
+        if (isErrorEnabled()) {
+            error(t, format(template, arg1, arg2));
+        }
+    }
+
+    @Override
+    public void error(Throwable t, String template, Object arg1, Object arg2, Object arg3) {
+        if (isErrorEnabled()) {
+            error(t, format(template, arg1, arg2, arg3));
+        }
+    }
+
+    @Override
+    public void error(Supplier<String> supplier) {
+        if (isErrorEnabled()) {
+            error(supplier.get());
+        }
+    }
+
+    @Override
+    public void error(Supplier<String> supplier, Throwable t) {
+        if (isErrorEnabled()) {
+            error(t, supplier.get());
+        }
+    }
+
+    @Override
+    public void error(Throwable t, Supplier<String> supplier) {
+        if (isErrorEnabled()) {
+            error(t, supplier.get());
+        }
     }
 }

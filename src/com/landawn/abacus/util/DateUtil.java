@@ -671,7 +671,7 @@ public final class DateUtil {
     }
 
     private static long parse(final String date, String format, TimeZone timeZone) {
-        if ((format == null) && (date.charAt(2) >= '0' && date.charAt(2) <= '9' && date.charAt(4) >= '0' && date.charAt(4) <= '9')) {
+        if ((format == null) && date.length() > 4 && (date.charAt(2) >= '0' && date.charAt(2) <= '9' && date.charAt(4) >= '0' && date.charAt(4) <= '9')) {
             try {
                 return Long.parseLong(date);
             } catch (NumberFormatException e) {

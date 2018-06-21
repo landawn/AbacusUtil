@@ -15,6 +15,7 @@
 package com.landawn.abacus.logging;
 
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * 
@@ -23,6 +24,9 @@ import java.util.logging.Level;
  * @author Haiyang Li
  */
 class JDKLogger extends AbstractLogger {
+    static final String SELF = JDKLogger.class.getName();
+    static final String SUPER = AbstractLogger.class.getName();
+
     private final java.util.logging.Logger loggerImpl;
 
     public JDKLogger(String name) {
@@ -106,10 +110,68 @@ class JDKLogger extends AbstractLogger {
     }
 
     private void log(Level level, String msg) {
-        loggerImpl.log(level, msg);
+        log(SELF, Level.WARNING, msg, null);
     }
 
     private void log(Level level, String msg, Throwable t) {
-        loggerImpl.log(level, msg, t);
+        log(SELF, Level.WARNING, msg, t);
+    }
+
+    /**
+     * Log the message at the specified level with the specified throwable if any.
+     * This method creates a LogRecord and fills in caller date before calling
+     * this instance's JDK14 logger.
+     * 
+     * See bug report #13 for more details.
+     * 
+     * @param level
+     * @param msg
+     * @param t
+     */
+    private void log(String callerFQCN, Level level, String msg, Throwable t) {
+        // millis and thread are filled by the constructor
+        LogRecord record = new LogRecord(level, msg);
+        record.setLoggerName(getName());
+        record.setThrown(t);
+        // Note: parameters in record are not set because SLF4J only
+        // supports a single formatting style
+        fillCallerData(callerFQCN, record);
+        loggerImpl.log(record);
+    }
+
+    /**
+     * Fill in caller data if possible.
+     * 
+     * @param record
+     *          The record to update
+     */
+    final private void fillCallerData(String callerFQCN, LogRecord record) {
+        StackTraceElement[] steArray = new Throwable().getStackTrace();
+
+        int selfIndex = -1;
+        for (int i = 0; i < steArray.length; i++) {
+            final String className = steArray[i].getClassName();
+            if (className.equals(callerFQCN) || className.equals(SUPER)) {
+                selfIndex = i;
+                break;
+            }
+        }
+
+        int found = -1;
+        for (int i = selfIndex + 1; i < steArray.length; i++) {
+            final String className = steArray[i].getClassName();
+            if (!(className.equals(callerFQCN) || className.equals(SUPER))) {
+                found = i;
+                break;
+            }
+        }
+
+        if (found != -1) {
+            StackTraceElement ste = steArray[found];
+            // setting the class name has the side effect of setting
+            // the needToInferCaller variable to false.
+            record.setSourceClassName(ste.getClassName());
+            record.setSourceMethodName(ste.getMethodName());
+        }
     }
 }

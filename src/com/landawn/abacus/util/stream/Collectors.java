@@ -65,6 +65,7 @@ import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.BiConsumers;
 import com.landawn.abacus.util.Fn.BinaryOperators;
 import com.landawn.abacus.util.Fn.Suppliers;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ImmutableSet;
@@ -81,6 +82,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalLong;
@@ -1387,6 +1389,69 @@ public class Collectors {
         final Function<DoubleList, double[]> finisher = DoubleArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    private static final Supplier<Holder<Optional<Object>>> onlyOne_supplier = new Supplier<Holder<Optional<Object>>>() {
+        @Override
+        public Holder<Optional<Object>> get() {
+            return Holder.of(Optional.empty());
+        }
+    };
+
+    private static final BiConsumer<Holder<Optional<Object>>, Object> onlyOne_accumulator = new BiConsumer<Holder<Optional<Object>>, Object>() {
+        @Override
+        public void accept(Holder<Optional<Object>> holder, Object val) {
+            if (holder.value().isPresent()) {
+                throw new IllegalStateException("Duplicate values");
+            }
+
+            holder.setValue(Optional.of(val));
+        }
+    };
+
+    private static final BinaryOperator<Holder<Optional<Object>>> onlyOne_combiner = new BinaryOperator<Holder<Optional<Object>>>() {
+        @Override
+        public Holder<Optional<Object>> apply(Holder<Optional<Object>> t, Holder<Optional<Object>> u) {
+            if (t.value().isPresent() && u.value().isPresent()) {
+                throw new IllegalStateException("Duplicate values");
+            }
+
+            return t.value().isPresent() ? t : u;
+        }
+    };
+
+    private static final Function<Holder<Optional<Object>>, Optional<Object>> onlyOne_finisher = new Function<Holder<Optional<Object>>, Optional<Object>>() {
+        @Override
+        public Optional<Object> apply(Holder<Optional<Object>> t) {
+            return t.value();
+        }
+    };
+
+    /**
+     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * 
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T> Collector<T, ?, Optional<T>> onlyOne() {
+        final Supplier<Holder<Optional<T>>> supplier = (Supplier) onlyOne_supplier;
+        final BiConsumer<Holder<Optional<T>>, T> accumulator = (BiConsumer) onlyOne_accumulator;
+        final BinaryOperator<Holder<Optional<T>>> combiner = (BinaryOperator) onlyOne_combiner;
+        final Function<Holder<Optional<T>>, Optional<T>> finisher = (Function) onlyOne_finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
+    /**
+     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <T> Collector<T, ?, Optional<T>> onlyOne(final Predicate<? super T> predicate) {
+        final Collector<T, ?, Optional<T>> downstream = onlyOne();
+
+        return filtering(predicate, downstream);
     }
 
     /**
