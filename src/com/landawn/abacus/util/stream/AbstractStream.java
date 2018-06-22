@@ -59,7 +59,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
@@ -1336,12 +1335,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
         return findFirst(predicate);
     }
 
     @Override
-    public <U, E extends Exception> Nullable<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+    public <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
         return findFirst(new Try.Predicate<T, E>() {
             @Override
             public boolean test(T t) throws E {
@@ -1351,7 +1350,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, E extends Exception> Nullable<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+    public <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
         return findLast(new Try.Predicate<T, E>() {
             @Override
             public boolean test(T t) throws E {
@@ -1361,7 +1360,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
+    public <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
             final Try.Predicate<? super T, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
@@ -1371,17 +1370,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next)) {
-                return Nullable.of(next);
+                return Optional.of(next);
             } else if (predicateForLast.test(next)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
+        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
     }
 
     @Override
-    public <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final U seed,
+    public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U seed,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
@@ -1391,17 +1390,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next, seed)) {
-                return Nullable.of(next);
+                return Optional.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
+        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
     }
 
     @Override
-    public <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc,
+    public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         U seed = null;
@@ -1413,17 +1412,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             seed = preFunc.apply(next);
 
             if (predicateForFirst.test(next, seed)) {
-                return Nullable.of(next);
+                return Optional.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
+        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
     }
 
     @Override
-    public <U, E extends Exception> Nullable<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+    public <U, E extends Exception> Optional<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
         return findAny(new Try.Predicate<T, E>() {
             @Override
             public boolean test(T t) throws E {
@@ -1503,22 +1502,22 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Nullable<T> first() {
+    public Optional<T> first() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return Nullable.empty();
+            return Optional.empty();
         }
 
-        return Nullable.of(iter.next());
+        return Optional.of(iter.next());
     }
 
     @Override
-    public Nullable<T> last() {
+    public Optional<T> last() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return Nullable.empty();
+            return Optional.empty();
         }
 
         T next = iter.next();
@@ -1527,7 +1526,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
         }
 
-        return Nullable.of(next);
+        return Optional.of(next);
     }
 
     @Override
@@ -2013,7 +2012,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 key = key == null ? NONE : key;
 
                 synchronized (map) {
-                    return map.put(key, key) == null;
+                    return map.put(key, Stream.NONE) == null;
                 }
             }
         } : new Predicate<T>() {
@@ -2291,12 +2290,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Pair<Nullable<T>, Stream<T>> headAndTail() {
+    public Pair<Optional<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<Stream<T>, Nullable<T>> headAndTaill() {
+    public Pair<Stream<T>, Optional<T>> headAndTaill() {
         return Pair.of(headd(), taill());
     }
 

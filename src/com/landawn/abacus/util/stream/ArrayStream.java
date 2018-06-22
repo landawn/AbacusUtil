@@ -35,7 +35,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -2355,13 +2355,13 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> first() {
-        return fromIndex < toIndex ? Nullable.of(elements[fromIndex]) : Nullable.<T> empty();
+    public Optional<T> first() {
+        return fromIndex < toIndex ? Optional.of(elements[fromIndex]) : Optional.<T> empty();
     }
 
     @Override
-    public Nullable<T> last() {
-        return fromIndex < toIndex ? Nullable.of(elements[toIndex - 1]) : Nullable.<T> empty();
+    public Optional<T> last() {
+        return fromIndex < toIndex ? Optional.of(elements[toIndex - 1]) : Optional.<T> empty();
     }
 
     @Override
@@ -2376,9 +2376,9 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> reduce(BinaryOperator<T> accumulator) {
+    public Optional<T> reduce(BinaryOperator<T> accumulator) {
         if (fromIndex == toIndex) {
-            return Nullable.empty();
+            return Optional.empty();
         }
 
         T result = elements[fromIndex];
@@ -2387,7 +2387,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             result = accumulator.apply(result, elements[i]);
         }
 
-        return Nullable.of(result);
+        return Optional.of(result);
     }
 
     @Override
@@ -2425,8 +2425,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> head() {
-        return fromIndex == toIndex ? Nullable.<T> empty() : Nullable.of(elements[fromIndex]);
+    public Optional<T> head() {
+        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[fromIndex]);
     }
 
     @Override
@@ -2448,8 +2448,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> taill() {
-        return fromIndex == toIndex ? Nullable.<T> empty() : Nullable.of(elements[toIndex - 1]);
+    public Optional<T> taill() {
+        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[toIndex - 1]);
     }
 
     @Override
@@ -2475,38 +2475,38 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> min(Comparator<? super T> comparator) {
+    public Optional<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return Nullable.empty();
+            return Optional.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return Nullable.of(elements[fromIndex]);
+            return Optional.of(elements[fromIndex]);
         }
 
-        return Nullable.of(N.min(elements, fromIndex, toIndex, comparator));
+        return Optional.of(N.min(elements, fromIndex, toIndex, comparator));
     }
 
     @Override
-    public Nullable<T> max(Comparator<? super T> comparator) {
+    public Optional<T> max(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return Nullable.empty();
+            return Optional.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return Nullable.of(elements[toIndex - 1]);
+            return Optional.of(elements[toIndex - 1]);
         }
 
-        return Nullable.of(N.max(elements, fromIndex, toIndex, comparator));
+        return Optional.of(N.max(elements, fromIndex, toIndex, comparator));
     }
 
     @Override
-    public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
         N.checkArgPositive(k, "k");
 
         if (k > toIndex - fromIndex) {
-            return Nullable.empty();
+            return Optional.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return Nullable.of(elements[toIndex - k]);
+            return Optional.of(elements[toIndex - k]);
         }
 
-        return Nullable.of(N.kthLargest(elements, fromIndex, toIndex, k, comparator));
+        return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, comparator));
     }
 
     @Override
@@ -2649,25 +2649,25 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
-                return Nullable.of(elements[i]);
+                return Optional.of(elements[i]);
             }
         }
 
-        return (Nullable<T>) Nullable.empty();
+        return (Optional<T>) Optional.empty();
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
-                return Nullable.of(elements[i]);
+                return Optional.of(elements[i]);
             }
         }
 
-        return (Nullable<T>) Nullable.empty();
+        return (Optional<T>) Optional.empty();
     }
 
     @Override

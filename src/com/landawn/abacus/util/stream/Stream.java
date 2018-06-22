@@ -84,7 +84,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
@@ -248,7 +247,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T>
-        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Nullable<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
+        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Optional<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);
@@ -1051,17 +1050,17 @@ public abstract class Stream<T>
     public abstract <E extends Exception> boolean noneMatch(Try.Predicate<? super T, E> predicate) throws E;
 
     @ParallelSupported
-    public abstract <E extends Exception> Nullable<T> findFirst(Try.Predicate<? super T, E> predicate) throws E;
+    public abstract <E extends Exception> Optional<T> findFirst(Try.Predicate<? super T, E> predicate) throws E;
 
     @ParallelSupported
-    public abstract <E extends Exception> Nullable<T> findLast(Try.Predicate<? super T, E> predicate) throws E;
+    public abstract <E extends Exception> Optional<T> findLast(Try.Predicate<? super T, E> predicate) throws E;
 
     @SequentialOnly
-    public abstract <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(Try.Predicate<? super T, E> predicateForFirst,
+    public abstract <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(Try.Predicate<? super T, E> predicateForFirst,
             Try.Predicate<? super T, E2> predicateForLast) throws E, E2;
 
     @ParallelSupported
-    public abstract <E extends Exception> Nullable<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
+    public abstract <E extends Exception> Optional<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
      * <br />
@@ -1072,7 +1071,7 @@ public abstract class Stream<T>
      * @return
      */
     @ParallelSupported
-    public abstract <U, E extends Exception> Nullable<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
+    public abstract <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
      * <br />
@@ -1083,7 +1082,7 @@ public abstract class Stream<T>
      * @return
      */
     @ParallelSupported
-    public abstract <U, E extends Exception> Nullable<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
+    public abstract <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
      * <br />
@@ -1094,7 +1093,7 @@ public abstract class Stream<T>
      * @return
      */
     @ParallelSupported
-    public abstract <U, E extends Exception> Nullable<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
+    public abstract <U, E extends Exception> Optional<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
      * <br />
@@ -1106,7 +1105,7 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final U seed,
+    public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U seed,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
     /**
@@ -1119,7 +1118,7 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc,
+    public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
     @ParallelSupported
@@ -1476,7 +1475,7 @@ public abstract class Stream<T>
      *         else
      *             result = accumulator.apply(result, element);
      *     }
-     *     return foundAny ? Nullable.of(result) : Nullable.empty();
+     *     return foundAny ? Optional.of(result) : Optional.empty();
      * }</pre>
      *
      * but is not constrained to execute sequentially.
@@ -1497,7 +1496,7 @@ public abstract class Stream<T>
      * @see #max(Comparator)
      */
     @ParallelSupported
-    public abstract Nullable<T> reduce(BinaryOperator<T> accumulator);
+    public abstract Optional<T> reduce(BinaryOperator<T> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1707,7 +1706,7 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract Nullable<T> head();
+    public abstract Optional<T> head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
@@ -1740,10 +1739,10 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract Nullable<T> taill();
+    public abstract Optional<T> taill();
 
     @SequentialOnly
-    public abstract Pair<Nullable<T>, Stream<T>> headAndTail();
+    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
 
     /**
      * 
@@ -1753,7 +1752,7 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract Pair<Stream<T>, Nullable<T>> headAndTaill();
+    public abstract Pair<Stream<T>, Optional<T>> headAndTaill();
 
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
@@ -1792,11 +1791,11 @@ public abstract class Stream<T>
      * or an empty {@code Optional} if the stream is empty
      */
     @ParallelSupported
-    public abstract Nullable<T> min(Comparator<? super T> comparator);
+    public abstract Optional<T> min(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
     @ParallelSupported
-    public Nullable<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
         return min(comparator);
@@ -1817,11 +1816,11 @@ public abstract class Stream<T>
      * or an empty {@code Optional} if the stream is empty
      */
     @ParallelSupported
-    public abstract Nullable<T> max(Comparator<? super T> comparator);
+    public abstract Optional<T> max(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
     @ParallelSupported
-    public Nullable<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
         return max(comparator);
@@ -1831,10 +1830,10 @@ public abstract class Stream<T>
      * 
      * @param k
      * @param comparator
-     * @return Nullable.empty() if there is no element or count less than k, otherwise the kth largest element.
+     * @return Optional.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     @ParallelSupported
-    public abstract Nullable<T> kthLargest(int k, Comparator<? super T> comparator);
+    public abstract Optional<T> kthLargest(int k, Comparator<? super T> comparator);
 
     @ParallelSupported
     public abstract int sumInt(ToIntFunction<? super T> mapper);
@@ -2627,7 +2626,7 @@ public abstract class Stream<T>
         }).tried();
     }
 
-    public static <T> Stream<T> ofNullable(T t) {
+    public static <T> Stream<T> ofOptional(T t) {
         return t == null ? Stream.<T> empty() : of(t);
     }
 

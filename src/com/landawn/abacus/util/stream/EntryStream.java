@@ -32,7 +32,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -882,7 +882,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.reduce(identity, accumulator);
     }
 
-    public Nullable<Map.Entry<K, V>> reduce(final BinaryOperator<Map.Entry<K, V>> accumulator) {
+    public Optional<Map.Entry<K, V>> reduce(final BinaryOperator<Map.Entry<K, V>> accumulator) {
         return s.reduce(accumulator);
     }
 

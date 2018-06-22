@@ -29,7 +29,7 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Try;
@@ -1041,7 +1041,7 @@ class IteratorCharStream extends AbstractCharStream {
             return OptionalChar.empty();
         }
 
-        final Nullable<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
+        final Optional<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }

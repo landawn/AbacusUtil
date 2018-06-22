@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collector.Characteristics;
 
@@ -81,7 +82,6 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
@@ -946,10 +946,10 @@ public class Collectors {
         }
     };
 
-    static final Function<OptionalBox<Object>, Nullable<Object>> Reducing_Finisher = new Function<OptionalBox<Object>, Nullable<Object>>() {
+    static final Function<OptionalBox<Object>, Optional<Object>> Reducing_Finisher = new Function<OptionalBox<Object>, Optional<Object>>() {
         @Override
-        public Nullable<Object> apply(OptionalBox<Object> a) {
-            return a.present ? Nullable.of(a.value) : (Nullable<Object>) Nullable.empty();
+        public Optional<Object> apply(OptionalBox<Object> a) {
+            return a.present ? Optional.of(a.value) : (Optional<Object>) Optional.empty();
         }
     };
 
@@ -976,10 +976,10 @@ public class Collectors {
         }
     };
 
-    static final Function<OptionalBoxx<Object, Object>, Nullable<Object>> Reducing_Finisher_2 = new Function<OptionalBoxx<Object, Object>, Nullable<Object>>() {
+    static final Function<OptionalBoxx<Object, Object>, Optional<Object>> Reducing_Finisher_2 = new Function<OptionalBoxx<Object, Object>, Optional<Object>>() {
         @Override
-        public Nullable<Object> apply(OptionalBoxx<Object, Object> a) {
-            return a.present ? Nullable.of(a.value) : (Nullable<Object>) Nullable.empty();
+        public Optional<Object> apply(OptionalBoxx<Object, Object> a) {
+            return a.present ? Optional.of(a.value) : (Optional<Object>) Optional.empty();
         }
     };
 
@@ -1454,6 +1454,111 @@ public class Collectors {
         return filtering(predicate, downstream);
     }
 
+    private static final Supplier<Holder<Object>> first_last_supplier = new Supplier<Holder<Object>>() {
+        @Override
+        public Holder<Object> get() {
+            return Holder.of(Stream.NONE);
+        }
+    };
+
+    private static final BiConsumer<Holder<Object>, Object> first_accumulator = new BiConsumer<Holder<Object>, Object>() {
+        @Override
+        public void accept(Holder<Object> holder, Object val) {
+            if (holder.value() == Stream.NONE) {
+                holder.setValue(val);
+            }
+        }
+    };
+
+    private static final BiConsumer<Holder<Object>, Object> last_accumulator = new BiConsumer<Holder<Object>, Object>() {
+        @Override
+        public void accept(Holder<Object> holder, Object val) {
+            holder.setValue(val);
+        }
+    };
+
+    private static final BinaryOperator<Holder<Object>> first_last_combiner = new BinaryOperator<Holder<Object>>() {
+        @Override
+        public Holder<Object> apply(Holder<Object> t, Holder<Object> u) {
+            if (t.value() != Stream.NONE && u.value() != Stream.NONE) {
+                throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
+            }
+
+            return t.value() != Stream.NONE ? t : u;
+        }
+    };
+
+    private static final Function<Holder<Object>, Optional<Object>> first_last_finisher = new Function<Holder<Object>, Optional<Object>>() {
+        @Override
+        public Optional<Object> apply(Holder<Object> t) {
+            return t.value() == Stream.NONE ? Optional.empty() : Optional.of(t.value());
+        }
+    };
+
+    /**
+     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * 
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T> Collector<T, ?, Optional<T>> first() {
+        final Supplier<Holder<T>> supplier = (Supplier) first_last_supplier;
+        final BiConsumer<Holder<T>, T> accumulator = (BiConsumer) first_accumulator;
+        final BinaryOperator<Holder<T>> combiner = (BinaryOperator) first_last_combiner;
+        final Function<Holder<T>, Optional<T>> finisher = (Function) first_last_finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    /**
+     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * 
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T> Collector<T, ?, Optional<T>> last() {
+        final Supplier<Holder<T>> supplier = (Supplier) first_last_supplier;
+        final BiConsumer<Holder<T>, T> accumulator = (BiConsumer) last_accumulator;
+        final BinaryOperator<Holder<T>> combiner = (BinaryOperator) first_last_combiner;
+        final Function<Holder<T>, Optional<T>> finisher = (Function) first_last_finisher;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, List<T>> first(final int n) {
+        N.checkArgNotNegative(n, "n");
+
+        final Supplier<List<T>> supplier = new Supplier<List<T>>() {
+            @Override
+            public List<T> get() {
+                return new ArrayList<T>(N.min(256, n));
+            }
+        };
+
+        final BiConsumer<List<T>, T> accumulator = new BiConsumer<List<T>, T>() {
+            @Override
+            public void accept(List<T> c, T t) {
+                if (c.size() < n) {
+                    c.add(t);
+                }
+            }
+        };
+
+        final BinaryOperator<List<T>> combiner = new BinaryOperator<List<T>>() {
+            @Override
+            public List<T> apply(List<T> a, List<T> b) {
+                if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
+                    throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
+                }
+
+                return a.size() > 0 ? a : b;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+
+    }
+
     /**
      * 
      * @param n
@@ -1464,16 +1569,8 @@ public class Collectors {
         N.checkArgNotNegative(n, "n");
 
         final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
-            private volatile boolean isCalled = false;
-
             @Override
             public Deque<T> get() {
-                if (isCalled) {
-                    throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
-                }
-
-                isCalled = true;
-
                 return n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
             }
         };
@@ -1495,7 +1592,7 @@ public class Collectors {
             @Override
             public Deque<T> apply(Deque<T> a, Deque<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
-                    throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
+                    throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
                 }
 
                 while (b.size() < n && !a.isEmpty()) {
@@ -1781,6 +1878,56 @@ public class Collectors {
         return new CollectorImpl<>(downstream.supplier(), downstream.accumulator(), downstream.combiner(), thenFinisher, characteristics);
     }
 
+    public static <T, A, R> Collector<T, ?, R> distinct(final Collector<? super T, A, R> downstream) {
+        Predicate<T> filter = null;
+        if (N.notNullOrEmpty(downstream.characteristics()) && downstream.characteristics().contains(Characteristics.CONCURRENT)) {
+            filter = new Predicate<T>() {
+                private final Map<Object, Object> set = new ConcurrentHashMap<>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.put(value, Stream.NONE) == null;
+                }
+            };
+        } else {
+            filter = new Predicate<T>() {
+                private final Set<Object> set = new HashSet<Object>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.add(value);
+                }
+            };
+        }
+
+        return filtering(filter, downstream);
+    }
+
+    public static <T, A, R> Collector<T, ?, R> distinctBy(final Function<? super T, ?> mapper, final Collector<? super T, A, R> downstream) {
+        Predicate<T> filter = null;
+        if (N.notNullOrEmpty(downstream.characteristics()) && downstream.characteristics().contains(Characteristics.CONCURRENT)) {
+            filter = new Predicate<T>() {
+                private final Map<Object, Object> set = new ConcurrentHashMap<>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.put(mapper.apply(value), Stream.NONE) == null;
+                }
+            };
+        } else {
+            filter = new Predicate<T>() {
+                private final Set<Object> set = new HashSet<Object>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.add(mapper.apply(value));
+                }
+            };
+        }
+
+        return filtering(filter, downstream);
+    }
+
     /**
      * Returns a {@code Collector} which collects into the {@link List} the
      * input elements for which given mapper function returns distinct results.
@@ -1901,13 +2048,13 @@ public class Collectors {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T extends Comparable> Collector<T, ?, Nullable<T>> min() {
+    public static <T extends Comparable> Collector<T, ?, Optional<T>> min() {
         return minBy(Fn.naturalOrder());
     }
 
     /**
      * Returns a {@code Collector} that produces the minimal element according
-     * to a given {@code Comparator}, described as an {@code Nullable<T>}.
+     * to a given {@code Comparator}, described as an {@code Optional<T>}.
      *
      * @implSpec
      * This produces a result equivalent to:
@@ -1919,7 +2066,7 @@ public class Collectors {
      * @param comparator a {@code Comparator} for comparing elements
      * @return a {@code Collector} that produces the minimal value
      */
-    public static <T> Collector<T, ?, Nullable<T>> minBy(final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, Optional<T>> minBy(final Comparator<? super T> comparator) {
         N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -1960,13 +2107,13 @@ public class Collectors {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T extends Comparable> Collector<T, ?, Nullable<T>> max() {
+    public static <T extends Comparable> Collector<T, ?, Optional<T>> max() {
         return maxBy(Fn.naturalOrder());
     }
 
     /**
      * Returns a {@code Collector} that produces the maximal element according
-     * to a given {@code Comparator}, described as an {@code Nullable<T>}.
+     * to a given {@code Comparator}, described as an {@code Optional<T>}.
      *
      * @implSpec
      * This produces a result equivalent to:
@@ -1978,7 +2125,7 @@ public class Collectors {
      * @param comparator a {@code Comparator} for comparing elements
      * @return a {@code Collector} that produces the maximal value
      */
-    public static <T> Collector<T, ?, Nullable<T>> maxBy(final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, Optional<T>> maxBy(final Comparator<? super T> comparator) {
         N.checkArgNotNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -2129,7 +2276,7 @@ public class Collectors {
      * @return a {@code Collector} which finds minimal and maximal elements.
      */
     public static <T, R> Collector<T, ?, R> minMax(final Comparator<? super T> comparator,
-            final BiFunction<? super Nullable<T>, ? super Nullable<T>, ? extends R> finisher) {
+            final BiFunction<? super Optional<T>, ? super Optional<T>, ? extends R> finisher) {
         return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher);
     }
 
@@ -3111,7 +3258,7 @@ public class Collectors {
     /**
      * Returns a {@code Collector} which performs a reduction of its
      * input elements under a specified {@code BinaryOperator}.  The result
-     * is described as an {@code Nullable<T>}.
+     * is described as an {@code Optional<T>}.
      *
      * @apiNote
      * The {@code reducing()} collectors are most useful when used in a
@@ -3135,7 +3282,7 @@ public class Collectors {
      * @see #reducing(Object, Function, BinaryOperator)
      */
     @SuppressWarnings("rawtypes")
-    public static <T> Collector<T, ?, Nullable<T>> reducing(final BinaryOperator<T> op) {
+    public static <T> Collector<T, ?, Optional<T>> reducing(final BinaryOperator<T> op) {
         final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
             @Override
             public OptionalBox<T> get() {
@@ -3145,7 +3292,7 @@ public class Collectors {
 
         final BiConsumer<OptionalBox<T>, T> accumulator = (BiConsumer) Reducing_Accumulator;
         final BinaryOperator<OptionalBox<T>> combiner = (BinaryOperator) Reducing_Combiner;
-        final Function<OptionalBox<T>, Nullable<T>> finisher = (Function) Reducing_Finisher;
+        final Function<OptionalBox<T>, Optional<T>> finisher = (Function) Reducing_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
@@ -3277,7 +3424,7 @@ public class Collectors {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U> Collector<T, ?, Nullable<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
+    public static <T, U> Collector<T, ?, Optional<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
         final Supplier<OptionalBoxx<T, U>> supplier = new Supplier<OptionalBoxx<T, U>>() {
             @Override
             public OptionalBoxx<T, U> get() {
@@ -3287,7 +3434,7 @@ public class Collectors {
 
         final BiConsumer<OptionalBoxx<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
         final BinaryOperator<OptionalBoxx<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
-        final Function<OptionalBoxx<T, U>, Nullable<U>> finisher = (Function) Reducing_Finisher_2;
+        final Function<OptionalBoxx<T, U>, Optional<U>> finisher = (Function) Reducing_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
@@ -3580,19 +3727,7 @@ public class Collectors {
      * @since 0.5.1
      */
     public static <T> Collector<T, ?, List<T>> dominators(final BiPredicate<? super T, ? super T> isDominator) {
-        final Supplier<List<T>> supplier = new Supplier<List<T>>() {
-            private volatile boolean isCalled = false;
-
-            @Override
-            public List<T> get() {
-                if (isCalled) {
-                    throw new UnsupportedOperationException("The 'dominators' Collector only can be used in sequential stream");
-                }
-
-                isCalled = true;
-                return new ArrayList<>();
-            }
-        };
+        final Supplier<List<T>> supplier = Suppliers.ofList();
 
         final BiConsumer<List<T>, T> accumulator = new BiConsumer<List<T>, T>() {
             @Override
@@ -3606,7 +3741,7 @@ public class Collectors {
             @Override
             public List<T> apply(List<T> a, List<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
-                    throw new UnsupportedOperationException("The 'dominators' Collector only can be used in sequential streams");
+                    throw new IllegalStateException("The 'dominators' Collector only can be used in sequential streams");
                 }
 
                 if (a.isEmpty()) {

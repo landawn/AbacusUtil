@@ -1,8 +1,10 @@
 ### 1.2.15
 
+* Refactoring: replace `Nullable` with `Optional` in `Collectors` and `Stream` related operations.
+
 * Add `Stream.of(resultSet, columnIndex/columnName)`.
 
-* Add `Collectors.onlyOne`.
+* Add `Collectors.onlyOne/first/last/distinct`.
 
 * Improvements and bug fix.
 

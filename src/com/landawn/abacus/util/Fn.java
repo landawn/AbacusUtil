@@ -3776,6 +3776,19 @@ public final class Fn extends Comparators {
             };
         }
 
+        public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
+            N.checkArgNotNull(predicate);
+        
+            return new Predicate<T>() {
+                private final MutableInt idx = new MutableInt(0);
+        
+                @Override
+                public boolean test(T t) {
+                    return predicate.test(idx.getAndIncrement(), t);
+                }
+            };
+        }
+
         /**
          * Remove the continuous repeat elements.
          * Returns a stateful predicate which should not be used in parallel stream.
@@ -3791,19 +3804,6 @@ public final class Fn extends Comparators {
                     boolean res = pre == NULL || N.equals(value, pre) == false;
                     pre = value;
                     return res;
-                }
-            };
-        }
-
-        public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
-            N.checkArgNotNull(predicate);
-
-            return new Predicate<T>() {
-                private final MutableInt idx = new MutableInt(0);
-
-                @Override
-                public boolean test(T t) {
-                    return predicate.test(idx.getAndIncrement(), t);
                 }
             };
         }

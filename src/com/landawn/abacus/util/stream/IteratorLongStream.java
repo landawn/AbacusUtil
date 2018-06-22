@@ -36,7 +36,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Try;
@@ -1244,7 +1244,7 @@ class IteratorLongStream extends AbstractLongStream {
             return OptionalLong.empty();
         }
 
-        final Nullable<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
+        final Optional<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
 
         return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
     }

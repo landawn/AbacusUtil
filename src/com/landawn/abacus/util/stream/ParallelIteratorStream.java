@@ -41,7 +41,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
@@ -2150,7 +2150,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Nullable<T> reduce(final BinaryOperator<T> accumulator) {
+    public Optional<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return super.reduce(accumulator);
         }
@@ -2208,7 +2208,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(result);
+        return result == NONE ? (Optional<T>) Optional.empty() : Optional.of(result);
     }
 
     @Override
@@ -2394,11 +2394,11 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Nullable<T> min(Comparator<? super T> comparator) {
+    public Optional<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Nullable.empty();
+            return Optional.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return Nullable.of(elements.next());
+            return Optional.of(elements.next());
         }
 
         comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
@@ -2407,9 +2407,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Nullable<T> max(Comparator<? super T> comparator) {
+    public Optional<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Nullable.empty();
+            return Optional.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
             T next = null;
 
@@ -2417,7 +2417,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 next = elements.next();
             }
 
-            return Nullable.of(next);
+            return Optional.of(next);
         }
 
         comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
@@ -2560,7 +2560,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return super.findFirst(predicate);
         }
@@ -2606,11 +2606,11 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         complette(futureList, eHolder, (E) null);
 
-        return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return super.findLast(predicate);
         }
@@ -2654,11 +2654,11 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         complette(futureList, eHolder, (E) null);
 
-        return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
     }
 
     @Override
-    public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
+    public <E extends Exception> Optional<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return super.findAny(predicate);
         }
@@ -2702,7 +2702,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         complette(futureList, eHolder, (E) null);
 
-        return resultHolder.value() == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value());
+        return resultHolder.value() == NONE ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value());
     }
 
     @Override
