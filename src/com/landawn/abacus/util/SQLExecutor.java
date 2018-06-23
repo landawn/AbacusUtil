@@ -4132,7 +4132,7 @@ public final class SQLExecutor implements Closeable {
             }
 
             if (entity instanceof DirtyMarker) {
-                ((DirtyMarker) entity).dirtyPropNames().clear();
+                ((DirtyMarker) entity).markDirty(false);
             }
         }
 
@@ -4168,9 +4168,7 @@ public final class SQLExecutor implements Closeable {
 
             final int updateCount = sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
 
-            if (updateCount > 0) {
-                postUpdate(entity);
-            }
+            postUpdate(entity, updatePropNames);
 
             return updateCount;
         }
@@ -4354,9 +4352,9 @@ public final class SQLExecutor implements Closeable {
 
             final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, null, jdbcSettings, parametersList);
 
-            if (updateCount > 0) {
+            if (N.firstNonNull(entities).orNull() instanceof DirtyMarker) {
                 for (Object entity : entities) {
-                    postUpdate(entity);
+                    postUpdate(entity, updatePropNames);
                 }
             }
 
@@ -4419,9 +4417,13 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SuppressWarnings("deprecation")
-        private void postUpdate(final Object entity) {
+        private void postUpdate(final Object entity, final Collection<String> updatePropNames) {
             if (entity instanceof DirtyMarker) {
-                ((DirtyMarker) entity).dirtyPropNames().clear();
+                if (updatePropNames == null) {
+                    ((DirtyMarker) entity).markDirty(false);
+                } else {
+                    ((DirtyMarker) entity).markDirty(updatePropNames, false);
+                }
             }
         }
 

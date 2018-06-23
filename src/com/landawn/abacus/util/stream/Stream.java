@@ -2626,7 +2626,7 @@ public abstract class Stream<T>
         }).tried();
     }
 
-    public static <T> Stream<T> ofOptional(T t) {
+    public static <T> Stream<T> ofNullable(T t) {
         return t == null ? Stream.<T> empty() : of(t);
     }
 

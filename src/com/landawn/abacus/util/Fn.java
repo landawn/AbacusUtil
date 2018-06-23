@@ -3778,13 +3778,57 @@ public final class Fn extends Comparators {
 
         public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
             N.checkArgNotNull(predicate);
-        
+
             return new Predicate<T>() {
                 private final MutableInt idx = new MutableInt(0);
-        
+
                 @Override
                 public boolean test(T t) {
                     return predicate.test(idx.getAndIncrement(), t);
+                }
+            };
+        }
+
+        public static <T> Predicate<T> distinct() {
+            return new Predicate<T>() {
+                private final Set<Object> set = new HashSet<Object>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.add(value);
+                }
+            };
+        }
+
+        public static <T> Predicate<T> distinctBy(final Function<? super T, ?> mapper) {
+            return new Predicate<T>() {
+                private final Set<Object> set = new HashSet<Object>();
+
+                @Override
+                public boolean test(T value) {
+                    return set.add(mapper.apply(value));
+                }
+            };
+        }
+
+        public static <T> Predicate<T> concurrentDistinct() {
+            return new Predicate<T>() {
+                private final Map<Object, Object> map = new ConcurrentHashMap<>();
+
+                @Override
+                public boolean test(T value) {
+                    return map.put(value, N.NULL_MASK) == null;
+                }
+            };
+        }
+
+        public static <T> Predicate<T> concurrentDistinctBy(final Function<? super T, ?> mapper) {
+            return new Predicate<T>() {
+                private final Map<Object, Object> map = new ConcurrentHashMap<>();
+
+                @Override
+                public boolean test(T value) {
+                    return map.put(mapper.apply(value), N.NULL_MASK) == null;
                 }
             };
         }

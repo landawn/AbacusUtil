@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collector.Characteristics;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -1402,7 +1403,7 @@ public class Collectors {
         @Override
         public void accept(Holder<Optional<Object>> holder, Object val) {
             if (holder.value().isPresent()) {
-                throw new IllegalStateException("Duplicate values");
+                throw new NonUniqueResultException("Duplicate values");
             }
 
             holder.setValue(Optional.of(val));
@@ -1413,7 +1414,7 @@ public class Collectors {
         @Override
         public Holder<Optional<Object>> apply(Holder<Optional<Object>> t, Holder<Optional<Object>> u) {
             if (t.value().isPresent() && u.value().isPresent()) {
-                throw new IllegalStateException("Duplicate values");
+                throw new NonUniqueResultException("Duplicate values");
             }
 
             return t.value().isPresent() ? t : u;
@@ -1428,7 +1429,7 @@ public class Collectors {
     };
 
     /**
-     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * {@code NonUniqueResultException} is threw if there are more than one values are collected.
      * 
      * @return
      */
@@ -1443,7 +1444,7 @@ public class Collectors {
     }
 
     /**
-     * {@code IllegalStateException} is threw if there are more than one values are collected.
+     * {@code NonUniqueResultException} is threw if there are more than one values are collected.
      * 
      * @param predicate
      * @return
@@ -1457,14 +1458,14 @@ public class Collectors {
     private static final Supplier<Holder<Object>> first_last_supplier = new Supplier<Holder<Object>>() {
         @Override
         public Holder<Object> get() {
-            return Holder.of(Stream.NONE);
+            return Holder.of(NONE);
         }
     };
 
     private static final BiConsumer<Holder<Object>, Object> first_accumulator = new BiConsumer<Holder<Object>, Object>() {
         @Override
         public void accept(Holder<Object> holder, Object val) {
-            if (holder.value() == Stream.NONE) {
+            if (holder.value() == NONE) {
                 holder.setValue(val);
             }
         }
@@ -1480,18 +1481,18 @@ public class Collectors {
     private static final BinaryOperator<Holder<Object>> first_last_combiner = new BinaryOperator<Holder<Object>>() {
         @Override
         public Holder<Object> apply(Holder<Object> t, Holder<Object> u) {
-            if (t.value() != Stream.NONE && u.value() != Stream.NONE) {
+            if (t.value() != NONE && u.value() != NONE) {
                 throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
             }
 
-            return t.value() != Stream.NONE ? t : u;
+            return t.value() != NONE ? t : u;
         }
     };
 
     private static final Function<Holder<Object>, Optional<Object>> first_last_finisher = new Function<Holder<Object>, Optional<Object>>() {
         @Override
         public Optional<Object> apply(Holder<Object> t) {
-            return t.value() == Stream.NONE ? Optional.empty() : Optional.of(t.value());
+            return t.value() == NONE ? Optional.empty() : Optional.of(t.value());
         }
     };
 
@@ -1882,11 +1883,11 @@ public class Collectors {
         Predicate<T> filter = null;
         if (N.notNullOrEmpty(downstream.characteristics()) && downstream.characteristics().contains(Characteristics.CONCURRENT)) {
             filter = new Predicate<T>() {
-                private final Map<Object, Object> set = new ConcurrentHashMap<>();
+                private final Map<Object, Object> map = new ConcurrentHashMap<>();
 
                 @Override
                 public boolean test(T value) {
-                    return set.put(value, Stream.NONE) == null;
+                    return map.put(value, NONE) == null;
                 }
             };
         } else {
@@ -1907,11 +1908,11 @@ public class Collectors {
         Predicate<T> filter = null;
         if (N.notNullOrEmpty(downstream.characteristics()) && downstream.characteristics().contains(Characteristics.CONCURRENT)) {
             filter = new Predicate<T>() {
-                private final Map<Object, Object> set = new ConcurrentHashMap<>();
+                private final Map<Object, Object> map = new ConcurrentHashMap<>();
 
                 @Override
                 public boolean test(T value) {
-                    return set.put(mapper.apply(value), Stream.NONE) == null;
+                    return map.put(mapper.apply(value), NONE) == null;
                 }
             };
         } else {
@@ -1956,11 +1957,11 @@ public class Collectors {
 
         final BiConsumer<Map<Object, T>, T> accumulator = new BiConsumer<Map<Object, T>, T>() {
             @Override
-            public void accept(Map<Object, T> a, T t) {
+            public void accept(Map<Object, T> map, T t) {
                 final Object key = mapper.apply(t);
 
-                if (a.containsKey(key) == false) {
-                    a.put(key, t);
+                if (map.containsKey(key) == false) {
+                    map.put(key, t);
                 }
             }
         };
@@ -1968,7 +1969,6 @@ public class Collectors {
         final BinaryOperator<Map<Object, T>> combiner = new BinaryOperator<Map<Object, T>>() {
             @Override
             public Map<Object, T> apply(Map<Object, T> a, Map<Object, T> b) {
-
                 for (Map.Entry<Object, T> entry : b.entrySet()) {
                     if (a.containsKey(entry.getKey()) == false) {
                         a.put(entry.getKey(), entry.getValue());
@@ -1981,8 +1981,8 @@ public class Collectors {
 
         final Function<Map<Object, T>, List<T>> finisher = new Function<Map<Object, T>, List<T>>() {
             @Override
-            public List<T> apply(Map<Object, T> a) {
-                return new ArrayList<>(a.values());
+            public List<T> apply(Map<Object, T> map) {
+                return new ArrayList<>(map.values());
             }
         };
 
