@@ -25,6 +25,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
@@ -3229,25 +3230,40 @@ public final class SQLExecutor implements Closeable {
         public static @interface Id {
         }
 
-        /** The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
+        /** 
+         * The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. 
+         */
         @Documented
         @Target(value = { FIELD, METHOD })
         @Retention(RUNTIME)
         public static @interface ReadOnly {
         }
 
-        /** The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
+        /** 
+         * The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. 
+         */
         @Documented
         @Target(value = { FIELD, METHOD })
         @Retention(RUNTIME)
         public static @interface ReadOnlyId {
         }
 
-        /** The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity. */
+        /** 
+         * The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity.
+         */
         @Documented
         @Target(value = { FIELD, METHOD })
         @Retention(RUNTIME)
         public static @interface NonUpdatable {
+        }
+
+        /** 
+         * The properties will be ignored by all db related operations if the input is an entity.
+         */
+        @Documented
+        @Target(value = { FIELD, METHOD })
+        @Retention(RUNTIME)
+        public static @interface Transient {
         }
 
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
@@ -3260,6 +3276,7 @@ public final class SQLExecutor implements Closeable {
         private final Type<T> targetType;
         private final List<String> propNameList;
         private final Set<String> propNameSet;
+        private final List<String> defaultSelectPropNameList;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
         private final String idName;
@@ -3272,22 +3289,40 @@ public final class SQLExecutor implements Closeable {
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
             final List<String> readOnlyPropNames = new ArrayList<>();
             final List<String> writeOnlyPropNames = new ArrayList<>();
+            final List<String> selectPropNameList = new ArrayList<>(ClassUtil.getPropGetMethodList(targetClass).keySet());
             String idPropName = null;
 
-            final Field[] fields = targetClass.getDeclaredFields();
-            if (N.notNullOrEmpty(fields)) {
-                for (Field field : fields) {
-                    if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
-                        idPropName = field.getName();
-                    }
+            final Set<Field> allFields = new HashSet<>();
 
-                    if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
-                        readOnlyPropNames.add(field.getName());
-                    }
+            for (Class<?> superClass : ClassUtil.getAllSuperclasses(targetClass)) {
+                allFields.addAll(Array.asList(superClass.getDeclaredFields()));
+            }
 
-                    if (field.isAnnotationPresent(NonUpdatable.class)) {
-                        writeOnlyPropNames.add(field.getName());
-                    }
+            allFields.addAll(Array.asList(targetClass.getDeclaredFields()));
+
+            for (Field field : allFields) {
+                if (ClassUtil.getPropGetMethod(targetClass, field.getName()) == null
+                        && ClassUtil.getPropGetMethod(targetClass, ClassUtil.formalizePropName(field.getName())) == null) {
+                    continue;
+                }
+
+                if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                    idPropName = field.getName();
+                }
+
+                if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                    readOnlyPropNames.add(field.getName());
+                }
+
+                if (field.isAnnotationPresent(NonUpdatable.class)) {
+                    writeOnlyPropNames.add(field.getName());
+                }
+
+                if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
+                    readOnlyPropNames.add(field.getName());
+
+                    selectPropNameList.remove(field.getName());
+                    selectPropNameList.remove(ClassUtil.formalizePropName(field.getName()));
                 }
             }
 
@@ -3309,6 +3344,13 @@ public final class SQLExecutor implements Closeable {
                 if (entry.getValue().isAnnotationPresent(NonUpdatable.class)) {
                     writeOnlyPropNames.add(entry.getKey());
                 }
+
+                if (entry.getValue().isAnnotationPresent(Transient.class)) {
+                    readOnlyPropNames.add(entry.getKey());
+
+                    selectPropNameList.remove(entry.getKey());
+                    selectPropNameList.remove(ClassUtil.formalizePropName(entry.getKey()));
+                }
             }
 
             if (N.notNullOrEmpty(idPropName) && !entityIdMap.containsKey(targetClass)) {
@@ -3327,15 +3369,23 @@ public final class SQLExecutor implements Closeable {
             this.targetType = N.typeOf(targetClass);
             this.propNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
             this.propNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
+            this.defaultSelectPropNameList = ImmutableList.of(selectPropNameList);
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
             this.idName = Maps.getOrDefault(entityIdMap, targetClass, SQLExecutor.ID);
             this.sql_exists_by_id = this.prepareQuery(SQLBuilder._1_list, L.eq(idName)).sql;
-            this.sql_get_by_id = this.prepareQuery(null, L.eq(idName)).sql;
+            this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, L.eq(idName)).sql;
             this.sql_delete_by_id = this.prepareDelete(L.eq(idName)).sql;
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
         }
 
+        /**
+         * 
+         * @param targetClass
+         * @param idName
+         * @deprecated annotation {@code Id} or {@code ReadOnlyId} is preferred.
+         */
+        @Deprecated
         public static void registerEntityId(Class<?> targetClass, String idName) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
@@ -3347,7 +3397,9 @@ public final class SQLExecutor implements Closeable {
          * 
          * @param targetClass
          * @param readOnlyPropNames
+         * @deprecated annotation {@code ReadOnly} is preferred.
          */
+        @Deprecated
         public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkArgNotNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
@@ -3374,7 +3426,9 @@ public final class SQLExecutor implements Closeable {
          * 
          * @param targetClass
          * @param writeOnlyPropNames
+         * @deprecated annotation {@code NonUpdatable} is preferred.
          */
+        @Deprecated
         public static void registerNonUpdatableProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkArgNotNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
@@ -3839,7 +3893,11 @@ public final class SQLExecutor implements Closeable {
             return prepareQuery(selectPropNames, whereCause, 0);
         }
 
-        private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause, final int count) {
+        private SP prepareQuery(Collection<String> selectPropNames, final Condition whereCause, final int count) {
+            if (N.isNullOrEmpty(selectPropNames)) {
+                selectPropNames = defaultSelectPropNameList;
+            }
+
             SQLBuilder sqlBuilder = null;
 
             switch (namingPolicy) {
@@ -3874,7 +3932,7 @@ public final class SQLExecutor implements Closeable {
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
 
-            if (count > 0) {
+            if (count > 0 && count < Integer.MAX_VALUE) {
                 switch (sqlExecutor.dbVersion()) {
                     case ORACLE:
                     case SQL_SERVER:

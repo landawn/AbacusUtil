@@ -1,3 +1,10 @@
+### 1.2.16
+
+* Support @Transient for `SQLExecutor.Mapper`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.15
 
 * Refactoring: replace `Nullable` with `Optional` in `Collectors` and `Stream` related operations.

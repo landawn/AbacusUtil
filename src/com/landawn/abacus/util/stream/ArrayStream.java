@@ -2028,7 +2028,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             private boolean initialized = false;
             private T[] aar;
             private int cursor = 0;
-            private int toIndex;
+            private int to;
 
             @Override
             public boolean hasNext() {
@@ -2036,7 +2036,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                return cursor < toIndex;
+                return cursor < to;
             }
 
             @Override
@@ -2045,7 +2045,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                if (cursor >= toIndex) {
+                if (cursor >= to) {
                     throw new NoSuchElementException();
                 }
 
@@ -2058,7 +2058,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                return toIndex - cursor;
+                return to - cursor;
             }
 
             @Override
@@ -2067,7 +2067,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                cursor = n > toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = n > to - cursor ? to : cursor + (int) n;
             }
 
             @Override
@@ -2076,9 +2076,9 @@ class ArrayStream<T> extends AbstractStream<T> {
                     init();
                 }
 
-                a = a.length >= (toIndex - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (toIndex - cursor));
+                a = a.length >= (to - cursor) ? a : (A[]) N.newArray(a.getClass().getComponentType(), (to - cursor));
 
-                N.copy(aar, cursor, a, 0, toIndex - cursor);
+                N.copy(aar, cursor, a, 0, to - cursor);
 
                 return a;
             }
@@ -2087,7 +2087,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 if (initialized == false) {
                     initialized = true;
                     aar = (T[]) N.top(elements, fromIndex, toIndex, n, comparator).toArray();
-                    toIndex = aar.length;
+                    to = aar.length;
                 }
             }
         }, false, null);

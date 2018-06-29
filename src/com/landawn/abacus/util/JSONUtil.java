@@ -102,13 +102,13 @@ public final class JSONUtil {
         return unwrap(Map.class, jsonObject);
     }
 
-    public static <T> T unwrap(final Class<?> cls, final JSONObject jsonObject) throws JSONException {
-        return unwrap(N.typeOf(cls), jsonObject);
+    public static <T> T unwrap(final Class<? extends T> cls, final JSONObject jsonObject) throws JSONException {
+        return unwrap(N.<T> typeOf(cls), jsonObject);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T unwrap(Type<?> type, final JSONObject jsonObject) throws JSONException {
-        type = type.clazz().equals(Object.class) ? N.typeOf("Map<String, Object>") : type;
+    public static <T> T unwrap(Type<? extends T> type, final JSONObject jsonObject) throws JSONException {
+        type = type.clazz().equals(Object.class) ? N.<T> typeOf("Map<String, Object>") : type;
         final Class<?> cls = type.clazz();
 
         if (type.clazz().isAssignableFrom(JSONObject.class)) {
@@ -181,13 +181,13 @@ public final class JSONUtil {
      * @param jsonArray
      * @return
      */
-    public static <T> T unwrap(final Class<?> cls, final JSONArray jsonArray) throws JSONException {
-        return unwrap(N.typeOf(cls), jsonArray);
+    public static <T> T unwrap(final Class<? extends T> cls, final JSONArray jsonArray) throws JSONException {
+        return unwrap(N.<T> typeOf(cls), jsonArray);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T unwrap(Type<?> type, final JSONArray jsonArray) throws JSONException {
-        type = type.clazz().equals(Object.class) ? N.typeOf("List<Object>") : type;
+    public static <T> T unwrap(Type<? extends T> type, final JSONArray jsonArray) throws JSONException {
+        type = type.clazz().equals(Object.class) ? N.<T> typeOf("List<Object>") : type;
         final int len = jsonArray.length();
 
         if (type.clazz().isAssignableFrom(JSONArray.class)) {

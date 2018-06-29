@@ -740,7 +740,7 @@ public final class N {
      * @return the default value of the specified <code>targetClass</code> if the specified string is null.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<T> targetClass, final String str) {
+    public static <T> T valueOf(final Class<? extends T> targetClass, final String str) {
         return (str == null) ? defaultValueOf(targetClass) : (T) N.typeOf(targetClass).valueOf(str);
     }
 
@@ -2974,7 +2974,7 @@ public final class N {
      * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
-    public static <T> T as(final Class<T> targetClass, final Object obj) {
+    public static <T> T as(final Class<? extends T> targetClass, final Object obj) {
         //        if (obj == null) {
         //            return defaultValueOf(targetClass);
         //        }
@@ -3012,7 +3012,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T as(final Type<T> targetType, final Object obj) {
+    public static <T> T as(final Type<? extends T> targetType, final Object obj) {
         if (obj == null) {
             return targetType.defaultValue();
         }
@@ -3321,11 +3321,11 @@ public final class N {
         return URLEncodedUtil.decode(urlQuery, charset);
     }
 
-    public static <T> T urlDecode(final Class<T> targetClass, final String urlQuery) {
+    public static <T> T urlDecode(final Class<? extends T> targetClass, final String urlQuery) {
         return URLEncodedUtil.decode(targetClass, urlQuery);
     }
 
-    public static <T> T urlDecode(final Class<T> targetClass, final String urlQuery, final Charset charset) {
+    public static <T> T urlDecode(final Class<? extends T> targetClass, final String urlQuery, final Charset charset) {
         return URLEncodedUtil.decode(targetClass, urlQuery, charset);
     }
 
@@ -3368,7 +3368,7 @@ public final class N {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public static <T> T clone(final Class<T> targetClass, final Object entity) {
+    public static <T> T clone(final Class<? extends T> targetClass, final Object entity) {
         final Class<?> srcCls = entity.getClass();
         Object copy = null;
 
@@ -3410,7 +3410,7 @@ public final class N {
         return copy((Class<T>) entity.getClass(), entity, selectPropNames);
     }
 
-    public static <T> T copy(final Class<T> targetClass, final Object entity) {
+    public static <T> T copy(final Class<? extends T> targetClass, final Object entity) {
         return copy(targetClass, entity, null);
     }
 
@@ -3429,7 +3429,7 @@ public final class N {
      * @return
      */
     @SuppressWarnings({ "unchecked" })
-    public static <T> T copy(final Class<T> targetClass, final Object entity, final Collection<String> selectPropNames) {
+    public static <T> T copy(final Class<? extends T> targetClass, final Object entity, final Collection<String> selectPropNames) {
         final Class<?> srcCls = entity.getClass();
         T copy = null;
 
@@ -3457,7 +3457,8 @@ public final class N {
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
-    public static <T> T copy(final Class<T> targetClass, final Object entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+    public static <T> T copy(final Class<? extends T> targetClass, final Object entity, final boolean ignoreUnknownProperty,
+            final Set<String> ignorePropNames) {
         final Class<?> srcCls = entity.getClass();
         T copy = null;
 
@@ -26341,43 +26342,43 @@ public final class N {
         Utils.jsonParser.serialize(writer, obj, config);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final String json) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final String json) {
         return Utils.jsonParser.deserialize(targetClass, json);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final String json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final String json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final File json) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final File json) {
         return Utils.jsonParser.deserialize(targetClass, json);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final File json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final File json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final InputStream json) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final InputStream json) {
         return Utils.jsonParser.deserialize(targetClass, json);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final InputStream json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final InputStream json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final Reader json) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final Reader json) {
         return Utils.jsonParser.deserialize(targetClass, json);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final Reader json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final Reader json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final String json, final int fromIndex, final int toIndex) {
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final String json, final int fromIndex, final int toIndex) {
         return Utils.jsonParser.deserialize(targetClass, json, fromIndex, toIndex);
     }
 
-    public static <T> T fromJSON(final Class<T> targetClass, final String json, final int fromIndex, final int toIndex,
+    public static <T> T fromJSON(final Class<? extends T> targetClass, final String json, final int fromIndex, final int toIndex,
             final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetClass, json, fromIndex, toIndex, config);
     }
@@ -26388,7 +26389,7 @@ public final class N {
      * @param json
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final String json) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final String json) {
         return fromJSON(targetType, json, null);
     }
 
@@ -26399,7 +26400,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final String json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final String json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
@@ -26409,7 +26410,7 @@ public final class N {
      * @param json
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final File json) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final File json) {
         return fromJSON(targetType, json, null);
     }
 
@@ -26420,7 +26421,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final File json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final File json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
@@ -26430,7 +26431,7 @@ public final class N {
      * @param json
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final InputStream json) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final InputStream json) {
         return fromJSON(targetType, json, null);
     }
 
@@ -26441,7 +26442,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final InputStream json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final InputStream json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
@@ -26451,7 +26452,7 @@ public final class N {
      * @param json
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final Reader json) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final Reader json) {
         return fromJSON(targetType, json, null);
     }
 
@@ -26462,7 +26463,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final Reader json, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final Reader json, final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
@@ -26474,7 +26475,7 @@ public final class N {
      * @param toIndex
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final String json, final int fromIndex, final int toIndex) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final String json, final int fromIndex, final int toIndex) {
         return fromJSON(targetType, json, fromIndex, toIndex, null);
     }
 
@@ -26487,7 +26488,8 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromJSON(final Type<T> targetType, final String json, final int fromIndex, final int toIndex, final JSONDeserializationConfig config) {
+    public static <T> T fromJSON(final Type<? extends T> targetType, final String json, final int fromIndex, final int toIndex,
+            final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, fromIndex, toIndex, setConfig(targetType, config, true));
     }
 
@@ -26523,35 +26525,35 @@ public final class N {
         Utils.xmlParser.serialize(writer, obj, config);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final String xml) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final String xml) {
         return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final String xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final String xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final File xml) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final File xml) {
         return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final File xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final File xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final InputStream xml) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final InputStream xml) {
         return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final InputStream xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final InputStream xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final Reader xml) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final Reader xml) {
         return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
-    public static <T> T fromXML(final Class<T> targetClass, final Reader xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Class<? extends T> targetClass, final Reader xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
@@ -26561,7 +26563,7 @@ public final class N {
      * @param xml
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final String xml) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final String xml) {
         return fromJSON(targetType, xml, null);
     }
 
@@ -26572,7 +26574,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final String xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final String xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
@@ -26582,7 +26584,7 @@ public final class N {
      * @param xml
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final File xml) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final File xml) {
         return fromJSON(targetType, xml, null);
     }
 
@@ -26593,7 +26595,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final File xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final File xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
@@ -26603,7 +26605,7 @@ public final class N {
      * @param xml
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final InputStream xml) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final InputStream xml) {
         return fromJSON(targetType, xml, null);
     }
 
@@ -26614,7 +26616,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final InputStream xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final InputStream xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
@@ -26624,7 +26626,7 @@ public final class N {
      * @param xml
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final Reader xml) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final Reader xml) {
         return fromJSON(targetType, xml, null);
     }
 
@@ -26635,7 +26637,7 @@ public final class N {
      * @param config
      * @return
      */
-    public static <T> T fromXML(final Type<T> targetType, final Reader xml, final XMLDeserializationConfig config) {
+    public static <T> T fromXML(final Type<? extends T> targetType, final Reader xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
