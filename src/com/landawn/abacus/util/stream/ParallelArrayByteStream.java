@@ -30,7 +30,6 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -226,32 +225,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }).sequential().mapToByte(ToByteFunction.UNBOX);
 
         return new ParallelIteratorByteStream(stream, false, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public ByteStream limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayByteStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public ByteStream skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayByteStream(elements, toIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayByteStream(elements, (int) (fromIndex + n), toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override
@@ -556,24 +529,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public ByteStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayByteStream(elements, fromIndex + 1, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public ByteStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayByteStream(elements, fromIndex, toIndex - 1, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public <R> R collect(final Supplier<R> supplier, final ObjByteConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.collect(supplier, accumulator, combiner);
@@ -798,15 +753,6 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (fromIndex == toIndex) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

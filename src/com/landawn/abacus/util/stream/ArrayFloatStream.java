@@ -1135,21 +1135,87 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream top(int n) {
-        return top(n, FLOAT_COMPARATOR);
-    }
-
-    @Override
-    public FloatStream top(int n, Comparator<? super Float> comparator) {
+    public FloatStream top(final int n, final Comparator<? super Float> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && isSameComparator(comparator, FLOAT_COMPARATOR)) {
-            return new ArrayFloatStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
-        } else {
-            return new ArrayFloatStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return newStream(elements, toIndex - n, toIndex, sorted);
         }
+
+        return newStream(new FloatIteratorEx() {
+            private boolean initialized = false;
+            private float[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public float[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final float[] a = new float[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public FloatList toList() {
+                return FloatList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = N.top(elements, fromIndex, toIndex, n, comparator);
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1196,7 +1262,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
 
     @Override
@@ -1208,9 +1274,9 @@ class ArrayFloatStream extends AbstractFloatStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayFloatStream(elements, toIndex, toIndex, sorted, closeHandlers);
+            return newStream(elements, toIndex, toIndex, sorted);
         } else {
-            return new ArrayFloatStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return newStream(elements, (int) (fromIndex + n), toIndex, sorted);
         }
     }
 
@@ -1412,7 +1478,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
     @Override
@@ -1421,7 +1487,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted);
     }
 
     @Override

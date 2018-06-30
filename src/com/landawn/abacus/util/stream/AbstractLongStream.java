@@ -363,6 +363,11 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream top(int n) {
+        return top(n, LONG_COMPARATOR);
+    }
+
+    @Override
     public OptionalLong first() {
         final LongIterator iter = this.iteratorEx();
 

@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
@@ -289,16 +287,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                 return mapper.apply(value);
             }
         });
-    }
-
-    @Override
-    public DoubleStream top(int n) {
-        return top(n, DOUBLE_COMPARATOR);
-    }
-
-    @Override
-    public DoubleStream top(int n, Comparator<? super Double> comparator) {
-        return new ParallelIteratorDoubleStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -582,118 +570,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
         return container == NONE ? supplier.get() : container;
     };
-
-    @Override
-    public OptionalDouble head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public DoubleStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public DoubleStream headd() {
-        if (head2 == null) {
-            final double[] a = elements.toArray();
-            head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalDouble taill() {
-        if (tail2 == null) {
-            final double[] a = elements.toArray();
-            head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalDouble min() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        } else if (sorted) {
-            return OptionalDouble.of(elements.nextDouble());
-        }
-
-        double candidate = elements.nextDouble();
-        double next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextDouble();
-
-            if (N.compare(next, candidate) < 0) {
-                candidate = next;
-            }
-        }
-
-        return OptionalDouble.of(candidate);
-    }
-
-    @Override
-    public OptionalDouble max() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        } else if (sorted) {
-            double next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextDouble();
-            }
-
-            return OptionalDouble.of(next);
-        }
-
-        double candidate = elements.nextDouble();
-        double next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextDouble();
-
-            if (N.compare(next, candidate) > 0) {
-                candidate = next;
-            }
-        }
-
-        return OptionalDouble.of(candidate);
-    }
-
-    @Override
-    public double sum() {
-        return sequential().sum();
-    }
-
-    @Override
-    public OptionalDouble average() {
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public DoubleSummaryStatistics summarize() {
-        return sequential().summarize();
-    }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {

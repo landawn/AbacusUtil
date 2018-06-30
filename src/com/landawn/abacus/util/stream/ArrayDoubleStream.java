@@ -1135,21 +1135,87 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream top(int n) {
-        return top(n, DOUBLE_COMPARATOR);
-    }
-
-    @Override
-    public DoubleStream top(int n, Comparator<? super Double> comparator) {
-        N.checkArgument(n > 0, "'n' can not be less than 1: %s", n);
+    public DoubleStream top(final int n, final Comparator<? super Double> comparator) {
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && isSameComparator(comparator, DOUBLE_COMPARATOR)) {
-            return new ArrayDoubleStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
-        } else {
-            return new ArrayDoubleStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return newStream(elements, toIndex - n, toIndex, sorted);
         }
+
+        return newStream(new DoubleIteratorEx() {
+            private boolean initialized = false;
+            private double[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final double[] a = new double[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public DoubleList toList() {
+                return DoubleList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = N.top(elements, fromIndex, toIndex, n, comparator);
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1196,7 +1262,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             return this;
         }
 
-        return new ArrayDoubleStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
 
     @Override
@@ -1208,9 +1274,9 @@ class ArrayDoubleStream extends AbstractDoubleStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayDoubleStream(elements, toIndex, toIndex, sorted, closeHandlers);
+            return newStream(elements, toIndex, toIndex, sorted);
         } else {
-            return new ArrayDoubleStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return newStream(elements, (int) (fromIndex + n), toIndex, sorted);
         }
     }
 
@@ -1412,7 +1478,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             return this;
         }
 
-        return new ArrayDoubleStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
     @Override
@@ -1421,7 +1487,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             return this;
         }
 
-        return new ArrayDoubleStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted);
     }
 
     @Override

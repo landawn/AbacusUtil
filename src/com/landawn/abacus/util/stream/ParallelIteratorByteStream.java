@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.ByteIterator;
-import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
@@ -31,7 +30,6 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -503,134 +501,6 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalByte head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public ByteStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public ByteStream headd() {
-        if (head2 == null) {
-            final byte[] a = elements.toArray();
-            head2 = new ParallelArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalByte taill() {
-        if (tail2 == null) {
-            final byte[] a = elements.toArray();
-            head2 = new ParallelArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalByte min() {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        } else if (sorted) {
-            return OptionalByte.of(elements.nextByte());
-        }
-
-        byte candidate = elements.nextByte();
-        byte next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextByte();
-
-            if (next < candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalByte.of(candidate);
-    }
-
-    @Override
-    public OptionalByte max() {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        } else if (sorted) {
-            byte next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextByte();
-            }
-
-            return OptionalByte.of(next);
-        }
-
-        byte candidate = elements.nextByte();
-        byte next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextByte();
-
-            if (next > candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalByte.of(candidate);
-    }
-
-    @Override
-    public long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.nextByte();
-        }
-
-        return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public ByteSummaryStatistics summarize() {
-        final ByteSummaryStatistics result = new ByteSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextByte());
-        }
-
-        return result;
     }
 
     @Override

@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,13 +24,11 @@ import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -290,16 +287,6 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
                 return mapper.apply(value);
             }
         });
-    }
-
-    @Override
-    public FloatStream top(int n) {
-        return top(n, FLOAT_COMPARATOR);
-    }
-
-    @Override
-    public FloatStream top(int n, Comparator<? super Float> comparator) {
-        return new ParallelIteratorFloatStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -582,124 +569,6 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalFloat head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public FloatStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public FloatStream headd() {
-        if (head2 == null) {
-            final float[] a = elements.toArray();
-            head2 = new ParallelArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalFloat taill() {
-        if (tail2 == null) {
-            final float[] a = elements.toArray();
-            head2 = new ParallelArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalFloat min() {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements.nextFloat());
-        }
-
-        float candidate = elements.nextFloat();
-        float next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextFloat();
-
-            if (N.compare(next, candidate) < 0) {
-                candidate = next;
-            }
-        }
-
-        return OptionalFloat.of(candidate);
-    }
-
-    @Override
-    public OptionalFloat max() {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            float next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextFloat();
-            }
-
-            return OptionalFloat.of(next);
-        }
-
-        float candidate = elements.nextFloat();
-        float next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextFloat();
-
-            if (N.compare(next, candidate) > 0) {
-                candidate = next;
-            }
-        }
-
-        return OptionalFloat.of(candidate);
-    }
-
-    @Override
-    public double sum() {
-        return sequential().sum();
-    }
-
-    @Override
-    public OptionalDouble average() {
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public FloatSummaryStatistics summarize() {
-        final FloatSummaryStatistics result = new FloatSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextFloat());
-        }
-
-        return result;
     }
 
     @Override

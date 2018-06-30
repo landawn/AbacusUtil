@@ -17,15 +17,19 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
@@ -55,7 +59,6 @@ import com.landawn.abacus.util.function.LongToIntFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -874,8 +877,112 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream top(int n, Comparator<? super Long> comparator) {
-        return boxed().top(n, comparator).mapToLong(ToLongFunction.UNBOX);
+    public LongStream top(final int n, final Comparator<? super Long> comparator) {
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
+
+        return newStream(new LongIteratorEx() {
+            private boolean initialized = false;
+            private long[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public long nextLong() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public long[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final long[] a = new long[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public LongList toList() {
+                return LongList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    if (sorted && isSameComparator(comparator, cmp)) {
+                        final LinkedList<Long> queue = new LinkedList<>();
+
+                        while (elements.hasNext()) {
+                            if (queue.size() >= n) {
+                                queue.poll();
+                            }
+
+                            queue.offer(elements.nextLong());
+                        }
+
+                        aar = Array.unbox(N.EMPTY_LONG_OBJ_ARRAY);
+                    } else {
+                        final Queue<Long> heap = new PriorityQueue<>(n, comparator);
+
+                        Long next = null;
+                        while (elements.hasNext()) {
+                            next = elements.nextLong();
+
+                            if (heap.size() >= n) {
+                                if (comparator.compare(next, heap.peek()) > 0) {
+                                    heap.poll();
+                                    heap.offer(next);
+                                }
+                            } else {
+                                heap.offer(next);
+                            }
+                        }
+
+                        aar = Array.unbox(heap.toArray(N.EMPTY_LONG_OBJ_ARRAY));
+                    }
+
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1148,7 +1255,7 @@ class IteratorLongStream extends AbstractLongStream {
     public OptionalLong head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new IteratorLongStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return head;
@@ -1158,7 +1265,7 @@ class IteratorLongStream extends AbstractLongStream {
     public LongStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new IteratorLongStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return tail;
@@ -1168,7 +1275,7 @@ class IteratorLongStream extends AbstractLongStream {
     public LongStream headd() {
         if (head2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
@@ -1179,7 +1286,7 @@ class IteratorLongStream extends AbstractLongStream {
     public OptionalLong taill() {
         if (tail2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 

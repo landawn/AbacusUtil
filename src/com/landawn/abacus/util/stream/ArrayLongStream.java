@@ -1136,21 +1136,87 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream top(int n) {
-        return top(n, LONG_COMPARATOR);
-    }
-
-    @Override
-    public LongStream top(int n, Comparator<? super Long> comparator) {
+    public LongStream top(final int n, final Comparator<? super Long> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && isSameComparator(comparator, LONG_COMPARATOR)) {
-            return new ArrayLongStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
-        } else {
-            return new ArrayLongStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return newStream(elements, toIndex - n, toIndex, sorted);
         }
+
+        return newStream(new LongIteratorEx() {
+            private boolean initialized = false;
+            private long[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public long nextLong() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public long[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final long[] a = new long[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public LongList toList() {
+                return LongList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = N.top(elements, fromIndex, toIndex, n, comparator);
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1197,7 +1263,7 @@ class ArrayLongStream extends AbstractLongStream {
             return this;
         }
 
-        return new ArrayLongStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
 
     @Override
@@ -1209,9 +1275,9 @@ class ArrayLongStream extends AbstractLongStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayLongStream(elements, toIndex, toIndex, sorted, closeHandlers);
+            return newStream(elements, toIndex, toIndex, sorted);
         } else {
-            return new ArrayLongStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return newStream(elements, (int) (fromIndex + n), toIndex, sorted);
         }
     }
 
@@ -1413,7 +1479,7 @@ class ArrayLongStream extends AbstractLongStream {
             return this;
         }
 
-        return new ArrayLongStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
     @Override
@@ -1422,7 +1488,7 @@ class ArrayLongStream extends AbstractLongStream {
             return this;
         }
 
-        return new ArrayLongStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted);
     }
 
     @Override
@@ -1476,7 +1542,7 @@ class ArrayLongStream extends AbstractLongStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
+        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

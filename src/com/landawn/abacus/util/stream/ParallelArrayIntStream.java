@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +29,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -384,25 +382,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
     }
 
     @Override
-    public IntStream top(int n) {
-        return top(n, INT_COMPARATOR);
-    }
-
-    @Override
-    public IntStream top(int n, Comparator<? super Integer> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
-
-        if (n >= toIndex - fromIndex) {
-            return this;
-        } else if (sorted && isSameComparator(comparator, INT_COMPARATOR)) {
-            return new ParallelArrayIntStream(elements, toIndex - n, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            final int[] a = N.top(elements, fromIndex, toIndex, n, comparator);
-            return new ParallelArrayIntStream(a, 0, a.length, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @Override
     public IntStream peek(final IntConsumer action) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
@@ -416,33 +395,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
         }).sequential().mapToInt(ToIntFunction.UNBOX);
 
         return new ParallelIteratorIntStream(stream, false, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public IntStream limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayIntStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, maxThreadNum, splitor, closeHandlers);
-
-    }
-
-    @Override
-    public IntStream skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayIntStream(elements, toIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayIntStream(elements, (int) (fromIndex + n), toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override
@@ -840,24 +792,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
     }
 
     @Override
-    public IntStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayIntStream(elements, fromIndex + 1, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public IntStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayIntStream(elements, fromIndex, toIndex - 1, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public OptionalInt min() {
         if (fromIndex == toIndex) {
             return OptionalInt.empty();
@@ -993,15 +927,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
         }
 
         return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (fromIndex == toIndex) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

@@ -945,7 +945,7 @@ class IteratorCharStream extends AbstractCharStream {
     public OptionalChar head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new IteratorCharStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return head;
@@ -955,7 +955,7 @@ class IteratorCharStream extends AbstractCharStream {
     public CharStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new IteratorCharStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return tail;
@@ -965,7 +965,7 @@ class IteratorCharStream extends AbstractCharStream {
     public CharStream headd() {
         if (head2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
@@ -976,7 +976,7 @@ class IteratorCharStream extends AbstractCharStream {
     public OptionalChar taill() {
         if (tail2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 

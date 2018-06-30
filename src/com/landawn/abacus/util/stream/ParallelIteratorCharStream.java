@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CharIterator;
-import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
@@ -31,7 +30,6 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalChar;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -503,134 +501,6 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalChar head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public CharStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public CharStream headd() {
-        if (head2 == null) {
-            final char[] a = elements.toArray();
-            head2 = new ParallelArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalChar taill() {
-        if (tail2 == null) {
-            final char[] a = elements.toArray();
-            head2 = new ParallelArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalChar min() {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            return OptionalChar.of(elements.nextChar());
-        }
-
-        char candidate = elements.nextChar();
-        char next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextChar();
-
-            if (next < candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalChar.of(candidate);
-    }
-
-    @Override
-    public OptionalChar max() {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            char next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextChar();
-            }
-
-            return OptionalChar.of(next);
-        }
-
-        char candidate = elements.nextChar();
-        char next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextChar();
-
-            if (next > candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalChar.of(candidate);
-    }
-
-    @Override
-    public long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.nextChar();
-        }
-
-        return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public CharSummaryStatistics summarize() {
-        final CharSummaryStatistics result = new CharSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextChar());
-        }
-
-        return result;
     }
 
     @Override

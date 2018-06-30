@@ -2463,32 +2463,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public Stream<T> skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayStream<>(elements, toIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayStream<>(elements, (int) (fromIndex + n), toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @Override
     public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEach(action);

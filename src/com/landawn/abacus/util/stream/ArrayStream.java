@@ -2137,7 +2137,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<>(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp);
     }
 
     @Override
@@ -2149,9 +2149,9 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayStream<>(elements, toIndex, toIndex, sorted, cmp, closeHandlers);
+            return newStream(elements, toIndex, toIndex, sorted, cmp);
         } else {
-            return new ArrayStream<>(elements, (int) (fromIndex + n), toIndex, sorted, cmp, closeHandlers);
+            return newStream(elements, (int) (fromIndex + n), toIndex, sorted, cmp);
         }
     }
 

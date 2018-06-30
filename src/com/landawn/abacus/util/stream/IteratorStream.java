@@ -1631,99 +1631,103 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         return newStream(new ObjIteratorEx<T>() {
-            T[] a = null;
-            int cursor = 0;
-            int toIndex;
+            private boolean initialized = false;
+            private T[] aar = null;
+            private int cursor = 0;
+            private int to;
 
             @Override
             public boolean hasNext() {
-                if (a == null) {
-                    top();
+                if (initialized == false) {
+                    init();
                 }
 
-                return cursor < toIndex;
+                return cursor < to;
             }
 
             @Override
             public T next() {
-                if (a == null) {
-                    top();
+                if (initialized == false) {
+                    init();
                 }
 
-                if (cursor >= toIndex) {
+                if (cursor >= to) {
                     throw new NoSuchElementException();
                 }
 
-                return a[cursor++];
+                return aar[cursor++];
             }
 
             @Override
             public long count() {
-                if (a == null) {
-                    top();
+                if (initialized == false) {
+                    init();
                 }
 
-                return toIndex - cursor;
+                return to - cursor;
             }
 
             @Override
             public void skip(long n) {
-                if (a == null) {
-                    top();
+                if (initialized == false) {
+                    init();
                 }
 
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                cursor = n < to - cursor ? cursor + (int) n : to;
             }
 
             @Override
             public <A> A[] toArray(A[] b) {
-                if (a == null) {
-                    top();
+                if (initialized == false) {
+                    init();
                 }
 
-                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+                b = b.length >= to - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), to - cursor);
 
-                N.copy(a, cursor, b, 0, toIndex - cursor);
+                N.copy(aar, cursor, b, 0, to - cursor);
 
                 return b;
             }
 
-            private void top() {
-                if (sorted && isSameComparator(comparator, cmp)) {
-                    final LinkedList<T> queue = new LinkedList<>();
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    if (sorted && isSameComparator(comparator, cmp)) {
+                        final LinkedList<T> queue = new LinkedList<>();
 
-                    while (elements.hasNext()) {
-                        if (queue.size() >= n) {
-                            queue.poll();
+                        while (elements.hasNext()) {
+                            if (queue.size() >= n) {
+                                queue.poll();
+                            }
+
+                            queue.offer(elements.next());
                         }
 
-                        queue.offer(elements.next());
-                    }
+                        aar = (T[]) queue.toArray();
+                    } else {
+                        final Queue<T> heap = new PriorityQueue<>(n, comparator);
 
-                    a = (T[]) queue.toArray();
-                } else {
-                    final Queue<T> heap = new PriorityQueue<>(n, comparator);
+                        T next = null;
+                        while (elements.hasNext()) {
+                            next = elements.next();
 
-                    T next = null;
-                    while (elements.hasNext()) {
-                        next = elements.next();
-
-                        if (heap.size() >= n) {
-                            if (comparator.compare(next, heap.peek()) > 0) {
-                                heap.poll();
+                            if (heap.size() >= n) {
+                                if (comparator.compare(next, heap.peek()) > 0) {
+                                    heap.poll();
+                                    heap.offer(next);
+                                }
+                            } else {
                                 heap.offer(next);
                             }
-                        } else {
-                            heap.offer(next);
                         }
+
+                        aar = (T[]) heap.toArray();
                     }
 
-                    a = (T[]) heap.toArray();
+                    to = aar.length;
                 }
-
-                toIndex = a.length;
             }
-        }, sorted, cmp);
+        }, false, null);
     }
 
     @Override

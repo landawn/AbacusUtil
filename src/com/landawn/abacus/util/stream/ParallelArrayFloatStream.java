@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -282,25 +281,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public FloatStream top(int n) {
-        return top(n, FLOAT_COMPARATOR);
-    }
-
-    @Override
-    public FloatStream top(int n, Comparator<? super Float> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
-
-        if (n >= toIndex - fromIndex) {
-            return this;
-        } else if (sorted && isSameComparator(comparator, FLOAT_COMPARATOR)) {
-            return new ParallelArrayFloatStream(elements, toIndex - n, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            final float[] a = N.top(elements, fromIndex, toIndex, n, comparator);
-            return new ParallelArrayFloatStream(a, 0, a.length, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @Override
     public FloatStream peek(final FloatConsumer action) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
@@ -314,32 +294,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
         }).sequential().mapToFloat(ToFloatFunction.UNBOX);
 
         return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public FloatStream limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayFloatStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public FloatStream skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayFloatStream(elements, toIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayFloatStream(elements, (int) (fromIndex + n), toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override
@@ -730,24 +684,6 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public FloatStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayFloatStream(elements, fromIndex + 1, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public FloatStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayFloatStream(elements, fromIndex, toIndex - 1, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

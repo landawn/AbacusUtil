@@ -912,21 +912,87 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream top(int n) {
-        return top(n, SHORT_COMPARATOR);
-    }
-
-    @Override
-    public ShortStream top(int n, Comparator<? super Short> comparator) {
+    public ShortStream top(final int n, final Comparator<? super Short> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && isSameComparator(comparator, SHORT_COMPARATOR)) {
-            return new ArrayShortStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
-        } else {
-            return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return newStream(elements, toIndex - n, toIndex, sorted);
         }
+
+        return newStream(new ShortIteratorEx() {
+            private boolean initialized = false;
+            private short[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public short nextShort() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public short[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final short[] a = new short[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public ShortList toList() {
+                return ShortList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    aar = N.top(elements, fromIndex, toIndex, n, comparator);
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -973,7 +1039,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
 
     @Override
@@ -1189,7 +1255,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
     @Override
@@ -1198,7 +1264,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted);
     }
 
     @Override
@@ -1252,7 +1318,7 @@ class ArrayShortStream extends AbstractShortStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
+        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

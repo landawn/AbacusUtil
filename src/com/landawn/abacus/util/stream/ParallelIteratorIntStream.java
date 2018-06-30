@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,12 +25,10 @@ import java.util.concurrent.ExecutionException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IntIterator;
-import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -394,16 +391,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public IntStream top(int n) {
-        return top(n, INT_COMPARATOR);
-    }
-
-    @Override
-    public IntStream top(int n, Comparator<? super Integer> comparator) {
-        return new ParallelIteratorIntStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public IntStream peek(final IntConsumer action) {
         if (maxThreadNum <= 1) {
             return super.peek(action);
@@ -683,134 +670,6 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalInt head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
-            tail = new ParallelIteratorIntStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public IntStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
-            tail = new ParallelIteratorIntStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public IntStream headd() {
-        if (head2 == null) {
-            final int[] a = elements.toArray();
-            head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalInt taill() {
-        if (tail2 == null) {
-            final int[] a = elements.toArray();
-            head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalInt min() {
-        if (elements.hasNext() == false) {
-            return OptionalInt.empty();
-        } else if (sorted) {
-            return OptionalInt.of(elements.nextInt());
-        }
-
-        int candidate = elements.nextInt();
-        int next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextInt();
-
-            if (next < candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalInt.of(candidate);
-    }
-
-    @Override
-    public OptionalInt max() {
-        if (elements.hasNext() == false) {
-            return OptionalInt.empty();
-        } else if (sorted) {
-            int next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextInt();
-            }
-
-            return OptionalInt.of(next);
-        }
-
-        int candidate = elements.nextInt();
-        int next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextInt();
-
-            if (next > candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalInt.of(candidate);
-    }
-
-    @Override
-    public long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.nextInt();
-        }
-
-        return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public IntSummaryStatistics summarize() {
-        final IntSummaryStatistics result = new IntSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextInt());
-        }
-
-        return result;
     }
 
     @Override

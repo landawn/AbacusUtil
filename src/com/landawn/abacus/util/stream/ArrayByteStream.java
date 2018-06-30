@@ -954,7 +954,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+        return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
 
     @Override
@@ -966,9 +966,9 @@ class ArrayByteStream extends AbstractByteStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayByteStream(elements, toIndex, toIndex, sorted, closeHandlers);
+            return newStream(elements, toIndex, toIndex, sorted);
         } else {
-            return new ArrayByteStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return newStream(elements, (int) (fromIndex + n), toIndex, sorted);
         }
     }
 
@@ -1170,7 +1170,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
+        return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
     @Override
@@ -1179,7 +1179,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
+        return newStream(elements, fromIndex, toIndex - 1, sorted);
     }
 
     @Override
@@ -1233,7 +1233,7 @@ class ArrayByteStream extends AbstractByteStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
+        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

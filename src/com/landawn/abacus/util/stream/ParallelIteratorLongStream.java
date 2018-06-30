@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,12 +25,10 @@ import java.util.concurrent.ExecutionException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
@@ -290,16 +287,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
                 return mapper.apply(value.longValue());
             }
         });
-    }
-
-    @Override
-    public LongStream top(int n) {
-        return top(n, LONG_COMPARATOR);
-    }
-
-    @Override
-    public LongStream top(int n, Comparator<? super Long> comparator) {
-        return new ParallelIteratorLongStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -582,134 +569,6 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalLong head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public LongStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public LongStream headd() {
-        if (head2 == null) {
-            final long[] a = elements.toArray();
-            head2 = new ParallelArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalLong taill() {
-        if (tail2 == null) {
-            final long[] a = elements.toArray();
-            head2 = new ParallelArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalLong min() {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        } else if (sorted) {
-            return OptionalLong.of(elements.nextLong());
-        }
-
-        long candidate = elements.nextLong();
-        long next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextLong();
-
-            if (next < candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalLong.of(candidate);
-    }
-
-    @Override
-    public OptionalLong max() {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        } else if (sorted) {
-            long next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextLong();
-            }
-
-            return OptionalLong.of(next);
-        }
-
-        long candidate = elements.nextLong();
-        long next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextLong();
-
-            if (next > candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalLong.of(candidate);
-    }
-
-    @Override
-    public long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.nextLong();
-        }
-
-        return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public LongSummaryStatistics summarize() {
-        final LongSummaryStatistics result = new LongSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextLong());
-        }
-
-        return result;
     }
 
     @Override

@@ -364,6 +364,11 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public IntStream top(int n) {
+        return top(n, INT_COMPARATOR);
+    }
+
+    @Override
     public OptionalInt first() {
         final IntIterator iter = this.iteratorEx();
 

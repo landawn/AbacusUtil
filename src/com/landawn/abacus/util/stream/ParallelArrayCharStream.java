@@ -30,7 +30,6 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalChar;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -226,32 +225,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }).sequential().mapToChar(ToCharFunction.UNBOX);
 
         return new ParallelIteratorCharStream(stream, false, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public CharStream limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayCharStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public CharStream skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayCharStream(elements, toIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayCharStream(elements, (int) (fromIndex + n), toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override
@@ -645,24 +618,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public CharStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayCharStream(elements, fromIndex + 1, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public CharStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex - 1, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public OptionalChar min() {
         if (fromIndex == toIndex) {
             return OptionalChar.empty();
@@ -798,15 +753,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (fromIndex == toIndex) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override

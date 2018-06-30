@@ -17,15 +17,19 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
@@ -54,7 +58,6 @@ import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToDoubleFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -873,8 +876,112 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream top(int n, Comparator<? super Double> comparator) {
-        return boxed().top(n, comparator).mapToDouble(ToDoubleFunction.UNBOX);
+    public DoubleStream top(final int n, final Comparator<? super Double> comparator) {
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
+
+        return newStream(new DoubleIteratorEx() {
+            private boolean initialized = false;
+            private double[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final double[] a = new double[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public DoubleList toList() {
+                return DoubleList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    if (sorted && isSameComparator(comparator, cmp)) {
+                        final LinkedList<Double> queue = new LinkedList<>();
+
+                        while (elements.hasNext()) {
+                            if (queue.size() >= n) {
+                                queue.poll();
+                            }
+
+                            queue.offer(elements.nextDouble());
+                        }
+
+                        aar = Array.unbox(N.EMPTY_DOUBLE_OBJ_ARRAY);
+                    } else {
+                        final Queue<Double> heap = new PriorityQueue<>(n, comparator);
+
+                        Double next = null;
+                        while (elements.hasNext()) {
+                            next = elements.nextDouble();
+
+                            if (heap.size() >= n) {
+                                if (comparator.compare(next, heap.peek()) > 0) {
+                                    heap.poll();
+                                    heap.offer(next);
+                                }
+                            } else {
+                                heap.offer(next);
+                            }
+                        }
+
+                        aar = Array.unbox(heap.toArray(N.EMPTY_DOUBLE_OBJ_ARRAY));
+                    }
+
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1147,7 +1254,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new IteratorDoubleStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return head;
@@ -1157,7 +1264,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public DoubleStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new IteratorDoubleStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return tail;
@@ -1167,7 +1274,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public DoubleStream headd() {
         if (head2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
@@ -1178,7 +1285,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble taill() {
         if (tail2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 

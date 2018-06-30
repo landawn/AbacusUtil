@@ -364,6 +364,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream top(int n) {
+        return top(n, DOUBLE_COMPARATOR);
+    }
+
+    @Override
     public double sum() {
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override

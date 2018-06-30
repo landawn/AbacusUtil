@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,11 +28,9 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
-import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -222,16 +219,6 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                 return mapper.apply(value);
             }
         });
-    }
-
-    @Override
-    public ShortStream top(int n) {
-        return top(n, SHORT_COMPARATOR);
-    }
-
-    @Override
-    public ShortStream top(int n, Comparator<? super Short> comparator) {
-        return new ParallelIteratorShortStream(this.sequential().top(n, comparator).iteratorEx(), sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -514,134 +501,6 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public OptionalShort head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
-            tail = new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return head;
-    }
-
-    @Override
-    public ShortStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
-            tail = new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-
-        return tail;
-    }
-
-    @Override
-    public ShortStream headd() {
-        if (head2 == null) {
-            final short[] a = elements.toArray();
-            head2 = new ParallelArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalShort taill() {
-        if (tail2 == null) {
-            final short[] a = elements.toArray();
-            head2 = new ParallelArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
-            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
-
-    @Override
-    public OptionalShort min() {
-        if (elements.hasNext() == false) {
-            return OptionalShort.empty();
-        } else if (sorted) {
-            return OptionalShort.of(elements.nextShort());
-        }
-
-        short candidate = elements.nextShort();
-        short next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextShort();
-
-            if (next < candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalShort.of(candidate);
-    }
-
-    @Override
-    public OptionalShort max() {
-        if (elements.hasNext() == false) {
-            return OptionalShort.empty();
-        } else if (sorted) {
-            short next = 0;
-
-            while (elements.hasNext()) {
-                next = elements.nextShort();
-            }
-
-            return OptionalShort.of(next);
-        }
-
-        short candidate = elements.nextShort();
-        short next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextShort();
-
-            if (next > candidate) {
-                candidate = next;
-            }
-        }
-
-        return OptionalShort.of(candidate);
-    }
-
-    @Override
-    public long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.nextShort();
-        }
-
-        return result;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        return sequential().average();
-    }
-
-    @Override
-    public long count() {
-        return elements.count();
-    }
-
-    @Override
-    public ShortSummaryStatistics summarize() {
-        final ShortSummaryStatistics result = new ShortSummaryStatistics();
-
-        while (elements.hasNext()) {
-            result.accept(elements.nextShort());
-        }
-
-        return result;
     }
 
     @Override

@@ -3287,9 +3287,9 @@ public final class SQLExecutor implements Closeable {
         // TODO cache more sqls to improve performance.
 
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
-            final List<String> readOnlyPropNames = new ArrayList<>();
-            final List<String> writeOnlyPropNames = new ArrayList<>();
-            final List<String> selectPropNameList = new ArrayList<>(ClassUtil.getPropGetMethodList(targetClass).keySet());
+            final Set<String> readOnlyPropNames = new HashSet<>();
+            final Set<String> writeOnlyPropNames = new HashSet<>();
+            final Set<String> transientPropNames = new HashSet<>();
             String idPropName = null;
 
             final Set<Field> allFields = new HashSet<>();
@@ -3321,8 +3321,8 @@ public final class SQLExecutor implements Closeable {
                 if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
                     readOnlyPropNames.add(field.getName());
 
-                    selectPropNameList.remove(field.getName());
-                    selectPropNameList.remove(ClassUtil.formalizePropName(field.getName()));
+                    transientPropNames.add(field.getName());
+                    transientPropNames.add(ClassUtil.formalizePropName(field.getName()));
                 }
             }
 
@@ -3348,8 +3348,8 @@ public final class SQLExecutor implements Closeable {
                 if (entry.getValue().isAnnotationPresent(Transient.class)) {
                     readOnlyPropNames.add(entry.getKey());
 
-                    selectPropNameList.remove(entry.getKey());
-                    selectPropNameList.remove(ClassUtil.formalizePropName(entry.getKey()));
+                    transientPropNames.add(entry.getKey());
+                    transientPropNames.add(ClassUtil.formalizePropName(entry.getKey()));
                 }
             }
 
@@ -3369,7 +3369,7 @@ public final class SQLExecutor implements Closeable {
             this.targetType = N.typeOf(targetClass);
             this.propNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
             this.propNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
-            this.defaultSelectPropNameList = ImmutableList.of(selectPropNameList);
+            this.defaultSelectPropNameList = ImmutableList.copyOf(SQLBuilder.getPropNamesByClass(targetClass, false, transientPropNames));
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
             this.idName = Maps.getOrDefault(entityIdMap, targetClass, SQLExecutor.ID);

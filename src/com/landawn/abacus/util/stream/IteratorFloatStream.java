@@ -17,11 +17,15 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -50,7 +54,6 @@ import com.landawn.abacus.util.function.FloatToLongFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToFloatFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -869,8 +872,112 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream top(int n, Comparator<? super Float> comparator) {
-        return boxed().top(n, comparator).mapToFloat(ToFloatFunction.UNBOX);
+    public FloatStream top(final int n, final Comparator<? super Float> comparator) {
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
+
+        return newStream(new FloatIteratorEx() {
+            private boolean initialized = false;
+            private float[] aar;
+            private int cursor = 0;
+            private int to;
+
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return cursor < to;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (initialized == false) {
+                    init();
+                }
+
+                if (cursor >= to) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
+                return to - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (initialized == false) {
+                    init();
+                }
+
+                cursor = n > to - cursor ? to : cursor + (int) n;
+            }
+
+            @Override
+            public float[] toArray() {
+                if (initialized == false) {
+                    init();
+                }
+
+                final float[] a = new float[to - cursor];
+
+                N.copy(aar, cursor, a, 0, to - cursor);
+
+                return a;
+            }
+
+            @Override
+            public FloatList toList() {
+                return FloatList.of(toArray());
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+                    if (sorted && isSameComparator(comparator, cmp)) {
+                        final LinkedList<Float> queue = new LinkedList<>();
+
+                        while (elements.hasNext()) {
+                            if (queue.size() >= n) {
+                                queue.poll();
+                            }
+
+                            queue.offer(elements.nextFloat());
+                        }
+
+                        aar = Array.unbox(N.EMPTY_FLOAT_OBJ_ARRAY);
+                    } else {
+                        final Queue<Float> heap = new PriorityQueue<>(n, comparator);
+
+                        Float next = null;
+                        while (elements.hasNext()) {
+                            next = elements.nextFloat();
+
+                            if (heap.size() >= n) {
+                                if (comparator.compare(next, heap.peek()) > 0) {
+                                    heap.poll();
+                                    heap.offer(next);
+                                }
+                            } else {
+                                heap.offer(next);
+                            }
+                        }
+
+                        aar = Array.unbox(heap.toArray(N.EMPTY_FLOAT_OBJ_ARRAY));
+                    }
+
+                    to = aar.length;
+                }
+            }
+        }, false);
     }
 
     @Override
@@ -1143,7 +1250,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new IteratorFloatStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return head;
@@ -1153,7 +1260,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public FloatStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new IteratorFloatStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return tail;
@@ -1163,7 +1270,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public FloatStream headd() {
         if (head2 == null) {
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 
@@ -1174,7 +1281,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat taill() {
         if (tail2 == null) {
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 

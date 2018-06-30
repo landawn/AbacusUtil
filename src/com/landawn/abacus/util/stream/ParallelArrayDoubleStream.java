@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -281,25 +280,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public DoubleStream top(int n) {
-        return top(n, DOUBLE_COMPARATOR);
-    }
-
-    @Override
-    public DoubleStream top(int n, Comparator<? super Double> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
-
-        if (n >= toIndex - fromIndex) {
-            return this;
-        } else if (sorted && isSameComparator(comparator, DOUBLE_COMPARATOR)) {
-            return new ParallelArrayDoubleStream(elements, toIndex - n, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            final double[] a = N.top(elements, fromIndex, toIndex, n, comparator);
-            return new ParallelArrayDoubleStream(a, 0, a.length, sorted, maxThreadNum, splitor, closeHandlers);
-        }
-    }
-
-    @Override
     public DoubleStream peek(final DoubleConsumer action) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
@@ -313,32 +293,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
         }).sequential().mapToDouble(ToDoubleFunction.UNBOX);
 
         return new ParallelIteratorDoubleStream(stream, false, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public DoubleStream limit(long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
-
-        return new ParallelArrayDoubleStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public DoubleStream skip(long n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
-
-        if (n >= toIndex - fromIndex) {
-            return new ParallelArrayDoubleStream(elements, toIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        } else {
-            return new ParallelArrayDoubleStream(elements, (int) (fromIndex + n), toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override
@@ -729,24 +683,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public DoubleStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayDoubleStream(elements, fromIndex + 1, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public DoubleStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex - 1, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override

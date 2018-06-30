@@ -365,6 +365,11 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream top(int n) {
+        return top(n, FLOAT_COMPARATOR);
+    }
+
+    @Override
     public double sum() {
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override

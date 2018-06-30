@@ -946,7 +946,7 @@ class IteratorByteStream extends AbstractByteStream {
     public OptionalByte head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new IteratorByteStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return head;
@@ -956,7 +956,7 @@ class IteratorByteStream extends AbstractByteStream {
     public ByteStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new IteratorByteStream(elements, sorted, closeHandlers);
+            tail = newStream(elements, sorted);
         }
 
         return tail;
@@ -966,7 +966,7 @@ class IteratorByteStream extends AbstractByteStream {
     public ByteStream headd() {
         if (head2 == null) {
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 
@@ -977,7 +977,7 @@ class IteratorByteStream extends AbstractByteStream {
     public OptionalByte taill() {
         if (tail2 == null) {
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
+            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
             tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 

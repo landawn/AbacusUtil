@@ -772,6 +772,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
+    protected CharStream newStream(final char[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayCharStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayCharStream(a, fromIndex, toIndex, sorted, closeHandlers);
+        }
+    }
+
     protected CharStream newStream(final CharIterator iter, final boolean sorted) {
         if (this.isParallel()) {
             return new ParallelIteratorCharStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
@@ -785,6 +793,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             return new ParallelArrayByteStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
             return new ArrayByteStream(a, sorted, closeHandlers);
+        }
+    }
+
+    protected ByteStream newStream(final byte[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayByteStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayByteStream(a, fromIndex, toIndex, sorted, closeHandlers);
         }
     }
 
@@ -804,6 +820,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
+    protected ShortStream newStream(final short[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayShortStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayShortStream(a, fromIndex, toIndex, sorted, closeHandlers);
+        }
+    }
+
     protected ShortStream newStream(final ShortIterator iter, final boolean sorted) {
         if (this.isParallel()) {
             return new ParallelIteratorShortStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
@@ -817,6 +841,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             return new ParallelArrayIntStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
             return new ArrayIntStream(a, sorted, closeHandlers);
+        }
+    }
+
+    protected IntStream newStream(final int[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayIntStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayIntStream(a, fromIndex, toIndex, sorted, closeHandlers);
         }
     }
 
@@ -836,6 +868,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
+    protected LongStream newStream(final long[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayLongStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayLongStream(a, fromIndex, toIndex, sorted, closeHandlers);
+        }
+    }
+
     protected LongStream newStream(final LongIterator iter, final boolean sorted) {
         if (this.isParallel()) {
             return new ParallelIteratorLongStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
@@ -852,6 +892,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
+    protected FloatStream newStream(final float[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayFloatStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayFloatStream(a, fromIndex, toIndex, sorted, closeHandlers);
+        }
+    }
+
     protected FloatStream newStream(final FloatIterator iter, final boolean sorted) {
         if (this.isParallel()) {
             return new ParallelIteratorFloatStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
@@ -865,6 +913,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             return new ParallelArrayDoubleStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
             return new ArrayDoubleStream(a, sorted, closeHandlers);
+        }
+    }
+
+    protected DoubleStream newStream(final double[] a, final int fromIndex, final int toIndex, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayDoubleStream(a, fromIndex, toIndex, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
+        } else {
+            return new ArrayDoubleStream(a, fromIndex, toIndex, sorted, closeHandlers);
         }
     }
 

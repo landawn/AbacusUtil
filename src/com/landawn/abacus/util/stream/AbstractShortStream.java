@@ -364,6 +364,11 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream top(int n) {
+        return top(n, SHORT_COMPARATOR);
+    }
+
+    @Override
     public OptionalShort first() {
         final ShortIterator iter = this.iteratorEx();
 
