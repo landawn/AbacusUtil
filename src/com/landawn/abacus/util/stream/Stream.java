@@ -722,6 +722,10 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <A, D> Stream<Map.Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
+    public <K> Stream<Map.Entry<K, Integer>> countBy(final Function<? super T, ? extends K> classifier) {
+        return groupBy(classifier, Collectors.countingInt());
+    }
+
     @ParallelSupported
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
 
@@ -791,6 +795,10 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract <A, D> EntryStream<Boolean, D> partitionByToEntry(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
+
+    public <K> EntryStream<K, Integer> countByToEntry(final Function<? super T, ? extends K> classifier) {
+        return groupByToEntry(classifier, Collectors.countingInt());
+    }
 
     /**
      * Merge series of adjacent elements which satisfy the given predicate using

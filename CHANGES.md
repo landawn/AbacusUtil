@@ -1,3 +1,10 @@
+### 1.2.17
+
+* Add `Stream.countBy/countByToEntry`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.16
 
 * Support @Transient for `SQLExecutor.Mapper`.
