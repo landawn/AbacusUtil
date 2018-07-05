@@ -75,6 +75,7 @@ import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.Keyed;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
@@ -958,6 +959,16 @@ public abstract class Stream<T>
     public abstract Stream<T> intersperse(T delimiter);
 
     /**
+     * Distinct and filter by occurrences.
+     * 
+     * @param occurrencesFilter
+     * @return
+     */
+    public Stream<T> distinct(final Predicate<? super Long> occurrencesFilter) {
+        return groupBy(Fn.<T> identity(), Collectors.counting()).filter(Fn.<T, Long> testByValue(occurrencesFilter)).map(Fn.<T, Long> key());
+    }
+
+    /**
      * Distinct by the value mapped from <code>keyExtractor</code> 
      * 
      * @param keyExtractor don't change value of the input parameter.
@@ -965,6 +976,18 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract Stream<T> distinctBy(Function<? super T, ?> keyExtractor);
+
+    /**
+     * Distinct and filter by occurrences.
+     * 
+     * @param keyExtractor
+     * @param occurrencesFilter
+     * @return
+     */
+    public <K> Stream<T> distinctBy(final Function<? super T, K> keyExtractor, final Predicate<? super Long> occurrencesFilter) {
+        return groupBy(Fn.<K, T> keyed(keyExtractor), Collectors.counting()).filter(Fn.<Keyed<K, T>, Long> testByValue(occurrencesFilter))
+                .map(Fn.<T, K, Long> kk());
+    }
 
     /**
      * 

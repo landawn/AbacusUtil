@@ -2,6 +2,10 @@
 
 * Add `Stream.countBy/countByToEntry`.
 
+* Add `distinct(Predicate<? super Long> occurrencesFilter)`
+
+* Add `distinctBy(Function<? super T, ?> keyExtractor, Predicate<? super Long> occurrencesFilter)`.
+
 * Improvements and bug fix.
 
 
