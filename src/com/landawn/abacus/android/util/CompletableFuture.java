@@ -24,8 +24,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.landawn.abacus.logging.Logger;
-import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Pair;
@@ -42,7 +40,7 @@ import com.landawn.abacus.util.Tuple.Tuple4;
  * @author Haiyang Li
  */
 public class CompletableFuture<T> implements Future<T> {
-    static final Logger logger = LoggerFactory.getLogger(CompletableFuture.class);
+    private static final Executor DEFAULT_EXECUTOR = Async.TP_EXECUTOR;
 
     final Future<T> future;
     final List<CompletableFuture<?>> upFutures;
@@ -51,7 +49,7 @@ public class CompletableFuture<T> implements Future<T> {
     CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> upFutures, final Executor asyncExecutor) {
         this.future = future;
         this.upFutures = upFutures;
-        this.asyncExecutor = asyncExecutor;
+        this.asyncExecutor = asyncExecutor == null ? DEFAULT_EXECUTOR : asyncExecutor;
     }
 
     //    public static CompletableFuture<Void> run(final Try.Runnable<E> action) {

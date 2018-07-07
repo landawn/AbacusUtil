@@ -67,7 +67,7 @@ public class CompletableFuture<T> implements Future<T> {
     CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> upFutures, final Executor asyncExecutor) {
         this.future = future;
         this.upFutures = upFutures;
-        this.asyncExecutor = asyncExecutor;
+        this.asyncExecutor = asyncExecutor == null ? commonPool : asyncExecutor;
     }
 
     public static <E extends Exception> CompletableFuture<Void> run(final Try.Runnable<E> action) {

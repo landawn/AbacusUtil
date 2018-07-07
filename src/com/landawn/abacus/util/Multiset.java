@@ -1028,7 +1028,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public Set<T> elements() {
-        return valueMap.keySet();
+        return ImmutableSet.of(valueMap.keySet());
     }
 
     public int size() {

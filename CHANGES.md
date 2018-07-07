@@ -6,6 +6,8 @@
 
 * Add `distinctBy(Function<? super T, ?> keyExtractor, Predicate<? super Long> occurrencesFilter)`.
 
+* Refactoring `Futures`.
+
 * Improvements and bug fix.
 
 
