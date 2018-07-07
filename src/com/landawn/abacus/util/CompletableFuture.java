@@ -64,6 +64,10 @@ public class CompletableFuture<T> implements Future<T> {
     final List<CompletableFuture<?>> upFutures;
     final Executor asyncExecutor;
 
+    CompletableFuture(final Future<T> future) {
+        this(future, null, null);
+    }
+
     CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> upFutures, final Executor asyncExecutor) {
         this.future = future;
         this.upFutures = upFutures;
@@ -138,6 +142,10 @@ public class CompletableFuture<T> implements Future<T> {
                 return result;
             }
         }, null, commonPool);
+    }
+
+    public static <T> CompletableFuture<T> wrap(Future<T> future) {
+        return new CompletableFuture<T>(future);
     }
 
     @Override
@@ -916,6 +924,7 @@ public class CompletableFuture<T> implements Future<T> {
         return with(executor, 0, TimeUnit.MILLISECONDS);
     }
 
+    @Deprecated
     public CompletableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
         N.checkArgNotNull(executor);
 

@@ -127,7 +127,7 @@ public final class Futures {
         N.checkArgNotNull(zipFunctionForGet);
         N.checkArgNotNull(zipFunctionTimeoutGet);
 
-        return new CompletableFuture<>(new Future<R>() {
+        return CompletableFuture.wrap(new Future<R>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
@@ -197,7 +197,7 @@ public final class Futures {
                     throw N.toRuntimeException(e);
                 }
             }
-        }, null, null);
+        });
     }
 
     public static <T1, T2, E extends Exception> CompletableFuture<Tuple2<T1, T2>> combine(final Future<? extends T1> cf1, final Future<? extends T2> cf2) {
@@ -322,7 +322,7 @@ public final class Futures {
     private static <T> CompletableFuture<List<T>> allOf2(final Collection<? extends Future<? extends T>> cfs) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
 
-        return new CompletableFuture<>(new Future<List<T>>() {
+        return CompletableFuture.wrap(new Future<List<T>>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
@@ -394,7 +394,7 @@ public final class Futures {
 
                 return result;
             }
-        }, null, null);
+        });
     }
 
     /**
@@ -423,7 +423,7 @@ public final class Futures {
     private static <T> CompletableFuture<T> anyOf2(final Collection<? extends Future<? extends T>> cfs) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
 
-        return new CompletableFuture<>(new Future<T>() {
+        return CompletableFuture.wrap(new Future<T>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
@@ -501,7 +501,7 @@ public final class Futures {
 
                 return handle(result);
             }
-        }, null, null);
+        });
     }
 
     @SafeVarargs
