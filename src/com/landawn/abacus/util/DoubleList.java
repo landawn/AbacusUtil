@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import com.landawn.abacus.util.Try.Function;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.IntFunction;
@@ -1480,6 +1481,11 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         checkFromToIndex(fromIndex, toIndex);
 
         return DoubleStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R, E extends Exception> Optional<R> ifNotEmpty(Function<? super DoubleList, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
     }
 
     @Override

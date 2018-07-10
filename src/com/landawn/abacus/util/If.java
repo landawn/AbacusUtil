@@ -300,264 +300,264 @@ public final class If {
         }
     }
 
-    /**
-     * This class is mainly designed for functional programming. 
-     * Generally the traditional "{@code if-else}" or ternary operator: "{@code ? : }" is preferred over this class.
-     * 
-     * @author HaiYang Li
-     *
-     */
-    @Beta
-    @Deprecated
-    public static final class IF {
-        private static final IF TRUE = new IF(true);
-        private static final IF FALSE = new IF(false);
-
-        @SuppressWarnings("rawtypes")
-        private static final Or FALSE_OR = new FalseOr();
-
-        private final boolean b;
-
-        IF(boolean b) {
-            this.b = b;
-        }
-
-        public static IF is(final boolean b) {
-            return b ? TRUE : FALSE;
-        }
-
-        public static IF not(final boolean b) {
-            return b ? FALSE : TRUE;
-        }
-
-        /**
-         * {@code true} for {@code index >= 0}, {@code false} for {@code index < 0}.
-         * 
-         * @param index
-         * @return
-         */
-        public static IF exists(final int index) {
-            return index >= 0 ? TRUE : FALSE;
-        }
-
-        public static IF isNullOrEmpty(final CharSequence s) {
-            return is(N.isNullOrEmpty(s));
-        }
-
-        public static IF isNullOrEmpty(final boolean[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final char[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final byte[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final short[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final int[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final long[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final float[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final double[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final Object[] a) {
-            return is(N.isNullOrEmpty(a));
-        }
-
-        public static IF isNullOrEmpty(final Collection<?> c) {
-            return is(N.isNullOrEmpty(c));
-        }
-
-        public static IF isNullOrEmpty(final Map<?, ?> m) {
-            return is(N.isNullOrEmpty(m));
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static IF isNullOrEmpty(final PrimitiveList list) {
-            return is(N.isNullOrEmpty(list));
-        }
-
-        public static IF isNullOrEmpty(final Multiset<?> s) {
-            return is(N.isNullOrEmpty(s));
-        }
-
-        public static IF isNullOrEmpty(final LongMultiset<?> s) {
-            return is(N.isNullOrEmpty(s));
-        }
-
-        public static IF isNullOrEmpty(final Multimap<?, ?, ?> m) {
-            return is(N.isNullOrEmpty(m));
-        }
-
-        // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
-        public static IF isNullOrEmptyOrBlank(final CharSequence s) {
-            return is(N.isNullOrEmptyOrBlank(s));
-        }
-
-        public static IF notNullOrEmpty(final CharSequence s) {
-            return is(N.notNullOrEmpty(s));
-        }
-
-        public static IF notNullOrEmpty(final boolean[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final char[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final byte[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final short[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final int[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final long[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final float[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final double[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final Object[] a) {
-            return is(N.notNullOrEmpty(a));
-        }
-
-        public static IF notNullOrEmpty(final Collection<?> c) {
-            return is(N.notNullOrEmpty(c));
-        }
-
-        public static IF notNullOrEmpty(final Map<?, ?> m) {
-            return is(N.notNullOrEmpty(m));
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static IF notNullOrEmpty(final PrimitiveList list) {
-            return is(N.notNullOrEmpty(list));
-        }
-
-        public static IF notNullOrEmpty(final Multiset<?> s) {
-            return is(N.notNullOrEmpty(s));
-        }
-
-        public static IF notNullOrEmpty(final LongMultiset<?> s) {
-            return is(N.notNullOrEmpty(s));
-        }
-
-        public static IF notNullOrEmpty(final Multimap<?, ?, ?> m) {
-            return is(N.notNullOrEmpty(m));
-        }
-
-        // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
-        public static IF notNullOrEmptyOrBlank(final CharSequence s) {
-            return is(N.notNullOrEmptyOrBlank(s));
-        }
-
-        public <T, E extends Exception> Nullable<T> thenGet(Try.Supplier<T, E> supplier) throws E {
-            return b ? Nullable.of(supplier.get()) : Nullable.<T> empty();
-        }
-
-        public <T, U, E extends Exception> Nullable<T> thenApply(final U seed, final Try.Function<? super U, T, E> func) throws E {
-            return b ? Nullable.of(func.apply(seed)) : Nullable.<T> empty();
-        }
-
-        public <T, E extends Exception> Or<T> then(final Try.Callable<T, E> callable) throws E {
-            N.checkArgNotNull(callable);
-
-            return b ? new TrueOr<>(callable.call()) : FALSE_OR;
-        }
-
-        public <T, U, E extends Exception> Or<T> then(final U seed, final Try.Function<? super U, T, E> func) throws E {
-            N.checkArgNotNull(func);
-
-            return b ? new TrueOr<>(func.apply(seed)) : FALSE_OR;
-        }
-
-        public static abstract class Or<T> {
-            Or() {
-            }
-
-            public abstract <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E;
-
-            public abstract <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
-
-            public abstract <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
-        }
-
-        static final class TrueOr<T> extends Or<T> {
-            private final T result;
-
-            TrueOr(final T result) {
-                this.result = result;
-            }
-
-            @Override
-            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
-                N.checkArgNotNull(callable);
-
-                return result;
-            }
-
-            @Override
-            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
-                N.checkArgNotNull(func);
-
-                return result;
-            }
-
-            @Override
-            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-                N.checkArgNotNull(exceptionSupplier);
-
-                return result;
-            }
-        }
-
-        static final class FalseOr<T> extends Or<T> {
-            FalseOr() {
-            }
-
-            @Override
-            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
-                return callable.call();
-            }
-
-            @Override
-            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
-                return func.apply(seed);
-            }
-
-            @Override
-            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
-                throw exceptionSupplier.get();
-            }
-        }
-    }
+    //    /**
+    //     * This class is mainly designed for functional programming. 
+    //     * Generally the traditional "{@code if-else}" or ternary operator: "{@code ? : }" is preferred over this class.
+    //     * 
+    //     * @author HaiYang Li
+    //     *
+    //     */
+    //    @Beta
+    //    @Deprecated
+    //    public static final class IF {
+    //        private static final IF TRUE = new IF(true);
+    //        private static final IF FALSE = new IF(false);
+    //
+    //        @SuppressWarnings("rawtypes")
+    //        private static final Or FALSE_OR = new FalseOr();
+    //
+    //        private final boolean b;
+    //
+    //        IF(boolean b) {
+    //            this.b = b;
+    //        }
+    //
+    //        public static IF is(final boolean b) {
+    //            return b ? TRUE : FALSE;
+    //        }
+    //
+    //        public static IF not(final boolean b) {
+    //            return b ? FALSE : TRUE;
+    //        }
+    //
+    //        /**
+    //         * {@code true} for {@code index >= 0}, {@code false} for {@code index < 0}.
+    //         * 
+    //         * @param index
+    //         * @return
+    //         */
+    //        public static IF exists(final int index) {
+    //            return index >= 0 ? TRUE : FALSE;
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final CharSequence s) {
+    //            return is(N.isNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final boolean[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final char[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final byte[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final short[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final int[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final long[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final float[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final double[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final Object[] a) {
+    //            return is(N.isNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final Collection<?> c) {
+    //            return is(N.isNullOrEmpty(c));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final Map<?, ?> m) {
+    //            return is(N.isNullOrEmpty(m));
+    //        }
+    //
+    //        @SuppressWarnings("rawtypes")
+    //        public static IF isNullOrEmpty(final PrimitiveList list) {
+    //            return is(N.isNullOrEmpty(list));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final Multiset<?> s) {
+    //            return is(N.isNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final LongMultiset<?> s) {
+    //            return is(N.isNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF isNullOrEmpty(final Multimap<?, ?, ?> m) {
+    //            return is(N.isNullOrEmpty(m));
+    //        }
+    //
+    //        // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
+    //        public static IF isNullOrEmptyOrBlank(final CharSequence s) {
+    //            return is(N.isNullOrEmptyOrBlank(s));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final CharSequence s) {
+    //            return is(N.notNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final boolean[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final char[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final byte[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final short[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final int[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final long[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final float[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final double[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final Object[] a) {
+    //            return is(N.notNullOrEmpty(a));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final Collection<?> c) {
+    //            return is(N.notNullOrEmpty(c));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final Map<?, ?> m) {
+    //            return is(N.notNullOrEmpty(m));
+    //        }
+    //
+    //        @SuppressWarnings("rawtypes")
+    //        public static IF notNullOrEmpty(final PrimitiveList list) {
+    //            return is(N.notNullOrEmpty(list));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final Multiset<?> s) {
+    //            return is(N.notNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final LongMultiset<?> s) {
+    //            return is(N.notNullOrEmpty(s));
+    //        }
+    //
+    //        public static IF notNullOrEmpty(final Multimap<?, ?, ?> m) {
+    //            return is(N.notNullOrEmpty(m));
+    //        }
+    //
+    //        // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
+    //        public static IF notNullOrEmptyOrBlank(final CharSequence s) {
+    //            return is(N.notNullOrEmptyOrBlank(s));
+    //        }
+    //
+    //        public <T, E extends Exception> Nullable<T> thenGet(Try.Supplier<T, E> supplier) throws E {
+    //            return b ? Nullable.of(supplier.get()) : Nullable.<T> empty();
+    //        }
+    //
+    //        public <T, U, E extends Exception> Nullable<T> thenApply(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //            return b ? Nullable.of(func.apply(seed)) : Nullable.<T> empty();
+    //        }
+    //
+    //        public <T, E extends Exception> Or<T> then(final Try.Callable<T, E> callable) throws E {
+    //            N.checkArgNotNull(callable);
+    //
+    //            return b ? new TrueOr<>(callable.call()) : FALSE_OR;
+    //        }
+    //
+    //        public <T, U, E extends Exception> Or<T> then(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //            N.checkArgNotNull(func);
+    //
+    //            return b ? new TrueOr<>(func.apply(seed)) : FALSE_OR;
+    //        }
+    //
+    //        public static abstract class Or<T> {
+    //            Or() {
+    //            }
+    //
+    //            public abstract <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E;
+    //
+    //            public abstract <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
+    //
+    //            public abstract <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
+    //        }
+    //
+    //        static final class TrueOr<T> extends Or<T> {
+    //            private final T result;
+    //
+    //            TrueOr(final T result) {
+    //                this.result = result;
+    //            }
+    //
+    //            @Override
+    //            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
+    //                N.checkArgNotNull(callable);
+    //
+    //                return result;
+    //            }
+    //
+    //            @Override
+    //            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //                N.checkArgNotNull(func);
+    //
+    //                return result;
+    //            }
+    //
+    //            @Override
+    //            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+    //                N.checkArgNotNull(exceptionSupplier);
+    //
+    //                return result;
+    //            }
+    //        }
+    //
+    //        static final class FalseOr<T> extends Or<T> {
+    //            FalseOr() {
+    //            }
+    //
+    //            @Override
+    //            public <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E {
+    //                return callable.call();
+    //            }
+    //
+    //            @Override
+    //            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //                return func.apply(seed);
+    //            }
+    //
+    //            @Override
+    //            public <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+    //                throw exceptionSupplier.get();
+    //            }
+    //        }
+    //    }
 }

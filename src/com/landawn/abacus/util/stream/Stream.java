@@ -8813,6 +8813,10 @@ public abstract class Stream<T>
         }
     }
 
+    public static <T> Stream<List<T>> cartesianProduct(final Collection<? extends T> c, final int repeat) {
+        return of(N.cartesianProduct(N.repeat(c, repeat)));
+    }
+
     public static abstract class StreamEx<T> extends Stream<T> {
         private StreamEx(boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
             super(sorted, cmp, closeHandlers);

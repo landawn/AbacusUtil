@@ -2761,6 +2761,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
     //    }
 
+    public <R, E extends Exception> Optional<R> ifNotEmpty(Try.Function<? super Seq<T>, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
+    }
+
     public <R, E extends Exception> R apply(Try.Function<? super Seq<T>, R, E> func) throws E {
         return func.apply(this);
     }

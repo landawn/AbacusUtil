@@ -8906,6 +8906,8 @@ public final class N {
     }
 
     public static <T> List<T> repeat(final T value, final int n) {
+        N.checkArgNotNegative(n, "n");
+
         final List<T> res = new ArrayList<>(n);
         fill(res, 0, n, value);
         return res;
@@ -8925,7 +8927,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatEach(final Collection<T> c, final int n) {
-        checkArgument(n >= 0, "'n' can not be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -8953,7 +8955,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatAll(final Collection<T> c, final int n) {
-        checkArgument(n >= 0, "'n' can not be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0 || isNullOrEmpty(c)) {
             return new ArrayList<T>();
@@ -8982,7 +8984,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatEachToSize(final Collection<T> c, final int size) {
-        checkArgument(size >= 0, "'size' can not be negative: %s", size);
+        N.checkArgNotNegative(size, "size");
         checkArgument(size == 0 || notNullOrEmpty(c), "Collection can not be empty or null when size > 0");
 
         if (size == 0 || isNullOrEmpty(c)) {
@@ -9020,7 +9022,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> repeatAllToSize(final Collection<T> c, final int size) {
-        checkArgument(size >= 0, "'size' can not be negative: %s", size);
+        N.checkArgNotNegative(size, "size");
         checkArgument(size == 0 || notNullOrEmpty(c), "Collection can not be empty or null when size > 0");
 
         if (size == 0 || isNullOrEmpty(c)) {
@@ -28131,10 +28133,6 @@ public final class N {
      */
     @SafeVarargs
     public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
-        if (N.isNullOrEmpty(cs)) {
-            return new ArrayList<>();
-        }
-
         return cartesianProduct(Arrays.asList(cs));
     }
 

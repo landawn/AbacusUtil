@@ -1,3 +1,12 @@
+### 1.2.18
+
+* Add `Seq/IntList/ByteLits/.../DoubleList.ifNotEmpty`.
+
+* Add `Stream.cartesianProduct(Collection<? extends T> c, int repeat)`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.17
 
 * Add `Stream.countBy/countByToEntry`.

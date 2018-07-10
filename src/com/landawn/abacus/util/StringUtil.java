@@ -341,7 +341,7 @@ public abstract class StringUtil {
     }
 
     public static String repeat(final char ch, final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return N.EMPTY_STRING;
@@ -387,7 +387,7 @@ public abstract class StringUtil {
     }
 
     public static String repeat(String str, final int n, String delimiter) {
-        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+        N.checkArgNotNegative(n, "n");
 
         str = str == null ? N.EMPTY_STRING : str;
         delimiter = delimiter == null ? N.EMPTY_STRING : delimiter;
