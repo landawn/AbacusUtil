@@ -1370,6 +1370,10 @@ public final class Multiset<T> implements Iterable<T> {
         return stream().mapToEntry(Fn.<Map.Entry<T, Integer>> identity());
     }
 
+    public <R, E extends Exception> Optional<R> ifNotEmpty(Try.Function<? super Multiset<T>, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
+    }
+
     public <R, E extends Exception> R apply(Try.Function<? super Multiset<T>, R, E> func) throws E {
         return func.apply(this);
     }

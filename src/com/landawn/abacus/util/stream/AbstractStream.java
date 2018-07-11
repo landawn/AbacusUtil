@@ -2141,6 +2141,52 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<List<T>> combinations(final int len, final boolean repeat) {
+        if (repeat == false) {
+            return combinations(len);
+        } else {
+            return newStream(new ObjIteratorEx<List<T>>() {
+                private List<List<T>> list = null;
+                private int size = 0;
+                private int cursor = 0;
+
+                @Override
+                public boolean hasNext() {
+                    init();
+                    return cursor < size;
+                }
+
+                @Override
+                public List<T> next() {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    return list.get(cursor++);
+                }
+
+                @Override
+                public void skip(long n) {
+                    cursor = n <= size - cursor ? cursor + (int) n : size;
+                }
+
+                @Override
+                public long count() {
+                    return size - cursor;
+                }
+
+                private void init() {
+                    if (list == null) {
+                        list = N.cartesianProduct(N.repeat(AbstractStream.this.toList(), len));
+                        size = list.size();
+                    }
+                }
+
+            }, false, null);
+        }
+    }
+
+    @Override
     public Stream<List<T>> permutations() {
         return newStream(PermutationIterator.of(toList()), false, null);
     }

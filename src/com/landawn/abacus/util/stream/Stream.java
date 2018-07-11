@@ -1887,15 +1887,104 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator);
 
+    /**
+     * <pre>
+     * <code>
+     * Stream.of(1, 2, 3).combinations().forEach(Fn.println());
+     * // output
+     * []
+     * [1]
+     * [2]
+     * [3]
+     * [1, 2]
+     * [1, 3]
+     * [2, 3]
+     * [1, 2, 3]
+     * </code>
+     * </pre>
+     * 
+     * @return
+     */
     @SequentialOnly
     public abstract Stream<List<T>> combinations();
 
+    /**
+     * <pre>
+     * <code>
+     * Stream.of(1, 2, 3).combinations(2).forEach(Fn.println());
+     * // output
+     * [1, 2]
+     * [1, 3]
+     * [2, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param len
+     * @return
+     */
     @SequentialOnly
     public abstract Stream<List<T>> combinations(int len);
 
+    /**
+     * It's same as {@code N.cartesianProduct(N.repeat(toList(), len))} if {@code repeat} is {@code true}.
+     * <pre>
+     * <code>
+     * Stream.of(1, 2, 3).combinations(2, true).forEach(Fn.println());
+     * // output
+     * [1, 1]
+     * [1, 2]
+     * [1, 3]
+     * [2, 1]
+     * [2, 2]
+     * [2, 3]
+     * [3, 1]
+     * [3, 2]
+     * [3, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param len
+     * @param repeat
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<List<T>> combinations(int len, boolean repeat);
+
+    /**
+     * <pre>
+     * <code>
+     * Stream.of(1, 2, 3).permutations().forEach(Fn.println());
+     * // output
+     * [1, 2, 3]
+     * [1, 3, 2]
+     * [3, 1, 2]
+     * [3, 2, 1]
+     * [2, 3, 1]
+     * [2, 1, 3]
+     * </code>
+     * </pre>
+     * 
+     * @return
+     */
     @SequentialOnly
     public abstract Stream<List<T>> permutations();
 
+    /**
+     * <pre>
+     * <code>
+     * Stream.of(1, 2, 3).orderedPermutations().forEach(Fn.println());
+     * // output
+     * [1, 2, 3]
+     * [1, 3, 2]
+     * [2, 1, 3]
+     * [2, 3, 1]
+     * [3, 1, 2]
+     * [3, 2, 1]
+     * </code>
+     * </pre>
+     * 
+     * @return
+     */
     @SequentialOnly
     public abstract Stream<List<T>> orderedPermutations();
 
@@ -8811,10 +8900,6 @@ public abstract class Stream<T>
 
             idx++;
         }
-    }
-
-    public static <T> Stream<List<T>> cartesianProduct(final Collection<? extends T> c, final int repeat) {
-        return of(N.cartesianProduct(N.repeat(c, repeat)));
     }
 
     public static abstract class StreamEx<T> extends Stream<T> {

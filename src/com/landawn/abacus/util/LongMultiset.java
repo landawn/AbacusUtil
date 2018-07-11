@@ -1402,6 +1402,10 @@ public final class LongMultiset<T> implements Iterable<T> {
         return stream().mapToEntry(Fn.<Map.Entry<T, Long>> identity());
     }
 
+    public <R, E extends Exception> Optional<R> ifNotEmpty(Try.Function<? super LongMultiset<T>, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
+    }
+
     public <R, E extends Exception> R apply(Try.Function<? super LongMultiset<T>, R, E> func) throws E {
         return func.apply(this);
     }

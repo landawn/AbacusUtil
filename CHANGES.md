@@ -1,8 +1,8 @@
 ### 1.2.18
 
-* Add `Seq/IntList/ByteLits/.../DoubleList.ifNotEmpty`.
+* Add `Seq/IntList/ByteLits/.../DoubleList/Multiset/LongMultiset.ifNotEmpty`.
 
-* Add `Stream.cartesianProduct(Collection<? extends T> c, int repeat)`.
+* Add `Stream.combinations(int len, boolean repeat)`.
 
 * Improvements and bug fix.
 
