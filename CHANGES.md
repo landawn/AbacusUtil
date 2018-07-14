@@ -8,6 +8,8 @@
 
 * Add `Tuple1.toOptional`.
 
+* Add `IntFn/LongFn/DoubleFn/PairFn/TripleFn`.
+
 * Improvements and bug fix.
 
 

@@ -57,6 +57,8 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.DoubleBiPredicate;
+import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBiConsumer;
 import com.landawn.abacus.util.function.IndexedBiFunction;
@@ -64,7 +66,11 @@ import com.landawn.abacus.util.function.IndexedBiPredicate;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IndexedFunction;
 import com.landawn.abacus.util.function.IndexedPredicate;
+import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.LongBiPredicate;
+import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadFunction;
 import com.landawn.abacus.util.function.Supplier;
@@ -4235,42 +4241,6 @@ public final class Fn extends Comparators {
     }
 
     public static final class Functions {
-        @SuppressWarnings("rawtypes")
-        private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
-            @Override
-            public List apply(Pair t) {
-                return N.asList(t.getLeft(), t.getRight());
-            }
-
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
-            @Override
-            public Set apply(Pair t) {
-                return N.asSet(t.getLeft(), t.getRight());
-            }
-
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
-            @Override
-            public List apply(Triple t) {
-                return N.asList(t.getLeft(), t.getMiddle(), t.getRight());
-            }
-
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
-            @Override
-            public Set apply(Triple t) {
-                return N.asSet(t.getLeft(), t.getMiddle(), t.getRight());
-            }
-
-        };
-
         private Functions() {
             // singleton.
         }
@@ -4317,24 +4287,43 @@ public final class Fn extends Comparators {
             };
         }
 
-        @SuppressWarnings("rawtypes")
+        /**
+         * 
+         * @return
+         * @deprecated replaced by PairFn#toList();
+         */
+        @Deprecated
         public static <T> Function<Pair<T, T>, List<T>> pairToList() {
-            return (Function) PAIR_TO_LIST;
+            return PairFn.toList();
         }
 
-        @SuppressWarnings("rawtypes")
+        /**
+         * 
+         * @return
+         * @deprecated replaced by PairFn#toSet();
+         */
+        @Deprecated
         public static <T> Function<Pair<T, T>, Set<T>> pairToSet() {
-            return (Function) PAIR_TO_SET;
+            return PairFn.toSet();
         }
 
-        @SuppressWarnings("rawtypes")
+        /**
+         * 
+         * @return
+         * @deprecated replaced by TripleFn#toList();
+         */
+        @Deprecated
         public static <T> Function<Triple<T, T, T>, List<T>> tripleToList() {
-            return (Function) TRIPLE_TO_LIST;
+            return TripleFn.toList();
         }
 
-        @SuppressWarnings("rawtypes")
+        /**
+         * 
+         * @deprecated replaced by TripleFn#toSet();
+         */
+        @Deprecated
         public static <T> Function<Triple<T, T, T>, Set<T>> tripleToSet() {
-            return (Function) TRIPLE_TO_SET;
+            return TripleFn.toSet();
         }
     }
 
@@ -4897,6 +4886,361 @@ public final class Fn extends Comparators {
 
         public static <T> UnaryOperator<T> identity() {
             return IDENTITY;
+        }
+    }
+
+    public static final class IntFn {
+
+        private static final IntPredicate POSITIVE = new IntPredicate() {
+            @Override
+            public boolean test(int t) {
+                return t > 0;
+            }
+        };
+
+        private static final IntPredicate NOT_NEGATIVE = new IntPredicate() {
+            @Override
+            public boolean test(int t) {
+                return t >= 0;
+            }
+        };
+
+        private static final IntBiPredicate EQUAL = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t == u;
+            }
+        };
+
+        private static final IntBiPredicate NOT_EQUAL = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t != u;
+            }
+        };
+
+        private static final IntBiPredicate GREATER_THAN = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t > u;
+            }
+        };
+
+        private static final IntBiPredicate GREATER_EQUAL = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t >= u;
+            }
+        };
+
+        private static final IntBiPredicate LESS_THAN = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t < u;
+            }
+        };
+
+        private static final IntBiPredicate LESS_EQUAL = new IntBiPredicate() {
+            @Override
+            public boolean test(int t, int u) {
+                return t <= u;
+            }
+        };
+
+        private IntFn() {
+            // Utility class.
+        }
+
+        public static IntPredicate positve() {
+            return POSITIVE;
+        }
+
+        public static IntPredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static IntBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static IntBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static IntBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static IntBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static IntBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static IntBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    public static final class LongFn {
+
+        private static final LongPredicate POSITIVE = new LongPredicate() {
+            @Override
+            public boolean test(long t) {
+                return t > 0;
+            }
+        };
+
+        private static final LongPredicate NOT_NEGATIVE = new LongPredicate() {
+            @Override
+            public boolean test(long t) {
+                return t >= 0;
+            }
+        };
+
+        private static final LongBiPredicate EQUAL = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t == u;
+            }
+        };
+
+        private static final LongBiPredicate NOT_EQUAL = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t != u;
+            }
+        };
+
+        private static final LongBiPredicate GREATER_THAN = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t > u;
+            }
+        };
+
+        private static final LongBiPredicate GREATER_EQUAL = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t >= u;
+            }
+        };
+
+        private static final LongBiPredicate LESS_THAN = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t < u;
+            }
+        };
+
+        private static final LongBiPredicate LESS_EQUAL = new LongBiPredicate() {
+            @Override
+            public boolean test(long t, long u) {
+                return t <= u;
+            }
+        };
+
+        private LongFn() {
+            // Utility class.
+        }
+
+        public static LongPredicate positve() {
+            return POSITIVE;
+        }
+
+        public static LongPredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static LongBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static LongBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static LongBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static LongBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static LongBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static LongBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    public static final class DoubleFn {
+
+        private static final DoublePredicate POSITIVE = new DoublePredicate() {
+            @Override
+            public boolean test(double t) {
+                return t > 0;
+            }
+        };
+
+        private static final DoublePredicate NOT_NEGATIVE = new DoublePredicate() {
+            @Override
+            public boolean test(double t) {
+                return t >= 0;
+            }
+        };
+
+        private static final DoubleBiPredicate EQUAL = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.equals(t, u);
+            }
+        };
+
+        private static final DoubleBiPredicate NOT_EQUAL = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.compare(t, u) != 0;
+            }
+        };
+
+        private static final DoubleBiPredicate GREATER_THAN = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.compare(t, u) > 0;
+            }
+        };
+
+        private static final DoubleBiPredicate GREATER_EQUAL = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.compare(t, u) >= 0;
+            }
+        };
+
+        private static final DoubleBiPredicate LESS_THAN = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.compare(t, u) < 0;
+            }
+        };
+
+        private static final DoubleBiPredicate LESS_EQUAL = new DoubleBiPredicate() {
+            @Override
+            public boolean test(double t, double u) {
+                return N.compare(t, u) <= 0;
+            }
+        };
+
+        private DoubleFn() {
+            // Utility class.
+        }
+
+        public static DoublePredicate positve() {
+            return POSITIVE;
+        }
+
+        public static DoublePredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static DoubleBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static DoubleBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static DoubleBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static DoubleBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static DoubleBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static DoubleBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    public static final class PairFn {
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
+            @Override
+            public List apply(Pair t) {
+                return N.asList(t.getLeft(), t.getRight());
+            }
+
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
+            @Override
+            public Set apply(Pair t) {
+                return N.asSet(t.getLeft(), t.getRight());
+            }
+
+        };
+
+        private PairFn() {
+            // Utility class.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, List<T>> toList() {
+            return (Function) PAIR_TO_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, Set<T>> toSet() {
+            return (Function) PAIR_TO_SET;
+        }
+
+    }
+
+    public static final class TripleFn {
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
+            @Override
+            public List apply(Triple t) {
+                return N.asList(t.getLeft(), t.getMiddle(), t.getRight());
+            }
+
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
+            @Override
+            public Set apply(Triple t) {
+                return N.asSet(t.getLeft(), t.getMiddle(), t.getRight());
+            }
+
+        };
+
+        private TripleFn() {
+            // Utility class.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, List<T>> toList() {
+            return (Function) TRIPLE_TO_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
+            return (Function) TRIPLE_TO_SET;
         }
     }
 }
