@@ -37,6 +37,16 @@ public abstract class Tuple {
         }
 
         @Override
+        public boolean anyNull() {
+            return false;
+        }
+
+        @Override
+        public boolean allNull() {
+            return true;
+        }
+
+        @Override
         public Object[] toArray() {
             return N.EMPTY_OBJECT_ARRAY;
         }
@@ -67,6 +77,10 @@ public abstract class Tuple {
     }
 
     public abstract int arity();
+
+    public abstract boolean anyNull();
+
+    public abstract boolean allNull();
 
     public abstract Object[] toArray();
 
@@ -236,6 +250,16 @@ public abstract class Tuple {
         }
 
         @Override
+        public boolean anyNull() {
+            return _1 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null;
+        }
+
+        @Override
         public Object[] toArray() {
             return new Object[] { _1 };
         }
@@ -273,6 +297,20 @@ public abstract class Tuple {
         @Override
         public Stream<Tuple1<T1>> stream() {
             return Stream.of(this);
+        }
+
+        /**
+         * <pre>
+         * <code>
+         * Optional#ofNullable(_1)
+         * </code>
+         * </pre>
+         * 
+         * @return
+         * @see Optional#ofNullable(Object)
+         */
+        public Optional<T1> toOptional() {
+            return Optional.ofNullable(_1);
         }
 
         @Override
@@ -321,6 +359,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 2;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null;
         }
 
         public Tuple2<T2, T1> reversed() {
@@ -444,6 +492,16 @@ public abstract class Tuple {
             return 3;
         }
 
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null;
+        }
+
         public Tuple3<T3, T2, T1> reversed() {
             return new Tuple3<>(_3, _2, _1);
         }
@@ -548,6 +606,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 4;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null;
         }
 
         public Tuple4<T4, T3, T2, T1> reversed() {
@@ -655,6 +723,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 5;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null || _5 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null && _5 == null;
         }
 
         public Tuple5<T5, T4, T3, T2, T1> reversed() {
@@ -769,6 +847,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 6;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null || _5 == null || _6 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null && _5 == null && _6 == null;
         }
 
         public Tuple6<T6, T5, T4, T3, T2, T1> reversed() {
@@ -889,6 +977,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 7;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null || _5 == null || _6 == null || _7 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null && _5 == null && _6 == null && _7 == null;
         }
 
         public Tuple7<T7, T6, T5, T4, T3, T2, T1> reversed() {
@@ -1014,6 +1112,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 8;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null || _5 == null || _6 == null || _7 == null || _8 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null && _5 == null && _6 == null && _7 == null && _8 == null;
         }
 
         public Tuple8<T8, T7, T6, T5, T4, T3, T2, T1> reversed() {
@@ -1144,6 +1252,16 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 9;
+        }
+
+        @Override
+        public boolean anyNull() {
+            return _1 == null || _2 == null || _3 == null || _4 == null || _5 == null || _6 == null || _7 == null || _8 == null || _9 == null;
+        }
+
+        @Override
+        public boolean allNull() {
+            return _1 == null && _2 == null && _3 == null && _4 == null && _5 == null && _6 == null && _7 == null && _8 == null && _9 == null;
         }
 
         public Tuple9<T9, T8, T7, T6, T5, T4, T3, T2, T1> reversed() {

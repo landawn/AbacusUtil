@@ -4,6 +4,10 @@
 
 * Add `Stream.combinations(int len, boolean repeat)`.
 
+* Add `Tuple.anyNull/allNull`.
+
+* Add `Tuple1.toOptional`.
+
 * Improvements and bug fix.
 
 
