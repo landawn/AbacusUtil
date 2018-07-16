@@ -3275,12 +3275,12 @@ public final class SQLExecutor implements Closeable {
 
         private final Class<T> targetClass;
         private final Type<T> targetType;
+        private final String idName;
         private final List<String> propNameList;
         private final Set<String> propNameSet;
         private final List<String> defaultSelectPropNameList;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
-        private final String idName;
         private final String sql_exists_by_id;
         private final String sql_get_by_id;
         private final String sql_delete_by_id;
@@ -3955,7 +3955,7 @@ public final class SQLExecutor implements Closeable {
          * @param entity
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <E> E add(final Object entity) {
+        public <ID> ID add(final Object entity) {
             return add(null, entity);
         }
 
@@ -3964,12 +3964,12 @@ public final class SQLExecutor implements Closeable {
          * @param props
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <E> E add(final Map<String, Object> props) {
+        public <ID> ID add(final Map<String, Object> props) {
             return add(null, props);
         }
 
         @SuppressWarnings("deprecation")
-        public <E> E add(final Connection conn, final Object entity) {
+        public <ID> ID add(final Connection conn, final Object entity) {
             N.checkArgNotNull(entity);
 
             if (entity instanceof DirtyMarker && N.isNullOrEmpty(((DirtyMarker) entity).signedPropNames())) {
@@ -3978,7 +3978,7 @@ public final class SQLExecutor implements Closeable {
 
             final SP pair = prepareAdd(entity);
 
-            final E id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
+            final ID id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
 
             postAdd(entity, id);
 
@@ -3990,7 +3990,7 @@ public final class SQLExecutor implements Closeable {
          * @param props
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <E> E add(final Connection conn, final Map<String, Object> props) {
+        public <ID> ID add(final Connection conn, final Map<String, Object> props) {
             N.checkArgNotNull(props);
 
             final SP pair = prepareAdd(props);
@@ -4004,7 +4004,7 @@ public final class SQLExecutor implements Closeable {
          * @param entities
          * @return a list with the auto-generated id or null element if there is no auto-generated id.
          */
-        public <E> List<E> addAll(final Collection<?> entities) {
+        public <ID> List<ID> addAll(final Collection<?> entities) {
             return addAll(entities, IsolationLevel.DEFAULT);
         }
 
@@ -4015,19 +4015,19 @@ public final class SQLExecutor implements Closeable {
          * @param isolationLevel
          * @return a list with the auto-generated id or null element if there is no auto-generated id.
          */
-        public <E> List<E> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+        public <ID> List<ID> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
             if (N.isNullOrEmpty(entities)) {
                 return new ArrayList<>();
             }
 
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
             final Connection conn = tran.connection();
-            final List<E> result = new ArrayList<>(entities.size());
+            final List<ID> result = new ArrayList<>(entities.size());
             boolean isOk = false;
 
             try {
                 for (Object entity : entities) {
-                    result.add((E) add(conn, entity));
+                    result.add((ID) add(conn, entity));
                 }
 
                 isOk = true;
@@ -4051,7 +4051,7 @@ public final class SQLExecutor implements Closeable {
          * @param entities
          * @return
          */
-        public <E> List<E> addAll(final Connection conn, final Collection<?> entities) {
+        public <ID> List<ID> addAll(final Connection conn, final Collection<?> entities) {
             if (N.isNullOrEmpty(entities)) {
                 return new ArrayList<>();
             }
@@ -4060,10 +4060,10 @@ public final class SQLExecutor implements Closeable {
                 return addAll(entities);
             }
 
-            final List<E> result = new ArrayList<>(entities.size());
+            final List<ID> result = new ArrayList<>(entities.size());
 
             for (Object entity : entities) {
-                result.add((E) add(conn, entity));
+                result.add((ID) add(conn, entity));
             }
 
             return result;
@@ -4075,19 +4075,19 @@ public final class SQLExecutor implements Closeable {
          * @param entities which must have the same updated properties set.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <E> List<E> batchAdd(final Collection<?> entities) {
+        public <ID> List<ID> batchAdd(final Collection<?> entities) {
             return batchAdd(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public <E> List<E> batchAdd(final Collection<?> entities, final int batchSize) {
+        public <ID> List<ID> batchAdd(final Collection<?> entities, final int batchSize) {
             return batchAdd(entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public <E> List<E> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public <ID> List<ID> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return batchAdd(null, entities, batchSize);
         }
 
-        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities) {
+        public <ID> List<ID> batchAdd(final Connection conn, final Collection<?> entities) {
             return batchAdd(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
@@ -4098,11 +4098,11 @@ public final class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
+        public <ID> List<ID> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
             return batchAdd(conn, entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        private <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        private <ID> List<ID> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
 
             if (N.isNullOrEmpty(entities)) {
@@ -4113,7 +4113,7 @@ public final class SQLExecutor implements Closeable {
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final List<E> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, parametersList);
+            final List<ID> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, parametersList);
 
             if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
                 int idx = 0;
@@ -4196,40 +4196,43 @@ public final class SQLExecutor implements Closeable {
         }
 
         /**
-         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * Execute {@code add} and return the added entity if the record doesn't, otherwise, {@code update} is executed and updated db record is returned. 
          * 
          * @param entity
          * @return  
          */
-        public int addOrUpdate(final Object entity) {
-            if (exists(ClassUtil.getPropValue(entity, idName))) {
-                update(entity);
-                return 1;
-            } else {
+        public T addOrUpdate(final T entity) {
+            final T dbEntity = get(ClassUtil.getPropValue(entity, idName));
+
+            if (dbEntity == null) {
                 add(entity);
-                return 0;
+                return entity;
+            } else {
+                N.merge(entity, dbEntity);
+                update(dbEntity);
+                return dbEntity;
             }
         }
 
         /** 
-         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * Execute {@code add} and return the added entity if the record doesn't, otherwise, {@code update} is executed and updated db record is returned. 
          * 
          * @param entity
          * @param queryPropNames the properties names used to verify the if the record exists or not.
          * @return
          */
-        public int addOrUpdate(final Object entity, final String... queryPropNames) {
+        public T addOrUpdate(final T entity, final String... queryPropNames) {
             return addOrUpdate(entity, Array.asList(queryPropNames));
         }
 
         /**
-         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * Execute {@code add} and return the added entity if the record doesn't, otherwise, {@code update} is executed and updated db record is returned. 
          * 
          * @param entity
          * @param queryPropNames the properties names used to verify the if the record exists or not.
          * @return
          */
-        public int addOrUpdate(final Object entity, final Collection<String> queryPropNames) {
+        public T addOrUpdate(final T entity, final Collection<String> queryPropNames) {
             N.checkArgNotNullOrEmpty(queryPropNames, "queryPropNames");
 
             final And and = new And();
@@ -4237,12 +4240,17 @@ public final class SQLExecutor implements Closeable {
                 and.add(L.eq(propName, ClassUtil.getPropValue(entity, propName)));
             }
 
-            if (exists(and)) {
-                update(entity);
-                return 1;
-            } else {
+            final T dbEntity = queryForEntity(and).orNull();
+
+            if (dbEntity == null) {
                 add(entity);
-                return 0;
+                return entity;
+            } else {
+                final Object id = ClassUtil.getPropValue(dbEntity, idName);
+                N.merge(entity, dbEntity);
+                ClassUtil.setPropValue(dbEntity, idName, id);
+                update(dbEntity);
+                return dbEntity;
             }
         }
 
@@ -5343,136 +5351,136 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<E> add(final Object entity) {
-            return asyncExecutor.execute(new Callable<E>() {
+        public <ID> CompletableFuture<ID> add(final Object entity) {
+            return asyncExecutor.execute(new Callable<ID>() {
                 @Override
-                public E call() throws Exception {
+                public ID call() throws Exception {
                     return mapper.add(entity);
                 }
             });
         }
 
-        public <E> CompletableFuture<E> add(final Map<String, Object> props) {
-            return asyncExecutor.execute(new Callable<E>() {
+        public <ID> CompletableFuture<ID> add(final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<ID>() {
                 @Override
-                public E call() throws Exception {
+                public ID call() throws Exception {
                     return mapper.add(props);
                 }
             });
         }
 
-        public <E> CompletableFuture<E> add(final Connection conn, final Object entity) {
-            return asyncExecutor.execute(new Callable<E>() {
+        public <ID> CompletableFuture<ID> add(final Connection conn, final Object entity) {
+            return asyncExecutor.execute(new Callable<ID>() {
                 @Override
-                public E call() throws Exception {
+                public ID call() throws Exception {
                     return mapper.add(conn, entity);
                 }
             });
         }
 
-        public <E> CompletableFuture<E> add(final Connection conn, final Map<String, Object> props) {
-            return asyncExecutor.execute(new Callable<E>() {
+        public <ID> CompletableFuture<ID> add(final Connection conn, final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<ID>() {
                 @Override
-                public E call() throws Exception {
+                public ID call() throws Exception {
                     return mapper.add(conn, props);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> addAll(final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> addAll(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.addAll(entities);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.addAll(entities, isolationLevel);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> addAll(final Connection conn, final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> addAll(final Connection conn, final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.addAll(conn, entities);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.batchAdd(entities);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Collection<?> entities, final int batchSize) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.batchAdd(entities, batchSize);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.batchAdd(entities, batchSize, isolationLevel);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Connection conn, final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.batchAdd(conn, entities);
                 }
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
+        public <ID> CompletableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
-                public List<E> call() throws Exception {
+                public List<ID> call() throws Exception {
                     return mapper.batchAdd(conn, entities, batchSize);
                 }
             });
         }
 
-        public CompletableFuture<Integer> addOrUpdate(final Object entity) {
-            return asyncExecutor.execute(new Callable<Integer>() {
+        public CompletableFuture<T> addOrUpdate(final T entity) {
+            return asyncExecutor.execute(new Callable<T>() {
                 @Override
-                public Integer call() throws Exception {
+                public T call() throws Exception {
                     return mapper.addOrUpdate(entity);
                 }
             });
         }
 
-        public CompletableFuture<Integer> addOrUpdate(final Object entity, final String... queryPropNames) {
-            return asyncExecutor.execute(new Callable<Integer>() {
+        public CompletableFuture<T> addOrUpdate(final T entity, final String... queryPropNames) {
+            return asyncExecutor.execute(new Callable<T>() {
                 @Override
-                public Integer call() throws Exception {
+                public T call() throws Exception {
                     return mapper.addOrUpdate(entity, queryPropNames);
                 }
             });
         }
 
-        public CompletableFuture<Integer> addOrUpdate(final Object entity, final Collection<String> queryPropNames) {
-            return asyncExecutor.execute(new Callable<Integer>() {
+        public CompletableFuture<T> addOrUpdate(final T entity, final Collection<String> queryPropNames) {
+            return asyncExecutor.execute(new Callable<T>() {
                 @Override
-                public Integer call() throws Exception {
+                public T call() throws Exception {
                     return mapper.addOrUpdate(entity, queryPropNames);
                 }
             });
