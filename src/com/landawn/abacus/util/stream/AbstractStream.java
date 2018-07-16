@@ -2102,7 +2102,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                 final int toIndex = ((ArrayStream<T>) this).toIndex;
 
                 return newStream(new ObjIteratorEx<List<T>>() {
-
                     private final int[] indices = Array.range(fromIndex, fromIndex + len);
 
                     @Override
@@ -2181,7 +2180,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                         size = list.size();
                     }
                 }
-
             }, false, null);
         }
     }
@@ -2209,7 +2207,44 @@ abstract class AbstractStream<T> extends Stream<T> {
         cList.add(this.toList());
         cList.addAll(cs);
 
-        return newStream(N.cartesianProduct(cList).iterator(), false, null);
+        return newStream(new ObjIteratorEx<List<T>>() {
+            private List<List<T>> list = null;
+            private int size = 0;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                init();
+                return cursor < size;
+            }
+
+            @Override
+            public List<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return list.get(cursor++);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n <= size - cursor ? cursor + (int) n : size;
+            }
+
+            @Override
+            public long count() {
+                return size - cursor;
+            }
+
+            private void init() {
+                if (list == null) {
+                    list = N.cartesianProduct(cList);
+                    size = list.size();
+                }
+            }
+
+        }, false, null);
     }
 
     @Override

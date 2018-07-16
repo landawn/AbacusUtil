@@ -10,6 +10,8 @@
 
 * Add `IntFn/LongFn/DoubleFn/PairFn/TripleFn`.
 
+* Add `SQLExecutor.Mapper.addOrUpdate`.
+
 * Improvements and bug fix.
 
 

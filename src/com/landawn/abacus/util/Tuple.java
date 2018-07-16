@@ -404,12 +404,24 @@ public abstract class Tuple {
             action.accept(this);
         }
 
+        public <E extends Exception> void accept(final Try.BiConsumer<? super T1, ? super T2, E> action) throws E {
+            action.accept(_1, _2);
+        }
+
         public <U, E extends Exception> U map(final Try.Function<? super Tuple2<T1, T2>, U, E> mapper) throws E {
             return mapper.apply(this);
         }
 
+        public <U, E extends Exception> U map(final Try.BiFunction<? super T1, ? super T2, U, E> mapper) throws E {
+            return mapper.apply(_1, _2);
+        }
+
         public <E extends Exception> Optional<Tuple2<T1, T2>> filter(final Try.Predicate<? super Tuple2<T1, T2>, E> predicate) throws E {
             return predicate.test(this) ? Optional.of(this) : Optional.<Tuple2<T1, T2>> empty();
+        }
+
+        public <E extends Exception> Optional<Tuple2<T1, T2>> filter(final Try.BiPredicate<? super T1, ? super T2, E> predicate) throws E {
+            return predicate.test(_1, _2) ? Optional.of(this) : Optional.<Tuple2<T1, T2>> empty();
         }
 
         @Override
@@ -537,12 +549,24 @@ public abstract class Tuple {
             action.accept(this);
         }
 
+        public <E extends Exception> void accept(final Try.TriConsumer<? super T1, ? super T2, ? super T3, E> action) throws E {
+            action.accept(_1, _2, _3);
+        }
+
         public <U, E extends Exception> U map(final Try.Function<? super Tuple3<T1, T2, T3>, U, E> mapper) throws E {
             return mapper.apply(this);
         }
 
+        public <U, E extends Exception> U map(final Try.TriFunction<? super T1, ? super T2, ? super T3, U, E> mapper) throws E {
+            return mapper.apply(_1, _2, _3);
+        }
+
         public <E extends Exception> Optional<Tuple3<T1, T2, T3>> filter(final Try.Predicate<? super Tuple3<T1, T2, T3>, E> predicate) throws E {
             return predicate.test(this) ? Optional.of(this) : Optional.<Tuple3<T1, T2, T3>> empty();
+        }
+
+        public <E extends Exception> Optional<Tuple3<T1, T2, T3>> filter(final Try.TriPredicate<? super T1, ? super T2, ? super T3, E> predicate) throws E {
+            return predicate.test(_1, _2, _3) ? Optional.of(this) : Optional.<Tuple3<T1, T2, T3>> empty();
         }
 
         @Override

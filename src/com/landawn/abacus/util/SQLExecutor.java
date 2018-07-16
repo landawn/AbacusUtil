@@ -53,6 +53,7 @@ import com.landawn.abacus.DataSourceSelector;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Equal;
@@ -4194,6 +4195,57 @@ public final class SQLExecutor implements Closeable {
             }
         }
 
+        /**
+         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * 
+         * @param entity
+         * @return  
+         */
+        public int addOrUpdate(final Object entity) {
+            if (exists(ClassUtil.getPropValue(entity, idName))) {
+                update(entity);
+                return 1;
+            } else {
+                add(entity);
+                return 0;
+            }
+        }
+
+        /** 
+         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * 
+         * @param entity
+         * @param queryPropNames the properties names used to verify the if the record exists or not.
+         * @return
+         */
+        public int addOrUpdate(final Object entity, final String... queryPropNames) {
+            return addOrUpdate(entity, Array.asList(queryPropNames));
+        }
+
+        /**
+         * Execute {@code add} and return 0 if the record doesn't, otherwise, {@code update} is executed and 1 is returned. 
+         * 
+         * @param entity
+         * @param queryPropNames the properties names used to verify the if the record exists or not.
+         * @return
+         */
+        public int addOrUpdate(final Object entity, final Collection<String> queryPropNames) {
+            N.checkArgNotNullOrEmpty(queryPropNames, "queryPropNames");
+
+            final And and = new And();
+            for (String propName : queryPropNames) {
+                and.add(L.eq(propName, ClassUtil.getPropValue(entity, propName)));
+            }
+
+            if (exists(and)) {
+                update(entity);
+                return 1;
+            } else {
+                add(entity);
+                return 0;
+            }
+        }
+
         public int update(final Object entity) {
             return update(entity, (Collection<String>) null);
         }
@@ -5395,6 +5447,33 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public List<E> call() throws Exception {
                     return mapper.batchAdd(conn, entities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> addOrUpdate(final Object entity) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.addOrUpdate(entity);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> addOrUpdate(final Object entity, final String... queryPropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.addOrUpdate(entity, queryPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> addOrUpdate(final Object entity, final Collection<String> queryPropNames) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.addOrUpdate(entity, queryPropNames);
                 }
             });
         }
