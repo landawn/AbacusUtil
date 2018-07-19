@@ -12,6 +12,8 @@
 
 * Add `SQLExecutor.Mapper.addOrUpdate`.
 
+* Refactoring `SQLExecutor.Mapper` to support composite id.
+
 * Improvements and bug fix.
 
 

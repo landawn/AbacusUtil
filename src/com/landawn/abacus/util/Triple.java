@@ -34,9 +34,9 @@ import com.landawn.abacus.util.stream.Stream;
  * @param <R>
  */
 public final class Triple<L, M, R> {
-    public volatile L left;
-    public volatile M middle;
-    public volatile R right;
+    public L left;
+    public M middle;
+    public R right;
 
     public Triple() {
     }

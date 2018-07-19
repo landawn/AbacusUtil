@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.io.Closeable;
@@ -39,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3226,9 +3228,10 @@ public final class SQLExecutor implements Closeable {
      */
     public static final class Mapper<T> {
         @Documented
-        @Target(value = { FIELD, METHOD })
+        @Target(value = { FIELD, METHOD, TYPE })
         @Retention(RUNTIME)
         public static @interface Id {
+            String[] value() default "";
         }
 
         /** 
@@ -3244,9 +3247,10 @@ public final class SQLExecutor implements Closeable {
          * The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. 
          */
         @Documented
-        @Target(value = { FIELD, METHOD })
+        @Target(value = { FIELD, METHOD, TYPE })
         @Retention(RUNTIME)
         public static @interface ReadOnlyId {
+            String[] value() default "";
         }
 
         /** 
@@ -3269,18 +3273,20 @@ public final class SQLExecutor implements Closeable {
 
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
-        static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
-        static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
-        static final Map<Class<?>, Set<String>> nonUpdatablePropNamesMap = new ConcurrentHashMap<>();
 
         private final Class<T> targetClass;
         private final Type<T> targetType;
-        private final String idName;
         private final List<String> propNameList;
         private final Set<String> propNameSet;
         private final List<String> defaultSelectPropNameList;
+        private final String idPropName;
+        private final List<String> idPropNameList;
+        private final Set<String> idPropNameSet;
+        private final Set<String> readOnlyPropNameSet;
+        private final Set<String> nonUpdatablePropNameSet;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
+        private final Condition idCond;
         private final String sql_exists_by_id;
         private final String sql_get_by_id;
         private final String sql_delete_by_id;
@@ -3289,9 +3295,9 @@ public final class SQLExecutor implements Closeable {
 
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
             final Set<String> readOnlyPropNames = new HashSet<>();
-            final Set<String> writeOnlyPropNames = new HashSet<>();
+            final Set<String> nonUpdatablePropNames = new HashSet<>();
             final Set<String> transientPropNames = new HashSet<>();
-            String idPropName = null;
+            final Set<String> idPropNames = new LinkedHashSet<>();
 
             final Set<Field> allFields = new HashSet<>();
 
@@ -3308,7 +3314,7 @@ public final class SQLExecutor implements Closeable {
                 }
 
                 if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
-                    idPropName = field.getName();
+                    idPropNames.add(field.getName());
                 }
 
                 if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
@@ -3316,7 +3322,7 @@ public final class SQLExecutor implements Closeable {
                 }
 
                 if (field.isAnnotationPresent(NonUpdatable.class)) {
-                    writeOnlyPropNames.add(field.getName());
+                    nonUpdatablePropNames.add(field.getName());
                 }
 
                 if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
@@ -3335,7 +3341,7 @@ public final class SQLExecutor implements Closeable {
                 entry = iter.next();
 
                 if (entry.getValue().isAnnotationPresent(Id.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
-                    idPropName = entry.getKey();
+                    idPropNames.add(entry.getKey());
                 }
 
                 if (entry.getValue().isAnnotationPresent(ReadOnly.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
@@ -3343,7 +3349,7 @@ public final class SQLExecutor implements Closeable {
                 }
 
                 if (entry.getValue().isAnnotationPresent(NonUpdatable.class)) {
-                    writeOnlyPropNames.add(entry.getKey());
+                    nonUpdatablePropNames.add(entry.getKey());
                 }
 
                 if (entry.getValue().isAnnotationPresent(Transient.class)) {
@@ -3354,17 +3360,17 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            if (N.notNullOrEmpty(idPropName) && !entityIdMap.containsKey(targetClass)) {
-                registerEntityId(targetClass, idPropName);
+            if (targetClass.isAnnotationPresent(Id.class) || targetClass.isAnnotationPresent(ReadOnlyId.class)) {
+                String[] values = targetClass.getAnnotation(Id.class).value();
+                N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
+                idPropNames.addAll(Arrays.asList(values));
+
+                if (targetClass.isAnnotationPresent(ReadOnlyId.class)) {
+                    readOnlyPropNames.addAll(Arrays.asList(values));
+                }
             }
 
-            if (N.notNullOrEmpty(readOnlyPropNames) && !readOnlyPropNamesMap.containsKey(targetClass)) {
-                registerReadOnlyProps(targetClass, readOnlyPropNames);
-            }
-
-            if (N.notNullOrEmpty(writeOnlyPropNames) && !nonUpdatablePropNamesMap.containsKey(targetClass)) {
-                registerNonUpdatableProps(targetClass, writeOnlyPropNames);
-            }
+            nonUpdatablePropNames.addAll(readOnlyPropNames);
 
             this.targetClass = targetClass;
             this.targetType = N.typeOf(targetClass);
@@ -3373,80 +3379,35 @@ public final class SQLExecutor implements Closeable {
             this.defaultSelectPropNameList = ImmutableList.copyOf(SQLBuilder.getPropNamesByClass(targetClass, false, transientPropNames));
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
-            this.idName = Maps.getOrDefault(entityIdMap, targetClass, SQLExecutor.ID);
-            this.sql_exists_by_id = this.prepareQuery(SQLBuilder._1_list, L.eq(idName)).sql;
-            this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, L.eq(idName)).sql;
-            this.sql_delete_by_id = this.prepareDelete(L.eq(idName)).sql;
+
+            N.checkArgNotNullOrEmpty(idPropNames, "Target class: " + ClassUtil.getCanonicalClassName(targetClass)
+                    + " must at least has one id property annotated by @Id or @ReadOnlyId on field/method or class");
+
+            this.idPropName = idPropNames.iterator().next();
+            this.idPropNameList = ImmutableList.copyOf(idPropNames);
+            this.idPropNameSet = ImmutableSet.copyOf(idPropNames);
+            this.readOnlyPropNameSet = N.isNullOrEmpty(readOnlyPropNames) ? null : ImmutableSet.of(readOnlyPropNames);
+            this.nonUpdatablePropNameSet = N.isNullOrEmpty(nonUpdatablePropNames) ? null : ImmutableSet.of(nonUpdatablePropNames);
+
+            Condition cond = null;
+
+            if (idPropNameList.size() == 1) {
+                cond = L.eq(idPropName);
+            } else {
+                final And and = L.and();
+
+                for (String idName : idPropNameList) {
+                    and.add(L.eq(idName));
+                }
+
+                cond = and;
+            }
+
+            this.idCond = cond;
+            this.sql_exists_by_id = this.prepareQuery(SQLBuilder._1_list, idCond).sql;
+            this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, idCond).sql;
+            this.sql_delete_by_id = this.prepareDelete(idCond).sql;
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
-        }
-
-        /**
-         * 
-         * @param targetClass
-         * @param idName
-         * @deprecated annotation {@code Id} or {@code ReadOnlyId} is preferred.
-         */
-        @Deprecated
-        public static void registerEntityId(Class<?> targetClass, String idName) {
-            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-
-            entityIdMap.put(targetClass, ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, idName)));
-        }
-
-        /**
-         * The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
-         * 
-         * @param targetClass
-         * @param readOnlyPropNames
-         * @deprecated annotation {@code ReadOnly} is preferred.
-         */
-        @Deprecated
-        public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
-            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-            N.checkArgNotNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
-
-            final Set<String> set = new HashSet<>();
-
-            for (String propName : readOnlyPropNames) {
-                set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
-            }
-
-            readOnlyPropNamesMap.put(targetClass, set);
-
-            synchronized (nonUpdatablePropNamesMap) {
-                if (nonUpdatablePropNamesMap.containsKey(targetClass)) {
-                    nonUpdatablePropNamesMap.get(targetClass).addAll(set);
-                } else {
-                    nonUpdatablePropNamesMap.put(targetClass, new HashSet<>(set));
-                }
-            }
-        }
-
-        /**
-         * The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity.
-         * 
-         * @param targetClass
-         * @param writeOnlyPropNames
-         * @deprecated annotation {@code NonUpdatable} is preferred.
-         */
-        @Deprecated
-        public static void registerNonUpdatableProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
-            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
-            N.checkArgNotNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
-
-            final Set<String> set = new HashSet<>();
-
-            for (String propName : writeOnlyPropNames) {
-                set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
-            }
-
-            synchronized (nonUpdatablePropNamesMap) {
-                if (nonUpdatablePropNamesMap.containsKey(targetClass)) {
-                    nonUpdatablePropNamesMap.get(targetClass).addAll(set);
-                } else {
-                    nonUpdatablePropNamesMap.put(targetClass, new HashSet<>(set));
-                }
-            }
         }
 
         public Class<T> targetClass() {
@@ -3457,8 +3418,12 @@ public final class SQLExecutor implements Closeable {
             return targetType;
         }
 
-        public String idPropName() {
-            return idName;
+        public List<String> idPropNameList() {
+            return idPropNameList;
+        }
+
+        public Set<String> idPropNameSet() {
+            return idPropNameSet;
         }
 
         public List<String> propNameList() {
@@ -3473,6 +3438,41 @@ public final class SQLExecutor implements Closeable {
             return asyncMapper;
         }
 
+        private Condition id2Cond(final Object id) {
+            if (idPropNameList.size() == 1) {
+                if (id instanceof Map) {
+                    return L.eq(idPropName, ((Map<String, Object>) id).get(idPropName));
+                } else if (N.isEntity(id.getClass())) {
+                    return L.eq(idPropName, ClassUtil.getPropValue(id, idPropName));
+                } else {
+                    return L.eq(idPropName, id);
+                }
+            }
+
+            final Condition[] conds = new Condition[idPropNameList.size()];
+
+            if (id instanceof Map) {
+                final Map<String, Object> map = (Map<String, Object>) id;
+
+                for (int i = 0, size = idPropNameList.size(); i < size; i++) {
+                    conds[i] = L.eq(idPropNameList.get(i), map.get(idPropNameList.get(i)));
+                }
+            } else if (N.isEntity(id.getClass())) {
+                for (int i = 0, size = idPropNameList.size(); i < size; i++) {
+                    conds[i] = L.eq(idPropNameList.get(i), ClassUtil.getPropValue(id, idPropNameList.get(i)));
+                }
+            } else {
+                throw new IllegalArgumentException("Not supported id type: " + (id == null ? "null" : ClassUtil.getClassName(id.getClass())));
+            }
+
+            return L.and(conds);
+        }
+
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @return
+         */
         public boolean exists(final Object id) {
             return sqlExecutor.queryForInt(sql_exists_by_id, id).orElse(0) > 0;
         }
@@ -3497,19 +3497,43 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.count(conn, pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @return
+         */
         public T get(final Object id) {
             return get(id, (Collection<String>) null);
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         @SafeVarargs
         public final T get(final Object id, final String... selectPropNames) {
             return get(id, Arrays.asList(selectPropNames));
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         public T get(final Object id, final Collection<String> selectPropNames) {
             return get(null, id, selectPropNames);
         }
 
+        /**
+         * 
+         * @param conn
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         public T get(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             final JdbcSettings jdbcSetting = JdbcSettings.create().setCount(2);
             List<T> entities = null;
@@ -3517,7 +3541,7 @@ public final class SQLExecutor implements Closeable {
             if (N.isNullOrEmpty(selectPropNames)) {
                 entities = sqlExecutor.find(targetClass, conn, sql_get_by_id, null, jdbcSetting, id);
             } else {
-                final SP pair = prepareQuery(selectPropNames, L.eq(idName), 2);
+                final SP pair = prepareQuery(selectPropNames, idCond, 2);
                 entities = sqlExecutor.find(targetClass, conn, pair.sql, null, jdbcSetting, id);
             }
 
@@ -3530,37 +3554,98 @@ public final class SQLExecutor implements Closeable {
             }
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @return
+         */
         public Optional<T> gett(final Object id) {
             return Optional.ofNullable(this.get(id));
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         @SafeVarargs
         public final Optional<T> gett(final Object id, final String... selectPropNames) {
             return Optional.ofNullable(this.get(id, selectPropNames));
         }
 
+        /**
+         * 
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         public Optional<T> gett(final Object id, final Collection<String> selectPropNames) {
             return Optional.ofNullable(this.get(id, selectPropNames));
         }
 
+        /**
+         * 
+         * @param conn
+         * @param id which could be {@code Number}/{@code String}... or {@code Map} for composed id.
+         * @param selectPropNames
+         * @return
+         */
         public Optional<T> gett(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             return Optional.ofNullable(this.get(conn, id, selectPropNames));
         }
 
+        /**
+         * Only single id is supported.
+         * 
+         * @param ids
+         * @return
+         * @throws UnsupportedOperationException if id is composed by multiple properties.
+         */
         public List<T> batchGet(final List<?> ids) {
             return batchGet(ids, (Collection<String>) null);
         }
 
+        /**
+         * Only single id is supported.
+         * 
+         * @param ids
+         * @param selectPropNames
+         * @return
+         * @throws UnsupportedOperationException if id is composed by multiple properties.
+         */
         @SafeVarargs
         public final List<T> batchGet(final List<?> ids, final String... selectPropNames) {
             return batchGet(ids, Arrays.asList(selectPropNames));
         }
 
+        /**
+         * Only single id is supported.
+         * 
+         * @param ids
+         * @param selectPropNames
+         * @return
+         * @throws UnsupportedOperationException if id is composed by multiple properties.
+         */
         public List<T> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
             return batchGet(null, ids, selectPropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
+        /**
+         * Only single id is supported.
+         * 
+         * @param conn
+         * @param ids
+         * @param selectPropNames
+         * @param batchSize
+         * @return
+         * @throws UnsupportedOperationException if id is composed by multiple properties.
+         */
         public List<T> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+            if (idPropNameList.size() > 1) {
+                throw new UnsupportedOperationException("'batchGet' operation is not supperted for multiple id properties");
+            }
+
             N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
 
             if (N.isNullOrEmpty(ids)) {
@@ -3568,7 +3653,7 @@ public final class SQLExecutor implements Closeable {
             }
 
             final List<T> entities = new ArrayList<>(ids.size());
-            String sql = prepareQuery(selectPropNames, L.eq(idName)).sql;
+            String sql = prepareQuery(selectPropNames, idCond).sql;
             sql = sql.substring(0, sql.lastIndexOf('=')) + "IN ";
 
             if (ids.size() >= batchSize) {
@@ -3777,7 +3862,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
-            return queryForSingleResult(targetValueClass, propName, L.eq(idName, id));
+            return queryForSingleResult(targetValueClass, propName, id2Cond(id));
         }
 
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause) {
@@ -4142,17 +4227,15 @@ public final class SQLExecutor implements Closeable {
 
                 return prepareAdd(props);
             } else {
-                final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
-
                 switch (namingPolicy) {
                     case LOWER_CASE_WITH_UNDERSCORE:
-                        return NE.insert(entity, readOnlyPropNames).into(targetClass).pair();
+                        return NE.insert(entity, readOnlyPropNameSet).into(targetClass).pair();
 
                     case UPPER_CASE_WITH_UNDERSCORE:
-                        return NE2.insert(entity, readOnlyPropNames).into(targetClass).pair();
+                        return NE2.insert(entity, readOnlyPropNameSet).into(targetClass).pair();
 
                     case LOWER_CAMEL_CASE:
-                        return NE3.insert(entity, readOnlyPropNames).into(targetClass).pair();
+                        return NE3.insert(entity, readOnlyPropNameSet).into(targetClass).pair();
 
                     default:
                         throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
@@ -4163,10 +4246,8 @@ public final class SQLExecutor implements Closeable {
         private SP prepareAdd(final Map<String, Object> props) {
             N.checkArgument(N.notNullOrEmpty(props), "The specified 'props' can't be null or empty");
 
-            final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(targetClass);
-
-            if (N.notNullOrEmpty(readOnlyPropNames) && !N.disjoint(readOnlyPropNames, props.keySet())) {
-                throw new IllegalArgumentException("Can't write read-only properties: " + N.intersection(readOnlyPropNames, props.keySet()));
+            if (N.notNullOrEmpty(readOnlyPropNameSet) && !N.disjoint(readOnlyPropNameSet, props.keySet())) {
+                throw new IllegalArgumentException("Can't write read-only properties: " + N.intersection(readOnlyPropNameSet, props.keySet()));
             }
 
             switch (namingPolicy) {
@@ -4187,7 +4268,7 @@ public final class SQLExecutor implements Closeable {
         @SuppressWarnings("deprecation")
         private <E> void postAdd(final Object entity, final E idVal) {
             if (idVal != null && N.isEntity(entity.getClass())) {
-                ClassUtil.setPropValue(entity, idName, idVal);
+                ClassUtil.setPropValue(entity, idPropName, idVal);
             }
 
             if (entity instanceof DirtyMarker) {
@@ -4202,7 +4283,7 @@ public final class SQLExecutor implements Closeable {
          * @return  
          */
         public T addOrUpdate(final T entity) {
-            final T dbEntity = get(ClassUtil.getPropValue(entity, idName));
+            final T dbEntity = idPropNameList.size() == 1 ? get(ClassUtil.getPropValue(entity, idPropName)) : get(entity);
 
             if (dbEntity == null) {
                 add(entity);
@@ -4246,9 +4327,7 @@ public final class SQLExecutor implements Closeable {
                 add(entity);
                 return entity;
             } else {
-                final Object id = ClassUtil.getPropValue(dbEntity, idName);
-                N.merge(entity, dbEntity);
-                ClassUtil.setPropValue(dbEntity, idName, id);
+                N.merge(entity, dbEntity, false, idPropNameSet);
                 update(dbEntity);
                 return dbEntity;
             }
@@ -4294,7 +4373,7 @@ public final class SQLExecutor implements Closeable {
         public int update(final Connection conn, final Object id, final Map<String, Object> props) {
             N.checkArgNotNull(id);
 
-            return update(conn, props, L.eq(idName, id));
+            return update(conn, props, id2Cond(id));
         }
 
         public int update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
@@ -4484,15 +4563,13 @@ public final class SQLExecutor implements Closeable {
             checkEntity(entity);
 
             final boolean isDirtyMarkerEntity = entity instanceof DirtyMarker;
-            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
-
             Collection<String> updatingpropNames = updatePropNames;
 
             if (updatingpropNames == null) {
                 if (isDirtyMarkerEntity) {
                     updatingpropNames = ((DirtyMarker) entity).dirtyPropNames();
                 } else {
-                    updatingpropNames = SQLBuilder.getPropNamesByClass(entity.getClass(), false, nonUpdatablePropNames);
+                    updatingpropNames = SQLBuilder.getPropNamesByClass(entity.getClass(), false, nonUpdatablePropNameSet);
                 }
             }
 
@@ -4502,21 +4579,18 @@ public final class SQLExecutor implements Closeable {
                 props.put(propName, ClassUtil.getPropValue(entity, propName));
             }
 
-            final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);
-
-            if (idVal == null) {
-                throw new IllegalArgumentException("No id property found in Class: " + ClassUtil.getCanonicalClassName(entity.getClass()) + " with name: "
-                        + idName + ". Please register the id property first by calling 'registerEntityId'");
+            if (idPropNameList.size() == 1) {
+                props.remove(idPropName);
+            } else {
+                Maps.removeKeys(props, idPropNameList);
             }
 
-            return prepareUpdate(L.eq(idName, idVal), props);
+            return prepareUpdate(id2Cond(entity), props);
         }
 
         private SP prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
-            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(targetClass);
-
-            if (N.notNullOrEmpty(nonUpdatablePropNames) && !N.disjoint(nonUpdatablePropNames, props.keySet())) {
-                throw new IllegalArgumentException("Can't write non-updatable properties: " + N.intersection(nonUpdatablePropNames, props.keySet()));
+            if (N.notNullOrEmpty(nonUpdatablePropNameSet) && !N.disjoint(nonUpdatablePropNameSet, props.keySet())) {
+                throw new IllegalArgumentException("Can't write non-updatable properties: " + N.intersection(nonUpdatablePropNameSet, props.keySet()));
             }
 
             switch (namingPolicy) {
@@ -4558,16 +4632,13 @@ public final class SQLExecutor implements Closeable {
 
             checkEntity(idOrEntity);
 
-            final Class<?> cls = idOrEntity.getClass();
-            final Object idVal = N.isEntity(cls) ? getId(idOrEntity) : idOrEntity;
-
-            return delete(conn, L.eq(idName, idVal));
+            return delete(conn, id2Cond(idOrEntity));
         }
 
         public int delete(final Connection conn, final Condition whereCause) {
             N.checkArgNotNull(whereCause);
 
-            if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
+            if (idPropNameList.size() == 1 && whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idPropName)) {
                 final Object id = ((Equal) whereCause).getPropValue();
                 return sqlExecutor.update(conn, sql_delete_by_id, id);
             }
@@ -4711,12 +4782,7 @@ public final class SQLExecutor implements Closeable {
                 return 0;
             }
 
-            final List<Object> ids = new ArrayList<>(idsOrEntities.size());
-
-            for (Object idOrEntity : idsOrEntities) {
-                ids.add(N.isEntity(idOrEntity.getClass()) ? getId(idOrEntity) : idOrEntity);
-            }
-
+            final List<Object> ids = idsOrEntities instanceof List ? ((List<Object>) idsOrEntities) : N.newArrayList(idsOrEntities);
             return sqlExecutor.batchUpdate(conn, sql_delete_by_id, null, ids);
         }
 
@@ -4752,18 +4818,6 @@ public final class SQLExecutor implements Closeable {
             if (N.isEntity(cls)) {
                 N.checkArgument(targetClass.isAssignableFrom(cls), "Dlete wrong type: " + ClassUtil.getCanonicalClassName(cls) + " in " + toString());
             }
-        }
-
-        private Object getId(final Object entity) {
-            final Class<?> cls = entity.getClass();
-            final Method getMethod = ClassUtil.getPropGetMethod(cls, idName);
-
-            if (getMethod == null) {
-                throw new IllegalArgumentException("No id property found in Class: " + ClassUtil.getCanonicalClassName(cls) + " with name: " + idName
-                        + ". Please register the id property first by calling 'registerEntityId'");
-            }
-
-            return ClassUtil.getPropValue(entity, getMethod);
         }
 
         public String toStirng() {

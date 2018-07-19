@@ -34,8 +34,8 @@ import com.landawn.abacus.util.stream.Stream;
  * @param <R>
  */
 public final class Pair<L, R> implements Map.Entry<L, R> {
-    public volatile L left;
-    public volatile R right;
+    public L left;
+    public R right;
 
     public Pair() {
     }

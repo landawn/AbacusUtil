@@ -3456,7 +3456,15 @@ public final class N {
         return copy;
     }
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
+    /**
+     * 
+     * @param targetClass
+     * @param entity
+     * @param ignoreUnknownProperty
+     * @param ignorePropNames
+     * @return
+     */
+    @SuppressWarnings({ "unchecked" })
     public static <T> T copy(final Class<? extends T> targetClass, final Object entity, final boolean ignoreUnknownProperty,
             final Set<String> ignorePropNames) {
         final Class<?> srcCls = entity.getClass();
@@ -3478,40 +3486,7 @@ public final class N {
 
         copy = N.newInstance(targetClass);
 
-        if (entity instanceof DirtyMarker) {
-            Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
-
-            if (signedPropNames.size() == 0) {
-                // logger.warn("no property is signed in the specified source entity: "
-                // + toString(entity));
-            } else {
-                try {
-                    Method srcPropGetMethod = null;
-
-                    for (String propName : signedPropNames) {
-                        if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
-                            srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
-
-                            ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new AbacusException(e);
-                }
-            }
-        } else {
-            Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
-
-            try {
-                for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
-                    if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
-                        ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
-                    }
-                }
-            } catch (Exception e) {
-                throw new AbacusException(e);
-            }
-        }
+        merge(entity, copy, ignoreUnknownProperty, ignorePropNames);
 
         setDirtyMarker(entity, copy);
 
@@ -3554,7 +3529,7 @@ public final class N {
                             srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
                             ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
                         }
-                    } catch (Exception e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new AbacusException(e);
                     }
                 }
@@ -3565,7 +3540,7 @@ public final class N {
                     for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
                         ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue().invoke(sourceEntity), ignoreUnknownProperty);
                     }
-                } catch (Exception e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new AbacusException(e);
                 }
             }
@@ -3577,7 +3552,54 @@ public final class N {
                     srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
                     ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
                 }
-            } catch (Exception e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new AbacusException(e);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param sourceEntity
+     * @param targetEntity
+     * @param ignoreUnknownProperty
+     * @param ignorePropNames
+     */
+    @SuppressWarnings("deprecation")
+    public static void merge(final Object sourceEntity, final Object targetEntity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+        final Class<?> srcCls = sourceEntity.getClass();
+
+        if (sourceEntity instanceof DirtyMarker) {
+            Set<String> signedPropNames = ((DirtyMarker) sourceEntity).signedPropNames();
+
+            if (signedPropNames.size() == 0) {
+                // logger.warn("no property is signed in the specified source entity: "
+                // + toString(entity));
+            } else {
+                try {
+                    Method srcPropGetMethod = null;
+
+                    for (String propName : signedPropNames) {
+                        if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
+                            srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
+
+                            ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
+                        }
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new AbacusException(e);
+                }
+            }
+        } else {
+            Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
+
+            try {
+                for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
+                    if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
+                        ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue().invoke(sourceEntity), ignoreUnknownProperty);
+                    }
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new AbacusException(e);
             }
         }
