@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -211,6 +212,15 @@ public final class MongoCollectionExecutor {
     @Beta
     public Nullable<String> queryForString(final String propName, final Bson filter) {
         return queryForSingleResult(String.class, propName, filter);
+    }
+
+    @Beta
+    public Nullable<Date> queryForDate(final String propName, final Bson filter) {
+        return queryForSingleResult(Date.class, propName, filter);
+    }
+
+    public <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String propName, final Bson filter) {
+        return queryForSingleResult(targetClass, propName, filter);
     }
 
     public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {

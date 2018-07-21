@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -784,6 +785,18 @@ public final class CouchbaseExecutor implements Closeable {
         return this.queryForSingleResult(String.class, query, parameters);
     }
 
+    @Beta
+    @SafeVarargs
+    public final Nullable<Date> queryForDate(final String query, final Object... parameters) {
+        return this.queryForSingleResult(Date.class, query, parameters);
+    }
+
+    @Beta
+    @SafeVarargs
+    public final <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String query, final Object... parameters) {
+        return this.queryForSingleResult(targetClass, query, parameters);
+    }
+
     @SafeVarargs
     public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
@@ -1281,6 +1294,26 @@ public final class CouchbaseExecutor implements Closeable {
             @Override
             public Nullable<String> call() throws Exception {
                 return queryForString(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final CompletableFuture<Nullable<Date>> asyncQueryForDate(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+            @Override
+            public Nullable<Date> call() throws Exception {
+                return queryForDate(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T extends Date> CompletableFuture<Nullable<T>> asyncQueryForDate(final Class<T> targetClass, final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+            @Override
+            public Nullable<T> call() throws Exception {
+                return queryForDate(targetClass, query, parameters);
             }
         });
     }

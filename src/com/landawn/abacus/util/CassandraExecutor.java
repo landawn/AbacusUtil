@@ -947,6 +947,17 @@ public final class CassandraExecutor implements Closeable {
         return this.queryForSingleResult(targetClass, String.class, propName, whereCause);
     }
 
+    @Beta
+    public <T> Nullable<Date> queryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return this.queryForSingleResult(targetClass, Date.class, propName, whereCause);
+    }
+
+    @Beta
+    public <T, E extends Date> Nullable<E> queryForDate(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+            final Condition whereCause) {
+        return this.queryForSingleResult(targetClass, valueClass, propName, whereCause);
+    }
+
     public <T, E> Nullable<E> queryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName, final Condition whereCause) {
         final CP pair = prepareQuery(targetClass, Arrays.asList(propName), whereCause, 1);
 
@@ -1618,6 +1629,25 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public Nullable<String> call() throws Exception {
                 return queryForString(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Nullable<Date>> asyncQueryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+            @Override
+            public Nullable<Date> call() throws Exception {
+                return queryForDate(targetClass, propName, whereCause);
+            }
+        });
+    }
+
+    public <T, E extends Date> CompletableFuture<Nullable<E>> asyncQueryForDate(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+            final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Nullable<E>>() {
+            @Override
+            public Nullable<E> call() throws Exception {
+                return queryForDate(targetClass, valueClass, propName, whereCause);
             }
         });
     }

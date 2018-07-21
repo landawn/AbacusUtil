@@ -745,6 +745,14 @@ public final class MongoDBExecutor {
         return collExecutor(collectionName).queryForString(propName, filter);
     }
 
+    public Nullable<Date> queryForDate(final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForDate(propName, filter);
+    }
+
+    public <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String collectionName, final String propName, final Bson filter) {
+        return collExecutor(collectionName).queryForDate(targetClass, propName, filter);
+    }
+
     public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName, final Bson filter) {
         return collExecutor(collectionName).queryForSingleResult(targetClass, propName, filter);
     }

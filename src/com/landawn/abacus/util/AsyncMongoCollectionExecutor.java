@@ -15,6 +15,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -293,6 +294,24 @@ public final class AsyncMongoCollectionExecutor {
             @Override
             public Nullable<String> call() throws Exception {
                 return collExecutor.queryForString(propName, filter);
+            }
+        });
+    }
+
+    public CompletableFuture<Nullable<Date>> queryForDate(final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+            @Override
+            public Nullable<Date> call() throws Exception {
+                return collExecutor.queryForDate(propName, filter);
+            }
+        });
+    }
+
+    public <T extends Date> CompletableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+            @Override
+            public Nullable<T> call() throws Exception {
+                return collExecutor.queryForDate(targetClass, propName, filter);
             }
         });
     }

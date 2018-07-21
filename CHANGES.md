@@ -2,6 +2,8 @@
 
 * Add `N.first/last`, `Seq.firstNonNull/lastNonNull`.
 
+* Add `MongoDBExecutor/CassandraExecutor/CouchbaseExecutor.queryForDate`.
+
 * Improvements and bug fix.
 
 
