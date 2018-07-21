@@ -4381,6 +4381,38 @@ public final class N {
         return true;
     }
 
+    public static <T> Nullable<T> first(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Nullable.empty();
+        }
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            return Nullable.of(((List<T>) c).get(0));
+        } else {
+            return Nullable.of(c.iterator().next());
+        }
+    }
+
+    public static <T> Nullable<T> last(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Nullable.empty();
+        }
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                return Nullable.of(list.get(c.size() - 1));
+            } else {
+                return Nullable.of(list.listIterator(list.size()).previous());
+            }
+        } else if (c instanceof Deque) {
+            return Nullable.of(((Deque<T>) c).descendingIterator().next());
+        } else {
+            return Iterators.last(c.iterator());
+        }
+    }
+
     public static <T> Optional<T> firstNonNull(final T a, final T b) {
         return a != null ? Optional.of(a) : (b != null ? Optional.of(b) : Optional.<T> empty());
     }

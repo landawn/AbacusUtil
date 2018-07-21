@@ -523,15 +523,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public Nullable<T> first() {
-        if (size() == 0) {
-            return Nullable.empty();
-        }
+        return N.first(coll);
+    }
 
-        if (coll instanceof List && coll instanceof RandomAccess) {
-            return Nullable.of(((List<T>) coll).get(0));
-        } else {
-            return Nullable.of(coll.iterator().next());
-        }
+    public Optional<T> firstNonNull() {
+        return N.firstNonNull(coll);
     }
 
     /**
@@ -555,22 +551,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public Nullable<T> last() {
-        if (size() == 0) {
-            return Nullable.empty();
-        }
+        return N.last(coll);
+    }
 
-        if (coll instanceof List && coll instanceof RandomAccess) {
-            return Nullable.of(((List<T>) coll).get(size() - 1));
-        } else {
-            final Iterator<T> iter = iterator();
-            T e = null;
-
-            while (iter.hasNext()) {
-                e = iter.next();
-            }
-
-            return Nullable.of(e);
-        }
+    public Optional<T> lastNonNull() {
+        return N.lastNonNull(coll);
     }
 
     /**

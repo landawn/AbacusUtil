@@ -1,3 +1,10 @@
+### 1.2.19
+
+* Add `N.first/last`, `Seq.firstNonNull/lastNonNull`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.18
 
 * Add `Seq/IntList/ByteLits/.../DoubleList/Multiset/LongMultiset.ifNotEmpty`.
