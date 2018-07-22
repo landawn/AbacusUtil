@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -2920,6 +2921,14 @@ public final class Fn extends Comparators {
         };
 
         @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super IdentityHashMap> IDENTITY_HASH_MAP_FACTORY = new IntFunction<IdentityHashMap>() {
+            @Override
+            public IdentityHashMap apply(int len) {
+                return new IdentityHashMap<>(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
         private static final IntFunction<? super TreeMap> TREE_MAP_FACTORY = new IntFunction<TreeMap>() {
             @Override
             public TreeMap apply(int len) {
@@ -3124,6 +3133,11 @@ public final class Fn extends Comparators {
         @SuppressWarnings("rawtypes")
         public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
             return (IntFunction) LINKED_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<IdentityHashMap<K, V>> ofIdentityHashMap() {
+            return (IntFunction) IDENTITY_HASH_MAP_FACTORY;
         }
 
         @SuppressWarnings("rawtypes")
@@ -3465,6 +3479,14 @@ public final class Fn extends Comparators {
         };
 
         @SuppressWarnings("rawtypes")
+        private static final Supplier<? super IdentityHashMap> IDENTITY_HASH_MAP = new Supplier<IdentityHashMap>() {
+            @Override
+            public IdentityHashMap get() {
+                return new IdentityHashMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
         private static final Supplier<? super TreeMap> TREE_MAP = new Supplier<TreeMap>() {
             @Override
             public TreeMap get() {
@@ -3684,6 +3706,11 @@ public final class Fn extends Comparators {
         @SuppressWarnings("rawtypes")
         public static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
             return (Supplier) LINKED_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<IdentityHashMap<K, V>> ofIdentityHashMap() {
+            return (Supplier) IDENTITY_HASH_MAP;
         }
 
         @SuppressWarnings("rawtypes")

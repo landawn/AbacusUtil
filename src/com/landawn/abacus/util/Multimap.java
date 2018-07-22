@@ -17,7 +17,6 @@
 package com.landawn.abacus.util;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -30,7 +29,9 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -52,8 +53,9 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public class Multimap<K, E, V extends Collection<E>> {
+    final Supplier<? extends Map<K, V>> mapSupplier;
+    final Supplier<? extends V> valueSupplier;
     final Map<K, V> valueMap;
-    final Class<V> concreteValueType;
 
     /**
      * Returns a <code>Multimap<K, E, List<E>></code>
@@ -68,36 +70,46 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param initialCapacity
      */
     Multimap(int initialCapacity) {
-        this(new HashMap<K, V>(initialCapacity), ArrayList.class);
+        this(new HashMap<K, V>(initialCapacity), (Supplier<V>) Suppliers.ofList());
     }
 
     @SuppressWarnings("rawtypes")
     Multimap(final Class<? extends Map> mapType, final Class<? extends Collection> valueType) {
-        this(N.newInstance(mapType), valueType);
+        this(Maps.mapType2Supplier(mapType), valueType2Supplier(valueType));
     }
 
-    /**
-     *
-     * @param valueMap The valueMap and this Multimap share same data; any changes to one will appear in the other.
-     * @param valueType
-     */
-    @SuppressWarnings("rawtypes")
-    @Internal
-    Multimap(final Map<K, V> valueMap, final Class<? extends Collection> valueType) {
-        this.valueMap = valueMap;
+    Multimap(final Supplier<? extends Map<K, V>> mapSupplier, final Supplier<? extends V> valueSupplier) {
+        this.mapSupplier = mapSupplier;
+        this.valueSupplier = valueSupplier;
+        this.valueMap = mapSupplier.get();
+    }
 
+    @Internal
+    Multimap(final Map<K, V> valueMap, final Supplier<? extends V> valueSupplier) {
+        this.mapSupplier = Maps.mapType2Supplier(valueMap.getClass());
+        this.valueSupplier = valueSupplier;
+        this.valueMap = valueMap;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static Supplier valueType2Supplier(final Class<? extends Collection> valueType) {
         if (Modifier.isAbstract(valueType.getModifiers())) {
             if (List.class.isAssignableFrom(valueType)) {
-                concreteValueType = (Class) ArrayList.class;
+                return Suppliers.ofList();
             } else if (Set.class.isAssignableFrom(valueType)) {
-                concreteValueType = (Class) HashSet.class;
+                return Suppliers.ofSet();
             } else if (Queue.class.isAssignableFrom(valueType)) {
-                concreteValueType = (Class) ArrayDeque.class;
+                return Suppliers.ofArrayDeque();
             } else {
                 throw new IllegalArgumentException("Unsupported collection type: " + valueType.getCanonicalName());
             }
         } else {
-            concreteValueType = (Class) valueType;
+            return new Supplier<Collection>() {
+                @Override
+                public Collection get() {
+                    return N.newInstance(valueType);
+                }
+            };
         }
     }
 
@@ -262,7 +274,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteValueType);
+            val = valueSupplier.get();
             valueMap.put(key, val);
         }
 
@@ -281,7 +293,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteValueType);
+            val = valueSupplier.get();
             valueMap.put(key, val);
         } else if (val.contains(e)) {
             return false;
@@ -302,7 +314,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteValueType);
+            val = valueSupplier.get();
             val.add(e);
             valueMap.put(key, val);
             return true;
@@ -319,7 +331,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteValueType);
+            val = valueSupplier.get();
             valueMap.put(key, val);
         }
 
@@ -343,7 +355,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteValueType);
+            val = valueSupplier.get();
             val.addAll(c);
             valueMap.put(key, val);
             return true;
@@ -366,7 +378,7 @@ public class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteValueType);
+                val = valueSupplier.get();
                 valueMap.put(key, val);
             }
 
@@ -394,7 +406,7 @@ public class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteValueType);
+                val = valueSupplier.get();
                 valueMap.put(key, val);
             }
 
@@ -961,7 +973,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -973,7 +985,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filterByValue(Try.Predicate<? super V, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -985,7 +997,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filter(Try.BiPredicate<? super K, ? super V, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -1224,7 +1236,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public Multimap<K, E, V> copy() {
-        final Multimap<K, E, V> copy = new Multimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+        final Multimap<K, E, V> copy = new Multimap<>(mapSupplier, valueSupplier);
 
         copy.putAll(this);
 
@@ -1346,9 +1358,5 @@ public class Multimap<K, E, V extends Collection<E>> {
     @Override
     public String toString() {
         return valueMap.toString();
-    }
-
-    protected Class<V> getCollectionType() {
-        return concreteValueType;
     }
 }

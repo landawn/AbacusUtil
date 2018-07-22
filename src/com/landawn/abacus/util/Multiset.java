@@ -30,8 +30,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -61,6 +63,7 @@ public final class Multiset<T> implements Iterable<T> {
         }
     };
 
+    final Supplier<Map<T, MutableInt>> mapSupplier;
     final Map<T, MutableInt> valueMap;
 
     public Multiset() {
@@ -68,12 +71,19 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public Multiset(int initialCapacity) {
-        this(new HashMap<T, MutableInt>(initialCapacity));
+        this.mapSupplier = Suppliers.ofMap();
+        this.valueMap = new HashMap<T, MutableInt>(initialCapacity);
     }
 
     @SuppressWarnings("rawtypes")
     public Multiset(final Class<? extends Map> valueMapType) {
-        this(N.newInstance(valueMapType));
+        this(Maps.mapType2Supplier(valueMapType));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Multiset(final Supplier<? extends Map<T, ?>> mapSupplier) {
+        this.mapSupplier = (Supplier) mapSupplier;
+        this.valueMap = this.mapSupplier.get();
     }
 
     public Multiset(final Collection<? extends T> c) {
@@ -88,6 +98,7 @@ public final class Multiset<T> implements Iterable<T> {
      */
     @Internal
     Multiset(final Map<T, MutableInt> valueMap) {
+        this.mapSupplier = Maps.mapType2Supplier(valueMap.getClass());
         this.valueMap = valueMap;
     }
 
@@ -1020,7 +1031,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public Multiset<T> copy() {
-        final Multiset<T> copy = new Multiset<>(Maps.newTargetMap(valueMap));
+        final Multiset<T> copy = new Multiset<T>(mapSupplier);
 
         copy.addAll(this);
 
@@ -1160,7 +1171,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(Maps.newTargetMap(valueMap, 0));
+        final Multiset<T> result = new Multiset<>(mapSupplier.get());
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -1172,7 +1183,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.BiPredicate<? super T, Integer, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(Maps.newTargetMap(valueMap, 0));
+        final Multiset<T> result = new Multiset<>(mapSupplier.get());
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().intValue())) {

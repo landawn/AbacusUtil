@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * A BiMap (or "bidirectional map") is a map that preserves the uniqueness of its values as well as that of its keys. 
@@ -48,8 +49,11 @@ public final class BiMap<K, V> implements Map<K, V> {
      * The load factor used when none specified in constructor.
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
+    final Supplier<? extends Map<K, V>> keyMapSupplier;
+    final Supplier<? extends Map<V, K>> valueMapSupplier;
     final Map<K, V> keyMap;
     final Map<V, K> valueMap;
+
     private transient BiMap<V, K> inverse;
 
     public BiMap() {
@@ -66,7 +70,14 @@ public final class BiMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("rawtypes")
     public BiMap(final Class<? extends Map> keyMapType, final Class<? extends Map> valueMapType) {
-        this(N.newInstance(keyMapType), N.newInstance(valueMapType));
+        this(Maps.mapType2Supplier(keyMapType), Maps.mapType2Supplier(valueMapType));
+    }
+
+    public BiMap(final Supplier<? extends Map<K, V>> keyMapSupplier, final Supplier<? extends Map<V, K>> valueMapSupplier) {
+        this.keyMapSupplier = keyMapSupplier;
+        this.valueMapSupplier = valueMapSupplier;
+        this.keyMap = keyMapSupplier.get();
+        this.valueMap = valueMapSupplier.get();
     }
 
     /**
@@ -76,6 +87,8 @@ public final class BiMap<K, V> implements Map<K, V> {
      */
     @Internal
     BiMap(final Map<K, V> keyMap, final Map<V, K> valueMap) {
+        this.keyMapSupplier = Maps.mapType2Supplier(keyMap.getClass());
+        this.valueMapSupplier = Maps.mapType2Supplier(valueMap.getClass());
         this.keyMap = keyMap;
         this.valueMap = valueMap;
     }
@@ -163,9 +176,9 @@ public final class BiMap<K, V> implements Map<K, V> {
 
     public static <K, V> BiMap<K, V> copyOf(final Map<? extends K, ? extends V> map) {
         final BiMap<K, V> biMap = new BiMap<>(Maps.newTargetMap(map), Maps.newOrderingMap(map));
-    
+
         biMap.putAll(map);
-    
+
         return biMap;
     }
 
@@ -380,7 +393,7 @@ public final class BiMap<K, V> implements Map<K, V> {
     }
 
     public BiMap<K, V> copy() {
-        final BiMap<K, V> copy = new BiMap<>(Maps.newTargetMap(keyMap), Maps.newTargetMap(valueMap));
+        final BiMap<K, V> copy = new BiMap<>(keyMapSupplier, valueMapSupplier);
 
         copy.putAll(keyMap);
 

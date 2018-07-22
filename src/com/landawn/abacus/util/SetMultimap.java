@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -44,9 +46,19 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         super(mapType, valueType);
     }
 
+    SetMultimap(final Supplier<? extends Map<K, Set<E>>> mapSupplier, final Supplier<? extends Set<E>> valueSupplier) {
+        super(mapSupplier, valueSupplier);
+    }
+
+    @Internal
     @SuppressWarnings("rawtypes")
     SetMultimap(final Map<K, Set<E>> valueMap, final Class<? extends Set> valueType) {
-        super(valueMap, valueType);
+        super(valueMap, valueType2Supplier(valueType));
+    }
+
+    @Internal
+    SetMultimap(final Map<K, Set<E>> valueMap, final Supplier<? extends Set<E>> valueSupplier) {
+        super(valueMap, valueSupplier);
     }
 
     public static <K, E> SetMultimap<K, E> of(final K k1, final E v1) {
@@ -348,7 +360,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -361,7 +373,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filterByValue(Try.Predicate<? super Set<E>, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -374,7 +386,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filter(Try.BiPredicate<? super K, ? super Set<E>, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -387,7 +399,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public SetMultimap<K, E> copy() {
-        final SetMultimap<K, E> copy = new SetMultimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+        final SetMultimap<K, E> copy = new SetMultimap<>(mapSupplier, valueSupplier);
 
         copy.putAll(this);
 

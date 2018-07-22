@@ -43,6 +43,7 @@ import java.util.TreeMap;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -2310,5 +2311,31 @@ public final class Maps {
         }
 
         return resultList;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static Supplier mapType2Supplier(final Class<? extends Map> mapType) {
+        if (HashMap.class.equals(mapType)) {
+            return Suppliers.ofMap();
+        } else if (SortedMap.class.isAssignableFrom(mapType)) {
+            return Suppliers.ofTreeMap();
+        } else if (IdentityHashMap.class.isAssignableFrom(mapType)) {
+            return Suppliers.ofIdentityHashMap();
+        } else if (LinkedHashMap.class.isAssignableFrom(mapType)) {
+            return Suppliers.ofLinkedHashMap();
+        } else if (ImmutableMap.class.isAssignableFrom(mapType)) {
+            return Suppliers.ofLinkedHashMap();
+        } else {
+            return new Supplier<Map>() {
+                @Override
+                public Map get() {
+                    try {
+                        return N.newInstance(mapType);
+                    } catch (Exception e) {
+                        return new LinkedHashMap<>();
+                    }
+                }
+            };
+        }
     }
 }

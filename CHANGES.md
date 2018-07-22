@@ -4,6 +4,12 @@
 
 * Add `MongoDBExecutor/CassandraExecutor/CouchbaseExecutor.queryForDate`.
 
+* Add `N.newBiMap(keyMapSupplier, valueMapSupplier)`.
+
+* Add `N.newListMultimap/newSetMultimap(mapSupplier, valueSupplier)`.
+
+* Add `N.newMultiset(mapSupplier)`.
+
 * Improvements and bug fix.
 
 

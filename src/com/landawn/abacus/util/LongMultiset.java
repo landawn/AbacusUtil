@@ -30,8 +30,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -61,19 +63,27 @@ public final class LongMultiset<T> implements Iterable<T> {
         }
     };
 
-    private final Map<T, MutableLong> valueMap;
+    final Supplier<Map<T, MutableLong>> mapSupplier;
+    final Map<T, MutableLong> valueMap;
 
     public LongMultiset() {
         this(HashMap.class);
     }
 
     public LongMultiset(int initialCapacity) {
-        this(new HashMap<T, MutableLong>(initialCapacity));
+        this.mapSupplier = Suppliers.ofMap();
+        this.valueMap = new HashMap<T, MutableLong>(initialCapacity);
     }
 
     @SuppressWarnings("rawtypes")
     public LongMultiset(final Class<? extends Map> valueMapType) {
-        this(N.newInstance(valueMapType));
+        this(Maps.mapType2Supplier(valueMapType));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public LongMultiset(final Supplier<? extends Map<T, ?>> mapSupplier) {
+        this.mapSupplier = (Supplier) mapSupplier;
+        this.valueMap = this.mapSupplier.get();
     }
 
     public LongMultiset(final Collection<? extends T> c) {
@@ -88,6 +98,7 @@ public final class LongMultiset<T> implements Iterable<T> {
      */
     @Internal
     LongMultiset(final Map<T, MutableLong> valueMap) {
+        this.mapSupplier = Maps.mapType2Supplier(valueMap.getClass());
         this.valueMap = valueMap;
     }
 
@@ -1052,7 +1063,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public LongMultiset<T> copy() {
-        final LongMultiset<T> copy = new LongMultiset<>(Maps.newTargetMap(valueMap));
+        final LongMultiset<T> copy = new LongMultiset<>(mapSupplier);
 
         copy.addAll(this);
 
@@ -1192,7 +1203,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(Maps.newTargetMap(valueMap, 0));
+        final LongMultiset<T> result = new LongMultiset<>(mapSupplier.get());
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -1204,7 +1215,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.BiPredicate<? super T, Long, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(Maps.newTargetMap(valueMap, 0));
+        final LongMultiset<T> result = new LongMultiset<>(mapSupplier.get());
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().longValue())) {

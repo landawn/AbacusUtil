@@ -111,6 +111,7 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -1022,6 +1023,27 @@ public final class N {
         return N.isNullOrEmpty(c) ? new TreeSet<T>() : new TreeSet<>(c);
     }
 
+    public static <T> Multiset<T> newMultiset() {
+        return new Multiset<>();
+    }
+
+    public static <T> Multiset<T> newMultiset(final int initialCapacity) {
+        return new Multiset<>(initialCapacity);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Multiset<T> newMultiset(final Class<? extends Map> valueMapType) {
+        return new Multiset<>(valueMapType);
+    }
+
+    public static <T> Multiset<T> newMultiset(final Supplier<? extends Map<T, ?>> mapSupplier) {
+        return new Multiset<>(mapSupplier);
+    }
+
+    public static <T> Multiset<T> newMultiset(final Collection<? extends T> c) {
+        return new Multiset<>(c);
+    }
+
     public static <T> ArrayDeque<T> newArrayDeque() {
         return new ArrayDeque<>();
     }
@@ -1166,6 +1188,27 @@ public final class N {
         return N.isNullOrEmpty(m) ? new ConcurrentHashMap<K, V>() : new ConcurrentHashMap<K, V>(m);
     }
 
+    public static <K, V> BiMap<K, V> newBiMap() {
+        return new BiMap<>();
+    }
+
+    public static <K, V> BiMap<K, V> newBiMap(int initialCapacity) {
+        return new BiMap<>(initialCapacity);
+    }
+
+    public static <K, V> BiMap<K, V> newBiMap(int initialCapacity, float loadFactor) {
+        return new BiMap<>(initialCapacity, loadFactor);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> BiMap<K, V> newBiMap(final Class<? extends Map> keyMapType, final Class<? extends Map> valueMapType) {
+        return new BiMap<>(keyMapType, valueMapType);
+    }
+
+    public static <K, V> BiMap<K, V> newBiMap(final Supplier<? extends Map<K, V>> keyMapSupplier, final Supplier<? extends Map<V, K>> valueMapSupplier) {
+        return new BiMap<>(keyMapSupplier, valueMapSupplier);
+    }
+
     public static <K, E> ListMultimap<K, E> newListMultimap() {
         return new ListMultimap<>();
     }
@@ -1220,6 +1263,11 @@ public final class N {
         return new ListMultimap<>(mapType, valueType);
     }
 
+    public static <K, E> ListMultimap<K, E> newListMultimap(final Supplier<? extends Map<K, List<E>>> mapSupplier,
+            final Supplier<? extends List<E>> valueSupplier) {
+        return new ListMultimap<>(mapSupplier, valueSupplier);
+    }
+
     public static <K, E> SetMultimap<K, E> newSetMultimap() {
         return new SetMultimap<>();
     }
@@ -1272,6 +1320,11 @@ public final class N {
     @SuppressWarnings("rawtypes")
     public static <K, E> SetMultimap<K, E> newSetMultimap(final Class<? extends Map> mapType, final Class<? extends Set> valueType) {
         return new SetMultimap<>(mapType, valueType);
+    }
+
+    public static <K, E> SetMultimap<K, E> newSetMultimap(final Supplier<? extends Map<K, Set<E>>> mapSupplier,
+            final Supplier<? extends Set<E>> valueSupplier) {
+        return new SetMultimap<>(mapSupplier, valueSupplier);
     }
 
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;

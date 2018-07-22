@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -45,9 +47,19 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         super(mapType, valueType);
     }
 
+    ListMultimap(final Supplier<? extends Map<K, List<E>>> mapSupplier, final Supplier<? extends List<E>> valueSupplier) {
+        super(mapSupplier, valueSupplier);
+    }
+
+    @Internal
     @SuppressWarnings("rawtypes")
     ListMultimap(final Map<K, List<E>> valueMap, final Class<? extends List> valueType) {
-        super(valueMap, valueType);
+        super(valueMap, valueType2Supplier(valueType));
+    }
+
+    @Internal
+    ListMultimap(final Map<K, List<E>> valueMap, final Supplier<? extends List<E>> valueSupplier) {
+        super(valueMap, valueSupplier);
     }
 
     public static <K, E> ListMultimap<K, E> of(final K k1, final E v1) {
@@ -349,7 +361,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -362,7 +374,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filterByValue(Try.Predicate<? super List<E>, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -375,7 +387,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filter(Try.BiPredicate<? super K, ? super List<E>, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(mapSupplier, valueSupplier);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -388,7 +400,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public ListMultimap<K, E> copy() {
-        final ListMultimap<K, E> copy = new ListMultimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+        final ListMultimap<K, E> copy = new ListMultimap<>(mapSupplier, valueSupplier);
 
         copy.putAll(this);
 
