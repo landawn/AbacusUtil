@@ -512,6 +512,29 @@ public final class Fn extends Comparators {
         return supplier.get();
     }
 
+    /**
+     * Returns a {@code Supplier} which returns a single instance created by calling the specified {@code supplier.get()}.
+     * 
+     * @param supplier
+     * @return
+     */
+    public static <T> Supplier<T> single(final Supplier<T> supplier) {
+        return new Supplier<T>() {
+            private T instance = (T) NULL;
+
+            @Override
+            public T get() {
+                synchronized (this) {
+                    if (instance == NULL) {
+                        instance = supplier.get();
+                    }
+
+                    return instance;
+                }
+            }
+        };
+    }
+
     public static com.landawn.abacus.util.function.Runnable close(final AutoCloseable closeable) {
         return new com.landawn.abacus.util.function.Runnable() {
             private volatile boolean isClosed = false;

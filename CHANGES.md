@@ -4,6 +4,8 @@
 
 * Add `MongoDBExecutor/CassandraExecutor/CouchbaseExecutor.queryForDate`.
 
+* Add `SQLExecutor.Mapper.exists(conn, id)/batchGet(ids, selectPropNames)`.
+
 * Add `N.newBiMap(keyMapSupplier, valueMapSupplier)`.
 
 * Add `N.newListMultimap/newSetMultimap(mapSupplier, valueSupplier)`.

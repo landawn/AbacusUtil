@@ -3482,6 +3482,12 @@ public final class SQLExecutor implements Closeable {
             return exists(null, whereCause);
         }
 
+        public boolean exists(final Connection conn, final Object id) {
+            checkId(id);
+
+            return sqlExecutor.queryForSingleResult(int.class, conn, sql_exists_by_id, id).orElse(0) > 0;
+        }
+
         public boolean exists(final Connection conn, final Condition whereCause) {
             final SP pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
 
@@ -3625,7 +3631,18 @@ public final class SQLExecutor implements Closeable {
          * @return 
          */
         public List<T> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
-            return batchGet(null, ids, selectPropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
+            return batchGet(ids, selectPropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        /**
+         * 
+         * @param ids
+         * @param selectPropNames
+         * @param batchSize
+         * @return
+         */
+        public List<T> batchGet(final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+            return batchGet(null, ids, selectPropNames, batchSize);
         }
 
         /** 
@@ -4913,6 +4930,15 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<Boolean> exists(final Connection conn, final Object id) {
+            return asyncExecutor.execute(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return mapper.exists(conn, id);
+                }
+            });
+        }
+
         public CompletableFuture<Boolean> exists(final Connection conn, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Boolean>() {
                 @Override
@@ -5037,6 +5063,15 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public List<T> call() throws Exception {
                     return mapper.batchGet(ids, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.batchGet(ids, selectPropNames, batchSize);
                 }
             });
         }

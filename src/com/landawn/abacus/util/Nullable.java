@@ -177,8 +177,7 @@ public final class Nullable<T> extends Any<T> {
      * @return the result of applying an {@code Nullable}-bearing mapping
      * function to the value of this {@code Nullable}, if a value is present,
      * otherwise an empty {@code Nullable}
-     * @throws IllegalArgumentException if the mapping function is null or returns
-     * a null result
+     * @throws IllegalArgumentException if the mapping function is null or returns a null result
      */
     @Override
     public <U, E extends Exception> Nullable<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {
@@ -266,8 +265,7 @@ public final class Nullable<T> extends Any<T> {
      * @return the result of applying an {@code Nullable}-bearing mapping
      * function to the value of this {@code Nullable}, if a value is not null,
      * otherwise an empty {@code Nullable}
-     * @throws IllegalArgumentException if the mapping function is null or returns
-     * a null result
+     * @throws IllegalArgumentException if the mapping function is null or returns a null result
      */
     @Override
     public <U, E extends Exception> Nullable<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {

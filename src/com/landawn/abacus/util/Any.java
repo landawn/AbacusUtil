@@ -119,12 +119,13 @@ abstract class Any<T> {
      * otherwise do nothing.
      *
      * @param consumer block to be executed if a value is present
-     * @throws IllegalArgumentException if value is present and {@code consumer} is
-     * null
+     * @throws IllegalArgumentException {@code consumer} is null
      */
-    public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> consumer) throws E {
+    public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
         if (isPresent()) {
-            consumer.accept(value);
+            action.accept(value);
         }
     }
 
@@ -133,8 +134,12 @@ abstract class Any<T> {
     *
     * @param action
     * @param emptyAction
+     * @throws IllegalArgumentException {@code consumer} or {@code emptyAction} is null
     */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        N.checkArgNotNull(action);
+        N.checkArgNotNull(emptyAction);
+
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -146,13 +151,14 @@ abstract class Any<T> {
      * If a value is not null, invoke the specified consumer with the value,
      * otherwise do nothing.
      *
-     * @param consumer block to be executed if a value is not null.
-     * @throws IllegalArgumentException if value is present and {@code consumer} is
-     * null
+     * @param action block to be executed if a value is not null.
+     * @throws IllegalArgumentException {@code action} is null
      */
-    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
+    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
         if (isNotNull()) {
-            consumer.accept(value);
+            action.accept(value);
         }
     }
 
@@ -161,8 +167,12 @@ abstract class Any<T> {
     *
     * @param action
     * @param emptyAction
+     * @throws IllegalArgumentException {@code consumer} or {@code emptyAction} is null
     */
     public <E extends Exception, E2 extends Exception> void ifNotNullOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        N.checkArgNotNull(action);
+        N.checkArgNotNull(emptyAction);
+
         if (isNotNull()) {
             action.accept(value);
         } else {
@@ -306,8 +316,7 @@ abstract class Any<T> {
      * @return the result of applying an {@code Any}-bearing mapping
      * function to the value of this {@code Any}, if a value is present,
      * otherwise an empty {@code Any}
-     * @throws IllegalArgumentException if the mapping function is null or returns
-     * a null result
+     * @throws IllegalArgumentException if the mapping function is null or returns a null result
      */
     public abstract <U, E extends Exception> Any<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
 
@@ -447,8 +456,7 @@ abstract class Any<T> {
      * @return the result of applying an {@code Any}-bearing mapping
      * function to the value of this {@code Any}, if a value is not null,
      * otherwise an empty {@code Any}
-     * @throws IllegalArgumentException if the mapping function is null or returns
-     * a null result
+     * @throws IllegalArgumentException if the mapping function is null or returns a null result
      */
     public abstract <U, E extends Exception> Any<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
 

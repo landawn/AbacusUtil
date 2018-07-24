@@ -159,10 +159,11 @@ public final class Optional<T> {
      * otherwise do nothing.
      *
      * @param action block to be executed if a value is present
-     * @throws NullPointerException if value is present and {@code consumer} is
-     * null
+     * @throws IllegalArgumentException {@code consumer} is null
      */
     public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
         if (isPresent()) {
             action.accept(value);
         }
@@ -173,8 +174,12 @@ public final class Optional<T> {
      *
      * @param action
      * @param emptyAction
+     * @throws IllegalArgumentException {@code consumer} or {@code emptyAction} is null
      */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        N.checkArgNotNull(action);
+        N.checkArgNotNull(emptyAction);
+
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -191,7 +196,7 @@ public final class Optional<T> {
      * @return an {@code Optional} describing the value of this {@code Optional}
      * if a value is present and the value matches the given predicate,
      * otherwise an empty {@code Optional}
-     * @throws NullPointerException if the predicate is null
+     * @throws IllegalArgumentException if the predicate is null
      */
     public <E extends Exception> Optional<T> filter(Try.Predicate<? super T, E> predicate) throws E {
         N.checkArgNotNull(predicate);
@@ -204,33 +209,14 @@ public final class Optional<T> {
     }
 
     /**
-     * If a value is present, apply the provided mapping function to it,
-     * and if the result is non-null, return an {@code Optional} describing the
-     * result.  Otherwise return an empty {@code Optional}.
-     *
-     * @apiNote This method supports post-processing on optional values, without
-     * the need to explicitly check for a return status.  For example, the
-     * following code traverses a stream of file names, selects one that has
-     * not yet been processed, and then opens that file, returning an
-     * {@code Optional<FileInputStream>}:
-     *
-     * <pre>{@code
-     *     Nullable<FileInputStream> fis =
-     *         names.stream().filter(name -> !isProcessedYet(name))
-     *                       .findFirst()
-     *                       .map(name -> new FileInputStream(name));
-     * }</pre>
-     *
-     * Here, {@code findFirst} returns an {@code Optional<String>}, and then
-     * {@code map} returns an {@code Nullable<FileInputStream>} for the desired
-     * file if one exists.
+     * If a value is present, apply the provided mapping function to it, 
      *
      * @param <U> The type of the result of the mapping function
      * @param mapper a mapping function to apply to the value, if present
-     * @return an {@code Optional} describing the result of applying a mapping
+     * @return an {@code Nullable} describing the result of applying a mapping
      * function to the value of this {@code Optional}, if a value is present,
-     * otherwise an empty {@code Optional}
-     * @throws NullPointerException if the mapping function is null
+     * otherwise an empty {@code Nullable}
+     * @throws IllegalArgumentException if the mapping function is null
      */
     public <U, E extends Exception> Nullable<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
         N.checkArgNotNull(mapper);
@@ -336,8 +322,7 @@ public final class Optional<T> {
      * @return the result of applying an {@code Optional}-bearing mapping
      * function to the value of this {@code Optional}, if a value is present,
      * otherwise an empty {@code Optional}
-     * @throws NullPointerException if the mapping function is null or returns
-     * a null result
+     * @throws IllegalArgumentException if the mapping function is null or returns a null result
      */
     public <U, E extends Exception> Optional<U> flatMap(Try.Function<? super T, Optional<U>, E> mapper) throws E {
         N.checkArgNotNull(mapper);
