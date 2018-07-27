@@ -4,13 +4,15 @@
 
 * Add `MongoDBExecutor/CassandraExecutor/CouchbaseExecutor.queryForDate`.
 
-* Add `SQLExecutor.Mapper.exists(conn, id)/batchGet(ids, selectPropNames)`.
+* Add `SQLExecutor.Mapper.exists(conn, id)/batchGet(ids, selectPropNames, batchSize)`.
 
 * Add `N.newBiMap(keyMapSupplier, valueMapSupplier)`.
 
 * Add `N.newListMultimap/newSetMultimap(mapSupplier, valueSupplier)`.
 
 * Add `N.newMultiset(mapSupplier)`.
+
+* Add `Stream.peekFirst/peekLast`.
 
 * Improvements and bug fix.
 

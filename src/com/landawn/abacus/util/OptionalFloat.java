@@ -145,10 +145,11 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * otherwise do nothing.
      *
      * @param action block to be executed if a value is present
-     * @throws NullPointerException if value is present and {@code consumer} is
-     * null
+     * @throws IllegalArgumentException {@code action} is null
      */
     public <E extends Exception> void ifPresent(Try.FloatConsumer<E> action) throws E {
+        N.checkArgNotNull(action);
+
         if (isPresent()) {
             action.accept(value);
         }
@@ -159,8 +160,12 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      *
      * @param action
      * @param emptyAction
+     * @throws IllegalArgumentException {@code action} or {@code emptyAction} is null
      */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.FloatConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        N.checkArgNotNull(action);
+        N.checkArgNotNull(emptyAction);
+
         if (isPresent()) {
             action.accept(value);
         } else {

@@ -154,6 +154,32 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> peekFirst(final Consumer<? super T> action) {
+        final Function<? super T, ? extends T> mapperForFirst = new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                action.accept(t);
+                return t;
+            }
+        };
+
+        return mapFirst(mapperForFirst);
+    }
+
+    @Override
+    public Stream<T> peekLast(final Consumer<? super T> action) {
+        final Function<? super T, ? extends T> mapperForFirst = new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                action.accept(t);
+                return t;
+            }
+        };
+
+        return mapLast(mapperForFirst);
+    }
+
+    @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate) {
         N.checkArgNotNull(predicate);
 
@@ -2375,6 +2401,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return Pair.of(head(), tail());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Pair<Stream<T>, Optional<T>> headAndTaill() {
         return Pair.of(headd(), taill());

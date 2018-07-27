@@ -159,7 +159,7 @@ public final class Optional<T> {
      * otherwise do nothing.
      *
      * @param action block to be executed if a value is present
-     * @throws IllegalArgumentException {@code consumer} is null
+     * @throws IllegalArgumentException {@code action} is null
      */
     public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
         N.checkArgNotNull(action);
@@ -174,7 +174,7 @@ public final class Optional<T> {
      *
      * @param action
      * @param emptyAction
-     * @throws IllegalArgumentException {@code consumer} or {@code emptyAction} is null
+     * @throws IllegalArgumentException {@code action} or {@code emptyAction} is null
      */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         N.checkArgNotNull(action);

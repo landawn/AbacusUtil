@@ -148,13 +148,14 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * Have the specified consumer accept the value if a value is present,
      * otherwise do nothing.
      *
-     * @param consumer block to be executed if a value is present
-     * @throws NullPointerException if value is present and {@code consumer} is
-     * null
+     * @param action block to be executed if a value is present
+     * @throws IllegalArgumentException {@code action} is null
      */
-    public <E extends Exception> void ifPresent(Try.DoubleConsumer<E> consumer) throws E {
+    public <E extends Exception> void ifPresent(Try.DoubleConsumer<E> action) throws E {
+        N.checkArgNotNull(action);
+
         if (isPresent()) {
-            consumer.accept(value);
+            action.accept(value);
         }
     }
 
@@ -163,8 +164,12 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      *
      * @param action
      * @param emptyAction
+     * @throws IllegalArgumentException {@code action} or {@code emptyAction} is null
      */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.DoubleConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        N.checkArgNotNull(action);
+        N.checkArgNotNull(emptyAction);
+
         if (isPresent()) {
             action.accept(value);
         } else {

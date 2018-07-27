@@ -1756,7 +1756,9 @@ public abstract class Stream<T>
      * All elements will be loaded to memory.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     @SequentialOnly
     public abstract Stream<T> headd();
 
@@ -1768,7 +1770,9 @@ public abstract class Stream<T>
      * All elements will be loaded to memory.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     @SequentialOnly
     public abstract Optional<T> taill();
 
@@ -1781,7 +1785,9 @@ public abstract class Stream<T>
      * All elements will be loaded to memory.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     @SequentialOnly
     public abstract Pair<Stream<T>, Optional<T>> headAndTaill();
 
@@ -2102,6 +2108,12 @@ public abstract class Stream<T>
 
     @SequentialOnly
     public abstract Stream<T> skipNull();
+
+    @ParallelSupported
+    public abstract Stream<T> peekFirst(Consumer<? super T> action);
+
+    @ParallelSupported
+    public abstract Stream<T> peekLast(Consumer<? super T> action);
 
     /**
      * Intersect with the specified Collection by the values mapped by <code>mapper</code>.
@@ -8945,7 +8957,7 @@ public abstract class Stream<T>
         MAP, BI_MAP, TRI_MAP, SLIDING_MAP, MAP_TO_ENTRY, MAP_TO_, MAP_FIRST, MAP_FIRST_, MAP_LAST, MAP_LAST_, RANGE_MAP, //
         FLAT_MAP, FLAT_MAP_TO_, FLAT_ARRAY, FLAT_COLLECION, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
-        SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
+        SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, PEEK_FIRST, PEEK_LAST, //
         GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, PARTITION_BY, PARTITION_BY_TO_ENTRY, PARTITION_TO, TO_MAP, TO_MULTIMAP, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, FIND_ANY, //
