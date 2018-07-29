@@ -4081,6 +4081,10 @@ public final class SQLExecutor implements Closeable {
             return add(null, entity);
         }
 
+        public <ID> ID add(final Object entity, final Collection<String> insertPropNames) {
+            return add(null, entity, insertPropNames);
+        }
+
         /**
          * 
          * @param props
@@ -4090,21 +4094,35 @@ public final class SQLExecutor implements Closeable {
             return add(null, props);
         }
 
-        @SuppressWarnings("deprecation")
         public <ID> ID add(final Connection conn, final Object entity) {
+            return add(conn, entity, null);
+        }
+
+        @SuppressWarnings("deprecation")
+        public <ID> ID add(final Connection conn, final Object entity, final Collection<String> insertPropNames) {
             N.checkArgNotNull(entity);
 
             if (entity instanceof DirtyMarker && N.isNullOrEmpty(((DirtyMarker) entity).signedPropNames())) {
                 throw new IllegalArgumentException("No property value is signed to the specified entity");
             }
 
-            final SP pair = prepareAdd(entity);
+            if (insertPropNames == null) {
+                final SP pair = prepareAdd(entity);
 
-            final ID id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
+                final ID id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
 
-            postAdd(entity, id);
+                postAdd(entity, id);
 
-            return id;
+                return id;
+            } else {
+                final SP pair = prepareAdd(insertPropNames);
+
+                final ID id = sqlExecutor.insert(conn, pair.sql, entity);
+
+                postAdd(entity, id);
+
+                return id;
+            }
         }
 
         /**
@@ -4252,6 +4270,28 @@ public final class SQLExecutor implements Closeable {
             }
 
             return ids;
+        }
+
+        private SP prepareAdd(final Collection<String> insertPropNames) {
+            SP pair = null;
+
+            switch (namingPolicy) {
+                case LOWER_CASE_WITH_UNDERSCORE:
+                    pair = NE.insert(insertPropNames).into(targetClass).pair();
+                    break;
+
+                case UPPER_CASE_WITH_UNDERSCORE:
+                    pair = NE2.insert(insertPropNames).into(targetClass).pair();
+                    break;
+
+                case LOWER_CAMEL_CASE:
+                    pair = NE3.insert(insertPropNames).into(targetClass).pair();
+                    break;
+
+                default:
+                    throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+            }
+            return pair;
         }
 
         private SP prepareAdd(final Object entity) {
@@ -5510,6 +5550,15 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public <ID> CompletableFuture<ID> add(final Object entity, final Collection<String> insertPropNames) {
+            return asyncExecutor.execute(new Callable<ID>() {
+                @Override
+                public ID call() throws Exception {
+                    return mapper.add(entity, insertPropNames);
+                }
+            });
+        }
+
         public <ID> CompletableFuture<ID> add(final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
@@ -5524,6 +5573,15 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public ID call() throws Exception {
                     return mapper.add(conn, entity);
+                }
+            });
+        }
+
+        public <ID> CompletableFuture<ID> add(final Connection conn, final Object entity, final Collection<String> insertPropNames) {
+            return asyncExecutor.execute(new Callable<ID>() {
+                @Override
+                public ID call() throws Exception {
+                    return mapper.add(conn, entity, insertPropNames);
                 }
             });
         }

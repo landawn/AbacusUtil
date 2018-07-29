@@ -1,3 +1,10 @@
+### 1.2.20
+
+* Add `SQLExecutor.Mapper.add(...Collection<String> insertPropNames)`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.19
 
 * Add `N.first/last`, `Seq.firstNonNull/lastNonNull`.
