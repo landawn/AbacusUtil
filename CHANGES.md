@@ -2,6 +2,8 @@
 
 * Add `SQLExecutor.Mapper.add(...Collection<String> insertPropNames)`.
 
+* Add `Maps.getAndPutMapIfAbsent`.
+
 * Improvements and bug fix.
 
 

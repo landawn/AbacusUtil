@@ -323,6 +323,13 @@ public final class Maps {
         return result;
     }
 
+    /**
+     * Returns the value associated with the specified {@code key} if it exists in the specified {@code map} contains, or the new put {@code List} if it's absent.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
     public static <K, E> List<E> getAndPutListIfAbsent(final Map<K, List<E>> map, final K key) {
         List<E> v = map.get(key);
 
@@ -334,6 +341,13 @@ public final class Maps {
         return v;
     }
 
+    /**
+     * Returns the value associated with the specified {@code key} if it exists in the specified {@code map} contains, or the new put {@code Set} if it's absent.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
     public static <K, E> Set<E> getAndPutSetIfAbsent(final Map<K, Set<E>> map, final K key) {
         Set<E> v = map.get(key);
 
@@ -345,11 +359,36 @@ public final class Maps {
         return v;
     }
 
+    /**
+     * Returns the value associated with the specified {@code key} if it exists in the specified {@code map} contains, or the new put {@code Set} if it's absent.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
     public static <K, E> Set<E> getAndPutLinkedHashSetIfAbsent(final Map<K, Set<E>> map, final K key) {
         Set<E> v = map.get(key);
 
         if (v == null) {
             v = new LinkedHashSet<>();
+            v = map.put(key, v);
+        }
+
+        return v;
+    }
+
+    /**
+     * Returns the value associated with the specified {@code key} if it exists in the specified {@code map} contains, or the new put {@code Map} if it's absent.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
+    public static <K, KK, VV> Map<KK, VV> getAndPutMapIfAbsent(final Map<K, Map<KK, VV>> map, final K key) {
+        Map<KK, VV> v = map.get(key);
+
+        if (v == null) {
+            v = new HashMap<>();
             v = map.put(key, v);
         }
 
