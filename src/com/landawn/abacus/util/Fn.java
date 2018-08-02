@@ -4344,7 +4344,7 @@ public final class Fn extends Comparators {
          */
         @Deprecated
         public static <T> Function<Pair<T, T>, List<T>> pairToList() {
-            return PairFn.toList();
+            return Pairs.toList();
         }
 
         /**
@@ -4354,7 +4354,7 @@ public final class Fn extends Comparators {
          */
         @Deprecated
         public static <T> Function<Pair<T, T>, Set<T>> pairToSet() {
-            return PairFn.toSet();
+            return Pairs.toSet();
         }
 
         /**
@@ -4364,7 +4364,7 @@ public final class Fn extends Comparators {
          */
         @Deprecated
         public static <T> Function<Triple<T, T, T>, List<T>> tripleToList() {
-            return TripleFn.toList();
+            return Triples.toList();
         }
 
         /**
@@ -4373,7 +4373,7 @@ public final class Fn extends Comparators {
          */
         @Deprecated
         public static <T> Function<Triple<T, T, T>, Set<T>> tripleToSet() {
-            return TripleFn.toSet();
+            return Triples.toSet();
         }
     }
 
@@ -4939,7 +4939,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class IntFn {
+    public static final class Ints {
 
         private static final IntPredicate POSITIVE = new IntPredicate() {
             @Override
@@ -4997,7 +4997,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private IntFn() {
+        private Ints() {
             // Utility class.
         }
 
@@ -5034,7 +5034,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class LongFn {
+    public static final class Longs {
 
         private static final LongPredicate POSITIVE = new LongPredicate() {
             @Override
@@ -5092,7 +5092,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private LongFn() {
+        private Longs() {
             // Utility class.
         }
 
@@ -5129,7 +5129,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class DoubleFn {
+    public static final class Doubles {
 
         private static final DoublePredicate POSITIVE = new DoublePredicate() {
             @Override
@@ -5187,7 +5187,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private DoubleFn() {
+        private Doubles() {
             // Utility class.
         }
 
@@ -5224,7 +5224,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class PairFn {
+    public static final class Pairs {
         @SuppressWarnings("rawtypes")
         private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
             @Override
@@ -5243,7 +5243,7 @@ public final class Fn extends Comparators {
 
         };
 
-        private PairFn() {
+        private Pairs() {
             // Utility class.
         }
 
@@ -5259,7 +5259,7 @@ public final class Fn extends Comparators {
 
     }
 
-    public static final class TripleFn {
+    public static final class Triples {
 
         @SuppressWarnings("rawtypes")
         private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
@@ -5279,7 +5279,7 @@ public final class Fn extends Comparators {
 
         };
 
-        private TripleFn() {
+        private Triples() {
             // Utility class.
         }
 

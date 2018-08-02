@@ -3372,20 +3372,18 @@ public final class SQLExecutor implements Closeable {
 
             nonUpdatablePropNames.addAll(readOnlyPropNames);
 
+            N.checkArgNotNullOrEmpty(idPropNames, "Target class: " + ClassUtil.getCanonicalClassName(targetClass)
+                    + " must at least has one id property annotated by @Id or @ReadOnlyId on field/method or class");
+
             this.targetClass = targetClass;
             this.targetType = N.typeOf(targetClass);
             this.propNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
             this.propNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
-            this.defaultSelectPropNameList = ImmutableList.copyOf(SQLBuilder.getPropNamesByClass(targetClass, false, transientPropNames));
-            this.sqlExecutor = sqlExecutor;
-            this.namingPolicy = namingPolicy;
-
-            N.checkArgNotNullOrEmpty(idPropNames, "Target class: " + ClassUtil.getCanonicalClassName(targetClass)
-                    + " must at least has one id property annotated by @Id or @ReadOnlyId on field/method or class");
 
             this.idPropName = idPropNames.iterator().next();
             this.idPropNameList = ImmutableList.copyOf(idPropNames);
             this.idPropNameSet = ImmutableSet.copyOf(idPropNames);
+            this.defaultSelectPropNameList = ImmutableList.copyOf(SQLBuilder.getPropNamesByClass(targetClass, false, transientPropNames));
             this.readOnlyPropNameSet = N.isNullOrEmpty(readOnlyPropNames) ? null : ImmutableSet.of(readOnlyPropNames);
             this.nonUpdatablePropNameSet = N.isNullOrEmpty(nonUpdatablePropNames) ? null : ImmutableSet.of(nonUpdatablePropNames);
 
@@ -3408,6 +3406,8 @@ public final class SQLExecutor implements Closeable {
             this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, idCond).sql;
             this.sql_delete_by_id = this.prepareDelete(idCond).sql;
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
+            this.sqlExecutor = sqlExecutor;
+            this.namingPolicy = namingPolicy;
         }
 
         public Class<T> targetClass() {

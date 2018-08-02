@@ -69,6 +69,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableMap;
@@ -657,7 +658,8 @@ public abstract class Stream<T>
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
     @ParallelSupported
-    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
+    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier,
+            final Supplier<? extends Map<K, List<T>>> mapFactory);
 
     /**
      * 
@@ -679,14 +681,14 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            Supplier<Map<K, List<U>>> mapFactory);
+            Supplier<? extends Map<K, List<U>>> mapFactory);
 
     @ParallelSupported
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<Map<K, D>> mapFactory);
+            final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
     public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
@@ -694,7 +696,7 @@ public abstract class Stream<T>
 
     @ParallelSupported
     public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
@@ -702,7 +704,7 @@ public abstract class Stream<T>
 
     @ParallelSupported
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<? extends Map<K, U>> mapFactory);
 
     /**
      * 
@@ -731,7 +733,8 @@ public abstract class Stream<T>
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
 
     @ParallelSupported
-    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
+    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier,
+            final Supplier<? extends Map<K, List<T>>> mapFactory);
 
     /**
      * 
@@ -753,14 +756,14 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            Supplier<Map<K, List<U>>> mapFactory);
+            Supplier<? extends Map<K, List<U>>> mapFactory);
 
     @ParallelSupported
     public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
     public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<Map<K, D>> mapFactory);
+            final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
     public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
@@ -768,7 +771,7 @@ public abstract class Stream<T>
 
     @ParallelSupported
     public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
     public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
@@ -776,7 +779,7 @@ public abstract class Stream<T>
 
     @ParallelSupported
     public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<? extends Map<K, U>> mapFactory);
 
     /**
      * 
@@ -965,7 +968,9 @@ public abstract class Stream<T>
      * @return
      */
     public Stream<T> distinct(final Predicate<? super Long> occurrencesFilter) {
-        return groupBy(Fn.<T> identity(), Collectors.counting()).filter(Fn.<T, Long> testByValue(occurrencesFilter)).map(Fn.<T, Long> key());
+        final Supplier<? extends Map<T, Long>> supplier = isParallel() ? Suppliers.<T, Long> ofConcurrentHashMap() : Suppliers.<T, Long> ofLinkedHashMap();
+
+        return groupBy(Fn.<T> identity(), Collectors.counting(), supplier).filter(Fn.<T, Long> testByValue(occurrencesFilter)).map(Fn.<T, Long> key());
     }
 
     /**
@@ -985,7 +990,10 @@ public abstract class Stream<T>
      * @return
      */
     public <K> Stream<T> distinctBy(final Function<? super T, K> keyExtractor, final Predicate<? super Long> occurrencesFilter) {
-        return groupBy(Fn.<K, T> keyed(keyExtractor), Collectors.counting()).filter(Fn.<Keyed<K, T>, Long> testByValue(occurrencesFilter))
+        final Supplier<? extends Map<Keyed<K, T>, Long>> supplier = isParallel() ? Suppliers.<Keyed<K, T>, Long> ofConcurrentHashMap()
+                : Suppliers.<Keyed<K, T>, Long> ofLinkedHashMap();
+
+        return groupBy(Fn.<K, T> keyed(keyExtractor), Collectors.counting(), supplier).filter(Fn.<Keyed<K, T>, Long> testByValue(occurrencesFilter))
                 .map(Fn.<T, K, Long> kk());
     }
 

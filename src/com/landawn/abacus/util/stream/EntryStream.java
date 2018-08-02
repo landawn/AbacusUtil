@@ -32,8 +32,8 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple;
@@ -318,7 +318,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
-    public EntryStream<K, List<V>> groupBy(final Supplier<Map<K, List<V>>> mapFactory) {
+    public EntryStream<K, List<V>> groupBy(final Supplier<? extends Map<K, List<V>>> mapFactory) {
         final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
         final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
 
@@ -340,7 +340,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public <KK, VV> EntryStream<KK, List<VV>> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<Map<KK, List<VV>>> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<? extends Map<KK, List<VV>>> mapFactory) {
 
         return of(s.groupBy(keyExtractor, valueMapper, mapFactory));
     }
@@ -364,7 +364,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    public <A, D> EntryStream<K, D> groupBy(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<Map<K, D>> mapFactory) {
+    public <A, D> EntryStream<K, D> groupBy(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory) {
         final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
 
         return of(s.groupBy(classifier, downstream, mapFactory));
@@ -392,7 +392,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function, Collector)
      */
     public <KK, A, D> EntryStream<KK, D> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> classifier,
-            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<Map<KK, D>> mapFactory) {
+            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<? extends Map<KK, D>> mapFactory) {
 
         return of(s.groupBy(classifier, downstream, mapFactory));
     }
@@ -415,7 +415,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param mapFactory
      * @return
      */
-    public EntryStream<K, V> groupBy(final BinaryOperator<V> mergeFunction, final Supplier<Map<K, V>> mapFactory) {
+    public EntryStream<K, V> groupBy(final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory) {
         final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
         final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
 
@@ -446,7 +446,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupBy(Function, Function, BinaryOperator, Supplier)
      */
     public <KK, VV> EntryStream<KK, VV> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<Map<KK, VV>> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction,
+            final Supplier<? extends Map<KK, VV>> mapFactory) {
 
         return of(s.groupBy(keyExtractor, valueMapper, mergeFunction, mapFactory));
     }
