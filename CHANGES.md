@@ -4,6 +4,11 @@
 
 * Add `Maps.getAndPutMapIfAbsent`.
 
+* Add `Stream.flattMapToEntry(Function<? super T, ? extends Map<K, V>>)`.
+
+* Refactoring: Change: `EntryStream.flattMap(final Function<? super Map.Entry<K, V>, Collection<Map.Entry<KK, VV>>> mapper)` 
+				To :`EntryStream.flattMap(final Function<? super Map.Entry<K, V>, Map<KK, VV>> mapper)`.
+
 * Improvements and bug fix.
 
 

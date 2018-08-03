@@ -223,7 +223,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.flatMap(mapper));
     }
 
-    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, Collection<Map.Entry<KK, VV>>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, Map<KK, VV>> mapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>>() {
             @Override
             public Stream<Entry<KK, VV>> apply(Entry<K, V> t) {

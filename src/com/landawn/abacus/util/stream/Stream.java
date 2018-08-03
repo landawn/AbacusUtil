@@ -650,6 +650,9 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
 
+    @ParallelSupported
+    public abstract <K, V> EntryStream<K, V> flattMapToEntry(Function<? super T, ? extends Map<K, V>> mapper);
+
     // Not efficient. Too many temporary objects will be created.
     //    @ParallelSupported
     //    public abstract <V> EntryStream<T, V> flattMapToEntry(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
