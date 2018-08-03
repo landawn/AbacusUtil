@@ -3292,6 +3292,9 @@ public final class SQLExecutor implements Closeable {
         // TODO cache more sqls to improve performance.
 
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+            this.sqlExecutor = sqlExecutor;
+            this.namingPolicy = namingPolicy;
+
             final Set<String> readOnlyPropNames = new HashSet<>();
             final Set<String> nonUpdatablePropNames = new HashSet<>();
             final Set<String> transientPropNames = new HashSet<>();
@@ -3406,8 +3409,6 @@ public final class SQLExecutor implements Closeable {
             this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, idCond).sql;
             this.sql_delete_by_id = this.prepareDelete(idCond).sql;
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
-            this.sqlExecutor = sqlExecutor;
-            this.namingPolicy = namingPolicy;
         }
 
         public Class<T> targetClass() {

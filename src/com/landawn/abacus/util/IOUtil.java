@@ -1930,6 +1930,16 @@ public final class IOUtil {
         }
     }
 
+    public static void appendLine(File output, CharSequence str) throws UncheckedIOException {
+        appendLine(output, str, Charsets.DEFAULT);
+    }
+
+    public static void appendLine(File output, CharSequence str, Charset charset) throws UncheckedIOException {
+        final char[] chs = toCharArray(str + IOUtil.LINE_SEPARATOR);
+
+        append(output, chs, 0, chs.length, charset);
+    }
+
     /**
      * Return the count of skipped bytes.
      *
@@ -3142,7 +3152,8 @@ public final class IOUtil {
 
             br = ObjectFactory.createBufferedReader(is);
 
-            String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+            String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0')
+                    + postfix;
             bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
 
             int lineCounter = 0;
@@ -3159,7 +3170,8 @@ public final class IOUtil {
                         bw = null;
                     }
 
-                    subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+                    subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0')
+                            + postfix;
                     bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
                 }
             }
