@@ -941,7 +941,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return joiner.toString();
     }
 
-    public <K2, V2> EntryStream<K2, V2> chain(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> transfer) {
+    public <KK, VV> EntryStream<KK, VV> chain(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<KK, VV>>> transfer) {
         return of(transfer.apply(s));
     }
 

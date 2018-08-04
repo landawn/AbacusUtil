@@ -538,7 +538,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -585,7 +585,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -2538,7 +2538,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
@@ -2583,7 +2583,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);

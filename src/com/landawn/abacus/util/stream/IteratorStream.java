@@ -363,7 +363,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 2;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -415,7 +415,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 3;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -1850,7 +1850,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         T prev = (T) NONE;
 
@@ -1881,7 +1881,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
 
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
         T prev = (T) NONE;
         T prev2 = (T) NONE;
