@@ -1,3 +1,10 @@
+### 1.2.21
+
+* Add `Maps.flatten`.
+
+* Improvements and bug fix.
+
+
 ### 1.2.20
 
 * Add `SQLExecutor.Mapper.add(...Collection<String> insertPropNames)`.

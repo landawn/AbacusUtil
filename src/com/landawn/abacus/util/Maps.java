@@ -2352,6 +2352,46 @@ public final class Maps {
         return resultList;
     }
 
+    public static Map<String, Object> flatten(Map<String, Object> map) {
+        return flatten(map, Suppliers.<String, Object> ofMap());
+    }
+
+    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, Supplier<M> mapSupplier) {
+        return flatten(map, ".", mapSupplier);
+    }
+
+    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, String delimiter, Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        flatten(map, null, delimiter, result);
+
+        return result;
+    }
+
+    private static void flatten(Map<String, Object> map, String prefix, String delimiter, Map<String, Object> output) {
+        if (N.isNullOrEmpty(map)) {
+            return;
+        }
+
+        if (N.isNullOrEmpty(prefix)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() instanceof Map) {
+                    flatten((Map<String, Object>) entry.getValue(), entry.getKey(), delimiter, output);
+                } else {
+                    output.put(entry.getKey(), entry.getValue());
+                }
+            }
+        } else {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() instanceof Map) {
+                    flatten((Map<String, Object>) entry.getValue(), prefix + delimiter + entry.getKey(), delimiter, output);
+                } else {
+                    output.put(prefix + delimiter + entry.getKey(), entry.getValue());
+                }
+            }
+        }
+    }
+
     @SuppressWarnings("rawtypes")
     static Supplier mapType2Supplier(final Class<? extends Map> mapType) {
         if (HashMap.class.equals(mapType)) {

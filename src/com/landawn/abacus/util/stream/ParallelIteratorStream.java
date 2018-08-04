@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -60,7 +59,6 @@ import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -2743,17 +2741,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 }
             }
         });
-    }
-
-    @Override
-    public Stream<T> queued(int queueSize) {
-        final Iterator<T> iter = iterator();
-
-        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
-            return this;
-        } else {
-            return new ParallelIteratorStream<>(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize), sorted, cmp, maxThreadNum, splitor, closeHandlers);
-        }
     }
 
     @Override

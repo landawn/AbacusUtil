@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -34,9 +35,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
-import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
-import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -189,7 +188,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
             @Override
             public Entry<KK, VV> apply(Entry<K, V> t) {
-                return Pair.of(keyMapper.apply(t.getKey()), valueMapper.apply(t.getValue()));
+                return new SimpleImmutableEntry<>(keyMapper.apply(t.getKey()), valueMapper.apply(t.getValue()));
             }
         };
 
@@ -241,7 +240,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return keyMapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
                     @Override
                     public Map.Entry<KK, V> apply(KK kk) {
-                        return Pair.of(kk, e.getValue());
+                        return new SimpleImmutableEntry<>(kk, e.getValue());
                     }
                 });
             }
@@ -257,7 +256,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return Stream.of(keyMapper.apply(e.getKey())).map(new Function<KK, Map.Entry<KK, V>>() {
                     @Override
                     public Map.Entry<KK, V> apply(KK kk) {
-                        return Pair.of(kk, e.getValue());
+                        return new SimpleImmutableEntry<>(kk, e.getValue());
                     }
                 });
             }
@@ -273,7 +272,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return valueMapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
                     @Override
                     public Map.Entry<K, VV> apply(VV vv) {
-                        return Pair.of(e.getKey(), vv);
+                        return new SimpleImmutableEntry<>(e.getKey(), vv);
                     }
                 });
             }
@@ -289,7 +288,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return Stream.of(valueMapper.apply(e.getValue())).map(new Function<VV, Map.Entry<K, VV>>() {
                     @Override
                     public Map.Entry<K, VV> apply(VV vv) {
-                        return Pair.of(e.getKey(), vv);
+                        return new SimpleImmutableEntry<>(e.getKey(), vv);
                     }
                 });
             }
@@ -1097,31 +1096,36 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1) {
-        return of(Stream.of(Tuple.of(k1, v1)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2), new SimpleImmutableEntry<>(k3, v3)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2), new SimpleImmutableEntry<>(k3, v3),
+                new SimpleImmutableEntry<>(k4, v4)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2), new SimpleImmutableEntry<>(k3, v3),
+                new SimpleImmutableEntry<>(k4, v4), new SimpleImmutableEntry<>(k5, v5)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2), new SimpleImmutableEntry<>(k3, v3),
+                new SimpleImmutableEntry<>(k4, v4), new SimpleImmutableEntry<>(k5, v5), new SimpleImmutableEntry<>(k6, v6)));
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7) {
-        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6), Tuple.of(k7, v7)));
+        return of(Stream.of(new SimpleImmutableEntry<>(k1, v1), new SimpleImmutableEntry<>(k2, v2), new SimpleImmutableEntry<>(k3, v3),
+                new SimpleImmutableEntry<>(k4, v4), new SimpleImmutableEntry<>(k5, v5), new SimpleImmutableEntry<>(k6, v6),
+                new SimpleImmutableEntry<>(k7, v7)));
     }
 
     static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {

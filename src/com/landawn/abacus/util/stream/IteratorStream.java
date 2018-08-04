@@ -2402,7 +2402,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
             return this;
         } else {
-            return new IteratorStream<>(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize), sorted, cmp, closeHandlers);
+            return newStream(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize).iterator(), sorted, cmp);
         }
     }
 

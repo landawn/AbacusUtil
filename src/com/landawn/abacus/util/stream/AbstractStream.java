@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -403,7 +404,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(T t) {
-                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
+                return new SimpleImmutableEntry<>(keyMapper.apply(t), valueMapper.apply(t));
             }
         };
 
@@ -486,7 +487,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     //                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
     //                    @Override
     //                    public Entry<T, V> apply(V v) {
-    //                        return Tuple.of(t, v);
+    //                        return new SimpleImmutableEntry<>(t, v);
     //                    }
     //                };
     //
