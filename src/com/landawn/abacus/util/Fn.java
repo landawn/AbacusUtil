@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -367,16 +368,16 @@ public final class Fn extends Comparators {
     private static final Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>> INVERSE = new Function<Map.Entry<Object, Object>, Map.Entry<Object, Object>>() {
         @Override
         public Map.Entry<Object, Object> apply(Map.Entry<Object, Object> t) {
-            return Pair.of(t.getValue(), t.getKey());
+            return new SimpleImmutableEntry<>(t.getValue(), t.getKey());
         }
     };
 
-    //    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
-    //        @Override
-    //        public Map.Entry<Object, Object> apply(Object key, Object value) {
-    //            return new AbstractMap.SimpleImmutableEntry<>(key, value);
-    //        }
-    //    };
+    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
+        @Override
+        public Map.Entry<Object, Object> apply(Object key, Object value) {
+            return new SimpleImmutableEntry<>(key, value);
+        }
+    };
 
     private static final BiFunction<Object, Object, Pair<Object, Object>> PAIR = new BiFunction<Object, Object, Pair<Object, Object>>() {
         @Override
@@ -698,6 +699,18 @@ public final class Fn extends Comparators {
         };
     }
 
+    private static final Function<Keyed<?, Object>, Object> VAL = new Function<Keyed<?, Object>, Object>() {
+        @Override
+        public Object apply(Keyed<?, Object> t) {
+            return t.val();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static <K, T> Function<Keyed<K, T>, T> val() {
+        return (Function) VAL;
+    }
+
     private static final Function<Map.Entry<Keyed<Object, Object>, Object>, Object> KK = new Function<Map.Entry<Keyed<Object, Object>, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Keyed<Object, Object>, Object> t) {
@@ -710,13 +723,16 @@ public final class Fn extends Comparators {
         return (Function) KK;
     }
 
+    private static final Function<Object, Wrapper<Object>> WRAP = new Function<Object, Wrapper<Object>>() {
+        @Override
+        public Wrapper<Object> apply(Object t) {
+            return Wrapper.of(t);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
     public static <T> Function<T, Wrapper<T>> wrap() {
-        return new Function<T, Wrapper<T>>() {
-            @Override
-            public Wrapper<T> apply(T t) {
-                return Wrapper.of(t);
-            }
-        };
+        return (Function) WRAP;
     }
 
     public static <T> Function<T, Wrapper<T>> wrap(final ToIntFunction<? super T> hashFunction, final BiPredicate<? super T, ? super T> equalsFunction) {
@@ -729,6 +745,18 @@ public final class Fn extends Comparators {
                 return Wrapper.of(t, hashFunction, equalsFunction);
             }
         };
+    }
+
+    private static final Function<Wrapper<Object>, Object> UNWRAP = new Function<Wrapper<Object>, Object>() {
+        @Override
+        public Object apply(Wrapper<Object> t) {
+            return t.value();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static <K, T> Function<Wrapper<T>, T> unwrap() {
+        return (Function) UNWRAP;
     }
 
     @SuppressWarnings("rawtypes")
@@ -748,16 +776,14 @@ public final class Fn extends Comparators {
 
     @SuppressWarnings("rawtypes")
     public static <K, V> BiFunction<K, V, Map.Entry<K, V>> entry() {
-        // return (BiFunction) ENTRY;
-
-        return (BiFunction) PAIR;
+        return (BiFunction) ENTRY;
     }
 
     public static <K, T> Function<T, Map.Entry<K, T>> entry(final K key) {
         return new Function<T, Map.Entry<K, T>>() {
             @Override
             public Entry<K, T> apply(T t) {
-                return Pair.of(key, t);
+                return new SimpleImmutableEntry<>(key, t);
             }
         };
     }
@@ -768,7 +794,7 @@ public final class Fn extends Comparators {
         return new Function<T, Map.Entry<K, T>>() {
             @Override
             public Entry<K, T> apply(T t) {
-                return Pair.of(keyExtractor.apply(t), t);
+                return new SimpleImmutableEntry<>(keyExtractor.apply(t), t);
             }
         };
     }
@@ -1361,7 +1387,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@link Fn#p(Predicate)}.
      */
     @Deprecated
-    public static <T> Predicate<T> test(final Predicate<T> predicate) {
+    static <T> Predicate<T> test(final Predicate<T> predicate) {
         return predicate;
     }
 
@@ -1373,7 +1399,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@link Fn#p(BiPredicate)}.
      */
     @Deprecated
-    public static <T, U> BiPredicate<T, U> test(final BiPredicate<T, U> predicate) {
+    static <T, U> BiPredicate<T, U> test(final BiPredicate<T, U> predicate) {
         return predicate;
     }
 
@@ -1385,7 +1411,7 @@ public final class Fn extends Comparators {
      * @deprecated
      */
     @Deprecated
-    public static <A, B, C> TriPredicate<A, B, C> test(final TriPredicate<A, B, C> predicate) {
+    static <A, B, C> TriPredicate<A, B, C> test(final TriPredicate<A, B, C> predicate) {
         return predicate;
     }
 
@@ -1439,7 +1465,7 @@ public final class Fn extends Comparators {
         return new Function<Map.Entry<K, V>, Map.Entry<KK, V>>() {
             @Override
             public Map.Entry<KK, V> apply(Entry<K, V> entry) {
-                return Pair.of(func.apply(entry.getKey()), entry.getValue());
+                return new SimpleImmutableEntry<>(func.apply(entry.getKey()), entry.getValue());
             }
         };
     }
@@ -1450,7 +1476,7 @@ public final class Fn extends Comparators {
         return new Function<Map.Entry<K, V>, Map.Entry<K, VV>>() {
             @Override
             public Map.Entry<K, VV> apply(Entry<K, V> entry) {
-                return Pair.of(entry.getKey(), func.apply(entry.getValue()));
+                return new SimpleImmutableEntry<>(entry.getKey(), func.apply(entry.getValue()));
             }
         };
     }
@@ -1623,7 +1649,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code BiPredicates#indexed(IndexedBiPredicate)}.
      */
     @Deprecated
-    public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
+    static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
         return BiPredicates.indexed(predicate);
     }
 
@@ -1635,7 +1661,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code Functions#indexed(IndexedFunction)}.
      */
     @Deprecated
-    public static <T, R> Function<T, R> indexedd(final IndexedFunction<T, R> func) {
+    static <T, R> Function<T, R> indexedd(final IndexedFunction<T, R> func) {
         return Functions.indexed(func);
     }
 
@@ -1647,7 +1673,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code BiFunctions#indexed(IndexedBiFunction)}.
      */
     @Deprecated
-    public static <U, T, R> BiFunction<U, T, R> indexedd(final IndexedBiFunction<U, T, R> func) {
+    static <U, T, R> BiFunction<U, T, R> indexedd(final IndexedBiFunction<U, T, R> func) {
         return BiFunctions.indexed(func);
     }
 
@@ -1659,7 +1685,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code Consumers#indexed(IndexedConsumer)}.
      */
     @Deprecated
-    public static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
+    static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
         return Consumers.indexed(action);
     }
 
@@ -1671,7 +1697,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code BiConsumers#indexed(IndexedBiConsumer)}.
      */
     @Deprecated
-    public static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
+    static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
         return BiConsumers.indexed(action);
     }
 
@@ -2259,7 +2285,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code BiConsumers#ofAddAll()}
      */
     @Deprecated
-    public static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
+    static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
         return BiConsumers.<T, C> ofAddAll();
     }
 
@@ -2269,7 +2295,7 @@ public final class Fn extends Comparators {
      * @deprecated replaced by {@code BiConsumers#ofPutAll()}
      */
     @Deprecated
-    public static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
+    static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
         return BiConsumers.<K, V, M> ofPutAll();
     }
 
@@ -2360,7 +2386,7 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
         return Collectors.toMap(keyExtractor, valueMapper);
     }
 
@@ -2372,8 +2398,8 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
+    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction) {
         return Collectors.toMap(keyExtractor, valueMapper, mergeFunction);
     }
 
@@ -2385,8 +2411,8 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
         return Collectors.toMap(keyExtractor, valueMapper, mapFactory);
     }
 
@@ -2399,8 +2425,8 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         return Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
@@ -2495,8 +2521,8 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toImmutableMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
         return Collectors.toImmutableMap(keyExtractor, valueMapper, mergeFunction);
     }
 
