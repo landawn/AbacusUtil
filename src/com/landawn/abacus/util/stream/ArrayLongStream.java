@@ -1376,7 +1376,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 

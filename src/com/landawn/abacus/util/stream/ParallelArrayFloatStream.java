@@ -362,8 +362,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final FloatFunction<? extends K> keyExtractor, final FloatFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final FloatFunction<? extends K> keyExtractor, final FloatFunction<? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
@@ -375,9 +375,9 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         };
 
-        final Function<? super Float, ? extends U> valueMapper2 = new Function<Float, U>() {
+        final Function<? super Float, ? extends V> valueMapper2 = new Function<Float, V>() {
             @Override
-            public U apply(Float value) {
+            public V apply(Float value) {
                 return valueMapper.apply(value);
             }
         };

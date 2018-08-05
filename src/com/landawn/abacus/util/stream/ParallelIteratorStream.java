@@ -1822,8 +1822,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return super.toMap(keyExtractor, valueMapper, mapFactory);
         }
@@ -1879,7 +1879,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 } else {
                     final M m = future.get();
 
-                    for (Map.Entry<K, U> entry : m.entrySet()) {
+                    for (Map.Entry<K, V> entry : m.entrySet()) {
                         Collectors.merge(res, entry.getKey(), entry.getValue(), mergeFunction);
                     }
                 }

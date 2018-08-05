@@ -300,8 +300,8 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final ShortFunction<? extends K> keyExtractor, final ShortFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final ShortFunction<? extends K> keyExtractor, final ShortFunction<? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
@@ -313,9 +313,9 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         };
 
-        final Function<? super Short, ? extends U> valueMapper2 = new Function<Short, U>() {
+        final Function<? super Short, ? extends V> valueMapper2 = new Function<Short, V>() {
             @Override
-            public U apply(Short value) {
+            public V apply(Short value) {
                 return valueMapper.apply(value);
             }
         };

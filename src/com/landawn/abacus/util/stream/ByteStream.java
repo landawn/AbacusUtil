@@ -245,7 +245,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper);
 
     /**
      * 
@@ -255,7 +255,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -265,7 +265,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
@@ -276,8 +276,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 

@@ -1152,7 +1152,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 

@@ -112,6 +112,8 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public final class Fn extends Comparators {
 
+    private static final Object NONE = new Object();
+
     @SuppressWarnings("rawtypes")
     public static final IntFunction<Map<String, Object>> FACTORY_OF_MAP = (IntFunction) Factory.MAP_FACTORY;
     @SuppressWarnings("rawtypes")
@@ -502,8 +504,6 @@ public final class Fn extends Comparators {
         }
     };
 
-    private static final Object NULL = new Object();
-
     private Fn() {
         super();
         // Singleton.
@@ -521,12 +521,12 @@ public final class Fn extends Comparators {
      */
     public static <T> Supplier<T> single(final Supplier<T> supplier) {
         return new Supplier<T>() {
-            private T instance = (T) NULL;
+            private T instance = (T) NONE;
 
             @Override
             public T get() {
                 synchronized (this) {
-                    if (instance == NULL) {
+                    if (instance == NONE) {
                         instance = supplier.get();
                     }
 
@@ -2508,8 +2508,8 @@ public final class Fn extends Comparators {
      * @return
      * @see Collectors#toImmutableMap(Function, Function)
      */
-    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper) {
         return Collectors.toImmutableMap(keyExtractor, valueMapper);
     }
 
@@ -3911,7 +3911,7 @@ public final class Fn extends Comparators {
 
                 @Override
                 public boolean test(T value) {
-                    return map.put(value, N.NULL_MASK) == null;
+                    return map.put(value, NONE) == null;
                 }
             };
         }
@@ -3922,7 +3922,7 @@ public final class Fn extends Comparators {
 
                 @Override
                 public boolean test(T value) {
-                    return map.put(mapper.apply(value), N.NULL_MASK) == null;
+                    return map.put(mapper.apply(value), NONE) == null;
                 }
             };
         }
@@ -3935,11 +3935,11 @@ public final class Fn extends Comparators {
          */
         public static <T> Predicate<T> skipRepeats() {
             return new Predicate<T>() {
-                private T pre = (T) NULL;
+                private T pre = (T) NONE;
 
                 @Override
                 public boolean test(T value) {
-                    boolean res = pre == NULL || N.equals(value, pre) == false;
+                    boolean res = pre == NONE || N.equals(value, pre) == false;
                     pre = value;
                     return res;
                 }

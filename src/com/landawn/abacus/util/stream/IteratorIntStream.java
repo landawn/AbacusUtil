@@ -1448,7 +1448,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         int element = 0;

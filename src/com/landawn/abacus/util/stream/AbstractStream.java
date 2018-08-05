@@ -809,10 +809,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<? extends Map<K, U>> mapFactory) {
-        return newStream(new ObjIteratorEx<Entry<K, U>>() {
-            private Iterator<Entry<K, U>> iter = null;
+    public <K, V> Stream<Entry<K, V>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory) {
+        return newStream(new ObjIteratorEx<Entry<K, V>>() {
+            private Iterator<Entry<K, V>> iter = null;
 
             @Override
             public boolean hasNext() {
@@ -821,7 +821,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public Entry<K, U> next() {
+            public Entry<K, V> next() {
                 init();
                 return iter.next();
             }
@@ -933,32 +933,32 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> EntryStream<K, U> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<? extends Map<K, U>> mapFactory) {
-        final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
+    public <K, V> EntryStream<K, V> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<? extends Map<K, V>> mapFactory) {
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
 
         return groupBy(classifier, valueMapper, mergeFunction, mapFactory).mapToEntry(mapper);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final Supplier<? extends Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
+        final Supplier<? extends Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
             Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
-        final Supplier<? extends Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction) {
+        final Supplier<? extends Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }

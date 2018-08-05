@@ -1067,7 +1067,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 

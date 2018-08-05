@@ -1375,8 +1375,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {

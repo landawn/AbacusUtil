@@ -293,8 +293,8 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final ByteFunction<? extends K> keyExtractor, final ByteFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final ByteFunction<? extends K> keyExtractor, final ByteFunction<? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
@@ -306,9 +306,9 @@ final class ParallelArrayByteStream extends ArrayByteStream {
             }
         };
 
-        final Function<? super Byte, ? extends U> valueMapper2 = new Function<Byte, U>() {
+        final Function<? super Byte, ? extends V> valueMapper2 = new Function<Byte, V>() {
             @Override
-            public U apply(Byte value) {
+            public V apply(Byte value) {
                 return valueMapper.apply(value);
             }
         };

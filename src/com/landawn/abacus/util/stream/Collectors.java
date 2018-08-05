@@ -4352,7 +4352,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param keyExtractor a mapping function to produce keys
      * @param valueMapper a mapping function to produce values
      * @return a {@code Collector} which collects elements into a {@code Map}
@@ -4363,8 +4363,8 @@ public class Collectors {
      * @see #toMap(Function, Function, BinaryOperator, Supplier)
      * @see #toConcurrentMap(Function, Function)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction);
     }
@@ -4405,7 +4405,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param keyExtractor a mapping function to produce keys
      * @param valueMapper a mapping function to produce values
      * @param mergeFunction a merge function, used to resolve collisions between
@@ -4421,16 +4421,16 @@ public class Collectors {
      * @see #toMap(Function, Function, BinaryOperator, Supplier)
      * @see #toConcurrentMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Suppliers.<K, U> ofMap();
+    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Suppliers.<K, V> ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4456,7 +4456,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param <M> the type of the resulting {@code Map}
      * @param keyExtractor a mapping function to produce keys
      * @param valueMapper a mapping function to produce values
@@ -4475,8 +4475,8 @@ public class Collectors {
      * @see #toMap(Function, Function, BinaryOperator)
      * @see #toConcurrentMap(Function, Function, BinaryOperator, Supplier)
      */
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
             public void accept(M map, T element) {
@@ -4557,20 +4557,20 @@ public class Collectors {
         return collectingAndThen(downstream, finisher);
     }
 
-    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper) {
-        final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper);
+    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper) {
+        final Collector<T, ?, Map<K, V>> downstream = toMap(keyExtractor, valueMapper);
         @SuppressWarnings("rawtypes")
-        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = (Function) ImmutableMap_Finisher;
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
 
-    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper, mergeFunction);
+    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Collector<T, ?, Map<K, V>> downstream = toMap(keyExtractor, valueMapper, mergeFunction);
         @SuppressWarnings("rawtypes")
-        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = (Function) ImmutableMap_Finisher;
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
@@ -4582,9 +4582,9 @@ public class Collectors {
      * @return
      * @see #toMap(Function, Function)
      */
-    public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V> Collector<T, ?, LinkedHashMap<K, V>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toLinkedHashMap(keyExtractor, valueMapper, mergeFunction);
     }
@@ -4597,9 +4597,9 @@ public class Collectors {
      * @return
      * @see #toMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<LinkedHashMap<K, U>> mapFactory = Suppliers.ofLinkedHashMap();
+    public static <T, K, V> Collector<T, ?, LinkedHashMap<K, V>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<LinkedHashMap<K, V>> mapFactory = Suppliers.ofLinkedHashMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4639,7 +4639,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param keyExtractor the mapping function to produce keys
      * @param valueMapper the mapping function to produce values
      * @return a concurrent, unordered {@code Collector} which collects elements into a
@@ -4651,16 +4651,16 @@ public class Collectors {
      * @see #toConcurrentMap(Function, Function, BinaryOperator)
      * @see #toConcurrentMap(Function, Function, BinaryOperator, Supplier)
      */
-    public static <T, K, U> Collector<T, ?, ConcurrentMap<K, U>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V> Collector<T, ?, ConcurrentMap<K, V>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction);
     }
 
-    public static <T, K, U, M extends ConcurrentMap<K, U>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V, M extends ConcurrentMap<K, V>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4695,7 +4695,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param keyExtractor a mapping function to produce keys
      * @param valueMapper a mapping function to produce values
      * @param mergeFunction a merge function, used to resolve collisions between
@@ -4711,9 +4711,9 @@ public class Collectors {
      * @see #toConcurrentMap(Function, Function, BinaryOperator, Supplier)
      * @see #toMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, ConcurrentMap<K, U>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<ConcurrentMap<K, U>> mapFactory = Suppliers.ofConcurrentMap();
+    public static <T, K, V> Collector<T, ?, ConcurrentMap<K, V>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<ConcurrentMap<K, V>> mapFactory = Suppliers.ofConcurrentMap();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4733,7 +4733,7 @@ public class Collectors {
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
-     * @param <U> the output type of the value mapping function
+     * @param <V> the output type of the value mapping function
      * @param <M> the type of the resulting {@code ConcurrentMap}
      * @param keyExtractor a mapping function to produce keys
      * @param valueMapper a mapping function to produce values
@@ -4752,8 +4752,8 @@ public class Collectors {
      * @see #toConcurrentMap(Function, Function, BinaryOperator)
      * @see #toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public static <T, K, U, M extends ConcurrentMap<K, U>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public static <T, K, V, M extends ConcurrentMap<K, V>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
 
         final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
@@ -4767,28 +4767,28 @@ public class Collectors {
         return new CollectorImpl<T, M, M>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
     }
 
-    public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V> Collector<T, ?, BiMap<K, V>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction);
     }
 
-    public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<BiMap<K, U>> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public static <T, K, V> Collector<T, ?, BiMap<K, V>> toBiMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<BiMap<K, V>> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
-        final Supplier<BiMap<K, U>> mapFactory = Suppliers.ofBiMap();
+    public static <T, K, V> Collector<T, ?, BiMap<K, V>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction) {
+        final Supplier<BiMap<K, V>> mapFactory = Suppliers.ofBiMap();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<BiMap<K, U>> mapFactory) {
+    public static <T, K, V> Collector<T, ?, BiMap<K, V>> toBiMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<BiMap<K, V>> mapFactory) {
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 

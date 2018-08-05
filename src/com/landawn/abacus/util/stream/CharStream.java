@@ -247,7 +247,7 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper);
 
     /**
      * 
@@ -257,7 +257,7 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -267,7 +267,7 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
@@ -278,8 +278,8 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 

@@ -702,12 +702,12 @@ public abstract class Stream<T>
             final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     @ParallelSupported
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<? extends Map<K, U>> mapFactory);
+    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory);
 
     /**
      * 
@@ -781,8 +781,8 @@ public abstract class Stream<T>
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
     @ParallelSupported
-    public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<? extends Map<K, U>> mapFactory);
+    public abstract <K, V> EntryStream<K, V> groupByToEntry(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory);
 
     /**
      * 
@@ -1216,7 +1216,7 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
         return ImmutableMap.of(toMap(keyExtractor, valueMapper));
     }
 
@@ -1229,8 +1229,8 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
+    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction) {
         return ImmutableMap.of(toMap(keyExtractor, valueMapper, mergeFunction));
     }
 
@@ -1242,7 +1242,7 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
@@ -1253,8 +1253,8 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
     @ParallelSupported
-    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction);
 
     /**
      * 
@@ -1265,7 +1265,7 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
             Supplier<M> mapFactory);
 
     /**
@@ -1278,8 +1278,8 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 

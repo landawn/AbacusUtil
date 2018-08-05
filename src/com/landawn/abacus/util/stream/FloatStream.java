@@ -299,7 +299,7 @@ public abstract class FloatStream
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper);
 
     /**
      * 
@@ -309,7 +309,7 @@ public abstract class FloatStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper,
             Supplier<M> mapFactory);
 
     /**
@@ -320,7 +320,7 @@ public abstract class FloatStream
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
@@ -331,8 +331,8 @@ public abstract class FloatStream
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 

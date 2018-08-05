@@ -293,8 +293,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyExtractor, final CharFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final CharFunction<? extends K> keyExtractor, final CharFunction<? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
@@ -306,9 +306,9 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         };
 
-        final Function<? super Character, ? extends U> valueMapper2 = new Function<Character, U>() {
+        final Function<? super Character, ? extends V> valueMapper2 = new Function<Character, V>() {
             @Override
-            public U apply(Character value) {
+            public V apply(Character value) {
                 return valueMapper.apply(value);
             }
         };

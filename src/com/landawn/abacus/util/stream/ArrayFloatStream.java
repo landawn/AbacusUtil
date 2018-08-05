@@ -1375,7 +1375,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 

@@ -2001,8 +2001,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         T element = null;
 

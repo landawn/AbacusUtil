@@ -2159,29 +2159,29 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, U, E extends Exception, E2 extends Exception> Map<K, U> toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
-            Try.Function<? super T, ? extends U, E2> valueMapper) throws E, E2 {
-        final IntFunction<Map<K, U>> mapFactory = Fn.Factory.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
+            Try.Function<? super T, ? extends V, E2> valueMapper) throws E, E2 {
+        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>, E extends Exception, E2 extends Exception> M toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
-            Try.Function<? super T, ? extends U, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
+            Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, U> toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
-            Try.Function<? super T, ? extends U, E2> valueMapper, Try.BinaryOperator<U, E3> mergeFunction) throws E, E2, E3 {
-        final IntFunction<Map<K, U>> mapFactory = Fn.Factory.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.Function<? super T, ? extends K, E> keyExtractor,
+            Try.Function<? super T, ? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(
-            Try.Function<? super T, ? extends K, E> keyExtractor, Try.Function<? super T, ? extends U, E2> valueMapper, Try.BinaryOperator<U, E3> mergeFunction,
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(
+            Try.Function<? super T, ? extends K, E> keyExtractor, Try.Function<? super T, ? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction,
             IntFunction<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.apply(size());
         final Iterator<T> iter = iterator();

@@ -317,7 +317,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper);
 
     /**
      * 
@@ -327,7 +327,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -337,7 +337,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
@@ -348,8 +348,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 

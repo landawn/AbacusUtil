@@ -318,22 +318,22 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
