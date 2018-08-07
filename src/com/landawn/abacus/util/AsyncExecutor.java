@@ -86,9 +86,10 @@ public class AsyncExecutor {
 
                 try {
                     executorService.shutdown();
-                    executorService.awaitTermination(120, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+
+                    while (executorService.isTerminated() == false) {
+                        N.sleepUninterruptibly(100);
+                    }
                 } finally {
                     logger.warn("Completed to shutdown task in AsyncExecutor");
                 }

@@ -3225,6 +3225,9 @@ public final class SQLExecutor implements Closeable {
      * @param <T>
      */
     public static final class Mapper<T> {
+        /**
+         * @deprecated replaced by {@code com.landawn.abacus.annotation.Id}
+         */
         @Documented
         @Target(value = { FIELD, /* METHOD, */ TYPE })
         @Retention(RUNTIME)
@@ -3233,7 +3236,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         /** 
-         * The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. 
+         * The field will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
+         * @deprecated replaced by {@code com.landawn.abacus.annotation.ReadOnly} 
          */
         @Documented
         @Target(value = { FIELD /* METHOD, */ })
@@ -3242,7 +3246,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         /** 
-         * The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. 
+         * The field is identity and will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
+         * @deprecated replaced by {@code com.landawn.abacus.annotation.ReadOnlyId} 
          */
         @Documented
         @Target(value = { FIELD, /* METHOD, */ TYPE })
@@ -3253,6 +3258,7 @@ public final class SQLExecutor implements Closeable {
 
         /** 
          * The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity.
+         * @deprecated replaced by {@code com.landawn.abacus.annotation.NonUpdatable}
          */
         @Documented
         @Target(value = { FIELD /* METHOD, */ })
@@ -3261,7 +3267,8 @@ public final class SQLExecutor implements Closeable {
         }
 
         /** 
-         * The properties will be ignored by all db related operations if the input is an entity.
+         * The properties will be ignored by the persistent operations if the input is an entity.
+         * @deprecated replaced by {@code com.landawn.abacus.annotation.Transient}
          */
         @Documented
         @Target(value = { FIELD /* METHOD, */ })
@@ -3314,19 +3321,22 @@ public final class SQLExecutor implements Closeable {
                     continue;
                 }
 
-                if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.Id.class)
+                        || field.isAnnotationPresent(ReadOnlyId.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
                     idPropNames.add(field.getName());
                 }
 
-                if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnly.class)
+                        || field.isAnnotationPresent(ReadOnlyId.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
                     readOnlyPropNames.add(field.getName());
                 }
 
-                if (field.isAnnotationPresent(NonUpdatable.class)) {
+                if (field.isAnnotationPresent(NonUpdatable.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.NonUpdatable.class)) {
                     nonUpdatablePropNames.add(field.getName());
                 }
 
-                if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
+                if (field.isAnnotationPresent(Transient.class) || field.isAnnotationPresent(com.landawn.abacus.annotation.Transient.class)
+                        || Modifier.isTransient(field.getModifiers())) {
                     readOnlyPropNames.add(field.getName());
 
                     transientPropNames.add(field.getName());
@@ -3334,41 +3344,45 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            /*
-            final Iterator<Map.Entry<String, Method>> iter = Iterators.concat(ClassUtil.getPropGetMethodList(targetClass).entrySet(),
-                    ClassUtil.getPropSetMethodList(targetClass).entrySet());
-            Map.Entry<String, Method> entry = null;
-            
-            while (iter.hasNext()) {
-                entry = iter.next();
-            
-                if (entry.getValue().isAnnotationPresent(Id.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
-                    idPropNames.add(entry.getKey());
-                }
-            
-                if (entry.getValue().isAnnotationPresent(ReadOnly.class) || entry.getValue().isAnnotationPresent(ReadOnlyId.class)) {
-                    readOnlyPropNames.add(entry.getKey());
-                }
-            
-                if (entry.getValue().isAnnotationPresent(NonUpdatable.class)) {
-                    nonUpdatablePropNames.add(entry.getKey());
-                }
-            
-                if (entry.getValue().isAnnotationPresent(Transient.class)) {
-                    readOnlyPropNames.add(entry.getKey());
-            
-                    transientPropNames.add(entry.getKey());
-                    transientPropNames.add(ClassUtil.formalizePropName(entry.getKey()));
-                }
-            }
-            */
+            //    final Iterator<Map.Entry<String, Method>> iter = Iterators.concat(ClassUtil.getPropGetMethodList(targetClass).entrySet(),
+            //            ClassUtil.getPropSetMethodList(targetClass).entrySet());
+            //    Map.Entry<String, Method> entry = null;
+            //    Method method = null;
+            //
+            //    while (iter.hasNext()) {
+            //        entry = iter.next();
+            //        method = entry.getValue();
+            //
+            //        if (method.isAnnotationPresent(Id.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.Id.class)
+            //                || method.isAnnotationPresent(ReadOnlyId.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
+            //            idPropNames.add(entry.getKey());
+            //        }
+            //
+            //        if (method.isAnnotationPresent(ReadOnly.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnly.class)
+            //                || method.isAnnotationPresent(ReadOnlyId.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
+            //            readOnlyPropNames.add(entry.getKey());
+            //        }
+            //
+            //        if (method.isAnnotationPresent(NonUpdatable.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.NonUpdatable.class)) {
+            //            nonUpdatablePropNames.add(entry.getKey());
+            //        }
+            //
+            //        if (method.isAnnotationPresent(Transient.class) || method.isAnnotationPresent(com.landawn.abacus.annotation.Transient.class)) {
+            //            readOnlyPropNames.add(entry.getKey());
+            //
+            //            transientPropNames.add(entry.getKey());
+            //            transientPropNames.add(ClassUtil.formalizePropName(entry.getKey()));
+            //        }
+            //    }
 
-            if (targetClass.isAnnotationPresent(Id.class) || targetClass.isAnnotationPresent(ReadOnlyId.class)) {
-                String[] values = targetClass.getAnnotation(Id.class).value();
+            if (targetClass.isAnnotationPresent(Id.class) || targetClass.isAnnotationPresent(com.landawn.abacus.annotation.Id.class)
+                    || targetClass.isAnnotationPresent(ReadOnlyId.class) || targetClass.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
+                String[] values = targetClass.isAnnotationPresent(Id.class) ? targetClass.getAnnotation(Id.class).value()
+                        : targetClass.getAnnotation(com.landawn.abacus.annotation.Id.class).value();
                 N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
                 idPropNames.addAll(Arrays.asList(values));
 
-                if (targetClass.isAnnotationPresent(ReadOnlyId.class)) {
+                if (targetClass.isAnnotationPresent(ReadOnlyId.class) || targetClass.isAnnotationPresent(com.landawn.abacus.annotation.ReadOnlyId.class)) {
                     readOnlyPropNames.addAll(Arrays.asList(values));
                 }
             }

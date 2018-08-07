@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -84,7 +83,7 @@ import com.landawn.abacus.util.ThreadMode;
 public class EventBus {
     private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
 
-    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(32);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
 
     private static final Map<Class<?>, List<SubIdentifier>> classMetaSubMap = new ConcurrentHashMap<>();
 
@@ -107,10 +106,11 @@ public class EventBus {
                 logger.warn("Starting to shutdown task in EventBus");
 
                 try {
-                    asyncExecutor.shutdown();
-                    asyncExecutor.awaitTermination(120, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                    executorService.shutdown();
+
+                    while (executorService.isTerminated() == false) {
+                        N.sleepUninterruptibly(100);
+                    }
                 } finally {
                     logger.warn("Completed to shutdown task in EventBus");
                 }
@@ -123,14 +123,14 @@ public class EventBus {
     }
 
     public EventBus(final String identifier) {
-        this(identifier, asyncExecutor);
+        this(identifier, executorService);
     }
 
     public EventBus(final String identifier, final Executor executor) {
         this.identifier = identifier;
-        this.executor = executor == null ? asyncExecutor : executor;
+        this.executor = executor == null ? executorService : executor;
 
-        if (executor != asyncExecutor && executor instanceof ExecutorService) {
+        if (executor != executorService && executor instanceof ExecutorService) {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
@@ -138,9 +138,10 @@ public class EventBus {
 
                     try {
                         ((ExecutorService) executor).shutdown();
-                        ((ExecutorService) executor).awaitTermination(120, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+
+                        while (((ExecutorService) executor).isTerminated() == false) {
+                            N.sleepUninterruptibly(100);
+                        }
                     } finally {
                         logger.warn("Completed to shutdown task in EventBus");
                     }

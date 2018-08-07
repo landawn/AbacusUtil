@@ -50,9 +50,10 @@ public class CompletableFuture<T> implements Future<T> {
 
                 try {
                     commonPool.shutdown();
-                    commonPool.awaitTermination(120, TimeUnit.SECONDS);
-                } catch (Exception e) {
-                    logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+
+                    while (commonPool.isTerminated() == false) {
+                        N.sleepUninterruptibly(100);
+                    }
                 } finally {
                     logger.warn("Completed to shutdown task in CompletableFuture");
                 }
