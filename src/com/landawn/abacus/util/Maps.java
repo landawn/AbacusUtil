@@ -2392,6 +2392,44 @@ public final class Maps {
         }
     }
 
+    public static Map<String, Object> unflatten(Map<String, Object> map) {
+        return unflatten(map, Suppliers.<String, Object> ofMap());
+    }
+
+    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, Supplier<M> mapSupplier) {
+        return unflatten(map, ".", mapSupplier);
+    }
+
+    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, String delimiter, Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getKey().indexOf(delimiter) >= 0) {
+                    final String[] keys = StringUtil.splitPreserveAllTokens(entry.getKey(), delimiter);
+                    Map<String, Object> lastMap = result;
+
+                    for (int i = 0, to = keys.length - 1; i < to; i++) {
+                        Map<String, Object> tmp = (Map<String, Object>) lastMap.get(keys[i]);
+
+                        if (tmp == null) {
+                            tmp = mapSupplier.get();
+                            lastMap.put(keys[i], tmp);
+                        }
+
+                        lastMap = tmp;
+                    }
+
+                    lastMap.put(keys[keys.length - 1], entry.getValue());
+                } else {
+                    result.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        return result;
+    }
+
     @SuppressWarnings("rawtypes")
     static Supplier mapType2Supplier(final Class<? extends Map> mapType) {
         if (HashMap.class.equals(mapType)) {

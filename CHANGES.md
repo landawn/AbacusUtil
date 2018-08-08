@@ -1,6 +1,8 @@
 ### 1.2.21
 
-* Add `Maps.flatten`.
+* Add `Maps.flatten/unflatten`.
+
+* Refactoring `Collectors.minMax`.
 
 * Improvements and bug fix.
 

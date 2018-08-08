@@ -2275,9 +2275,17 @@ public class Collectors {
      *        element and produces the final result.
      * @return a {@code Collector} which finds minimal and maximal elements.
      */
-    public static <T, R> Collector<T, ?, R> minMax(final Comparator<? super T> comparator,
-            final BiFunction<? super Optional<T>, ? super Optional<T>, ? extends R> finisher) {
-        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher);
+    public static <T, R> Collector<T, ?, Optional<R>> minMax(final Comparator<? super T> comparator,
+            final BiFunction<? super T, ? super T, ? extends R> finisher) {
+
+        final BiFunction<Optional<T>, Optional<T>, Optional<R>> finisher2 = new BiFunction<Optional<T>, Optional<T>, Optional<R>>() {
+            @Override
+            public Optional<R> apply(Optional<T> min, Optional<T> max) {
+                return min.isPresent() ? Optional.of((R) finisher.apply(min.get(), max.get())) : Optional.<R> empty();
+            }
+        };
+
+        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher2);
     }
 
     /**
