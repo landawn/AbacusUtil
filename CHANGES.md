@@ -1,4 +1,4 @@
-### 1.2.21
+### 1.3
 
 * Rename `CompletableFuture` to `ContinuableFuture`.
 
