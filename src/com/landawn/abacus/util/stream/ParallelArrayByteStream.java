@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.ByteSummaryStatistics;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -235,7 +235,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
@@ -340,7 +340,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
@@ -408,7 +408,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         Byte result = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 if (result == null) {
                     result = future.get();
                 } else {
@@ -429,7 +429,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
@@ -510,7 +510,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         Byte result = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 final Byte tmp = future.get();
 
                 if (tmp == null) {
@@ -535,7 +535,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<R>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<R>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
@@ -603,7 +603,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         R container = (R) NONE;
 
         try {
-            for (CompletableFuture<R> future : futureList) {
+            for (ContinuableFuture<R> future : futureList) {
                 if (container == NONE) {
                     container = future.get();
                 } else {
@@ -628,7 +628,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(threadNum);
         final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < threadNum; i++) {
@@ -648,7 +648,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         Byte candidate = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 final Byte tmp = future.get();
 
                 if (tmp == null) {
@@ -675,7 +675,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(threadNum);
         final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < threadNum; i++) {
@@ -694,7 +694,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         Byte candidate = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 final Byte tmp = future.get();
 
                 if (tmp == null) {
@@ -719,7 +719,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Long>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Long>> futureList = new ArrayList<>(threadNum);
         final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < threadNum; i++) {
@@ -739,7 +739,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         long result = 0;
 
         try {
-            for (CompletableFuture<Long> future : futureList) {
+            for (ContinuableFuture<Long> future : futureList) {
                 final Long tmp = future.get();
 
                 if (tmp == null) {
@@ -764,7 +764,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<ByteSummaryStatistics>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<ByteSummaryStatistics>> futureList = new ArrayList<>(threadNum);
         final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < threadNum; i++) {
@@ -789,7 +789,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         ByteSummaryStatistics result = null;
 
         try {
-            for (CompletableFuture<ByteSummaryStatistics> future : futureList) {
+            for (ContinuableFuture<ByteSummaryStatistics> future : futureList) {
                 final ByteSummaryStatistics tmp = future.get();
 
                 if (tmp == null) {
@@ -814,7 +814,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
@@ -887,7 +887,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
@@ -960,7 +960,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
@@ -1033,7 +1033,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
 
@@ -1121,7 +1121,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
 
@@ -1209,7 +1209,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Object> resultHolder = Holder.of(NONE);
 

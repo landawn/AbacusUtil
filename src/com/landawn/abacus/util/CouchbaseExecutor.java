@@ -1109,7 +1109,7 @@ public final class CouchbaseExecutor implements Closeable {
         return resultSet;
     }
 
-    public CompletableFuture<JsonDocument> asyncGet(final String id) {
+    public ContinuableFuture<JsonDocument> asyncGet(final String id) {
         return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
             public JsonDocument call() throws Exception {
@@ -1118,7 +1118,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<JsonDocument> asyncGet(final String id, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<JsonDocument> asyncGet(final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
             public JsonDocument call() throws Exception {
@@ -1127,7 +1127,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final String id) {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final String id) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1136,7 +1136,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1145,7 +1145,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Optional<JsonDocument>> asyncGett(final String id) {
+    public ContinuableFuture<Optional<JsonDocument>> asyncGett(final String id) {
         return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
             @Override
             public Optional<JsonDocument> call() throws Exception {
@@ -1154,7 +1154,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Optional<JsonDocument>> asyncGett(final String id, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<Optional<JsonDocument>> asyncGett(final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
             @Override
             public Optional<JsonDocument> call() throws Exception {
@@ -1163,7 +1163,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id) {
+    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1172,7 +1172,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1189,7 +1189,7 @@ public final class CouchbaseExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final CompletableFuture<Boolean> asyncExists(final String query, final Object... parameters) {
+    public final ContinuableFuture<Boolean> asyncExists(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -1199,7 +1199,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Long> asyncCount(final String query, final Object... parameters) {
+    public final ContinuableFuture<Long> asyncCount(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -1209,7 +1209,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
             public OptionalBoolean call() throws Exception {
@@ -1219,7 +1219,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalChar>() {
             @Override
             public OptionalChar call() throws Exception {
@@ -1229,7 +1229,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalByte>() {
             @Override
             public OptionalByte call() throws Exception {
@@ -1239,7 +1239,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalShort>() {
             @Override
             public OptionalShort call() throws Exception {
@@ -1249,7 +1249,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalInt>() {
             @Override
             public OptionalInt call() throws Exception {
@@ -1259,7 +1259,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalLong>() {
             @Override
             public OptionalLong call() throws Exception {
@@ -1269,7 +1269,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalFloat>() {
             @Override
             public OptionalFloat call() throws Exception {
@@ -1279,7 +1279,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
+    public final ContinuableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalDouble>() {
             @Override
             public OptionalDouble call() throws Exception {
@@ -1289,7 +1289,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
+    public final ContinuableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override
             public Nullable<String> call() throws Exception {
@@ -1299,7 +1299,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Nullable<Date>> asyncQueryForDate(final String query, final Object... parameters) {
+    public final ContinuableFuture<Nullable<Date>> asyncQueryForDate(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<Date>>() {
             @Override
             public Nullable<Date> call() throws Exception {
@@ -1309,7 +1309,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T extends Date> CompletableFuture<Nullable<T>> asyncQueryForDate(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T extends Date> ContinuableFuture<Nullable<T>> asyncQueryForDate(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
             public Nullable<T> call() throws Exception {
@@ -1319,7 +1319,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
             public Nullable<T> call() throws Exception {
@@ -1329,7 +1329,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1339,7 +1339,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1349,7 +1349,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<DataSet> asyncQuery(final String query, final Object... parameters) {
+    public final ContinuableFuture<DataSet> asyncQuery(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1359,7 +1359,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<DataSet> asyncQuery(final Class<?> targetClass, final String query, final Object... parameters) {
+    public final ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1368,7 +1368,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<DataSet> asyncQuery(final Query query) {
+    public ContinuableFuture<DataSet> asyncQuery(final Query query) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1377,7 +1377,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query) {
+    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1386,7 +1386,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<DataSet> asyncQuery(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<DataSet> asyncQuery(final Query query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1396,7 +1396,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     }
 
-    public CompletableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1406,7 +1406,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Stream<JsonObject>> asyncStream(final String query, final Object... parameters) {
+    public final ContinuableFuture<Stream<JsonObject>> asyncStream(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Stream<JsonObject>>() {
             @Override
             public Stream<JsonObject> call() throws Exception {
@@ -1416,7 +1416,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1425,7 +1425,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Stream<JsonObject>> asyncStream(final Query query) {
+    public ContinuableFuture<Stream<JsonObject>> asyncStream(final Query query) {
         return asyncExecutor.execute(new Callable<Stream<JsonObject>>() {
             @Override
             public Stream<JsonObject> call() throws Exception {
@@ -1434,7 +1434,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1443,7 +1443,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Stream<JsonObject>> asyncStream(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<Stream<JsonObject>> asyncStream(final Query query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Stream<JsonObject>>() {
             @Override
             public Stream<JsonObject> call() throws Exception {
@@ -1453,7 +1453,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     }
 
-    public <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1462,7 +1462,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncInsert(final T document) {
+    public <T> ContinuableFuture<T> asyncInsert(final T document) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1471,7 +1471,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncInsert(final T document, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncInsert(final T document, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1480,7 +1480,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncUpsert(final T document) {
+    public <T> ContinuableFuture<T> asyncUpsert(final T document) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1489,7 +1489,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncUpsert(final T document, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncUpsert(final T document, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1498,7 +1498,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncReplace(final T document) {
+    public <T> ContinuableFuture<T> asyncReplace(final T document) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1507,7 +1507,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncReplace(final T document, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncReplace(final T document, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1516,7 +1516,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<JsonDocument> asyncRemove(final String id) {
+    public ContinuableFuture<JsonDocument> asyncRemove(final String id) {
         return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
             public JsonDocument call() throws Exception {
@@ -1525,7 +1525,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<JsonDocument> asyncRemove(final String id, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<JsonDocument> asyncRemove(final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
             public JsonDocument call() throws Exception {
@@ -1534,7 +1534,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncRemove(final Class<T> targetClass, final String id) {
+    public <T> ContinuableFuture<T> asyncRemove(final Class<T> targetClass, final String id) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1543,7 +1543,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncRemove(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncRemove(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1552,7 +1552,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncRemove(final T document) {
+    public <T> ContinuableFuture<T> asyncRemove(final T document) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1561,7 +1561,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncRemove(final T document, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<T> asyncRemove(final T document, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1570,7 +1570,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<QueryResult> asyncExecute(final String query) {
+    public ContinuableFuture<QueryResult> asyncExecute(final String query) {
         return asyncExecutor.execute(new Callable<QueryResult>() {
             @Override
             public QueryResult call() throws Exception {
@@ -1580,7 +1580,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<QueryResult> asyncExecute(final String query, final Object... parameters) {
+    public final ContinuableFuture<QueryResult> asyncExecute(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<QueryResult>() {
             @Override
             public QueryResult call() throws Exception {
@@ -1589,7 +1589,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<QueryResult> asyncExecute(final Query query) {
+    public ContinuableFuture<QueryResult> asyncExecute(final Query query) {
         return asyncExecutor.execute(new Callable<QueryResult>() {
             @Override
             public QueryResult call() throws Exception {
@@ -1598,7 +1598,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<QueryResult> asyncExecute(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<QueryResult> asyncExecute(final Query query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<QueryResult>() {
             @Override
             public QueryResult call() throws Exception {

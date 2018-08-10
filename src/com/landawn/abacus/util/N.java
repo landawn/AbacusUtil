@@ -26810,41 +26810,41 @@ public final class N {
         }
     }
 
-    public static CompletableFuture<Void> asyncExecute(final Runnable command) {
+    public static ContinuableFuture<Void> asyncExecute(final Runnable command) {
         return asyncExecutor.execute(command);
     }
 
-    public static CompletableFuture<Void> asyncExecute(final Runnable command, final long delay) {
+    public static ContinuableFuture<Void> asyncExecute(final Runnable command, final long delay) {
         return asyncExecutor.execute(command, delay);
     }
 
     @SafeVarargs
-    public static List<CompletableFuture<Void>> asyncExecute(final Runnable... commands) {
+    public static List<ContinuableFuture<Void>> asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static List<CompletableFuture<Void>> asyncExecute(final List<? extends Runnable> commands) {
+    public static List<ContinuableFuture<Void>> asyncExecute(final List<? extends Runnable> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> command) {
+    public static <T> ContinuableFuture<T> asyncExecute(final Callable<T> command) {
         return asyncExecutor.execute(command);
     }
 
-    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> command, final long delay) {
+    public static <T> ContinuableFuture<T> asyncExecute(final Callable<T> command, final long delay) {
         return asyncExecutor.execute(command, delay);
     }
 
     @SafeVarargs
-    public static <T> List<CompletableFuture<T>> asyncExecute(final Callable<T>... commands) {
+    public static <T> List<ContinuableFuture<T>> asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> List<CompletableFuture<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
+    public static <T> List<ContinuableFuture<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static CompletableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
+    public static ContinuableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -26855,7 +26855,7 @@ public final class N {
         });
     }
 
-    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
+    public static <T> ContinuableFuture<T> asyncExecute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
             final BiPredicate<? super T, ? super Exception> retryCondition) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override

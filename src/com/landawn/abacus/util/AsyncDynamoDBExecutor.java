@@ -58,7 +58,7 @@ public final class AsyncDynamoDBExecutor {
         return dbExecutor;
     }
 
-    public CompletableFuture<Map<String, Object>> getItem(final String tableName, final Map<String, AttributeValue> key) {
+    public ContinuableFuture<Map<String, Object>> getItem(final String tableName, final Map<String, AttributeValue> key) {
         return asyncExecutor.execute(new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() throws Exception {
@@ -67,7 +67,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Map<String, Object>> getItem(final String tableName, final Map<String, AttributeValue> key, final Boolean consistentRead) {
+    public ContinuableFuture<Map<String, Object>> getItem(final String tableName, final Map<String, AttributeValue> key, final Boolean consistentRead) {
         return asyncExecutor.execute(new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() throws Exception {
@@ -76,7 +76,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Map<String, Object>> getItem(final GetItemRequest getItemRequest) {
+    public ContinuableFuture<Map<String, Object>> getItem(final GetItemRequest getItemRequest) {
         return asyncExecutor.execute(new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() throws Exception {
@@ -85,7 +85,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> getItem(final Class<T> targetClass, final String tableName, final Map<String, AttributeValue> key) {
+    public <T> ContinuableFuture<T> getItem(final Class<T> targetClass, final String tableName, final Map<String, AttributeValue> key) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -94,7 +94,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> getItem(final Class<T> targetClass, final String tableName, final Map<String, AttributeValue> key,
+    public <T> ContinuableFuture<T> getItem(final Class<T> targetClass, final String tableName, final Map<String, AttributeValue> key,
             final Boolean consistentRead) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -104,7 +104,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> getItem(final Class<T> targetClass, final GetItemRequest getItemRequest) {
+    public <T> ContinuableFuture<T> getItem(final Class<T> targetClass, final GetItemRequest getItemRequest) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -113,7 +113,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final Map<String, KeysAndAttributes> requestItems) {
+    public ContinuableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final Map<String, KeysAndAttributes> requestItems) {
         return asyncExecutor.execute(new Callable<Map<String, List<Map<String, Object>>>>() {
             @Override
             public Map<String, List<Map<String, Object>>> call() throws Exception {
@@ -122,7 +122,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final Map<String, KeysAndAttributes> requestItems,
+    public ContinuableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final Map<String, KeysAndAttributes> requestItems,
             final String returnConsumedCapacity) {
         return asyncExecutor.execute(new Callable<Map<String, List<Map<String, Object>>>>() {
             @Override
@@ -132,7 +132,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final BatchGetItemRequest batchGetItemRequest) {
+    public ContinuableFuture<Map<String, List<Map<String, Object>>>> batchGetItem(final BatchGetItemRequest batchGetItemRequest) {
         return asyncExecutor.execute(new Callable<Map<String, List<Map<String, Object>>>>() {
             @Override
             public Map<String, List<Map<String, Object>>> call() throws Exception {
@@ -141,7 +141,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final Map<String, KeysAndAttributes> requestItems) {
+    public <T> ContinuableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final Map<String, KeysAndAttributes> requestItems) {
         return asyncExecutor.execute(new Callable<Map<String, List<T>>>() {
             @Override
             public Map<String, List<T>> call() throws Exception {
@@ -150,7 +150,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final Map<String, KeysAndAttributes> requestItems,
+    public <T> ContinuableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final Map<String, KeysAndAttributes> requestItems,
             final String returnConsumedCapacity) {
         return asyncExecutor.execute(new Callable<Map<String, List<T>>>() {
             @Override
@@ -160,7 +160,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final BatchGetItemRequest batchGetItemRequest) {
+    public <T> ContinuableFuture<Map<String, List<T>>> batchGetItem(final Class<T> targetClass, final BatchGetItemRequest batchGetItemRequest) {
         return asyncExecutor.execute(new Callable<Map<String, List<T>>>() {
             @Override
             public Map<String, List<T>> call() throws Exception {
@@ -169,7 +169,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<PutItemResult> putItem(final String tableName, final Map<String, AttributeValue> item) {
+    public ContinuableFuture<PutItemResult> putItem(final String tableName, final Map<String, AttributeValue> item) {
         return asyncExecutor.execute(new Callable<PutItemResult>() {
             @Override
             public PutItemResult call() throws Exception {
@@ -178,7 +178,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<PutItemResult> putItem(final String tableName, final Map<String, AttributeValue> item, final String returnValues) {
+    public ContinuableFuture<PutItemResult> putItem(final String tableName, final Map<String, AttributeValue> item, final String returnValues) {
         return asyncExecutor.execute(new Callable<PutItemResult>() {
             @Override
             public PutItemResult call() throws Exception {
@@ -187,7 +187,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<PutItemResult> putItem(final PutItemRequest putItemRequest) {
+    public ContinuableFuture<PutItemResult> putItem(final PutItemRequest putItemRequest) {
         return asyncExecutor.execute(new Callable<PutItemResult>() {
             @Override
             public PutItemResult call() throws Exception {
@@ -198,7 +198,7 @@ public final class AsyncDynamoDBExecutor {
 
     // There is no too much benefit to add method for "Object entity"
     // And it may cause error because the "Object" is ambiguous to any type. 
-    CompletableFuture<PutItemResult> putItem(final String tableName, final Object entity) {
+    ContinuableFuture<PutItemResult> putItem(final String tableName, final Object entity) {
         return asyncExecutor.execute(new Callable<PutItemResult>() {
             @Override
             public PutItemResult call() throws Exception {
@@ -209,7 +209,7 @@ public final class AsyncDynamoDBExecutor {
 
     // There is no too much benefit to add method for "Object entity"
     // And it may cause error because the "Object" is ambiguous to any type. 
-    CompletableFuture<PutItemResult> putItem(final String tableName, final Object entity, final String returnValues) {
+    ContinuableFuture<PutItemResult> putItem(final String tableName, final Object entity, final String returnValues) {
         return asyncExecutor.execute(new Callable<PutItemResult>() {
             @Override
             public PutItemResult call() throws Exception {
@@ -218,7 +218,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<BatchWriteItemResult> batchWriteItem(final Map<String, List<WriteRequest>> requestItems) {
+    public ContinuableFuture<BatchWriteItemResult> batchWriteItem(final Map<String, List<WriteRequest>> requestItems) {
         return asyncExecutor.execute(new Callable<BatchWriteItemResult>() {
             @Override
             public BatchWriteItemResult call() throws Exception {
@@ -227,7 +227,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<BatchWriteItemResult> batchWriteItem(final BatchWriteItemRequest batchWriteItemRequest) {
+    public ContinuableFuture<BatchWriteItemResult> batchWriteItem(final BatchWriteItemRequest batchWriteItemRequest) {
         return asyncExecutor.execute(new Callable<BatchWriteItemResult>() {
             @Override
             public BatchWriteItemResult call() throws Exception {
@@ -236,7 +236,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateItemResult> updateItem(final String tableName, final Map<String, AttributeValue> key,
+    public ContinuableFuture<UpdateItemResult> updateItem(final String tableName, final Map<String, AttributeValue> key,
             final Map<String, AttributeValueUpdate> attributeUpdates) {
         return asyncExecutor.execute(new Callable<UpdateItemResult>() {
             @Override
@@ -246,7 +246,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateItemResult> updateItem(final String tableName, final Map<String, AttributeValue> key,
+    public ContinuableFuture<UpdateItemResult> updateItem(final String tableName, final Map<String, AttributeValue> key,
             final Map<String, AttributeValueUpdate> attributeUpdates, final String returnValues) {
         return asyncExecutor.execute(new Callable<UpdateItemResult>() {
             @Override
@@ -256,7 +256,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateItemResult> updateItem(final UpdateItemRequest updateItemRequest) {
+    public ContinuableFuture<UpdateItemResult> updateItem(final UpdateItemRequest updateItemRequest) {
         return asyncExecutor.execute(new Callable<UpdateItemResult>() {
             @Override
             public UpdateItemResult call() throws Exception {
@@ -265,7 +265,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteItemResult> deleteItem(final String tableName, final Map<String, AttributeValue> key) {
+    public ContinuableFuture<DeleteItemResult> deleteItem(final String tableName, final Map<String, AttributeValue> key) {
         return asyncExecutor.execute(new Callable<DeleteItemResult>() {
             @Override
             public DeleteItemResult call() throws Exception {
@@ -274,7 +274,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteItemResult> deleteItem(final String tableName, final Map<String, AttributeValue> key, final String returnValues) {
+    public ContinuableFuture<DeleteItemResult> deleteItem(final String tableName, final Map<String, AttributeValue> key, final String returnValues) {
         return asyncExecutor.execute(new Callable<DeleteItemResult>() {
             @Override
             public DeleteItemResult call() throws Exception {
@@ -283,7 +283,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteItemResult> deleteItem(final DeleteItemRequest deleteItemRequest) {
+    public ContinuableFuture<DeleteItemResult> deleteItem(final DeleteItemRequest deleteItemRequest) {
         return asyncExecutor.execute(new Callable<DeleteItemResult>() {
             @Override
             public DeleteItemResult call() throws Exception {
@@ -292,7 +292,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<List<Map<String, Object>>> find(final QueryRequest queryRequest) {
+    public ContinuableFuture<List<Map<String, Object>>> find(final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<List<Map<String, Object>>>() {
             @Override
             public List<Map<String, Object>> call() throws Exception {
@@ -301,7 +301,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final QueryRequest queryRequest) {
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -310,7 +310,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<DataSet> query(final QueryRequest queryRequest) {
+    public ContinuableFuture<DataSet> query(final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -319,7 +319,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final QueryRequest queryRequest) {
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -328,7 +328,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Map<String, Object>>> stream(final QueryRequest queryRequest) {
+    public ContinuableFuture<Stream<Map<String, Object>>> stream(final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
             public Stream<Map<String, Object>> call() throws Exception {
@@ -337,7 +337,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final QueryRequest queryRequest) {
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -346,7 +346,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet) {
+    public ContinuableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet) {
         return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
             public Stream<Map<String, Object>> call() throws Exception {
@@ -355,7 +355,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final Map<String, Condition> scanFilter) {
+    public ContinuableFuture<Stream<Map<String, Object>>> scan(final String tableName, final Map<String, Condition> scanFilter) {
         return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
             public Stream<Map<String, Object>> call() throws Exception {
@@ -364,7 +364,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet,
+    public ContinuableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet,
             final Map<String, Condition> scanFilter) {
         return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
@@ -374,7 +374,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Map<String, Object>>> scan(final ScanRequest scanRequest) {
+    public ContinuableFuture<Stream<Map<String, Object>>> scan(final ScanRequest scanRequest) {
         return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
             public Stream<Map<String, Object>> call() throws Exception {
@@ -383,7 +383,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -392,7 +392,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -401,7 +401,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet,
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet,
             final Map<String, Condition> scanFilter) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -411,7 +411,7 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {

@@ -4967,7 +4967,7 @@ public final class SQLExecutor implements Closeable {
             this.asyncExecutor = asyncExecutor;
         }
 
-        public CompletableFuture<Boolean> exists(final Object id) {
+        public ContinuableFuture<Boolean> exists(final Object id) {
             return asyncExecutor.execute(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -4976,7 +4976,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Boolean> exists(final Condition whereCause) {
+        public ContinuableFuture<Boolean> exists(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -4985,7 +4985,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Boolean> exists(final Connection conn, final Object id) {
+        public ContinuableFuture<Boolean> exists(final Connection conn, final Object id) {
             return asyncExecutor.execute(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -4994,7 +4994,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Boolean> exists(final Connection conn, final Condition whereCause) {
+        public ContinuableFuture<Boolean> exists(final Connection conn, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -5003,7 +5003,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> count(final Condition whereCause) {
+        public ContinuableFuture<Integer> count(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5012,7 +5012,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> count(final Connection conn, final Condition whereCause) {
+        public ContinuableFuture<Integer> count(final Connection conn, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5021,7 +5021,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> get(final Object id) {
+        public ContinuableFuture<T> get(final Object id) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5031,7 +5031,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SafeVarargs
-        public final CompletableFuture<T> get(final Object id, final String... selectPropNames) {
+        public final ContinuableFuture<T> get(final Object id, final String... selectPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5040,7 +5040,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> get(final Object id, final Collection<String> selectPropNames) {
+        public ContinuableFuture<T> get(final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5049,7 +5049,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> get(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+        public ContinuableFuture<T> get(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5058,7 +5058,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> gett(final Object id) {
+        public ContinuableFuture<Optional<T>> gett(final Object id) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5068,7 +5068,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SafeVarargs
-        public final CompletableFuture<Optional<T>> gett(final Object id, final String... selectPropNames) {
+        public final ContinuableFuture<Optional<T>> gett(final Object id, final String... selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5077,7 +5077,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> gett(final Object id, final Collection<String> selectPropNames) {
+        public ContinuableFuture<Optional<T>> gett(final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5086,7 +5086,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> gett(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+        public ContinuableFuture<Optional<T>> gett(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5095,7 +5095,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> batchGet(final List<?> ids) {
+        public ContinuableFuture<List<T>> batchGet(final List<?> ids) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5104,7 +5104,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> batchGet(final List<?> ids, final String... selectPropNames) {
+        public ContinuableFuture<List<T>> batchGet(final List<?> ids, final String... selectPropNames) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5113,7 +5113,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
+        public ContinuableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5122,7 +5122,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+        public ContinuableFuture<List<T>> batchGet(final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5131,7 +5131,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
+        public ContinuableFuture<List<T>> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5140,7 +5140,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Condition whereCause) {
+        public ContinuableFuture<List<T>> find(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5149,7 +5149,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<List<T>> find(final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5158,7 +5158,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<List<T>> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5167,7 +5167,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5176,7 +5176,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
@@ -5186,7 +5186,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> findAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<List<T>> findAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5195,7 +5195,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> findAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<List<T>> findAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
@@ -5204,7 +5204,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Condition whereCause) {
+        public ContinuableFuture<DataSet> query(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5213,7 +5213,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<DataSet> query(final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5222,7 +5222,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<DataSet> query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5231,7 +5231,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5240,7 +5240,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
@@ -5250,7 +5250,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> queryAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<DataSet> queryAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5259,7 +5259,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> queryAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<DataSet> queryAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
@@ -5268,7 +5268,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalBoolean> queryForBoolean(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalBoolean> queryForBoolean(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalBoolean>() {
                 @Override
                 public OptionalBoolean call() throws Exception {
@@ -5277,7 +5277,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalByte> queryForByte(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalByte> queryForByte(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalByte>() {
                 @Override
                 public OptionalByte call() throws Exception {
@@ -5286,7 +5286,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalShort> queryForShort(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalShort> queryForShort(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalShort>() {
                 @Override
                 public OptionalShort call() throws Exception {
@@ -5295,7 +5295,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalInt> queryForInt(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalInt> queryForInt(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalInt>() {
                 @Override
                 public OptionalInt call() throws Exception {
@@ -5304,7 +5304,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalLong> queryForLong(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalLong> queryForLong(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalLong>() {
                 @Override
                 public OptionalLong call() throws Exception {
@@ -5313,7 +5313,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalFloat> queryForFloat(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalFloat> queryForFloat(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalFloat>() {
                 @Override
                 public OptionalFloat call() throws Exception {
@@ -5322,7 +5322,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<OptionalDouble> queryForDouble(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalDouble> queryForDouble(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalDouble>() {
                 @Override
                 public OptionalDouble call() throws Exception {
@@ -5331,7 +5331,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Nullable<String>> queryForString(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<String>> queryForString(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<String>>() {
                 @Override
                 public Nullable<String> call() throws Exception {
@@ -5340,7 +5340,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Nullable<Date>> queryForDate(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<Date>> queryForDate(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<Date>>() {
                 @Override
                 public Nullable<Date> call() throws Exception {
@@ -5350,7 +5350,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SuppressWarnings("hiding")
-        public <T extends Date> CompletableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
+        public <T extends Date> ContinuableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<T>>() {
                 @Override
                 public Nullable<T> call() throws Exception {
@@ -5359,7 +5359,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
+        public <E> ContinuableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
                 public Nullable<E> call() throws Exception {
@@ -5368,7 +5368,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause) {
+        public <E> ContinuableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
                 public Nullable<E> call() throws Exception {
@@ -5377,7 +5377,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
+        public <E> ContinuableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
@@ -5387,7 +5387,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
+        public <E> ContinuableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
@@ -5397,7 +5397,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
+        public <E> ContinuableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
@@ -5407,7 +5407,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Condition whereCause) {
+        public ContinuableFuture<Optional<T>> queryForEntity(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5416,7 +5416,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5425,7 +5425,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
@@ -5435,7 +5435,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
@@ -5444,7 +5444,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
@@ -5454,7 +5454,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<List<E>> queryForList(final String propName, final Condition whereCause) {
+        public <E> ContinuableFuture<List<E>> queryForList(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<E>>() {
                 @Override
                 public List<E> call() throws Exception {
@@ -5463,7 +5463,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<List<E>> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <E> ContinuableFuture<List<E>> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<E>>() {
                 @Override
                 public List<E> call() throws Exception {
@@ -5472,7 +5472,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause) {
+        public <E> ContinuableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<E>>() {
                 @Override
                 public List<E> call() throws Exception {
@@ -5481,7 +5481,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause,
+        public <E> ContinuableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<E>>() {
                 @Override
@@ -5491,7 +5491,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Condition whereCause) {
+        public ContinuableFuture<Try<Stream<T>>> stream(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -5500,7 +5500,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -5509,7 +5509,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -5518,7 +5518,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+        ContinuableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -5527,7 +5527,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        ContinuableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
@@ -5537,7 +5537,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ContinuableFuture<Try<Stream<T>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
@@ -5546,7 +5546,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<Try<Stream<T>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
@@ -5556,7 +5556,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Object entity) {
+        public <ID> ContinuableFuture<ID> add(final Object entity) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5565,7 +5565,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Object entity, final Collection<String> insertPropNames) {
+        public <ID> ContinuableFuture<ID> add(final Object entity, final Collection<String> insertPropNames) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5574,7 +5574,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Map<String, Object> props) {
+        public <ID> ContinuableFuture<ID> add(final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5583,7 +5583,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Connection conn, final Object entity) {
+        public <ID> ContinuableFuture<ID> add(final Connection conn, final Object entity) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5592,7 +5592,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Connection conn, final Object entity, final Collection<String> insertPropNames) {
+        public <ID> ContinuableFuture<ID> add(final Connection conn, final Object entity, final Collection<String> insertPropNames) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5601,7 +5601,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<ID> add(final Connection conn, final Map<String, Object> props) {
+        public <ID> ContinuableFuture<ID> add(final Connection conn, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
@@ -5611,7 +5611,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public <ID> CompletableFuture<List<ID>> addAll(final Collection<?> entities) {
+        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5621,7 +5621,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public <ID> CompletableFuture<List<ID>> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5631,7 +5631,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public <ID> CompletableFuture<List<ID>> addAll(final Connection conn, final Collection<?> entities) {
+        public <ID> ContinuableFuture<List<ID>> addAll(final Connection conn, final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5640,7 +5640,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5649,7 +5649,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5658,7 +5658,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5667,7 +5667,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5676,7 +5676,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> CompletableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5685,7 +5685,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> addOrUpdate(final T entity) {
+        public ContinuableFuture<T> addOrUpdate(final T entity) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5694,7 +5694,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> addOrUpdate(final T entity, final String... queryPropNames) {
+        public ContinuableFuture<T> addOrUpdate(final T entity, final String... queryPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5703,7 +5703,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> addOrUpdate(final T entity, final Collection<String> queryPropNames) {
+        public ContinuableFuture<T> addOrUpdate(final T entity, final Collection<String> queryPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
@@ -5712,7 +5712,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Object entity) {
+        public ContinuableFuture<Integer> update(final Object entity) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5721,7 +5721,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Object entity, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> update(final Object entity, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5730,7 +5730,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Object id, final Map<String, Object> props) {
+        public ContinuableFuture<Integer> update(final Object id, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5739,7 +5739,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Map<String, Object> props, final Condition whereCause) {
+        public ContinuableFuture<Integer> update(final Map<String, Object> props, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5748,7 +5748,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Object entity) {
+        public ContinuableFuture<Integer> update(final Connection conn, final Object entity) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5757,7 +5757,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Object entity, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> update(final Connection conn, final Object entity, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5766,7 +5766,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Object id, final Map<String, Object> props) {
+        public ContinuableFuture<Integer> update(final Connection conn, final Object id, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5775,7 +5775,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
+        public ContinuableFuture<Integer> update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5785,7 +5785,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Collection<?> entities) {
+        public ContinuableFuture<Integer> updateAll(final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5795,7 +5795,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5805,7 +5805,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+        public ContinuableFuture<Integer> updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5815,7 +5815,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames,
+        public ContinuableFuture<Integer> updateAll(final Collection<?> entities, final Collection<String> updatePropNames,
                 final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -5826,7 +5826,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Connection conn, final Collection<?> entities) {
+        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5836,7 +5836,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> updateAll(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5845,7 +5845,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5854,7 +5854,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5863,7 +5863,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5872,7 +5872,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5881,7 +5881,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5890,7 +5890,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize,
+        public ContinuableFuture<Integer> batchUpdate(final Collection<?> entities, final Collection<String> updatePropNames, final int batchSize,
                 final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -5900,7 +5900,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5909,7 +5909,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5918,7 +5918,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5927,7 +5927,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames,
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities, final Collection<String> updatePropNames,
                 final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -5937,7 +5937,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> delete(final Object idOrEntity) {
+        public ContinuableFuture<Integer> delete(final Object idOrEntity) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5946,7 +5946,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> delete(final Condition whereCause) {
+        public ContinuableFuture<Integer> delete(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5955,7 +5955,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> delete(final Connection conn, final Object idOrEntity) {
+        public ContinuableFuture<Integer> delete(final Connection conn, final Object idOrEntity) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5964,7 +5964,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> delete(final Connection conn, final Condition whereCause) {
+        public ContinuableFuture<Integer> delete(final Connection conn, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5974,7 +5974,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> deleteAll(final Collection<?> idsOrEntities) {
+        public ContinuableFuture<Integer> deleteAll(final Collection<?> idsOrEntities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5984,7 +5984,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
+        public ContinuableFuture<Integer> deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -5994,7 +5994,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @Deprecated
-        public CompletableFuture<Integer> deleteAll(final Connection conn, final Collection<?> idsOrEntities) {
+        public ContinuableFuture<Integer> deleteAll(final Connection conn, final Collection<?> idsOrEntities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6003,7 +6003,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities) {
+        public ContinuableFuture<Integer> batchDelete(final Collection<?> idsOrEntities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6012,7 +6012,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize) {
+        public ContinuableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6021,7 +6021,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
+        public ContinuableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6030,7 +6030,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities) {
+        public ContinuableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6039,7 +6039,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize) {
+        public ContinuableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {

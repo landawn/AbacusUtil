@@ -61,7 +61,7 @@ public final class AsyncHBaseExecutor {
         return hbaseExecutor;
     }
 
-    public CompletableFuture<Boolean> exists(final String tableName, final Get get) {
+    public ContinuableFuture<Boolean> exists(final String tableName, final Get get) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -70,7 +70,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<List<Boolean>> existsAll(final String tableName, final List<Get> gets) {
+    public ContinuableFuture<List<Boolean>> existsAll(final String tableName, final List<Get> gets) {
         return asyncExecutor.execute(new Callable<List<Boolean>>() {
             @Override
             public List<Boolean> call() throws Exception {
@@ -79,7 +79,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> exists(final String tableName, final AnyGet anyGet) {
+    public ContinuableFuture<Boolean> exists(final String tableName, final AnyGet anyGet) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -88,7 +88,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<List<Boolean>> existsAll(final String tableName, final Collection<AnyGet> anyGets) {
+    public ContinuableFuture<List<Boolean>> existsAll(final String tableName, final Collection<AnyGet> anyGets) {
         return asyncExecutor.execute(new Callable<List<Boolean>>() {
             @Override
             public List<Boolean> call() throws Exception {
@@ -97,7 +97,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Result> get(final String tableName, final Get get) {
+    public ContinuableFuture<Result> get(final String tableName, final Get get) {
         return asyncExecutor.execute(new Callable<Result>() {
             @Override
             public Result call() throws Exception {
@@ -106,7 +106,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<List<Result>> get(final String tableName, final List<Get> gets) {
+    public ContinuableFuture<List<Result>> get(final String tableName, final List<Get> gets) {
         return asyncExecutor.execute(new Callable<List<Result>>() {
             @Override
             public List<Result> call() throws Exception {
@@ -115,7 +115,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Result> get(final String tableName, final AnyGet anyGet) {
+    public ContinuableFuture<Result> get(final String tableName, final AnyGet anyGet) {
         return asyncExecutor.execute(new Callable<Result>() {
             @Override
             public Result call() throws Exception {
@@ -124,7 +124,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<List<Result>> get(final String tableName, final Collection<AnyGet> anyGets) {
+    public ContinuableFuture<List<Result>> get(final String tableName, final Collection<AnyGet> anyGets) {
         return asyncExecutor.execute(new Callable<List<Result>>() {
             @Override
             public List<Result> call() throws Exception {
@@ -133,7 +133,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String tableName, final Get get) {
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String tableName, final Get get) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -142,7 +142,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> get(final Class<T> targetClass, final String tableName, final List<Get> gets) {
+    public <T> ContinuableFuture<List<T>> get(final Class<T> targetClass, final String tableName, final List<Get> gets) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -151,7 +151,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String tableName, final AnyGet anyGet) {
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String tableName, final AnyGet anyGet) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -160,7 +160,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> get(final Class<T> targetClass, final String tableName, final Collection<AnyGet> anyGets) {
+    public <T> ContinuableFuture<List<T>> get(final Class<T> targetClass, final String tableName, final Collection<AnyGet> anyGets) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -169,7 +169,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Result>> scan(final String tableName, final Scan scan) {
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final Scan scan) {
         return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
             public Stream<Result> call() throws Exception {
@@ -178,7 +178,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Result>> scan(final String tableName, final AnyScan anyScan) {
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final AnyScan anyScan) {
         return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
             public Stream<Result> call() throws Exception {
@@ -187,7 +187,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Result>> scan(final String tableName, final String family) {
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final String family) {
         return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
             public Stream<Result> call() throws Exception {
@@ -196,7 +196,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Result>> scan(final String tableName, final String family, final String qualifier) {
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final String family, final String qualifier) {
         return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
             public Stream<Result> call() throws Exception {
@@ -205,7 +205,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -214,7 +214,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -223,7 +223,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -232,7 +232,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -241,7 +241,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> put(final String tableName, final Put put) {
+    public ContinuableFuture<Void> put(final String tableName, final Put put) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -252,7 +252,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> put(final String tableName, final List<Put> puts) {
+    public ContinuableFuture<Void> put(final String tableName, final List<Put> puts) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -263,7 +263,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> put(final String tableName, final AnyPut anyPut) {
+    public ContinuableFuture<Void> put(final String tableName, final AnyPut anyPut) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -274,7 +274,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> put(final String tableName, final Collection<AnyPut> anyPuts) {
+    public ContinuableFuture<Void> put(final String tableName, final Collection<AnyPut> anyPuts) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -285,7 +285,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> delete(final String tableName, final Delete delete) {
+    public ContinuableFuture<Void> delete(final String tableName, final Delete delete) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -296,7 +296,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> delete(final String tableName, final List<Delete> deletes) {
+    public ContinuableFuture<Void> delete(final String tableName, final List<Delete> deletes) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -307,7 +307,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> delete(final String tableName, final AnyDelete anyDelete) {
+    public ContinuableFuture<Void> delete(final String tableName, final AnyDelete anyDelete) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -318,7 +318,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> delete(final String tableName, final Collection<AnyDelete> anyDeletes) {
+    public ContinuableFuture<Void> delete(final String tableName, final Collection<AnyDelete> anyDeletes) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -329,7 +329,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier, final Object value,
+    public ContinuableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier, final Object value,
             final Put put) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
@@ -339,7 +339,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier,
             final CompareFilter.CompareOp compareOp, final Object value, final Put put) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
@@ -349,7 +349,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
             final Object value, final Delete delete) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
@@ -359,7 +359,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
             final CompareFilter.CompareOp compareOp, final Object value, final Delete delete) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
@@ -369,7 +369,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> checkAndMutate(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Boolean> checkAndMutate(final String tableName, final Object rowKey, final String family, final String qualifier,
             final CompareFilter.CompareOp compareOp, final Object value, final RowMutations mutation) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
@@ -379,7 +379,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Void> mutateRow(final String tableName, final RowMutations rm) {
+    public ContinuableFuture<Void> mutateRow(final String tableName, final RowMutations rm) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -390,7 +390,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Result> append(final String tableName, final Append append) {
+    public ContinuableFuture<Result> append(final String tableName, final Append append) {
         return asyncExecutor.execute(new Callable<Result>() {
             @Override
             public Result call() throws Exception {
@@ -399,7 +399,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Result> increment(final String tableName, final Increment increment) {
+    public ContinuableFuture<Result> increment(final String tableName, final Increment increment) {
         return asyncExecutor.execute(new Callable<Result>() {
             @Override
             public Result call() throws Exception {
@@ -408,7 +408,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final String family, final String qualifier,
             final long amount) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
@@ -418,7 +418,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final String family, final String qualifier,
+    public ContinuableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final String family, final String qualifier,
             final long amount, final Durability durability) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
@@ -428,7 +428,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    CompletableFuture<CoprocessorRpcChannel> coprocessorService(final String tableName, final Object rowKey) {
+    ContinuableFuture<CoprocessorRpcChannel> coprocessorService(final String tableName, final Object rowKey) {
         return asyncExecutor.execute(new Callable<CoprocessorRpcChannel>() {
             @Override
             public CoprocessorRpcChannel call() throws Exception {
@@ -437,7 +437,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <T extends Service, R> CompletableFuture<Map<byte[], R>> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
+    <T extends Service, R> ContinuableFuture<Map<byte[], R>> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
             final Object endRowKey, final Batch.Call<T, R> callable) throws Exception {
         return asyncExecutor.execute(new Callable<Map<byte[], R>>() {
             @Override
@@ -447,7 +447,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <T extends Service, R> CompletableFuture<Void> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
+    <T extends Service, R> ContinuableFuture<Void> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
             final Object endRowKey, final Batch.Call<T, R> callable, final Batch.Callback<R> callback) throws Exception {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -459,7 +459,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <R extends Message> CompletableFuture<Map<byte[], R>> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
+    <R extends Message> ContinuableFuture<Map<byte[], R>> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
             final Message request, final Object startRowKey, final Object endRowKey, final R responsePrototype) throws Exception {
         return asyncExecutor.execute(new Callable<Map<byte[], R>>() {
             @Override
@@ -469,7 +469,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <R extends Message> CompletableFuture<Void> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
+    <R extends Message> ContinuableFuture<Void> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
             final Message request, final Object startRowKey, final Object endRowKey, final R responsePrototype, final Batch.Callback<R> callback)
             throws Exception {
         return asyncExecutor.execute(new Callable<Void>() {
@@ -482,7 +482,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    CompletableFuture<ResultScanner> getScanner(final String tableName, final Scan scan) {
+    ContinuableFuture<ResultScanner> getScanner(final String tableName, final Scan scan) {
         return asyncExecutor.execute(new Callable<ResultScanner>() {
             @Override
             public ResultScanner call() throws Exception {
@@ -491,7 +491,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    CompletableFuture<ResultScanner> getScanner(final String tableName, final String family) {
+    ContinuableFuture<ResultScanner> getScanner(final String tableName, final String family) {
         return asyncExecutor.execute(new Callable<ResultScanner>() {
             @Override
             public ResultScanner call() throws Exception {
@@ -500,7 +500,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    CompletableFuture<ResultScanner> getScanner(final String tableName, final String family, final String qualifier) {
+    ContinuableFuture<ResultScanner> getScanner(final String tableName, final String family, final String qualifier) {
         return asyncExecutor.execute(new Callable<ResultScanner>() {
             @Override
             public ResultScanner call() throws Exception {

@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatMatrix;
@@ -1539,7 +1539,7 @@ public abstract class FloatStream
 
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {

@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.ByteIterator;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
@@ -244,7 +244,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return;
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -322,7 +322,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.reduce(identity, op);
         }
 
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -360,7 +360,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         Byte result = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 if (result == null) {
                     result = future.get();
                 } else {
@@ -380,7 +380,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.reduce(accumulator);
         }
 
-        final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -427,7 +427,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         Byte result = null;
 
         try {
-            for (CompletableFuture<Byte> future : futureList) {
+            for (ContinuableFuture<Byte> future : futureList) {
                 final Byte tmp = future.get();
 
                 if (tmp == null) {
@@ -451,7 +451,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.collect(supplier, accumulator, combiner);
         }
 
-        final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -489,7 +489,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         R container = (R) NONE;
 
         try {
-            for (CompletableFuture<R> future : futureList) {
+            for (ContinuableFuture<R> future : futureList) {
                 if (container == NONE) {
                     container = future.get();
                 } else {
@@ -509,7 +509,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.anyMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
@@ -552,7 +552,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.allMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
@@ -595,7 +595,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.noneMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
@@ -638,7 +638,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.findFirst(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Long, Byte>> resultHolder = new Holder<>();
         final MutableLong index = MutableLong.of(0);
@@ -688,7 +688,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.findLast(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Long, Byte>> resultHolder = new Holder<>();
         final MutableLong index = MutableLong.of(0);
@@ -736,7 +736,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return super.findAny(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Object> resultHolder = Holder.of(NONE);
 

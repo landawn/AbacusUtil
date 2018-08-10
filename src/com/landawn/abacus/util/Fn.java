@@ -2739,6 +2739,17 @@ public final class Fn extends Comparators {
         return Collectors.combine(collector1, collector2, collector3);
     }
 
+    public static <T, A1, A2, R1, R2> Collector<T, Tuple2<A1, A2>, Tuple2<R1, R2>> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
+            final java.util.stream.Collector<? super T, A2, R2> collector2) {
+        return Collectors.combine(collector1, collector2);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(
+            final java.util.stream.Collector<? super T, A1, R1> collector1, final java.util.stream.Collector<? super T, A2, R2> collector2,
+            final java.util.stream.Collector<? super T, A3, R3> collector3) {
+        return Collectors.combine(collector1, collector2, collector3);
+    }
+
     public static class Factory {
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
             @Override

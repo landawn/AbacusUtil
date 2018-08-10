@@ -41,7 +41,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.Comparators;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
@@ -257,7 +257,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
         asyncExecutor = new AsyncExecutor(threadPoolExecutor) {
             @Override
-            public CompletableFuture<Void> execute(final Runnable command) {
+            public ContinuableFuture<Void> execute(final Runnable command) {
                 //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
                 //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
                 //    }
@@ -266,7 +266,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             }
 
             @Override
-            public <T> CompletableFuture<T> execute(final Callable<T> command) {
+            public <T> ContinuableFuture<T> execute(final Callable<T> command) {
                 //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
                 //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
                 //    }
@@ -978,13 +978,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
-    static void complete(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
+    static void complete(final List<ContinuableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
         if (eHolder.value() != null) {
             throw N.toRuntimeException(eHolder.value());
         }
 
         try {
-            for (CompletableFuture<Void> future : futureList) {
+            for (ContinuableFuture<Void> future : futureList) {
                 future.get();
 
                 if (eHolder.value() != null) {
@@ -1004,7 +1004,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
-    static <E extends Exception> void complette(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder, E none) throws E {
+    static <E extends Exception> void complette(final List<ContinuableFuture<Void>> futureList, final Holder<Throwable> eHolder, E none) throws E {
         if (eHolder.value() != null) {
             if (eHolder.value() instanceof Exception) {
                 throw (E) eHolder.value();
@@ -1014,7 +1014,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
 
         try {
-            for (CompletableFuture<Void> future : futureList) {
+            for (ContinuableFuture<Void> future : futureList) {
                 future.get();
 
                 if (eHolder.value() != null) {

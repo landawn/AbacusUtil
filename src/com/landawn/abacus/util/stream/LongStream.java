@@ -37,7 +37,7 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
@@ -1839,7 +1839,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {

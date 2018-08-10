@@ -1550,7 +1550,17 @@ public final class Maps {
      * @param entity
      * @return the input <code>resultMap</code>
      */
-    public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity) {
+    public static <M extends Map<String, Object>> M entity2Map(final Object entity, final Supplier<? extends M> mapSupplier) {
+        return entity2Map(mapSupplier.get(), entity);
+    }
+
+    /**
+     *
+     * @param resultMap
+     * @param entity
+     * @return the input <code>resultMap</code>
+     */
+    public static <M extends Map<String, Object>> M entity2Map(final M resultMap, final Object entity) {
         return entity2Map(resultMap, entity, false);
     }
 
@@ -1561,7 +1571,7 @@ public final class Maps {
      * @param ignoreNullProperty
      * @return the input <code>resultMap</code>
      */
-    public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty) {
+    public static <M extends Map<String, Object>> M entity2Map(final M resultMap, final Object entity, final boolean ignoreNullProperty) {
         return entity2Map(resultMap, entity, ignoreNullProperty, null);
     }
 
@@ -1572,7 +1582,7 @@ public final class Maps {
      * @param ignoredPropNames
      * @return the input <code>resultMap</code>
      */
-    public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final Collection<String> ignoredPropNames) {
+    public static <M extends Map<String, Object>> M entity2Map(final M resultMap, final Object entity, final Collection<String> ignoredPropNames) {
         return entity2Map(resultMap, entity, false, ignoredPropNames);
     }
 
@@ -1584,7 +1594,7 @@ public final class Maps {
      * @param ignoredPropNames
      * @return the input <code>resultMap</code>
      */
-    public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
+    public static <M extends Map<String, Object>> M entity2Map(final M resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
         return entity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.LOWER_CAMEL_CASE);
     }
@@ -1599,7 +1609,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     @SuppressWarnings("deprecation")
-    public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
+    public static <M extends Map<String, Object>> M entity2Map(final M resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames, NamingPolicy keyNamingPolicy) {
         keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.LOWER_CAMEL_CASE : keyNamingPolicy;
 
@@ -1715,7 +1725,7 @@ public final class Maps {
     }
 
     public static List<Map<String, Object>> entity2Map(final Collection<?> entityList) {
-        return entity2Map(entityList, null);
+        return entity2Map(entityList, false);
     }
 
     public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final boolean ignoreNullProperty) {
@@ -1768,6 +1778,16 @@ public final class Maps {
         deepEntity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, keyNamingPolicy);
 
         return resultMap;
+    }
+
+    /**
+     *
+     * @param resultMap
+     * @param entity
+     * @return the input <code>resultMap</code>
+     */
+    public static <M extends Map<String, Object>> M deepEntity2Map(final Object entity, final Supplier<? extends M> mapSupplier) {
+        return deepEntity2Map(mapSupplier.get(), entity);
     }
 
     /**
@@ -1953,7 +1973,7 @@ public final class Maps {
     }
 
     public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList) {
-        return deepEntity2Map(entityList, null);
+        return deepEntity2Map(entityList, false);
     }
 
     public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList, final boolean ignoreNullProperty) {
@@ -2009,6 +2029,16 @@ public final class Maps {
         entity2FlatMap(resultMap, entity, ignoreNullProperty, ignoredPropNames, keyNamingPolicy);
 
         return resultMap;
+    }
+
+    /**
+     *
+     * @param resultMap
+     * @param entity
+     * @return the input <code>resultMap</code>
+     */
+    public static <M extends Map<String, Object>> M entity2FlatMap(final Object entity, final Supplier<? extends M> mapSupplier) {
+        return entity2FlatMap(mapSupplier.get(), entity);
     }
 
     /**
@@ -2325,7 +2355,7 @@ public final class Maps {
     }
 
     public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList) {
-        return entity2FlatMap(entityList, null);
+        return entity2FlatMap(entityList, false);
     }
 
     public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final boolean ignoreNullProperty) {

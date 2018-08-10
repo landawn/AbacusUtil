@@ -37,7 +37,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
-import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
@@ -1624,7 +1624,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {

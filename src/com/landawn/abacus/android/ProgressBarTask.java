@@ -17,7 +17,7 @@ package com.landawn.abacus.android;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.android.util.Async.UIExecutor;
-import com.landawn.abacus.android.util.CompletableFuture;
+import com.landawn.abacus.android.util.ContinuableFuture;
 import com.landawn.abacus.util.Multiset;
 
 import android.app.Activity;
@@ -56,7 +56,7 @@ public class ProgressBarTask {
     private static volatile int maxProgressBarTask = Integer.MAX_VALUE;
     private static volatile int maxProgressBarTaskPerView = Integer.MAX_VALUE;
 
-    protected final CompletableFuture<ProgressBar> future;
+    protected final ContinuableFuture<ProgressBar> future;
     protected ProgressBar progressBar;
 
     public ProgressBarTask(final ViewGroup root, final long delay, final int circleColor) {

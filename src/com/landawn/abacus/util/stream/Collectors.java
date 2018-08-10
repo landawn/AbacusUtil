@@ -5019,7 +5019,7 @@ public class Collectors {
      * @see Tuple#from(Collection)
      */
     @SuppressWarnings("rawtypes")
-    public static <T> Collector<T, ?, List<?>> combine(final Collection<Collector<? super T, ?, ?>> collectors) {
+    public static <T> Collector<T, ?, List<?>> combine(final List<? extends Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
         final int len = collectors.size();
@@ -5208,7 +5208,7 @@ public class Collectors {
             }
         };
 
-        return (Collector) collectingAndThen(combinee(collectors), func);
+        return (Collector) collectingAndThen(combine(collectors), func);
     }
 
     @SuppressWarnings("rawtypes")
@@ -5226,7 +5226,7 @@ public class Collectors {
             }
         };
 
-        return (Collector) collectingAndThen(combinee(collectors), func);
+        return (Collector) collectingAndThen(combine(collectors), func);
     }
 
     /**
@@ -5236,7 +5236,7 @@ public class Collectors {
      * @see Tuple#from(Collection)
      */
     @SuppressWarnings("rawtypes")
-    public static <T> Collector<T, ?, List<?>> combinee(final Collection<java.util.stream.Collector<? super T, ?, ?>> collectors) {
+    public static <T> Collector<T, ?, List<?>> combine(final Collection<? extends java.util.stream.Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
         final int len = collectors.size();

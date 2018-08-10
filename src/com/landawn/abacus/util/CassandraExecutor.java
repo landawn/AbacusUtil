@@ -1232,7 +1232,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final Object... ids) {
+    public final <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Object... ids) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1242,7 +1242,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+    public final <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
             throws NonUniqueResultException {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -1252,7 +1252,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1268,7 +1268,7 @@ public final class CassandraExecutor implements Closeable {
      * @param idNameVal
      * @return
      */
-    public <T> CompletableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -1278,7 +1278,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Object... ids) {
+    public final <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Object... ids) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1288,7 +1288,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+    public final <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
             throws NonUniqueResultException {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -1298,7 +1298,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1314,7 +1314,7 @@ public final class CassandraExecutor implements Closeable {
      * @param idNameVal
      * @return
      */
-    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1323,7 +1323,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncInsert(final Object entity) {
+    public ContinuableFuture<ResultSet> asyncInsert(final Object entity) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1332,7 +1332,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncInsert(final Class<?> targetClass, final Map<String, Object> props) {
+    public ContinuableFuture<ResultSet> asyncInsert(final Class<?> targetClass, final Map<String, Object> props) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1341,7 +1341,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncBatchInsert(final Collection<?> entities, final BatchStatement.Type type) {
+    public ContinuableFuture<ResultSet> asyncBatchInsert(final Collection<?> entities, final BatchStatement.Type type) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1350,7 +1350,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncBatchInsert(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
+    public ContinuableFuture<ResultSet> asyncBatchInsert(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
             final BatchStatement.Type type) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
@@ -1360,7 +1360,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncUpdate(final Object entity) {
+    public ContinuableFuture<ResultSet> asyncUpdate(final Object entity) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1369,7 +1369,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncUpdate(final Object entity, final Collection<String> primaryKeyNames) {
+    public ContinuableFuture<ResultSet> asyncUpdate(final Object entity, final Collection<String> primaryKeyNames) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1378,7 +1378,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncUpdate(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
+    public ContinuableFuture<ResultSet> asyncUpdate(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1387,7 +1387,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
+    public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1396,7 +1396,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames,
+    public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames,
             final BatchStatement.Type type) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
@@ -1406,7 +1406,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncBatchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
+    public ContinuableFuture<ResultSet> asyncBatchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
             final Collection<String> primaryKeyNames, final BatchStatement.Type type) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
@@ -1416,7 +1416,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncDelete(final Object entity) {
+    public ContinuableFuture<ResultSet> asyncDelete(final Object entity) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1425,7 +1425,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncDelete(final Object entity, final Collection<String> deletingPropNames) {
+    public ContinuableFuture<ResultSet> asyncDelete(final Object entity, final Collection<String> deletingPropNames) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1435,7 +1435,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Object... ids) {
+    public final ContinuableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Object... ids) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1453,7 +1453,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final CompletableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Collection<String> deletingPropNames, final Object... ids) {
+    public final ContinuableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Collection<String> deletingPropNames, final Object... ids) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1462,7 +1462,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Condition whereCause) {
+    public ContinuableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1479,7 +1479,7 @@ public final class CassandraExecutor implements Closeable {
      * @param whereCause
      * @return
      */
-    public CompletableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Collection<String> deletingPropNames, final Condition whereCause) {
+    public ContinuableFuture<ResultSet> asyncDelete(final Class<?> targetClass, final Collection<String> deletingPropNames, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() {
@@ -1489,7 +1489,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Boolean> asyncExists(final Class<?> targetClass, final Object... ids) {
+    public final ContinuableFuture<Boolean> asyncExists(final Class<?> targetClass, final Object... ids) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -1498,7 +1498,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Boolean> asyncExists(final Class<?> targetClass, final Condition whereCause) {
+    public ContinuableFuture<Boolean> asyncExists(final Class<?> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -1507,7 +1507,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<Long> asyncCount(final Class<?> targetClass, final Condition whereCause) {
+    public ContinuableFuture<Long> asyncCount(final Class<?> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -1516,7 +1516,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<List<T>> asyncFind(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1525,7 +1525,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<List<T>> asyncFind(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
+    public <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1534,7 +1534,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<DataSet> asyncQuery(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<DataSet> asyncQuery(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1543,7 +1543,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<DataSet> asyncQuery(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
+    public <T> ContinuableFuture<DataSet> asyncQuery(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1552,7 +1552,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalBoolean> asyncQueryForBoolean(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
             public OptionalBoolean call() throws Exception {
@@ -1561,7 +1561,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalChar> asyncQueryForChar(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalChar> asyncQueryForChar(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalChar>() {
             @Override
             public OptionalChar call() throws Exception {
@@ -1570,7 +1570,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalByte> asyncQueryForByte(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalByte> asyncQueryForByte(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalByte>() {
             @Override
             public OptionalByte call() throws Exception {
@@ -1579,7 +1579,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalShort> asyncQueryForShort(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalShort> asyncQueryForShort(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalShort>() {
             @Override
             public OptionalShort call() throws Exception {
@@ -1588,7 +1588,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalInt> asyncQueryForInt(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalInt> asyncQueryForInt(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalInt>() {
             @Override
             public OptionalInt call() throws Exception {
@@ -1597,7 +1597,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalLong> asyncQueryForLong(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalLong> asyncQueryForLong(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalLong>() {
             @Override
             public OptionalLong call() throws Exception {
@@ -1606,7 +1606,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalFloat> asyncQueryForFloat(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalFloat> asyncQueryForFloat(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalFloat>() {
             @Override
             public OptionalFloat call() throws Exception {
@@ -1615,7 +1615,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<OptionalDouble> asyncQueryForDouble(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<OptionalDouble> asyncQueryForDouble(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<OptionalDouble>() {
             @Override
             public OptionalDouble call() throws Exception {
@@ -1624,7 +1624,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Nullable<String>> asyncQueryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<Nullable<String>> asyncQueryForString(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override
             public Nullable<String> call() throws Exception {
@@ -1633,7 +1633,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Nullable<Date>> asyncQueryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
+    public <T> ContinuableFuture<Nullable<Date>> asyncQueryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<Date>>() {
             @Override
             public Nullable<Date> call() throws Exception {
@@ -1642,7 +1642,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T, E extends Date> CompletableFuture<Nullable<E>> asyncQueryForDate(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+    public <T, E extends Date> ContinuableFuture<Nullable<E>> asyncQueryForDate(final Class<T> targetClass, final Class<E> valueClass, final String propName,
             final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<E>>() {
             @Override
@@ -1652,7 +1652,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T, E> CompletableFuture<Nullable<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+    public <T, E> ContinuableFuture<Nullable<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
             final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Nullable<E>>() {
             @Override
@@ -1662,7 +1662,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1671,7 +1671,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Collection<String> selectPropName,
+    public <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Collection<String> selectPropName,
             final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -1681,7 +1681,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1690,7 +1690,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1726,7 +1726,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final CompletableFuture<Boolean> asyncExists(final String query, final Object... parameters) {
+    public final ContinuableFuture<Boolean> asyncExists(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -1736,7 +1736,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Long> asyncCount(final String query, final Object... parameters) {
+    public final ContinuableFuture<Long> asyncCount(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -1746,7 +1746,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalBoolean> asyncQueryForBoolean(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
             public OptionalBoolean call() throws Exception {
@@ -1756,7 +1756,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalChar> asyncQueryForChar(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalChar>() {
             @Override
             public OptionalChar call() throws Exception {
@@ -1766,7 +1766,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalByte> asyncQueryForByte(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalByte>() {
             @Override
             public OptionalByte call() throws Exception {
@@ -1776,7 +1776,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalShort> asyncQueryForShort(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalShort>() {
             @Override
             public OptionalShort call() throws Exception {
@@ -1786,7 +1786,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalInt> asyncQueryForInt(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalInt>() {
             @Override
             public OptionalInt call() throws Exception {
@@ -1796,7 +1796,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalLong> asyncQueryForLong(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalLong>() {
             @Override
             public OptionalLong call() throws Exception {
@@ -1806,7 +1806,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalFloat> asyncQueryForFloat(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalFloat>() {
             @Override
             public OptionalFloat call() throws Exception {
@@ -1816,7 +1816,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<OptionalDouble> asyncQueryForDouble(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalDouble>() {
             @Override
             public OptionalDouble call() throws Exception {
@@ -1826,7 +1826,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Nullable<String>> asyncQueryForString(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override
             public Nullable<String> call() throws Exception {
@@ -1836,7 +1836,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> valueClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> valueClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
             public Nullable<T> call() throws Exception {
@@ -1846,7 +1846,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1856,7 +1856,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<List<Map<String, Object>>> asyncFind(final String query, final Object... parameters) {
+    public final ContinuableFuture<List<Map<String, Object>>> asyncFind(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<Map<String, Object>>>() {
             @Override
             public List<Map<String, Object>> call() throws Exception {
@@ -1866,7 +1866,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1876,7 +1876,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<DataSet> asyncQuery(final String query, final Object... parameters) {
+    public final ContinuableFuture<DataSet> asyncQuery(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1886,7 +1886,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<DataSet> asyncQuery(final Class<?> targetClass, final String query, final Object... parameters) {
+    public final ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1896,7 +1896,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Stream<Object[]>> asyncStream(final String query, final Object... parameters) {
+    public final ContinuableFuture<Stream<Object[]>> asyncStream(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
             @Override
             public Stream<Object[]> call() throws Exception {
@@ -1913,7 +1913,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> CompletableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1922,7 +1922,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public CompletableFuture<ResultSet> asyncExecute(final String query) {
+    public ContinuableFuture<ResultSet> asyncExecute(final String query) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() throws Exception {
@@ -1932,7 +1932,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<ResultSet> asyncExecute(final String query, final Object... parameters) {
+    public final ContinuableFuture<ResultSet> asyncExecute(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() throws Exception {
@@ -1941,7 +1941,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public final CompletableFuture<ResultSet> asyncExecute(final Statement statement) {
+    public final ContinuableFuture<ResultSet> asyncExecute(final Statement statement) {
         return asyncExecutor.execute(new Callable<ResultSet>() {
             @Override
             public ResultSet call() throws Exception {

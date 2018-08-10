@@ -55,7 +55,7 @@ public final class AsyncMongoDBExecutor {
         return dbExecutor;
     }
 
-    public CompletableFuture<Boolean> exists(final String collectionName, final String objectId) {
+    public ContinuableFuture<Boolean> exists(final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -64,7 +64,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> exists(final String collectionName, final ObjectId objectId) {
+    public ContinuableFuture<Boolean> exists(final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -73,7 +73,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Boolean> exists(final String collectionName, final Bson filter) {
+    public ContinuableFuture<Boolean> exists(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -82,7 +82,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Long> count(final String collectionName) {
+    public ContinuableFuture<Long> count(final String collectionName) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -91,7 +91,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Long> count(final String collectionName, final Bson filter) {
+    public ContinuableFuture<Long> count(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -100,7 +100,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Long> count(final String collectionName, final Bson filter, final CountOptions options) {
+    public ContinuableFuture<Long> count(final String collectionName, final Bson filter, final CountOptions options) {
         return asyncExecutor.execute(new Callable<Long>() {
             @Override
             public Long call() throws Exception {
@@ -109,7 +109,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Document> get(final String collectionName, final String objectId) {
+    public ContinuableFuture<Document> get(final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<Document>() {
             @Override
             public Document call() throws Exception {
@@ -118,7 +118,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Document> get(final String collectionName, final ObjectId objectId) {
+    public ContinuableFuture<Document> get(final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<Document>() {
             @Override
             public Document call() throws Exception {
@@ -127,7 +127,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String collectionName, final String objectId) {
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -136,7 +136,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -145,7 +145,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String collectionName, final String objectId,
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String collectionName, final String objectId,
             final Collection<String> selectPropNames) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -155,7 +155,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String collectionName, final ObjectId objectId,
+    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String collectionName, final ObjectId objectId,
             final Collection<String> selectPropNames) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -165,7 +165,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Optional<Document>> gett(final String collectionName, final String objectId) {
+    public ContinuableFuture<Optional<Document>> gett(final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<Optional<Document>>() {
             @Override
             public Optional<Document> call() throws Exception {
@@ -174,7 +174,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Optional<Document>> gett(final String collectionName, final ObjectId objectId) {
+    public ContinuableFuture<Optional<Document>> gett(final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<Optional<Document>>() {
             @Override
             public Optional<Document> call() throws Exception {
@@ -183,7 +183,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId) {
+    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -192,7 +192,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
+    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -201,7 +201,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId,
+    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId,
             final Collection<String> selectPropNames) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -211,7 +211,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId,
+    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId,
             final Collection<String> selectPropNames) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -221,7 +221,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalBoolean> queryForBoolean(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalBoolean> queryForBoolean(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
             public OptionalBoolean call() throws Exception {
@@ -230,7 +230,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalChar> queryForChar(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalChar> queryForChar(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalChar>() {
             @Override
             public OptionalChar call() throws Exception {
@@ -239,7 +239,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalByte> queryForByte(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalByte> queryForByte(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalByte>() {
             @Override
             public OptionalByte call() throws Exception {
@@ -248,7 +248,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalShort> queryForShort(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalShort> queryForShort(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalShort>() {
             @Override
             public OptionalShort call() throws Exception {
@@ -257,7 +257,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalInt> queryForInt(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalInt> queryForInt(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalInt>() {
             @Override
             public OptionalInt call() throws Exception {
@@ -266,7 +266,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalLong> queryForLong(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalLong> queryForLong(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalLong>() {
             @Override
             public OptionalLong call() throws Exception {
@@ -275,7 +275,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalFloat> queryForFloat(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalFloat> queryForFloat(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalFloat>() {
             @Override
             public OptionalFloat call() throws Exception {
@@ -284,7 +284,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<OptionalDouble> queryForDouble(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<OptionalDouble> queryForDouble(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalDouble>() {
             @Override
             public OptionalDouble call() throws Exception {
@@ -293,7 +293,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Nullable<String>> queryForString(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<Nullable<String>> queryForString(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<String>>() {
             @Override
             public Nullable<String> call() throws Exception {
@@ -302,7 +302,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Nullable<Date>> queryForDate(final String collectionName, final String propName, final Bson filter) {
+    public ContinuableFuture<Nullable<Date>> queryForDate(final String collectionName, final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<Date>>() {
             @Override
             public Nullable<Date> call() throws Exception {
@@ -311,7 +311,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T extends Date> CompletableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String collectionName, final String propName,
+    public <T extends Date> ContinuableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String collectionName, final String propName,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
@@ -321,7 +321,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName,
+    public <T> ContinuableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
@@ -331,7 +331,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Optional<Document>> queryForEntity(final String collectionName, final Bson filter) {
+    public ContinuableFuture<Optional<Document>> queryForEntity(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Optional<Document>>() {
             @Override
             public Optional<Document> call() throws Exception {
@@ -340,7 +340,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Bson filter) {
+    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -349,7 +349,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -359,7 +359,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -369,7 +369,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -379,7 +379,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<List<Document>> find(final String collectionName, final Bson filter) {
+    public ContinuableFuture<List<Document>> find(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<List<Document>>() {
             @Override
             public List<Document> call() throws Exception {
@@ -388,7 +388,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter) {
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -397,7 +397,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -407,7 +407,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -417,7 +417,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -427,7 +427,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -437,7 +437,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -447,7 +447,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -457,7 +457,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<DataSet> query(final String collectionName, final Bson filter) {
+    public ContinuableFuture<DataSet> query(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -466,7 +466,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter) {
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -475,7 +475,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -485,7 +485,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -495,7 +495,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -505,7 +505,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -515,7 +515,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -525,7 +525,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<DataSet> query(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -535,7 +535,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Document>> stream(final String collectionName, final Bson filter) {
+    public ContinuableFuture<Stream<Document>> stream(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -544,7 +544,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter) {
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -553,7 +553,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -563,7 +563,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -573,7 +573,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -583,7 +583,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Collection<String> selectPropNames,
             final Bson filter, final Bson sort, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -593,7 +593,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -603,7 +603,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<Stream<T>> stream(final Class<T> targetClass, final String collectionName, final Bson filter, final Bson sort,
             final Bson projection, final int offset, final int count) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -613,7 +613,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Void> insert(final String collectionName, final Object obj) {
+    public ContinuableFuture<Void> insert(final String collectionName, final Object obj) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -631,7 +631,7 @@ public final class AsyncMongoDBExecutor {
      * @deprecated replaced with {@code insertAll}.
      */
     @Deprecated
-    public CompletableFuture<Void> insert(final String collectionName, final Collection<?> objList) {
+    public ContinuableFuture<Void> insert(final String collectionName, final Collection<?> objList) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -650,7 +650,7 @@ public final class AsyncMongoDBExecutor {
      * @deprecated replaced with {@code insertAll}.
      */
     @Deprecated
-    public CompletableFuture<Void> insert(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
+    public ContinuableFuture<Void> insert(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -660,7 +660,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Void> insertAll(final String collectionName, final Collection<?> objList) {
+    public ContinuableFuture<Void> insertAll(final String collectionName, final Collection<?> objList) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -670,7 +670,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Void> insertAll(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
+    public ContinuableFuture<Void> insertAll(final String collectionName, final Collection<?> objList, final InsertManyOptions options) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -680,7 +680,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> update(final String collectionName, final String objectId, final Object update) {
+    public ContinuableFuture<UpdateResult> update(final String collectionName, final String objectId, final Object update) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -689,7 +689,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> update(final String collectionName, final ObjectId objectId, final Object update) {
+    public ContinuableFuture<UpdateResult> update(final String collectionName, final ObjectId objectId, final Object update) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -698,7 +698,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> updateOne(final String collectionName, final Bson filter, final Object update) {
+    public ContinuableFuture<UpdateResult> updateOne(final String collectionName, final Bson filter, final Object update) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -707,7 +707,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> updateOne(final String collectionName, final Bson filter, final Object update, final UpdateOptions options) {
+    public ContinuableFuture<UpdateResult> updateOne(final String collectionName, final Bson filter, final Object update, final UpdateOptions options) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -716,7 +716,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> updateAll(final String collectionName, final Bson filter, final Object update) {
+    public ContinuableFuture<UpdateResult> updateAll(final String collectionName, final Bson filter, final Object update) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -725,7 +725,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> updateAll(final String collectionName, final Bson filter, final Object update, final UpdateOptions options) {
+    public ContinuableFuture<UpdateResult> updateAll(final String collectionName, final Bson filter, final Object update, final UpdateOptions options) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -734,7 +734,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> replace(final String collectionName, final String objectId, final Object replacement) {
+    public ContinuableFuture<UpdateResult> replace(final String collectionName, final String objectId, final Object replacement) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -743,7 +743,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> replace(final String collectionName, final ObjectId objectId, final Object replacement) {
+    public ContinuableFuture<UpdateResult> replace(final String collectionName, final ObjectId objectId, final Object replacement) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -752,7 +752,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> replaceOne(final String collectionName, final Bson filter, final Object replacement) {
+    public ContinuableFuture<UpdateResult> replaceOne(final String collectionName, final Bson filter, final Object replacement) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -761,7 +761,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<UpdateResult> replaceOne(final String collectionName, final Bson filter, final Object replacement, final UpdateOptions options) {
+    public ContinuableFuture<UpdateResult> replaceOne(final String collectionName, final Bson filter, final Object replacement, final UpdateOptions options) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {
@@ -770,7 +770,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteResult> delete(final String collectionName, final String objectId) {
+    public ContinuableFuture<DeleteResult> delete(final String collectionName, final String objectId) {
         return asyncExecutor.execute(new Callable<DeleteResult>() {
             @Override
             public DeleteResult call() throws Exception {
@@ -779,7 +779,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteResult> delete(final String collectionName, final ObjectId objectId) {
+    public ContinuableFuture<DeleteResult> delete(final String collectionName, final ObjectId objectId) {
         return asyncExecutor.execute(new Callable<DeleteResult>() {
             @Override
             public DeleteResult call() throws Exception {
@@ -788,7 +788,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteResult> deleteOne(final String collectionName, final Bson filter) {
+    public ContinuableFuture<DeleteResult> deleteOne(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<DeleteResult>() {
             @Override
             public DeleteResult call() throws Exception {
@@ -797,7 +797,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<DeleteResult> deleteAll(final String collectionName, final Bson filter) {
+    public ContinuableFuture<DeleteResult> deleteAll(final String collectionName, final Bson filter) {
         return asyncExecutor.execute(new Callable<DeleteResult>() {
             @Override
             public DeleteResult call() throws Exception {
@@ -806,7 +806,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Integer> bulkInsert(final String collectionName, final Collection<?> entities) {
+    public ContinuableFuture<Integer> bulkInsert(final String collectionName, final Collection<?> entities) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -815,7 +815,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Integer> bulkInsert(final String collectionName, final Collection<?> entities, final BulkWriteOptions options) {
+    public ContinuableFuture<Integer> bulkInsert(final String collectionName, final Collection<?> entities, final BulkWriteOptions options) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -824,7 +824,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<BulkWriteResult> bulkWrite(final String collectionName, final List<? extends WriteModel<? extends Document>> requests) {
+    public ContinuableFuture<BulkWriteResult> bulkWrite(final String collectionName, final List<? extends WriteModel<? extends Document>> requests) {
         return asyncExecutor.execute(new Callable<BulkWriteResult>() {
             @Override
             public BulkWriteResult call() throws Exception {
@@ -833,7 +833,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<BulkWriteResult> bulkWrite(final String collectionName, final List<? extends WriteModel<? extends Document>> requests,
+    public ContinuableFuture<BulkWriteResult> bulkWrite(final String collectionName, final List<? extends WriteModel<? extends Document>> requests,
             final BulkWriteOptions options) {
         return asyncExecutor.execute(new Callable<BulkWriteResult>() {
             @Override
@@ -843,7 +843,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> distinct(final Class<T> targetClass, final String collectionName, final String fieldName) {
+    public <T> ContinuableFuture<Stream<T>> distinct(final Class<T> targetClass, final String collectionName, final String fieldName) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -852,7 +852,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> distinct(final Class<T> targetClass, final String collectionName, final String fieldName, final Bson filter) {
+    public <T> ContinuableFuture<Stream<T>> distinct(final Class<T> targetClass, final String collectionName, final String fieldName, final Bson filter) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -862,7 +862,7 @@ public final class AsyncMongoDBExecutor {
     }
 
     @Beta
-    public CompletableFuture<Stream<Document>> groupBy(final String collectionName, final String fieldName) {
+    public ContinuableFuture<Stream<Document>> groupBy(final String collectionName, final String fieldName) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -872,7 +872,7 @@ public final class AsyncMongoDBExecutor {
     }
 
     @Beta
-    public CompletableFuture<Stream<Document>> groupBy(final String collectionName, final Collection<String> fieldNames) {
+    public ContinuableFuture<Stream<Document>> groupBy(final String collectionName, final Collection<String> fieldNames) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -882,7 +882,7 @@ public final class AsyncMongoDBExecutor {
     }
 
     @Beta
-    public CompletableFuture<Stream<Document>> groupByAndCount(final String collectionName, final String fieldName) {
+    public ContinuableFuture<Stream<Document>> groupByAndCount(final String collectionName, final String fieldName) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -892,7 +892,7 @@ public final class AsyncMongoDBExecutor {
     }
 
     @Beta
-    public CompletableFuture<Stream<Document>> groupByAndCount(final String collectionName, final Collection<String> fieldNames) {
+    public ContinuableFuture<Stream<Document>> groupByAndCount(final String collectionName, final Collection<String> fieldNames) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -901,7 +901,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Document>> aggregate(final String collectionName, final List<? extends Bson> pipeline) {
+    public ContinuableFuture<Stream<Document>> aggregate(final String collectionName, final List<? extends Bson> pipeline) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -910,7 +910,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> aggregate(final Class<T> targetClass, final String collectionName, final List<? extends Bson> pipeline) {
+    public <T> ContinuableFuture<Stream<T>> aggregate(final Class<T> targetClass, final String collectionName, final List<? extends Bson> pipeline) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -919,7 +919,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public CompletableFuture<Stream<Document>> mapReduce(final String collectionName, final String mapFunction, final String reduceFunction) {
+    public ContinuableFuture<Stream<Document>> mapReduce(final String collectionName, final String mapFunction, final String reduceFunction) {
         return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
             public Stream<Document> call() throws Exception {
@@ -928,7 +928,7 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<Stream<T>> mapReduce(final Class<T> targetClass, final String collectionName, final String mapFunction,
+    public <T> ContinuableFuture<Stream<T>> mapReduce(final Class<T> targetClass, final String collectionName, final String mapFunction,
             final String reduceFunction) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override

@@ -1,5 +1,7 @@
 ### 1.2.21
 
+* Rename `CompletableFuture` to `ContinuableFuture`.
+
 * Add `Maps.flatten/unflatten`.
 
 * Refactoring `Collectors.minMax`.
