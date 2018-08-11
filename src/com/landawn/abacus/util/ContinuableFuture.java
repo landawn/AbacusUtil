@@ -35,7 +35,7 @@ import com.landawn.abacus.util.Tuple.Tuple4;
  * 
  * @author Haiyang Li
  * 
- * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html">https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html</a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ContinuableFuture.html">https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ContinuableFuture.html</a>
  */
 public class ContinuableFuture<T> implements Future<T> {
     private static final Logger logger = LoggerFactory.getLogger(ContinuableFuture.class);
@@ -46,7 +46,7 @@ public class ContinuableFuture<T> implements Future<T> {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                logger.warn("Starting to shutdown task in CompletableFuture");
+                logger.warn("Starting to shutdown task in ContinuableFuture");
 
                 try {
                     commonPool.shutdown();
@@ -55,7 +55,7 @@ public class ContinuableFuture<T> implements Future<T> {
                         N.sleepUninterruptibly(100);
                     }
                 } finally {
-                    logger.warn("Completed to shutdown task in CompletableFuture");
+                    logger.warn("Completed to shutdown task in ContinuableFuture");
                 }
             }
         });
@@ -114,7 +114,7 @@ public class ContinuableFuture<T> implements Future<T> {
      * 
      * @param result
      * @param asyncExecutor
-     * @return a CompletableFuture which is already done by passing the result to it directly.
+     * @return a ContinuableFuture which is already done by passing the result to it directly.
      */
     public static <T> ContinuableFuture<T> completed(final T result) {
         return new ContinuableFuture<>(new Future<T>() {
@@ -336,8 +336,8 @@ public class ContinuableFuture<T> implements Future<T> {
         };
     }
 
-    //    public <U> CompletableFuture<U> thenApply(final BiFunction<? super T, Exception, ? extends U> action) {
-    //        return new CompletableFuture<U>(new Future<U>() {
+    //    public <U> ContinuableFuture<U> thenApply(final BiFunction<? super T, Exception, ? extends U> action) {
+    //        return new ContinuableFuture<U>(new Future<U>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning);
@@ -377,7 +377,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //        };
     //    }
 
-    //    public <U> CompletableFuture<Void> thenAccept(final Consumer<? super T> action) {
+    //    public <U> ContinuableFuture<Void> thenAccept(final Consumer<? super T> action) {
     //        return thenApply(new Function<T, Void>() {
     //            @Override
     //            public Void apply(T t) {
@@ -387,7 +387,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //        });
     //    }
     //
-    //    public <U> CompletableFuture<Void> thenAccept(final BiConsumer<? super T, Exception> action) {
+    //    public <U> ContinuableFuture<Void> thenAccept(final BiConsumer<? super T, Exception> action) {
     //        return thenApply(new BiFunction<T, Exception, Void>() {
     //            @Override
     //            public Void apply(T t, Exception e) {
@@ -397,8 +397,8 @@ public class ContinuableFuture<T> implements Future<T> {
     //        });
     //    }
     //
-    //    public <U, R> CompletableFuture<R> thenCombine(final CompletableFuture<? extends U> other, final BiFunction<? super T, ? super U, ? extends R> action) {
-    //        return new CompletableFuture<R>(new Future<R>() {
+    //    public <U, R> ContinuableFuture<R> thenCombine(final ContinuableFuture<? extends U> other, final BiFunction<? super T, ? super U, ? extends R> action) {
+    //        return new ContinuableFuture<R>(new Future<R>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning) && other.future.cancel(mayInterruptIfRunning);
@@ -443,8 +443,8 @@ public class ContinuableFuture<T> implements Future<T> {
     //        };
     //    }
     //
-    //    public <U, R> CompletableFuture<R> thenCombine(final CompletableFuture<? extends U> other, final Function<Tuple4<T, Exception, U, Exception>, R> action) {
-    //        return new CompletableFuture<R>(new Future<R>() {
+    //    public <U, R> ContinuableFuture<R> thenCombine(final ContinuableFuture<? extends U> other, final Function<Tuple4<T, Exception, U, Exception>, R> action) {
+    //        return new ContinuableFuture<R>(new Future<R>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning) && other.future.cancel(mayInterruptIfRunning);
@@ -474,7 +474,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //                final long now = N.currentMillis();
     //                final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
     //
-    //                final Pair<T, Exception> result = CompletableFuture.this.gett(timeout, unit);
+    //                final Pair<T, Exception> result = ContinuableFuture.this.gett(timeout, unit);
     //                final Pair<? extends U, Exception> result2 = other.gett(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
     //
     //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
@@ -492,7 +492,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //        };
     //    }
     //
-    //    public <U> CompletableFuture<Void> thenAcceptBoth(final CompletableFuture<? extends U> other, final BiConsumer<? super T, ? super U> action) {
+    //    public <U> ContinuableFuture<Void> thenAcceptBoth(final ContinuableFuture<? extends U> other, final BiConsumer<? super T, ? super U> action) {
     //        return thenCombine(other, new BiFunction<T, U, Void>() {
     //            @Override
     //            public Void apply(T t, U u) {
@@ -502,7 +502,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //        });
     //    }
     //
-    //    public <U> CompletableFuture<Void> thenAcceptBoth(final CompletableFuture<? extends U> other, final Consumer<Tuple4<T, Exception, U, Exception>> action) {
+    //    public <U> ContinuableFuture<Void> thenAcceptBoth(final ContinuableFuture<? extends U> other, final Consumer<Tuple4<T, Exception, U, Exception>> action) {
     //        return thenCombine(other, new Function<Tuple4<T, Exception, U, Exception>, Void>() {
     //            @Override
     //            public Void apply(Tuple4<T, Exception, U, Exception> t) {
@@ -715,45 +715,45 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     //    /**
-    //     * Returns a new CompletableFuture that, when either this or the
-    //     * other given CompletableFuture complete normally. If both of the given
-    //     * CompletableFutures complete exceptionally, then the returned
-    //     * CompletableFuture also does so.
+    //     * Returns a new ContinuableFuture that, when either this or the
+    //     * other given ContinuableFuture complete normally. If both of the given
+    //     * ContinuableFutures complete exceptionally, then the returned
+    //     * ContinuableFuture also does so.
     //     * 
     //     * @param other
     //     * @param action
     //     * @return
     //     */
-    //    public <U> CompletableFuture<U> applyToEither(final CompletableFuture<? extends T> other, final Function<? super T, U> action) {
+    //    public <U> ContinuableFuture<U> applyToEither(final ContinuableFuture<? extends T> other, final Function<? super T, U> action) {
     //        return Futures.anyOf(N.asList(this, other)).thenApply(action);
     //    }
     //
     //    /**
-    //     * Returns a new CompletableFuture that, when either this or the
-    //     * other given CompletableFuture complete normally. If both of the given
-    //     * CompletableFutures complete exceptionally, then the returned
-    //     * CompletableFuture also does so.
+    //     * Returns a new ContinuableFuture that, when either this or the
+    //     * other given ContinuableFuture complete normally. If both of the given
+    //     * ContinuableFutures complete exceptionally, then the returned
+    //     * ContinuableFuture also does so.
     //     * 
     //     * @param other
     //     * @param action
     //     * @return
     //     */
-    //    public CompletableFuture<Void> acceptEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
+    //    public ContinuableFuture<Void> acceptEither(final ContinuableFuture<? extends T> other, final Consumer<? super T> action) {
     //        return Futures.anyOf(N.asList(this, other)).thenAccept(action);
     //    }
 
     //    /**
-    //     * Returns a new CompletableFuture that, when this CompletableFuture completes
-    //     * exceptionally, is executed with this CompletableFuture's exception as the
-    //     * argument to the supplied function. Otherwise, if this CompletableFuture
-    //     * completes normally, then the returned CompletableFuture also completes
+    //     * Returns a new ContinuableFuture that, when this ContinuableFuture completes
+    //     * exceptionally, is executed with this ContinuableFuture's exception as the
+    //     * argument to the supplied function. Otherwise, if this ContinuableFuture
+    //     * completes normally, then the returned ContinuableFuture also completes
     //     * normally with the same value.
     //     * 
     //     * @param action
     //     * @return
     //     */
-    //    public CompletableFuture<T> exceptionally(final Function<Exception, ? extends T> action) {
-    //        return new CompletableFuture<T>(new Future<T>() {
+    //    public ContinuableFuture<T> exceptionally(final Function<Exception, ? extends T> action) {
+    //        return new ContinuableFuture<T>(new Future<T>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning);
@@ -799,8 +799,8 @@ public class ContinuableFuture<T> implements Future<T> {
     //        };
     //    }
 
-    //    public CompletableFuture<T> whenComplete(final BiConsumer<? super T, ? super Exception> action) {
-    //        return new CompletableFuture<>(new Future<T>() {
+    //    public ContinuableFuture<T> whenComplete(final BiConsumer<? super T, ? super Exception> action) {
+    //        return new ContinuableFuture<>(new Future<T>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning);
@@ -866,8 +866,8 @@ public class ContinuableFuture<T> implements Future<T> {
     //        }, asyncExecutor);
     //    }
     //
-    //    public <U> CompletableFuture<U> handle(final BiFunction<? super T, Exception, ? extends U> action) {
-    //        return new CompletableFuture<>(new Future<U>() {
+    //    public <U> ContinuableFuture<U> handle(final BiFunction<? super T, Exception, ? extends U> action) {
+    //        return new ContinuableFuture<>(new Future<U>() {
     //            @Override
     //            public boolean cancel(boolean mayInterruptIfRunning) {
     //                return future.cancel(mayInterruptIfRunning);

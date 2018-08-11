@@ -1600,7 +1600,9 @@ public abstract class Stream<T>
      * @param accumulator
      * @return
      * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
+     * @deprecated
      */
+    @Deprecated
     @ParallelSupported
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 

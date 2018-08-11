@@ -810,7 +810,7 @@ public final class AsyncSQLExecutor {
     }
 
     //
-    //    public CompletableFuture<Map<String, Object>> queryForMap(final String sql, final Object... parameters) {
+    //    public ContinuableFuture<Map<String, Object>> queryForMap(final String sql, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<Map<String, Object>>() {
     //            @Override
     //            public Map<String, Object> call() throws Exception {
@@ -819,7 +819,7 @@ public final class AsyncSQLExecutor {
     //        });
     //    }
     //
-    //    public CompletableFuture<Map<String, Object>> queryForMap(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    //    public ContinuableFuture<Map<String, Object>> queryForMap(final String sql, final StatementSetter statementSetter, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<Map<String, Object>>() {
     //            @Override
     //            public Map<String, Object> call() throws Exception {
@@ -828,7 +828,7 @@ public final class AsyncSQLExecutor {
     //        });
     //    }
     //
-    //    public CompletableFuture<Map<String, Object>> queryForMap(final Connection conn, final String sql, final Object... parameters) {
+    //    public ContinuableFuture<Map<String, Object>> queryForMap(final Connection conn, final String sql, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<Map<String, Object>>() {
     //            @Override
     //            public Map<String, Object> call() throws Exception {
@@ -837,7 +837,7 @@ public final class AsyncSQLExecutor {
     //        });
     //    }
     //
-    //    public CompletableFuture<Map<String, Object>> queryForMap(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    //    public ContinuableFuture<Map<String, Object>> queryForMap(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<Map<String, Object>>() {
     //            @Override
     //            public Map<String, Object> call() throws Exception {
@@ -1510,7 +1510,7 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    //    public CompletableFuture<Integer> executeUpdate(final String sql, final Object... parameters) {
+    //    public ContinuableFuture<Integer> executeUpdate(final String sql, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<Integer>() {
     //            @Override
     //            public Integer call() throws Exception {
@@ -1526,7 +1526,7 @@ public final class AsyncSQLExecutor {
     //     * @param parameters
     //     * @return
     //     */
-    //    public CompletableFuture<ResultSet> executeQuery(final String sql, final Object... parameters) {
+    //    public ContinuableFuture<ResultSet> executeQuery(final String sql, final Object... parameters) {
     //        return asyncExecutor.execute(new Callable<ResultSet>() {
     //            @Override
     //            public ResultSet call() throws Exception {

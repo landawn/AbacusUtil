@@ -890,6 +890,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.reduce(identity, accumulator, combiner);
     }
 
+    @Deprecated
     public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator) {
         return s.reduce(identity, accumulator);
     }

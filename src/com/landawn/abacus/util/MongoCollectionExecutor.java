@@ -42,8 +42,10 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneModel;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -63,7 +65,7 @@ public final class MongoCollectionExecutor {
     private static final String _$SUM = "$sum";
     private static final String _COUNT = "count";
 
-    private final MongoDBExecutor dbExecutor;
+    private final MongoDB dbExecutor;
     private final MongoCollection<Document> coll;
     private final AsyncMongoCollectionExecutor asyncCollExecutor;
 
@@ -71,17 +73,17 @@ public final class MongoCollectionExecutor {
      * Call <code>mongoDB.withCodecRegistry(CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), new GeneralCodecRegistry()));</code> to support the encode/decode for general type
      * @param coll
      */
-    MongoCollectionExecutor(final MongoDBExecutor dbExecutor, final MongoCollection<Document> coll) {
+    MongoCollectionExecutor(final MongoDB dbExecutor, final MongoCollection<Document> coll) {
         this(dbExecutor, coll, new AsyncExecutor(64, 300, TimeUnit.SECONDS));
     }
 
-    MongoCollectionExecutor(final MongoDBExecutor dbExecutor, final MongoCollection<Document> coll, final AsyncExecutor asyncExecutor) {
+    MongoCollectionExecutor(final MongoDB dbExecutor, final MongoCollection<Document> coll, final AsyncExecutor asyncExecutor) {
         this.dbExecutor = dbExecutor;
         this.coll = coll;
         this.asyncCollExecutor = new AsyncMongoCollectionExecutor(this, asyncExecutor);
     }
 
-    public MongoDBExecutor dbExecutor() {
+    public MongoDB dbExecutor() {
         return dbExecutor;
     }
 
@@ -262,7 +264,7 @@ public final class MongoCollectionExecutor {
     private <T> T toEntity(final Class<T> targetClass, final FindIterable<Document> findIterable) {
         final Document doc = findIterable.first();
 
-        return N.isNullOrEmpty(doc) ? null : MongoDBExecutor.toEntity(targetClass, doc);
+        return N.isNullOrEmpty(doc) ? null : MongoDB.toEntity(targetClass, doc);
     }
 
     public List<Document> find(final Bson filter) {
@@ -299,7 +301,7 @@ public final class MongoCollectionExecutor {
             final int count) {
         final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, offset, count);
 
-        return MongoDBExecutor.toList(targetClass, findIterable);
+        return MongoDB.toList(targetClass, findIterable);
     }
 
     public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
@@ -319,7 +321,7 @@ public final class MongoCollectionExecutor {
     public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
         final FindIterable<Document> findIterable = query(filter, sort, projection, offset, count);
 
-        return MongoDBExecutor.toList(targetClass, findIterable);
+        return MongoDB.toList(targetClass, findIterable);
     }
 
     public DataSet query(final Bson filter) {
@@ -347,9 +349,9 @@ public final class MongoCollectionExecutor {
         final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, offset, count);
 
         if (N.isNullOrEmpty(selectPropNames)) {
-            return MongoDBExecutor.extractData(targetClass, findIterable);
+            return MongoDB.extractData(targetClass, findIterable);
         } else {
-            return MongoDBExecutor.extractData(targetClass, selectPropNames, findIterable);
+            return MongoDB.extractData(targetClass, selectPropNames, findIterable);
         }
     }
 
@@ -360,7 +362,7 @@ public final class MongoCollectionExecutor {
     public <T> DataSet query(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
         final FindIterable<Document> findIterable = query(filter, sort, projection, offset, count);
 
-        return MongoDBExecutor.extractData(targetClass, findIterable);
+        return MongoDB.extractData(targetClass, findIterable);
     }
 
     public Stream<Document> stream(final Bson filter) {
@@ -412,7 +414,7 @@ public final class MongoCollectionExecutor {
         return new Function<Document, T>() {
             @Override
             public T apply(Document t) {
-                return MongoDBExecutor.toEntity(targetClass, t);
+                return MongoDB.toEntity(targetClass, t);
             }
         };
     }
@@ -461,25 +463,8 @@ public final class MongoCollectionExecutor {
         coll.insertOne(createDocument(obj));
     }
 
-    /**
-     *
-     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public void insert(final Collection<?> objList) {
-        insert(objList, null);
-    }
-
-    /**
-     *
-     * @param objList list of <code>Document/Map<String, Object>/entity</code> class with getter/setter method.
-     * @param options
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public void insert(final Collection<?> objList, final InsertManyOptions options) {
-        insertAll(objList, options);
+    public void insert(final Object obj, final InsertOneOptions options) {
+        coll.insertOne(createDocument(obj), options);
     }
 
     /**
@@ -658,8 +643,16 @@ public final class MongoCollectionExecutor {
         return coll.deleteOne(filter);
     }
 
+    public DeleteResult deleteOne(final Bson filter, final DeleteOptions options) {
+        return coll.deleteOne(filter, options);
+    }
+
     public DeleteResult deleteAll(final Bson filter) {
         return coll.deleteMany(filter);
+    }
+
+    public DeleteResult deleteAll(final Bson filter, final DeleteOptions options) {
+        return coll.deleteMany(filter, options);
     }
 
     public int bulkInsert(final Collection<?> entities) {
@@ -673,7 +666,7 @@ public final class MongoCollectionExecutor {
             if (entity instanceof Document) {
                 list.add(new InsertOneModel<Document>((Document) entity));
             } else {
-                list.add(new InsertOneModel<Document>(MongoDBExecutor.toDocument(entity)));
+                list.add(new InsertOneModel<Document>(MongoDB.toDocument(entity)));
             }
         }
 
@@ -718,7 +711,7 @@ public final class MongoCollectionExecutor {
 
     @Beta
     public Stream<Document> groupBy(final String fieldName) {
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName))));
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDB._ID, _$ + fieldName))));
     }
 
     @Beta
@@ -729,12 +722,12 @@ public final class MongoCollectionExecutor {
             groupFields.put(fieldName, _$ + fieldName);
         }
 
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields))));
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDB._ID, groupFields))));
     }
 
     @Beta
     public Stream<Document> groupByAndCount(final String fieldName) {
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))));
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDB._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))));
     }
 
     @Beta
@@ -745,7 +738,7 @@ public final class MongoCollectionExecutor {
             groupFields.put(fieldName, _$ + fieldName);
         }
 
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields).append(_COUNT, new Document(_$SUM, 1)))));
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDB._ID, groupFields).append(_COUNT, new Document(_$SUM, 1)))));
     }
 
     //
@@ -783,7 +776,7 @@ public final class MongoCollectionExecutor {
     //
 
     private Bson checkUpdate(final Object update) {
-        Bson bson = update instanceof Bson ? (Bson) update : MongoDBExecutor.toDocument(update, true);
+        Bson bson = update instanceof Bson ? (Bson) update : MongoDB.toDocument(update, true);
 
         if (bson instanceof Document) {
             Document doc = (Document) bson;
@@ -811,10 +804,10 @@ public final class MongoCollectionExecutor {
     }
 
     private Bson createFilter(final ObjectId objectId) {
-        return new Document(MongoDBExecutor._ID, objectId);
+        return new Document(MongoDB._ID, objectId);
     }
 
     private Document createDocument(final Object obj) {
-        return obj instanceof Document ? (Document) obj : MongoDBExecutor.toDocument(obj);
+        return obj instanceof Document ? (Document) obj : MongoDB.toDocument(obj);
     }
 }

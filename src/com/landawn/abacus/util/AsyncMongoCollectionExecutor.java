@@ -29,7 +29,9 @@ import com.landawn.abacus.util.stream.Stream;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -606,36 +608,11 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    /**
-     * 
-     * @param objList
-     * @return
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public ContinuableFuture<Void> insert(final Collection<?> objList) {
+    public ContinuableFuture<Void> insert(final Object obj, final InsertOneOptions options) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                collExecutor.insert(objList);
-                return null;
-            }
-        });
-    }
-
-    /**
-     * 
-     * @param objList
-     * @param options
-     * @return
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public ContinuableFuture<Void> insert(final Collection<?> objList, final InsertManyOptions options) {
-        return asyncExecutor.execute(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                collExecutor.insert(objList, options);
+                collExecutor.insert(obj, options);
                 return null;
             }
         });
@@ -778,11 +755,29 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
+    public ContinuableFuture<DeleteResult> deleteOne(final Bson filter, final DeleteOptions options) {
+        return asyncExecutor.execute(new Callable<DeleteResult>() {
+            @Override
+            public DeleteResult call() throws Exception {
+                return collExecutor.deleteOne(filter, options);
+            }
+        });
+    }
+
     public ContinuableFuture<DeleteResult> deleteAll(final Bson filter) {
         return asyncExecutor.execute(new Callable<DeleteResult>() {
             @Override
             public DeleteResult call() throws Exception {
                 return collExecutor.deleteAll(filter);
+            }
+        });
+    }
+
+    public ContinuableFuture<DeleteResult> deleteAll(final Bson filter, final DeleteOptions options) {
+        return asyncExecutor.execute(new Callable<DeleteResult>() {
+            @Override
+            public DeleteResult call() throws Exception {
+                return collExecutor.deleteAll(filter, options);
             }
         });
     }

@@ -1874,39 +1874,39 @@ public abstract class SQLBuilder {
     //    }
     //
     //    @Beta
-    //    public CompletableFuture asyncExecute(final SQLExecutor sqlExecutor) {
+    //    public ContinuableFuture asyncExecute(final SQLExecutor sqlExecutor) {
     //        if (op == OperationType.QUERY) {
-    //            return (CompletableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
+    //            return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
     //        } /* else if (op == OperationType.ADD) {
-    //            return (CompletableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
+    //            return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
     //          } */ else {
-    //            return (CompletableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
+    //            return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
     //        }
     //    }
     //
     //    @Beta
-    //    public CompletableFuture asyncExecute(final SQLExecutor sqlExecutor, final Object... parameters) {
+    //    public ContinuableFuture asyncExecute(final SQLExecutor sqlExecutor, final Object... parameters) {
     //        if (N.isNullOrEmpty(parameters)) {
     //            if (op == OperationType.QUERY) {
-    //                return (CompletableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
     //            } /* else if (op == OperationType.ADD) {
-    //                return (CompletableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
     //              } */ else {
-    //                return (CompletableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
     //            }
     //        } else {
     //            if (op == OperationType.QUERY) {
-    //                return (CompletableFuture) sqlExecutor.asyncExecutor().query(sql(), parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), parameters);
     //            } /* else if (op == OperationType.ADD) {
-    //                return (CompletableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), parameters);
     //              } */ else {
-    //                return (CompletableFuture) sqlExecutor.asyncExecutor().update(sql(), parameters);
+    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), parameters);
     //            }
     //        }
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
+    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
@@ -1920,7 +1920,7 @@ public abstract class SQLBuilder {
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }

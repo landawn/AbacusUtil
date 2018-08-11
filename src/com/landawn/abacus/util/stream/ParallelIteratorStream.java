@@ -2790,7 +2790,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     //            return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
     //        }
     //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+    //        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
     //        final Holder<Throwable> eHolder = new Holder<>();
     //        final AtomicLong result = new AtomicLong();
     //

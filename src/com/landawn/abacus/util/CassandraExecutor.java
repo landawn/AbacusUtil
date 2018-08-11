@@ -1699,7 +1699,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    //    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Condition whereCause) {
+    //    public <T> ContinuableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Condition whereCause) {
     //        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
     //            @Override
     //            public Stream<Object[]> call() throws Exception {
@@ -1708,7 +1708,7 @@ public final class CassandraExecutor implements Closeable {
     //        });
     //    }
     //
-    //    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Collection<String> selectPropName,
+    //    public <T> ContinuableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Collection<String> selectPropName,
     //            final Condition whereCause) {
     //        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
     //            @Override

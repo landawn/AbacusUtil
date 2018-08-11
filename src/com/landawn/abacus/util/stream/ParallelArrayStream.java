@@ -4090,7 +4090,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     //        }
     //
     //        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
+    //        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
     //        final Holder<Throwable> eHolder = new Holder<>();
     //        final AtomicLong result = new AtomicLong();
     //

@@ -1298,33 +1298,33 @@ public abstract class CQLBuilder {
     //    }
     //
     //    @Beta
-    //    public CompletableFuture asyncExecute(final CassandraExecutor cassandraExecutor) {
+    //    public ContinuableFuture asyncExecute(final CassandraExecutor cassandraExecutor) {
     //        if (op == OperationType.QUERY) {
-    //            return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
+    //            return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
     //        } else {
-    //            return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
+    //            return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
     //        }
     //    }
     //
     //    @Beta
-    //    public CompletableFuture asyncExecute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //    public ContinuableFuture asyncExecute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
     //        if (N.isNullOrEmpty(parameters)) {
     //            if (op == OperationType.QUERY) {
-    //                return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
+    //                return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
     //            } else {
-    //                return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
+    //                return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
     //            }
     //        } else {
     //            if (op == OperationType.QUERY) {
-    //                return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), parameters);
+    //                return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), parameters);
     //            } else {
-    //                return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), parameters);
+    //                return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), parameters);
     //            }
     //        }
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
@@ -1338,7 +1338,7 @@ public abstract class CQLBuilder {
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
+    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
     //            final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
