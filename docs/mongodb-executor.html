@@ -44,16 +44,16 @@
 
 			<h1>MongoDBExecutor</h1>
 			<p>
-				<a href="./MongoDBExecutor_view.html">MongoDBExecutor</a> is a wrapper of MongoDB Java driver.
+				<a href="./MongoCollectionExecutor_view.html">MongoCollectionExecutor</a> is a wrapper of MongoDB Java driver.
 				Just like SQLExecutor, it makes things much easier to operate data with MongoDB by the straight support of Entity/Map/Query...,
 				and almost all the java basic types: boolean...double...String...Date...Calendar....
-				Rather than introducing something new or different, MongoDBExecutor is created to make things simpler. Here is a simple sample:	
+				Rather than introducing something new or different, MongoCollectionExecutor is created to make things simpler. Here is a simple sample:	
 			</p>
 <!-- HTML generated using hilite.me --><div style="background: #f8f8f8; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoClient mongoClient <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> MongoClient<span style="color: #666666">(</span><span style="color: #BA2121">&quot;localhost&quot;</span><span style="color: #666666">,</span> <span style="color: #666666">27017);</span>
-<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoDatabase mongoDB <span style="color: #666666">=</span> mongoClient<span style="color: #666666">.</span><span style="color: #7D9029">getDatabase</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;test&quot;</span><span style="color: #666666">);</span>
+<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoDatabase mongo <span style="color: #666666">=</span> mongoClient<span style="color: #666666">.</span><span style="color: #7D9029">getDatabase</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;test&quot;</span><span style="color: #666666">);</span>
 <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> String collectionName <span style="color: #666666">=</span> <span style="color: #BA2121">&quot;account&quot;</span><span style="color: #666666">;</span>
-<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoDBExecutor dbExecutor <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> MongoDBExecutor<span style="color: #666666">(</span>mongoDB<span style="color: #666666">);</span>
-<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoCollectionExecutor collExecutor <span style="color: #666666">=</span> dbExecutor<span style="color: #666666">.</span><span style="color: #7D9029">getCollExecutor</span><span style="color: #666666">(</span>collectionName<span style="color: #666666">);</span>
+<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoDB db <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> MongoDB<span style="color: #666666">(</span>mongo<span style="color: #666666">);</span>
+<span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> MongoCollectionExecutor collExecutor <span style="color: #666666">=</span> db<span style="color: #666666">.</span><span style="color: #7D9029">getCollExecutor</span><span style="color: #666666">(</span>collectionName<span style="color: #666666">);</span>
 <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> AsyncMongoCollectionExecutor asyncCollExecutor <span style="color: #666666">=</span> collExecutor<span style="color: #666666">.</span><span style="color: #7D9029">asyncCollExecutor</span><span style="color: #666666">();</span>
 
 <span style="color: #008000; font-weight: bold">static</span> <span style="color: #666666">{</span>

@@ -65,7 +65,6 @@ public final class MongoCollectionExecutor {
     private static final String _$SUM = "$sum";
     private static final String _COUNT = "count";
 
-    private final MongoDB dbExecutor;
     private final MongoCollection<Document> coll;
     private final AsyncMongoCollectionExecutor asyncCollExecutor;
 
@@ -78,13 +77,8 @@ public final class MongoCollectionExecutor {
     }
 
     MongoCollectionExecutor(final MongoDB dbExecutor, final MongoCollection<Document> coll, final AsyncExecutor asyncExecutor) {
-        this.dbExecutor = dbExecutor;
         this.coll = coll;
         this.asyncCollExecutor = new AsyncMongoCollectionExecutor(this, asyncExecutor);
-    }
-
-    public MongoDB dbExecutor() {
-        return dbExecutor;
     }
 
     public MongoCollection<Document> coll() {

@@ -1,3 +1,10 @@
+### 1.3.1
+
+* Refactoring `MongoDBExecutor`.
+
+* Improvements and bug fix.
+
+
 ### 1.3
 
 * Rename `CompletableFuture` to `ContinuableFuture`.
