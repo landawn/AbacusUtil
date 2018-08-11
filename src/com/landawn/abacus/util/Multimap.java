@@ -1322,7 +1322,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @return
      */
-    public int totalCountOfValue() {
+    public int totalCountOfValues() {
         int count = 0;
 
         for (V v : valueMap.values()) {

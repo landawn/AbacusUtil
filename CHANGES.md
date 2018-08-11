@@ -1,3 +1,10 @@
+### 1.3.2
+
+* Rename `Multimap.totalCountOfValue` to `Multimap.totalCountOfValues`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.1
 
 * Refactoring `MongoDBExecutor`.
