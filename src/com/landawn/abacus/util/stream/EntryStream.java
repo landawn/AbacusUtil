@@ -169,8 +169,57 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.filter(predicate));
     }
 
+    public <KK> EntryStream<K, V> removeIf(final Predicate<Map.Entry<K, V>> predicate) {
+        return of(s.removeIf(predicate));
+    }
+
+    public <KK> EntryStream<K, V> removeIf(final BiPredicate<? super K, ? super V> predicate) {
+        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> entry) {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.removeIf(predicate2));
+    }
+
+    public <KK> EntryStream<K, V> takeWhile(final Predicate<Map.Entry<K, V>> predicate) {
+        return of(s.takeWhile(predicate));
+    }
+
+    public <KK> EntryStream<K, V> takeWhile(final BiPredicate<? super K, ? super V> predicate) {
+        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> entry) {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.takeWhile(predicate2));
+    }
+
+    public <KK> EntryStream<K, V> dropWhile(final Predicate<Map.Entry<K, V>> predicate) {
+        return of(s.dropWhile(predicate));
+    }
+
+    public <KK> EntryStream<K, V> dropWhile(final BiPredicate<? super K, ? super V> predicate) {
+        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> entry) {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.dropWhile(predicate2));
+    }
+
     public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, Map.Entry<KK, VV>> mapper) {
-        return of(s.map(mapper));
+        return s.mapToEntry(mapper);
+    }
+
+    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, KK> keyMapper, final Function<? super Map.Entry<K, V>, VV> valueMapper) {
+        return s.mapToEntry(keyMapper, valueMapper);
     }
 
     public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, Map.Entry<KK, VV>> mapper) {
@@ -181,18 +230,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
             }
         };
 
-        return of(s.map(mapper2));
-    }
-
-    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, KK> keyMapper, final Function<? super Map.Entry<K, V>, VV> valueMapper) {
-        final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
-            @Override
-            public Entry<KK, VV> apply(Entry<K, V> t) {
-                return new SimpleImmutableEntry<>(keyMapper.apply(t), valueMapper.apply(t));
-            }
-        };
-
-        return map(mapper);
+        return map(mapper2);
     }
 
     public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, KK> keyMapper, final BiFunction<? super K, ? super V, VV> valueMapper) {
@@ -209,13 +247,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
     public <KK> EntryStream<KK, V> mapKey(final Function<? super K, KK> keyMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapper = Fn.mapKey(keyMapper);
 
-        return of(s.map(mapper));
+        return map(mapper);
     }
 
     public <VV> EntryStream<K, VV> mapValue(final Function<? super V, VV> valueMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapper = Fn.mapValue(valueMapper);
 
-        return of(s.map(mapper));
+        return map(mapper);
     }
 
     //    public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, EntryStream<KK, VV>> mapper) {
@@ -229,22 +267,19 @@ public final class EntryStream<K, V> implements AutoCloseable {
     //        return flattMap(mapper2);
     //    }
 
-    public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper) {
-        return of(s.flatMap(mapper));
+    public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, ? extends Stream<? extends Map.Entry<KK, VV>>> mapper) {
+        return s.flatMapToEntry(mapper);
     }
 
-    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, Map<KK, VV>> mapper) {
-        final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>>() {
-            @Override
-            public Stream<Entry<KK, VV>> apply(Entry<K, V> t) {
-                return Stream.of(mapper.apply(t));
-            }
-        };
-
-        return flatMap(mapper2);
+    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, ? extends Map<KK, VV>> mapper) {
+        return s.flattMapToEntry(mapper);
     }
 
-    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, Stream<KK>> keyMapper) {
+    public <KK, VV> EntryStream<KK, VV> flatMapp(final Function<? super Map.Entry<K, V>, ? extends EntryStream<KK, VV>> mapper) {
+        return s.flatMappToEntry(mapper);
+    }
+
+    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, ? extends Stream<KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -260,7 +295,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <KK> EntryStream<KK, V> flattMapKey(final Function<? super K, Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKey(final Function<? super K, ? extends Collection<KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -276,7 +311,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, Stream<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, ? extends Stream<VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -292,7 +327,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <VV> EntryStream<K, VV> flattMapValue(final Function<? super V, Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValue(final Function<? super V, ? extends Collection<VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -521,6 +556,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.distinctBy(keyExtractor));
     }
 
+    public EntryStream<K, V> distinct(final Predicate<? super Long> occurrencesFilter) {
+        return of(s.distinct(occurrencesFilter));
+    }
+
+    public EntryStream<K, V> distinctBy(final Function<? super Entry<K, V>, ?> keyExtractor, final Predicate<? super Long> occurrencesFilter) {
+        return of(s.distinctBy(keyExtractor, occurrencesFilter));
+    }
+
     public EntryStream<K, V> reversed() {
         return of(s.reversed());
     }
@@ -573,6 +616,123 @@ public final class EntryStream<K, V> implements AutoCloseable {
         };
 
         s.forEach(action2);
+    }
+
+    public Optional<Map.Entry<K, V>> min(Comparator<? super Map.Entry<K, V>> comparator) {
+        return s.min(comparator);
+    }
+
+    public Optional<Map.Entry<K, V>> minByKey(Comparator<? super K> keyComparator) {
+        return s.min(Comparators.comparingBy(Fn.<K, V> key(), keyComparator));
+    }
+
+    public Optional<Map.Entry<K, V>> minByValue(Comparator<? super V> valueComparator) {
+        return s.min(Comparators.comparingBy(Fn.<K, V> value(), valueComparator));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Optional<Map.Entry<K, V>> minBy(final Function<? super Map.Entry<K, V>, ? extends Comparable> keyExtractor) {
+        return s.minBy(keyExtractor);
+    }
+
+    public Optional<Map.Entry<K, V>> max(Comparator<? super Map.Entry<K, V>> comparator) {
+        return s.max(comparator);
+    }
+
+    public Optional<Map.Entry<K, V>> maxByKey(Comparator<? super K> keyComparator) {
+        return s.max(Comparators.comparingBy(Fn.<K, V> key(), keyComparator));
+    }
+
+    public Optional<Map.Entry<K, V>> maxByValue(Comparator<? super V> valueComparator) {
+        return s.max(Comparators.comparingBy(Fn.<K, V> value(), valueComparator));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Optional<Map.Entry<K, V>> maxBy(final Function<? super Map.Entry<K, V>, ? extends Comparable> keyExtractor) {
+        return s.maxBy(keyExtractor);
+    }
+
+    public <E extends Exception> boolean anyMatch(final Try.Predicate<? super Map.Entry<K, V>, E> predicate) throws E {
+        return s.anyMatch(predicate);
+    }
+
+    public <E extends Exception> boolean anyMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
+            @Override
+            public boolean test(Entry<K, V> entry) throws E {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return s.anyMatch(predicate2);
+    }
+
+    public <E extends Exception> boolean allMatch(final Try.Predicate<? super Map.Entry<K, V>, E> predicate) throws E {
+        return s.allMatch(predicate);
+    }
+
+    public <E extends Exception> boolean allMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
+            @Override
+            public boolean test(Entry<K, V> entry) throws E {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return s.allMatch(predicate2);
+    }
+
+    public <E extends Exception> boolean noneMatch(final Try.Predicate<? super Map.Entry<K, V>, E> predicate) throws E {
+        return s.noneMatch(predicate);
+    }
+
+    public <E extends Exception> boolean noneMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
+            @Override
+            public boolean test(Entry<K, V> entry) throws E {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return s.noneMatch(predicate2);
+    }
+
+    public <E extends Exception> Optional<Map.Entry<K, V>> findFirst(final Try.Predicate<? super Map.Entry<K, V>, E> predicate) throws E {
+        return s.findFirst(predicate);
+    }
+
+    public <E extends Exception> Optional<Map.Entry<K, V>> findFirst(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
+            @Override
+            public boolean test(Entry<K, V> entry) throws E {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return s.findFirst(predicate2);
+    }
+
+    public <E extends Exception> Optional<Map.Entry<K, V>> findAny(final Try.Predicate<? super Map.Entry<K, V>, E> predicate) throws E {
+        return s.findAny(predicate);
+    }
+
+    public <E extends Exception> Optional<Map.Entry<K, V>> findAny(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
+            @Override
+            public boolean test(Entry<K, V> entry) throws E {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return s.findAny(predicate2);
+    }
+
+    public Optional<Map.Entry<K, V>> first() {
+        return s.first();
+    }
+
+    public Optional<Map.Entry<K, V>> last() {
+        return s.last();
     }
 
     public long count() {
@@ -978,6 +1138,28 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     /**
+     * @return
+     * @see #mapER(Function, Function)
+     */
+    @Beta
+    public EntryStream<V, K> inversedER() {
+        N.checkState(s.isParallel() == false, "inversedER can't be applied to parallel stream");
+
+        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
+            private final ReusableEntry<V, K> entry = new ReusableEntry<>();
+
+            @Override
+            public Entry<V, K> apply(Entry<K, V> e) {
+                entry.set(e.getValue(), e.getKey());
+
+                return entry;
+            }
+        };
+
+        return map(mapper);
+    }
+
+    /**
      * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
      * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
      * The elements only can be retrieved one by one, can't be modified or saved.
@@ -1036,7 +1218,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see #mapER(Function, Function)
      */
     @Beta
-    public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, Stream<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, ? extends Stream<KK>> keyMapper) {
         N.checkState(s.isParallel() == false, "flatMapKeyER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
@@ -1057,7 +1239,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <KK> EntryStream<KK, V> flattMapKeyER(final Function<? super K, Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKeyER(final Function<? super K, ? extends Collection<KK>> keyMapper) {
         N.checkState(s.isParallel() == false, "flatMapKeyER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
@@ -1085,7 +1267,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see #mapER(Function, Function)
      */
     @Beta
-    public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, Stream<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, ? extends Stream<VV>> valueMapper) {
         N.checkState(s.isParallel() == false, "flatMapValueER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
@@ -1106,7 +1288,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
-    public <VV> EntryStream<K, VV> flattMapValueER(final Function<? super V, Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValueER(final Function<? super V, ? extends Collection<VV>> valueMapper) {
         N.checkState(s.isParallel() == false, "flatMapValueER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
@@ -1125,28 +1307,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
         };
 
         return flatMap(mapper2);
-    }
-
-    /**
-     * @return
-     * @see #mapER(Function, Function)
-     */
-    @Beta
-    public EntryStream<V, K> inversedER() {
-        N.checkState(s.isParallel() == false, "inversedER can't be applied to parallel stream");
-
-        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
-            private final ReusableEntry<V, K> entry = new ReusableEntry<>();
-
-            @Override
-            public Entry<V, K> apply(Entry<K, V> e) {
-                entry.set(e.getValue(), e.getKey());
-
-                return entry;
-            }
-        };
-
-        return map(mapper);
     }
 
     public EntryStream<K, V> onClose(Runnable closeHandler) {

@@ -4,6 +4,8 @@
 
 * Refactoring: `EntryStream.map`.
 
+* Add: `EntryStream.removeIf/takeWhile/dropWhile/findFirst/findAny/anyMatch/allMatch/noneMatch/min/minBy/max/maxBy`.
+
 * Improvements and bug fix.
 
 

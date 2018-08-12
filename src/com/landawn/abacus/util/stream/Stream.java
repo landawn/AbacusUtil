@@ -653,9 +653,8 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <K, V> EntryStream<K, V> flattMapToEntry(Function<? super T, ? extends Map<K, V>> mapper);
 
-    // Not efficient. Too many temporary objects will be created.
-    //    @ParallelSupported
-    //    public abstract <V> EntryStream<T, V> flattMapToEntry(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
+    @ParallelSupported
+    public abstract <K, V> EntryStream<K, V> flatMappToEntry(Function<? super T, ? extends EntryStream<K, V>> mapper);
 
     @ParallelSupported
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);

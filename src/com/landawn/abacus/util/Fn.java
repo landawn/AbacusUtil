@@ -94,6 +94,11 @@ import com.landawn.abacus.util.stream.Stream;
 /**
  * Factory utility class for functional interfaces.
  * 
+ * <br>
+ * Note: Don't save and reuse any Function/Predicat/Consumer/... created by calling the methods in this class.
+ * The method should be called every time.
+ * </br>
+ * 
  * <pre>
  * <code>
  * 
@@ -105,6 +110,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * </code>
  * </pre>
+ * 
  * 
  * 
  * @author haiyang li
