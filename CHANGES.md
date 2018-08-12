@@ -2,6 +2,8 @@
 
 * Rename `Multimap.totalCountOfValue` to `Multimap.totalCountOfValues`.
 
+* Refactoring: `EntryStream.map`.
+
 * Improvements and bug fix.
 
 
