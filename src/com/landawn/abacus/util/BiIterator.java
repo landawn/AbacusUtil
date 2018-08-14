@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -201,6 +202,22 @@ public abstract class BiIterator<A, B> extends ImmutableIterator<Pair<A, B>> {
                 };
             }
         };
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final A[] a, final B[] b) {
+        return zip(Array.asList(a), Array.asList(b));
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB) {
+        return zip(Array.asList(a), Array.asList(b), valueForNoneA, valueForNoneB);
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final Collection<A> a, final Collection<B> b) {
+        return zip(a == null ? null : a.iterator(), b == null ? null : b.iterator());
+    }
+
+    public static <A, B> BiIterator<A, B> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB) {
+        return zip(a == null ? null : a.iterator(), b == null ? null : b.iterator(), valueForNoneA, valueForNoneB);
     }
 
     public static <A, B> BiIterator<A, B> zip(final Iterator<A> iterA, final Iterator<B> iterB) {

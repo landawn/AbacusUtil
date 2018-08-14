@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableMap;
@@ -35,11 +36,13 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -741,6 +744,29 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     public ObjIterator<Map.Entry<K, V>> iterator() {
         return s.iterator();
+    }
+
+    public BiIterator<K, V> biIterator() {
+        final ObjIterator<Entry<K, V>> iter = iterator();
+
+        final BooleanSupplier hasNext = new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                return iter.hasNext();
+            }
+        };
+
+        final Consumer<Pair<K, V>> output = new Consumer<Pair<K, V>>() {
+            private Entry<K, V> entry = null;
+
+            @Override
+            public void accept(Pair<K, V> t) {
+                entry = iter.next();
+                t.set(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return BiIterator.generate(hasNext, output);
     }
 
     /**

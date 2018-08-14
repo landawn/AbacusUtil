@@ -437,7 +437,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //                final Pair<T, Exception> result = gett();
     //                final Pair<? extends U, Exception> result2 = other.gett();
     //
-    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
+    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result2.right));
     //            }
     //
     //            @Override
@@ -449,7 +449,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //                final Pair<T, Exception> result = ContinuableFuture.this.gett(timeout, unit);
     //                final Pair<? extends U, Exception> result2 = other.gett(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
     //
-    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
+    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result2.right));
     //            }
     //        }, null, asyncExecutor) {
     //            @Override
@@ -623,7 +623,7 @@ public class ContinuableFuture<T> implements Future<T> {
             public Void call() throws Exception {
                 final Pair<T, Exception> result = gett();
                 final Pair<U, Exception> result2 = other.gett();
-                action.accept(Tuple.of(result.left, result.right, result2.left, result.right));
+                action.accept(Tuple.of(result.left, result.right, result2.left, result2.right));
 
                 return null;
             }
@@ -658,7 +658,7 @@ public class ContinuableFuture<T> implements Future<T> {
                 final Pair<T, Exception> result = gett();
                 final Pair<U, Exception> result2 = other.gett();
 
-                return action.apply(Tuple.of(result.left, result.right, result2.left, result.right));
+                return action.apply(Tuple.of(result.left, result.right, result2.left, result2.right));
             }
         }, other);
     }

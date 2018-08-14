@@ -6506,6 +6506,16 @@ public abstract class StringUtil {
         return str.length() > 0;
     }
 
+    public static String sort(String str) {
+        if (N.isNullOrEmpty(str)) {
+            return str;
+        }
+
+        final char[] chs = str.toCharArray();
+        Arrays.sort(chs);
+        return StringUtil.newString(chs, true);
+    }
+
     @Beta
     @Internal
     @Deprecated

@@ -786,48 +786,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     @SequentialOnly
     <R> R __(Function<? super S, R> transfer);
 
-    //    /**
-    //     * Short-cut for s.parallel().__(op).sequential().
-    //     * 
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
-    //
-    //    /**
-    //     * 
-    //     * Short-cut for s.parallel(maxThreadNum).__(op).sequential().
-    //     * 
-    //     * @param maxThreadNum
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
-
     @SequentialOnly
     Try<S> tried();
-
-    //    /**
-    //     * Short-cut for s.parallel().__(op).sequential().
-    //     * 
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
-    //
-    //    /**
-    //     * 
-    //     * Short-cut for s.parallel(maxThreadNum).__(op).sequential().
-    //     * 
-    //     * @param maxThreadNum
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
 
     /**
      * Returns an equivalent stream with an additional close handler.  Close

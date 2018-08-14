@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -200,6 +201,25 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
                 };
             }
         };
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final A[] a, final B[] b, final C[] c) {
+        return zip(Array.asList(a), Array.asList(b), Array.asList(c));
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC) {
+        return zip(Array.asList(a), Array.asList(b), Array.asList(c), valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c) {
+        return zip(a == null ? null : a.iterator(), b == null ? null : b.iterator(), c == null ? null : c.iterator());
+    }
+
+    public static <A, B, C> TriIterator<A, B, C> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC) {
+        return zip(a == null ? null : a.iterator(), b == null ? null : b.iterator(), c == null ? null : c.iterator(), valueForNoneA, valueForNoneB,
+                valueForNoneC);
     }
 
     public static <A, B, C> TriIterator<A, B, C> zip(final Iterator<A> iterA, final Iterator<B> iterB, final Iterator<C> iterC) {
