@@ -1390,12 +1390,12 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return new EntryStream<K, V>(s);
     }
 
-    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
-        return new EntryStream<K, V>(Stream.of(iterator));
-    }
-
     public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
         return new EntryStream<K, V>(map, Stream.of(map));
+    }
+
+    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
+        return new EntryStream<K, V>(Stream.of(iterator));
     }
 
     public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {

@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.Transaction;
@@ -35,15 +37,23 @@ public final class SQLTransaction implements Transaction {
 
     private final String id;
     private Connection conn;
-    private final IsolationLevel isolationLevel;
     private final int originalIsolationLevel;
     private final boolean originalAutoCommit;
     private Status status;
+    private boolean isRollbackOnly = false;
 
-    public SQLTransaction(Connection conn, IsolationLevel isolationLevel) {
+    private final AtomicInteger refCount = new AtomicInteger();
+    private final Stack<IsolationLevel> isolationLevelStack = new Stack<>();
+    private final Stack<Boolean> isForUpdateOnlyStack = new Stack<>();
+    private IsolationLevel isolationLevel;
+    private boolean isForUpdateOnly;
+    private SQLExecutor sqlExecutor;
+
+    public SQLTransaction(SQLExecutor sqlExecutor, IsolationLevel isolationLevel) {
+        this.sqlExecutor = sqlExecutor;
         this.id = N.uuid();
         this.isolationLevel = isolationLevel;
-        this.conn = conn;
+        this.conn = sqlExecutor.getConnection();
         status = Status.ACTIVE;
 
         try {
@@ -87,39 +97,64 @@ public final class SQLTransaction implements Transaction {
 
     @Override
     public void commit() throws UncheckedSQLException {
+        if (decrementAndGetRef() > 0) {
+            return;
+        }
+
         if (!status.equals(Status.ACTIVE)) {
             throw new IllegalStateException("transaction is already " + status);
         }
 
-        status = Status.COMMIT_FAILED;
-
-        try {
-            conn.commit();
-
-            status = Status.COMMITTED;
-        } catch (SQLException e) {
-            boolean rollback = false;
-
+        if (isRollbackOnly) {
             try {
+                throw new IllegalStateException("transaction will be rolled back because it's for roll back only");
+            } finally {
                 rollback();
-
-                rollback = true;
-            } catch (Throwable e2) {
-                // ignore;
-                logger.error("Failed to rollback after error happened during committing", e2);
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("Committing transaction with id: " + id);
             }
 
-            throw new UncheckedSQLException(
-                    "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to rollback"), e);
-        } finally {
-            closeConnection();
+            status = Status.COMMIT_FAILED;
+
+            try {
+                conn.commit();
+
+                status = Status.COMMITTED;
+            } catch (SQLException e) {
+                boolean rollback = false;
+
+                try {
+                    rollback();
+
+                    rollback = true;
+                } catch (Throwable e2) {
+                    // ignore;
+                    logger.error("Failed to rollback after error happened during committing", e2);
+                }
+
+                throw new UncheckedSQLException(
+                        "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to rollback"), e);
+            } finally {
+                closeConnection();
+            }
         }
     }
 
     @Override
     public void rollback() throws UncheckedSQLException {
+        if (decrementAndGetRef() > 0) {
+            isRollbackOnly = true;
+            return;
+        }
+
         if (!(status.equals(Status.ACTIVE) || status == Status.COMMIT_FAILED)) {
             throw new IllegalStateException("transaction is already " + status);
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Rolling back transaction with id: " + id);
         }
 
         status = Status.ROLLBACK_FAILED;
@@ -135,7 +170,53 @@ public final class SQLTransaction implements Transaction {
         }
     }
 
+    /**
+     * Associate current thread with this transaction.
+     * 
+     */
+    public void attach() {
+        attach(Thread.currentThread().getId());
+    }
+
+    /**
+     * Associate the specified thread with this transaction.
+     * 
+     * @param threadId
+     */
+    public void attach(long threadId) {
+        sqlExecutor.threadIdTransactionMap.put(threadId, this);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
+        }
+    }
+
+    /**
+     * Remove this transaction from current thread.
+     * 
+     */
+    public void detach() {
+        detach(Thread.currentThread().getId());
+    }
+
+    /**
+     * Remove this transaction from the specified thread.
+     * 
+     * @param threadId
+     */
+    public void detach(long threadId) {
+        sqlExecutor.threadIdTransactionMap.remove(threadId);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
+        }
+    }
+
     private void closeConnection() {
+        if (conn == null) {
+            return;
+        }
+
         try {
             conn.setAutoCommit(originalAutoCommit);
             conn.setTransactionIsolation(originalIsolationLevel);
@@ -151,4 +232,64 @@ public final class SQLTransaction implements Transaction {
             conn = null;
         }
     }
+
+    synchronized int getAndIncrementRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
+        try {
+            conn.setTransactionIsolation(isolationLevel.intValue());
+        } catch (SQLException e) {
+            new UncheckedSQLException(e);
+        }
+
+        this.isolationLevel = isolationLevel;
+        this.isForUpdateOnly = forUpdateOnly;
+        this.isolationLevelStack.push(isolationLevel);
+        this.isForUpdateOnlyStack.push(forUpdateOnly);
+        return refCount.getAndIncrement();
+    }
+
+    synchronized int decrementAndGetRef() throws UncheckedSQLException {
+        final int res = refCount.decrementAndGet();
+
+        if (res == 0) {
+            sqlExecutor.threadIdTransactionMap.remove(Thread.currentThread().getId());
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Closing transaction: " + id);
+                logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
+            }
+        } else {
+            final IsolationLevel tmp = isolationLevelStack.pop();
+
+            try {
+                conn.setTransactionIsolation(tmp.intValue());
+            } catch (SQLException e) {
+                new UncheckedSQLException(e);
+            }
+
+            this.isolationLevel = tmp;
+            this.isForUpdateOnly = isForUpdateOnlyStack.pop();
+        }
+
+        return res;
+    }
+
+    boolean isForUpdateOnly() {
+        return isForUpdateOnly;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SQLTransaction && id.equals(((SQLTransaction) obj).id);
+    }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
 }

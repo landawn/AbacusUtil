@@ -62,7 +62,6 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DataSource;
 import com.landawn.abacus.DataSourceManager;
 import com.landawn.abacus.DataSourceSelector;
-import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.SliceSelector;
 import com.landawn.abacus.core.AbacusConfiguration;
 import com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration;
@@ -721,14 +720,6 @@ public final class JdbcUtil {
                 logger.error("Failed to close Connection", e);
             }
         }
-    }
-
-    public static SQLTransaction beginTransaction(final Connection conn, final IsolationLevel isolationLevel) throws UncheckedSQLException {
-        if (isolationLevel == null) {
-            throw new IllegalArgumentException("The parameter isolationLevel can't be null");
-        }
-
-        return new SQLTransaction(conn, isolationLevel);
     }
 
     @SafeVarargs

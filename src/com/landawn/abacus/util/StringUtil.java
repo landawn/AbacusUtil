@@ -6506,13 +6506,19 @@ public abstract class StringUtil {
         return str.length() > 0;
     }
 
+    /**
+     * Returns a new sorted String if the specified {@code str} is not null or empty, otherwise the specified {@code str} is returned.
+     * 
+     * @param str
+     * @return
+     */
     public static String sort(String str) {
         if (N.isNullOrEmpty(str)) {
             return str;
         }
 
         final char[] chs = str.toCharArray();
-        Arrays.sort(chs);
+        Array.sort(chs);
         return StringUtil.newString(chs, true);
     }
 

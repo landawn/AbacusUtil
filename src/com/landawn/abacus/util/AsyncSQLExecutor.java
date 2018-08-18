@@ -1510,28 +1510,14 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    //    public ContinuableFuture<Integer> executeUpdate(final String sql, final Object... parameters) {
-    //        return asyncExecutor.execute(new Callable<Integer>() {
-    //            @Override
-    //            public Integer call() throws Exception {
-    //                return sqlExecutor.executeUpdate(sql, parameters);
-    //            }
-    //        });
-    //    }
-    //
-    //    /**
-    //     * Don't forget to close the returned ResultSet.
-    //     * 
-    //     * @param sql
-    //     * @param parameters
-    //     * @return
-    //     */
-    //    public ContinuableFuture<ResultSet> executeQuery(final String sql, final Object... parameters) {
-    //        return asyncExecutor.execute(new Callable<ResultSet>() {
-    //            @Override
-    //            public ResultSet call() throws Exception {
-    //                return sqlExecutor.executeQuery(sql, parameters);
-    //            }
-    //        });
-    //    }
+    @SafeVarargs
+    public final ContinuableFuture<Void> execute(final Connection conn, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                sqlExecutor.execute(conn, sql, parameters);
+                return null;
+            }
+        });
+    }
 }

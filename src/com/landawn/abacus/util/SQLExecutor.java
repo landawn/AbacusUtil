@@ -137,9 +137,9 @@ import com.landawn.abacus.util.stream.Stream;
  *      final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
         boolean noException = false;
         try {
-            // sqlExecutor.insert(tran.getConnection(), ...);
-            // sqlExecutor.update(tran.getConnection(), ...);
-            // sqlExecutor.query(tran.getConnection(), ...);
+            // sqlExecutor.insert(...);
+            // sqlExecutor.update(...);
+            // sqlExecutor.query(...);
 
             noException = true;
         } finally {
@@ -355,6 +355,7 @@ public final class SQLExecutor implements Closeable {
     private final String _dbProudctVersion;
     private final DBVersion _dbVersion;
     private final IsolationLevel _defaultIsolationLevel;
+    private final int _originalIsolationLevel;
     private final AsyncSQLExecutor _asyncSQLExecutor;
 
     private final Map<Class<?>, Mapper<?>> mapperPool = new ConcurrentHashMap<>();
@@ -511,6 +512,7 @@ public final class SQLExecutor implements Closeable {
             _dbProudctName = conn.getMetaData().getDatabaseProductName();
             _dbProudctVersion = conn.getMetaData().getDatabaseProductVersion();
             _dbVersion = JdbcUtil.getDBVersion(conn);
+            _originalIsolationLevel = conn.getTransactionIsolation();
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
@@ -688,7 +690,7 @@ public final class SQLExecutor implements Closeable {
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
 
-            localConn = (conn == null) ? ds.getConnection() : conn;
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.INSERT, false);
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, false, parameters);
 
@@ -849,16 +851,16 @@ public final class SQLExecutor implements Closeable {
         DataSource ds = null;
         Connection localConn = null;
         PreparedStatement stmt = null;
-        int isolationLevel = 0;
+        int originalIsolationLevel = 0;
         boolean autoCommit = true;
 
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parametersList, jdbcSettings);
 
-            localConn = (conn == null) ? ds.getConnection() : conn;
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.INSERT, false);
 
             try {
-                isolationLevel = localConn.getTransactionIsolation();
+                originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
@@ -868,11 +870,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 localConn.setAutoCommit(false);
 
-                if (jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT) {
-                    // ignore. by default
-                } else {
-                    localConn.setTransactionIsolation(jdbcSettings.getIsolationLevel().intValue());
-                }
+                setIsolationLevel(jdbcSettings, localConn);
             }
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, true, parametersList);
@@ -930,7 +928,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 try {
                     localConn.setAutoCommit(autoCommit);
-                    localConn.setTransactionIsolation(isolationLevel);
+                    localConn.setTransactionIsolation(originalIsolationLevel);
                 } catch (SQLException e) {
                     logger.error("Failed to reset AutoCommit", e);
                 }
@@ -1005,6 +1003,18 @@ public final class SQLExecutor implements Closeable {
         return resultIdList;
     }
 
+    private void setIsolationLevel(JdbcSettings jdbcSettings, Connection localConn) throws SQLException {
+        final int isolationLevel = jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT
+                ? (_defaultIsolationLevel == IsolationLevel.DEFAULT ? _originalIsolationLevel : _defaultIsolationLevel.intValue())
+                : jdbcSettings.getIsolationLevel().intValue();
+
+        if (isolationLevel == localConn.getTransactionIsolation()) {
+            // ignore.
+        } else {
+            localConn.setTransactionIsolation(isolationLevel);
+        }
+    }
+
     protected <T> void executeBatchInsert(final List<T> resultIdList, final NamedSQL namedSQL, final PreparedStatement stmt) throws SQLException {
         if (_isReadOnly) {
             throw new AbacusException("This SQL Executor is configured for read-only");
@@ -1070,7 +1080,7 @@ public final class SQLExecutor implements Closeable {
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
 
-            localConn = (conn == null) ? ds.getConnection() : conn;
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.UPDATE, false);
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
 
@@ -1161,16 +1171,16 @@ public final class SQLExecutor implements Closeable {
         DataSource ds = null;
         Connection localConn = null;
         PreparedStatement stmt = null;
-        int isolationLevel = 0;
+        int originalIsolationLevel = 0;
         boolean autoCommit = true;
 
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parametersList, jdbcSettings);
 
-            localConn = (conn == null) ? ds.getConnection() : conn;
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.UPDATE, false);
 
             try {
-                isolationLevel = localConn.getTransactionIsolation();
+                originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
@@ -1180,11 +1190,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 localConn.setAutoCommit(false);
 
-                if (jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT) {
-                    // ignore. by default
-                } else {
-                    localConn.setTransactionIsolation(jdbcSettings.getIsolationLevel().intValue());
-                }
+                setIsolationLevel(jdbcSettings, localConn);
             }
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, true, parametersList);
@@ -1246,7 +1252,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 try {
                     localConn.setAutoCommit(autoCommit);
-                    localConn.setTransactionIsolation(isolationLevel);
+                    localConn.setTransactionIsolation(originalIsolationLevel);
                 } catch (SQLException e) {
                     logger.error("Failed to reset AutoCommit", e);
                 }
@@ -2033,7 +2039,7 @@ public final class SQLExecutor implements Closeable {
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
 
-            localConn = (conn == null) ? ds.getConnection() : conn;
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, resultSetExtractor == ROW_ITERATOR_RESULT_SET_EXTRACTOR);
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
 
@@ -2245,6 +2251,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param sql
      * @param statementSetter
@@ -2268,6 +2275,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param conn
      * @param sql
@@ -2296,6 +2304,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param sql
      * @param statementSetter
@@ -2320,6 +2329,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param conn
      * @param sql
@@ -2418,6 +2428,8 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+     * 
      * 
      * @param sql
      * @param statementSetter
@@ -2438,6 +2450,7 @@ public final class SQLExecutor implements Closeable {
     /**
      * Returns the merged ResultSet acquired by querying with the specified sql in parallel. Mostly it's designed
      * for partition to query the partitioning table in more than one databases.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      *
      * @param conn
      * @param sql
@@ -2461,6 +2474,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param sql
      * @param statementSetter
@@ -2482,6 +2496,7 @@ public final class SQLExecutor implements Closeable {
     /**
      * Returns the merged ResultSet acquired by querying with the specified sql in parallel. Mostly it's designed
      * for partition to query the partitioning table in more than one databases.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      *
      * @param conn
      * @param sql
@@ -2531,6 +2546,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param sqls
      * @param statementSetter
@@ -2551,6 +2567,7 @@ public final class SQLExecutor implements Closeable {
     /**
      * Returns the merged ResultSet acquired by querying with the specified sql list in parallel. Mostly it's designed
      * for partition to query multiple partitioning tables in one or more databases.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      *
      * @param conn
      * @param sqls
@@ -2575,6 +2592,7 @@ public final class SQLExecutor implements Closeable {
 
     /**
      * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      * 
      * @param sqls
      * @param statementSetter
@@ -2596,6 +2614,7 @@ public final class SQLExecutor implements Closeable {
     /**
      * Returns the merged ResultSet acquired by querying with the specified sql list in parallel. Mostly it's designed
      * for partition to query multiple partitioning tables in one or more databases.
+     * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
      *
      * @param conn
      * @param sqls
@@ -2635,29 +2654,36 @@ public final class SQLExecutor implements Closeable {
         return skipAndLimit(s, jdbcSettings).tried();
     }
 
+    public final void execute(final String sql, final Object... parameters) {
+        execute(null, sql, parameters);
+    }
+
     /**
      * Execute the sql with the specified parameters.
      * 
+     * @param conn
      * @param sql
      * @param parameters
      * 
      * @see java.sql.PreparedStatement#execute()
      */
     @SafeVarargs
-    public final void execute(final String sql, final Object... parameters) {
+    public final void execute(final Connection conn, final String sql, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
         final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL);
 
+        final SQLOperation op = StringUtil.startsWithIgnoreCase(namedSQL.getPureSQL().trim(), "select") ? SQLOperation.SELECT : SQLOperation.UPDATE;
         DataSource ds = null;
-        Connection conn = null;
+        Connection localConn = null;
         PreparedStatement stmt = null;
 
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
-            conn = ds.getConnection();
 
-            stmt = prepareStatement(ds, conn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
+            localConn = getConnection(conn, ds, jdbcSettings, op, false);
+
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
 
             stmt.execute();
         } catch (SQLException e) {
@@ -2665,85 +2691,21 @@ public final class SQLExecutor implements Closeable {
             logger.error(msg);
             throw new UncheckedSQLException(e, msg);
         } finally {
-            closeQuietly(stmt, conn);
+            closeQuietly(stmt, localConn, conn);
         }
     }
 
-    //    /**
-    //     * Execute update by the sql with the specified parameters.
-    //     * 
-    //     * @param sql
-    //     * @param parameters
-    //     * 
-    //     * @see java.sql.PreparedStatement#executeUpdate()
-    //     */
-    //    public int executeUpdate(final String sql, final Object... parameters) {
-    //        final NamedSQL namedSQL = getNamedSQL(sql);
-    //        final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
-    //        final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL);
-    //
-    //        DataSource ds = null;
-    //        Connection conn = null;
-    //        PreparedStatement stmt = null;
-    //
-    //        try {
-    //            ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
-    //            conn = ds.getConnection();
-    //
-    //            stmt = prepareStatement(ds, conn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
-    //
-    //            return stmt.executeUpdate();
-    //        } catch (SQLException e) {
-    //            String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
-    //            logger.error(msg);
-    //            throw new UncheckedSQLException(e, msg);
-    //        } finally {
-    //            closeQuietly(stmt, conn);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Execute query by the sql with the specified parameters.
-    //     * Don't forget to close the returned ResultSet.
-    //     * 
-    //     * @param sql
-    //     * @param parameters
-    //     * 
-    //     * @see java.sql.PreparedStatement#executeUpdate()
-    //     */
-    //    public ResultSet executeQuery(final String sql, final Object... parameters) {
-    //        final NamedSQL namedSQL = getNamedSQL(sql);
-    //        final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
-    //        final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL);
-    //
-    //        DataSource ds = null;
-    //        Connection conn = null;
-    //        PreparedStatement stmt = null;
-    //
-    //        try {
-    //            ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
-    //            conn = ds.getConnection();
-    //
-    //            stmt = prepareStatement(ds, conn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
-    //
-    //            final ResultSet rs = stmt.executeQuery();
-    //            long offset = jdbcSettings.getOffset();
-    //
-    //            while ((offset-- > 0) && rs.next()) {
-    //            }
-    //
-    //            return rs;
-    //        } catch (SQLException e) {
-    //            String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
-    //            logger.error(msg);
-    //            throw new UncheckedSQLException(e, msg);
-    //        } finally {
-    //            closeQuietly(stmt, conn);
-    //        }
-    //    }
-
-    /**
+    /** 
+     * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
+     * DON'T close it again by calling the close method.
      * 
+     * @return
+     */
+    public SQLTransaction beginTransaction() {
+        return beginTransaction(IsolationLevel.DEFAULT);
+    }
+
+    /** 
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
      * 
@@ -2751,13 +2713,65 @@ public final class SQLExecutor implements Closeable {
      * @return
      */
     public SQLTransaction beginTransaction(IsolationLevel isolationLevel) {
+        return beginTransaction(isolationLevel, false);
+    }
+
+    /** 
+     * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
+     * DON'T close it again by calling the close method.
+     * 
+     * @param forUpdateOnly
+     * @return
+     */
+    public SQLTransaction beginTransaction(boolean forUpdateOnly) {
+        return beginTransaction(IsolationLevel.DEFAULT, forUpdateOnly);
+    }
+
+    final Map<Long, SQLTransaction> threadIdTransactionMap = new ConcurrentHashMap<>();
+
+    /**
+     * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
+     * DON'T close it again by calling the close method.
+     * 
+     * @param isolationLevel
+     * @param forUpdateOnly
+     * @return
+     */
+    public SQLTransaction beginTransaction(IsolationLevel isolationLevel, boolean forUpdateOnly) {
         if (isolationLevel == null) {
             throw new IllegalArgumentException("The parameter isolationLevel can't be null");
         }
 
         isolationLevel = isolationLevel == IsolationLevel.DEFAULT ? _defaultIsolationLevel : isolationLevel;
 
-        return new SQLTransaction(getConnection(), isolationLevel);
+        final long threadId = Thread.currentThread().getId();
+        SQLTransaction transaction = threadIdTransactionMap.get(threadId);
+
+        if (transaction == null) {
+            transaction = new SQLTransaction(this, isolationLevel);
+            threadIdTransactionMap.put(threadId, transaction);
+            if (logger.isInfoEnabled()) {
+                logger.info("A new transaction(id= " + transaction.id() + ") is created for thread(id=" + threadId + ")");
+            }
+        } else {
+            //    if (isolationLevel.intValue() > transaction.isolationLevel().intValue()) {
+            //        throw new IllegalStateException("Can't start/reuse transaction with isolation level: " + isolationLevel
+            //                + " because the tranaction has been started with lower isolation level: " + transaction.isolationLevel() + " in same thread: "
+            //                + threadId);
+            //    }
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Reusing the existing transaction(id= " + transaction.id() + ") in thread(id=" + threadId + ")");
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Active transactions: " + threadIdTransactionMap);
+        }
+
+        transaction.getAndIncrementRef(isolationLevel, forUpdateOnly);
+
+        return transaction;
     }
 
     public DBSequence getDBSequence(final String tableName, final String seqName) {
@@ -2854,6 +2868,141 @@ public final class SQLExecutor implements Closeable {
 
     public Connection getConnection() {
         return _ds.getConnection();
+    }
+
+    protected DataSource getDataSource(final String sql, final Object[] parameters, final JdbcSettings jdbcSettings) {
+        if (_dsm == null || _dss == null) {
+            if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
+                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
+                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
+            }
+
+            return _ds;
+        } else {
+            if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
+                return _dss.select(_dsm, null, sql, parameters, null);
+            } else {
+                return _dss.select(_dsm, null, sql, parameters, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
+            }
+        }
+    }
+
+    protected DataSource getDataSource(final String sql, final List<?> parametersList, final JdbcSettings jdbcSettings) {
+        if (_dsm == null || _dss == null) {
+            if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
+                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
+                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
+            }
+
+            return _ds;
+        } else {
+            if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
+                return _dss.select(_dsm, null, sql, parametersList, null);
+            } else {
+                return _dss.select(_dsm, null, sql, parametersList, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
+            }
+        }
+    }
+
+    protected Connection getConnection(final Connection conn, final DataSource ds, final JdbcSettings jdbcSettings, final SQLOperation op,
+            final boolean isIterationQuery) {
+        if (conn != null) {
+            return conn;
+        } else if (isIterationQuery) {
+            return ds.getConnection();
+        }
+
+        final SQLTransaction tran = threadIdTransactionMap.get(Thread.currentThread().getId());
+
+        if (tran != null && (tran.isForUpdateOnly() == false || op != SQLOperation.SELECT)) {
+            return tran.connection();
+        }
+
+        return ds.getConnection();
+    }
+
+    protected PreparedStatement prepareStatement(final DataSource ds, final Connection localConn, final NamedSQL namedSQL,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final int autoGeneratedKeys, final boolean isBatch,
+            final Object... parameters) throws SQLException {
+        String sql = namedSQL.getPureSQL();
+
+        if (isBatch) {
+            sql = ds.getSliceSelector().select(null, sql, (List<?>) parameters[0], null);
+        } else {
+            sql = ds.getSliceSelector().select(null, sql, parameters, null);
+        }
+
+        PreparedStatement stmt = null;
+
+        if (jdbcSettings == null) {
+            stmt = localConn.prepareStatement(sql);
+        } else {
+            if (N.notNullOrEmpty(jdbcSettings.getColumnIndexes())) {
+                if (jdbcSettings.getColumnIndexes().length != 1) {
+                    throw new IllegalArgumentException("only 1 generated key is supported At present");
+                }
+
+                stmt = localConn.prepareStatement(sql, jdbcSettings.getColumnIndexes());
+            } else if (N.notNullOrEmpty(jdbcSettings.getColumnNames())) {
+                if (jdbcSettings.getColumnNames().length != 1) {
+                    throw new IllegalArgumentException("only 1 generated key is supported At present");
+                }
+
+                stmt = localConn.prepareStatement(sql, jdbcSettings.getColumnNames());
+            } else if ((jdbcSettings.getAutoGeneratedKeys() == Statement.RETURN_GENERATED_KEYS) || (autoGeneratedKeys == Statement.RETURN_GENERATED_KEYS)) {
+                stmt = localConn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            } else if ((jdbcSettings.getResultSetType() != -1) || (jdbcSettings.getResultSetConcurrency() != -1)
+                    || (jdbcSettings.getResultSetHoldability() != -1)) {
+                int resultSetType = (jdbcSettings.getResultSetType() == -1) ? JdbcSettings.DEFAULT_RESULT_SET_TYPE : jdbcSettings.getResultSetType();
+
+                int resultSetConcurrency = (jdbcSettings.getResultSetConcurrency() == -1) ? JdbcSettings.DEFAULT_RESULT_SET_CONCURRENCY
+                        : jdbcSettings.getResultSetConcurrency();
+
+                if (jdbcSettings.getResultSetHoldability() != -1) {
+                    stmt = localConn.prepareStatement(sql, resultSetType, resultSetConcurrency, jdbcSettings.getResultSetHoldability());
+                } else {
+                    stmt = localConn.prepareStatement(sql, resultSetType, resultSetConcurrency);
+                }
+            } else {
+                stmt = localConn.prepareStatement(sql);
+            }
+
+            if (jdbcSettings.getFetchSize() != -1) {
+                stmt.setFetchSize(jdbcSettings.getFetchSize());
+            }
+
+            if (jdbcSettings.getMaxRows() != -1) {
+                stmt.setMaxRows(jdbcSettings.getMaxRows());
+            }
+
+            if (jdbcSettings.getMaxFieldSize() != -1) {
+                stmt.setMaxFieldSize(jdbcSettings.getMaxFieldSize());
+            }
+
+            if (jdbcSettings.getFetchDirection() != -1) {
+                stmt.setFetchDirection(jdbcSettings.getFetchDirection());
+            }
+
+            if (jdbcSettings.getQueryTimeout() != -1) {
+                stmt.setQueryTimeout(jdbcSettings.getQueryTimeout());
+            }
+        }
+
+        if (isBatch || N.isNullOrEmpty(parameters)) {
+            // ignore
+        } else {
+            statementSetter.setParameters(namedSQL, stmt, parameters);
+        }
+
+        if ((jdbcSettings != null) && jdbcSettings.isLogSQL() && logger.isInfoEnabled()) {
+            if (N.isNullOrEmpty(parameters)) {
+                logger.info(sql);
+            } else {
+                logger.info(sql + " {" + N.deepToString(parameters) + "}");
+            }
+        }
+
+        return stmt;
     }
 
     /**
@@ -3050,124 +3199,6 @@ public final class SQLExecutor implements Closeable {
         }
 
         return namedSQL;
-    }
-
-    protected DataSource getDataSource(final String sql, final Object[] parameters, final JdbcSettings jdbcSettings) {
-        if (_dsm == null || _dss == null) {
-            if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
-                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
-            }
-
-            return _ds;
-        } else {
-            if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
-                return _dss.select(_dsm, null, sql, parameters, null);
-            } else {
-                return _dss.select(_dsm, null, sql, parameters, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
-            }
-        }
-    }
-
-    protected DataSource getDataSource(final String sql, final List<?> parametersList, final JdbcSettings jdbcSettings) {
-        if (_dsm == null || _dss == null) {
-            if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
-                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
-            }
-
-            return _ds;
-        } else {
-            if ((jdbcSettings == null) || (jdbcSettings.getQueryWithDataSource() == null)) {
-                return _dss.select(_dsm, null, sql, parametersList, null);
-            } else {
-                return _dss.select(_dsm, null, sql, parametersList, N.asProps(QUERY_WITH_DATA_SOURCE, jdbcSettings.getQueryWithDataSource()));
-            }
-        }
-    }
-
-    protected PreparedStatement prepareStatement(final DataSource ds, final Connection localConn, final NamedSQL namedSQL,
-            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final int autoGeneratedKeys, final boolean isBatch,
-            final Object... parameters) throws SQLException {
-        String sql = namedSQL.getPureSQL();
-
-        if (isBatch) {
-            sql = ds.getSliceSelector().select(null, sql, (List<?>) parameters[0], null);
-        } else {
-            sql = ds.getSliceSelector().select(null, sql, parameters, null);
-        }
-
-        PreparedStatement stmt = null;
-
-        if (jdbcSettings == null) {
-            stmt = localConn.prepareStatement(sql);
-        } else {
-            if (N.notNullOrEmpty(jdbcSettings.getColumnIndexes())) {
-                if (jdbcSettings.getColumnIndexes().length != 1) {
-                    throw new IllegalArgumentException("only 1 generated key is supported At present");
-                }
-
-                stmt = localConn.prepareStatement(sql, jdbcSettings.getColumnIndexes());
-            } else if (N.notNullOrEmpty(jdbcSettings.getColumnNames())) {
-                if (jdbcSettings.getColumnNames().length != 1) {
-                    throw new IllegalArgumentException("only 1 generated key is supported At present");
-                }
-
-                stmt = localConn.prepareStatement(sql, jdbcSettings.getColumnNames());
-            } else if ((jdbcSettings.getAutoGeneratedKeys() == Statement.RETURN_GENERATED_KEYS) || (autoGeneratedKeys == Statement.RETURN_GENERATED_KEYS)) {
-                stmt = localConn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            } else if ((jdbcSettings.getResultSetType() != -1) || (jdbcSettings.getResultSetConcurrency() != -1)
-                    || (jdbcSettings.getResultSetHoldability() != -1)) {
-                int resultSetType = (jdbcSettings.getResultSetType() == -1) ? JdbcSettings.DEFAULT_RESULT_SET_TYPE : jdbcSettings.getResultSetType();
-
-                int resultSetConcurrency = (jdbcSettings.getResultSetConcurrency() == -1) ? JdbcSettings.DEFAULT_RESULT_SET_CONCURRENCY
-                        : jdbcSettings.getResultSetConcurrency();
-
-                if (jdbcSettings.getResultSetHoldability() != -1) {
-                    stmt = localConn.prepareStatement(sql, resultSetType, resultSetConcurrency, jdbcSettings.getResultSetHoldability());
-                } else {
-                    stmt = localConn.prepareStatement(sql, resultSetType, resultSetConcurrency);
-                }
-            } else {
-                stmt = localConn.prepareStatement(sql);
-            }
-
-            if (jdbcSettings.getFetchSize() != -1) {
-                stmt.setFetchSize(jdbcSettings.getFetchSize());
-            }
-
-            if (jdbcSettings.getMaxRows() != -1) {
-                stmt.setMaxRows(jdbcSettings.getMaxRows());
-            }
-
-            if (jdbcSettings.getMaxFieldSize() != -1) {
-                stmt.setMaxFieldSize(jdbcSettings.getMaxFieldSize());
-            }
-
-            if (jdbcSettings.getFetchDirection() != -1) {
-                stmt.setFetchDirection(jdbcSettings.getFetchDirection());
-            }
-
-            if (jdbcSettings.getQueryTimeout() != -1) {
-                stmt.setQueryTimeout(jdbcSettings.getQueryTimeout());
-            }
-        }
-
-        if (isBatch || N.isNullOrEmpty(parameters)) {
-            // ignore
-        } else {
-            statementSetter.setParameters(namedSQL, stmt, parameters);
-        }
-
-        if ((jdbcSettings != null) && jdbcSettings.isLogSQL() && logger.isInfoEnabled()) {
-            if (N.isNullOrEmpty(parameters)) {
-                logger.info(sql);
-            } else {
-                logger.info(sql + " {" + N.deepToString(parameters) + "}");
-            }
-        }
-
-        return stmt;
     }
 
     /**
@@ -3986,6 +4017,16 @@ public final class SQLExecutor implements Closeable {
             return stream(selectPropNames, whereCause, null);
         }
 
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
         public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return stream(null, selectPropNames, whereCause, jdbcSettings);
         }
@@ -4002,6 +4043,8 @@ public final class SQLExecutor implements Closeable {
 
         /**
          * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
          * 
          * @param whereCause
          * @param jdbcSettings
@@ -4014,6 +4057,8 @@ public final class SQLExecutor implements Closeable {
 
         /**
          * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
          * 
          * @param selectPropNames
          * @param whereCause
@@ -4245,7 +4290,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public <ID> List<ID> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            return batchAdd(null, entities, batchSize);
+            return batchAdd(null, entities, batchSize, isolationLevel);
         }
 
         public <ID> List<ID> batchAdd(final Connection conn, final Collection<?> entities) {
