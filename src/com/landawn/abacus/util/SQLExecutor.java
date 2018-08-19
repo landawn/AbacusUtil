@@ -4225,13 +4225,12 @@ public final class SQLExecutor implements Closeable {
             }
 
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-            final Connection conn = tran.connection();
             final List<ID> result = new ArrayList<>(entities.size());
             boolean isOk = false;
 
             try {
                 for (Object entity : entities) {
-                    result.add((ID) add(conn, entity));
+                    result.add((ID) add(entity));
                 }
 
                 isOk = true;
@@ -4584,13 +4583,12 @@ public final class SQLExecutor implements Closeable {
             }
 
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-            final Connection conn = tran.connection();
             int result = 0;
             boolean isOk = false;
 
             try {
                 for (Object entity : entities) {
-                    result += update(conn, entity, updatePropNames);
+                    result += update(entity, updatePropNames);
                 }
 
                 isOk = true;
@@ -4847,13 +4845,12 @@ public final class SQLExecutor implements Closeable {
             }
 
             final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-            final Connection conn = tran.connection();
             int result = 0;
             boolean isOk = false;
 
             try {
                 for (Object idOrEntity : idsOrEntities) {
-                    result += delete(conn, idOrEntity);
+                    result += delete(idOrEntity);
                 }
 
                 isOk = true;

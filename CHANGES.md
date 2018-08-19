@@ -1,3 +1,8 @@
+### 1.3.4
+
+* Improvements and bug fix.
+
+
 ### 1.3.3
 
 * Refactoring `SQLExecutor.beginTransaction`.

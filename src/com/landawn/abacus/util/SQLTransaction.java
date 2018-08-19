@@ -234,10 +234,12 @@ public final class SQLTransaction implements Transaction {
     }
 
     synchronized int getAndIncrementRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
-        try {
-            conn.setTransactionIsolation(isolationLevel.intValue());
-        } catch (SQLException e) {
-            new UncheckedSQLException(e);
+        if (conn != null) {
+            try {
+                conn.setTransactionIsolation(isolationLevel.intValue());
+            } catch (SQLException e) {
+                new UncheckedSQLException(e);
+            }
         }
 
         this.isolationLevel = isolationLevel;
@@ -260,10 +262,12 @@ public final class SQLTransaction implements Transaction {
         } else {
             final IsolationLevel tmp = isolationLevelStack.pop();
 
-            try {
-                conn.setTransactionIsolation(tmp.intValue());
-            } catch (SQLException e) {
-                new UncheckedSQLException(e);
+            if (conn != null) {
+                try {
+                    conn.setTransactionIsolation(tmp.intValue());
+                } catch (SQLException e) {
+                    new UncheckedSQLException(e);
+                }
             }
 
             this.isolationLevel = tmp;
