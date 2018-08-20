@@ -137,7 +137,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [SQLExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLExecutor_view.html), 
 [Mapper](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Mapper_view.html), 
 [SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
-[DynamicSQLBuilder](https://static.javadoc.io/com.landawn/abacus-util/1.3.3/com/landawn/abacus/util/DynamicSQLBuilder.html)...
+[DynamicSQLBuilder](https://static.javadoc.io/com.landawn/abacus-util/1.3.3/com/landawn/abacus/util/DynamicSQLBuilder.html), 
+[ConditionFactory(L)](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ConditionFactory_view.html)...
 
 * ORMs for NoSQL: 
 [MongoCollectionExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MongoCollectionExecutor_view.html), 
