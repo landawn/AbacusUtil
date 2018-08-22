@@ -59,11 +59,7 @@ import com.landawn.abacus.util.function.Supplier;
  *                      .mapToInt(w -> w.getWeight())
  *                      .sum();
  * }</pre>
- *
- * See the class documentation for {@link Stream} and the package documentation
- * for <a href="package-summary.html">java.util.stream</a> for additional
- * specification of streams, stream operations, stream pipelines, and
- * parallelism, which governs the behavior of all stream types.
+ * 
  *
  * @param <T> the type of the stream elements
  * @param <A> the type of array
@@ -72,14 +68,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @param <PL> the type of PrimitiveList/List
  * @param <OT> the type of Optional
  * @param <IT> the type of Indexed
- * @param <IT> the type of Iterator
- * @param <S> the type of of the stream implementing {@code BaseStream}
- * @since 1.8
+ * @param <ITER> the type of Iterator
+ * @param <S> the type of of the stream implementing {@code BaseStream} 
  * @see Stream
  * @see IntStream
  * @see LongStream
  * @see DoubleStream
- * @see <a href="package-summary.html">java.util.stream</a>
  */
 public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T, A, P, C, PL, OT, IT, ITER, S>> extends AutoCloseable {
 

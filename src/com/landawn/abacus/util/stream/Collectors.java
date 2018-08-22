@@ -155,8 +155,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  *                 .collect(Collectors.partitioningBy(s -> s.getGrade() >= PASS_THRESHOLD));
  *
  * }</pre>
- *
- * @since 1.8
+ * 
  */
 public class Collectors {
     static final Object NONE = new Object();

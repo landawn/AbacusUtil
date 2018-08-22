@@ -38,6 +38,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -52,6 +53,7 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -1360,22 +1362,22 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> splitToList(final int size) {
+    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
         N.checkArgPositive(size, "size");
 
-        return newStream(new ObjIteratorEx<List<T>>() {
+        return newStream(new ObjIteratorEx<C>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public List<T> next() {
+            public C next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>(size);
+                final C result = collectionSupplier.apply(size);
                 int cnt = 0;
 
                 while (cnt < size && elements.hasNext()) {
@@ -1400,48 +1402,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> splitToSet(final int size) {
-        N.checkArgPositive(size, "size");
-
-        return newStream(new ObjIteratorEx<Set<T>>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public Set<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final Set<T> result = new HashSet<>(N.min(9, size));
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    result.add(elements.next());
-                    cnt++;
-                }
-
-                return result;
-            }
-
-            @Override
-            public long count() {
-                final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
-            }
-        }, false, null);
-    }
-
-    @Override
-    public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
-        return newStream(new ObjIteratorEx<List<T>>() {
+    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
+        return newStream(new ObjIteratorEx<C>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -1451,12 +1413,12 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public List<T> next() {
+            public C next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>();
+                final C result = collectionSupplier.get();
 
                 if (next == NONE) {
                     next = elements.next();
@@ -1483,8 +1445,9 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<List<T>>() {
+    public <U, C extends Collection<T>> Stream<C> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate,
+            final Supplier<C> collectionSupplier) {
+        return newStream(new ObjIteratorEx<C>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -1494,58 +1457,12 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public List<T> next() {
+            public C next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (result.size() == 0) {
-                        result.add(next);
-                        preCondition = predicate.test(next, seed);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.test(next, seed) == preCondition) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<Set<T>>() {
-            private T next = (T) NONE;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public Set<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final Set<T> result = new HashSet<>();
+                final C result = collectionSupplier.get();
 
                 if (next == NONE) {
                     next = elements.next();
@@ -1614,6 +1531,56 @@ class IteratorStream<T> extends AbstractStream<T> {
                         }
                     } else {
                         result.addAll(prev.subList(windowSize - cnt, windowSize));
+                    }
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return newStream(new ObjIteratorEx<C>() {
+            private C prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public C next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final C result = collectionSupplier.apply(windowSize);
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+
+                    final Iterator<T> iter = Iterators.skip(prev.iterator(), windowSize - cnt);
+
+                    while (iter.hasNext()) {
+                        result.add(iter.next());
                     }
                 }
 

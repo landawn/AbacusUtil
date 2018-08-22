@@ -1799,6 +1799,67 @@ public final class Iterators {
         return Optional.ofNullable(lastNonNull);
     }
 
+    /**
+     * Moves the specified {@code iter} to {@code n} steps if it's not {@code null} and {@code n} > 0.
+     * 
+     * @param iter
+     * @param n
+     * @return
+     */
+    public static <T> Iterator<T> skip(final Iterator<T> iter, long n) {
+        N.checkArgNotNegative(n, "n");
+
+        if (iter == null || n == 0) {
+            return iter;
+        }
+
+        while (n-- > 0 && iter.hasNext()) {
+            iter.next();
+        }
+
+        return iter;
+    }
+
+    /**
+     * Returns a new {@code Iterator}
+     * 
+     * @param iter
+     * @param count
+     * @return
+     */
+    public static <T> ObjIterator<T> limit(final Iterator<T> iter, final long count) {
+        N.checkArgNotNegative(count, "count");
+
+        if (iter == null || count == 0) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private long cnt = count;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0 && iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt--;
+                return iter.next();
+            }
+        };
+    }
+
+    /**
+     * Returns a new {@code ObjIterator} with {@code null} elements removed.
+     * 
+     * @param iter
+     * @return
+     */
     public static <T> ObjIterator<T> skipNull(final Iterator<T> iter) {
         if (iter == null) {
             return ObjIterator.empty();

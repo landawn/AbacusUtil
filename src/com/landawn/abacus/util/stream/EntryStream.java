@@ -521,18 +521,39 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.sortedBy(keyExtractor));
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @return
+     * @deprecated {@link #sortedBy(Function)} is recommended.
+     */
+    @Deprecated
     public EntryStream<K, V> sortedByInt(final ToIntFunction<? super Map.Entry<K, V>> keyExtractor) {
         final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingInt(keyExtractor);
 
         return sorted(comparator);
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @return
+     * @deprecated {@link #sortedBy(Function)} is recommended.
+     */
+    @Deprecated
     public EntryStream<K, V> sortedByLong(final ToLongFunction<? super Map.Entry<K, V>> keyExtractor) {
         final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingLong(keyExtractor);
 
         return sorted(comparator);
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @return
+     * @deprecated {@link #sortedBy(Function)} is recommended.
+     */
+    @Deprecated
     public EntryStream<K, V> sortedByDouble(final ToDoubleFunction<? super Map.Entry<K, V>> keyExtractor) {
         final Comparator<? super Map.Entry<K, V>> comparator = Comparators.comparingDouble(keyExtractor);
 

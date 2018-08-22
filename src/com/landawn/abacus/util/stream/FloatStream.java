@@ -90,15 +90,9 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  *                         .mapToFloat(w -> w.getWeight())
  *                         .sum();
  * }</pre>
- *
- * See the class documentation for {@link Stream} and the package documentation
- * for <a href="package-summary.html">java.util.stream</a> for additional
- * specification of streams, stream operations, stream pipelines, and
- * parallelism.
- *
- * @since 1.8
+ * 
+ * 
  * @see Stream
- * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class FloatStream
         extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatIterator, FloatStream> {

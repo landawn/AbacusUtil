@@ -184,6 +184,10 @@ public final class SQLTransaction implements Transaction {
      * @param threadId
      */
     public void attach(long threadId) {
+        if (!status.equals(Status.ACTIVE)) {
+            throw new IllegalStateException("transaction is already " + status);
+        }
+
         sqlExecutor.threadIdTransactionMap.put(threadId, this);
 
         if (logger.isInfoEnabled()) {
@@ -234,6 +238,10 @@ public final class SQLTransaction implements Transaction {
     }
 
     synchronized int getAndIncrementRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
+        if (!status.equals(Status.ACTIVE)) {
+            throw new IllegalStateException("transaction is already " + status);
+        }
+
         if (conn != null) {
             try {
                 conn.setTransactionIsolation(isolationLevel.intValue());

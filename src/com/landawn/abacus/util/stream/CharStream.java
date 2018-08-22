@@ -89,14 +89,8 @@ import com.landawn.abacus.util.function.ToCharFunction;
  *                      .sum();
  * }</pre>
  *
- * See the class documentation for {@link Stream} and the package documentation
- * for <a href="package-summary.html">java.util.stream</a> for additional
- * specification of streams, stream operations, stream pipelines, and
- * parallelism.
  *
- * @since 1.8
  * @see Stream
- * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class CharStream
         extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharIterator, CharStream> {

@@ -48,6 +48,7 @@ import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.Iterators;
@@ -556,6 +557,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<List<T>> splitToList(final int size) {
+        return split(size, Fn.Factory.<T> ofList());
+    }
+
+    @Override
+    public Stream<Set<T>> splitToSet(final int size) {
+        return split(size, Fn.Factory.<T> ofSet());
+    }
+
+    @Override
     public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
         return splitToList(predicate).map(new Function<List<T>, Stream<T>>() {
             @Override
@@ -567,6 +578,16 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
+        return split(predicate, Suppliers.<T> ofList());
+    }
+
+    @Override
+    public Stream<Set<T>> splitToSet(final Predicate<? super T> predicate) {
+        return split(predicate, Suppliers.<T> ofSet());
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
         final BiPredicate<T, Object> predicate2 = new BiPredicate<T, Object>() {
 
             @Override
@@ -575,7 +596,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
         };
 
-        return splitToList(null, predicate2, null);
+        return split(null, predicate2, null, collectionSupplier);
     }
 
     @Override
@@ -589,6 +610,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
+        return split(seed, predicate, seedUpdate, Suppliers.<T> ofList());
+    }
+
+    @Override
+    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
+        return split(seed, predicate, seedUpdate, Suppliers.<T> ofSet());
+    }
+
+    @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
         return slidingToList(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
             @Override
@@ -596,6 +627,16 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
             }
         });
+    }
+
+    @Override
+    public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
+        return sliding(windowSize, increment, Fn.Factory.<T> ofList());
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, IntFunction<C> collectionSupplier) {
+        return sliding(windowSize, 1, collectionSupplier);
     }
 
     @Override

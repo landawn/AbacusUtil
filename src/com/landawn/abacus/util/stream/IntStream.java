@@ -94,15 +94,9 @@ import com.landawn.abacus.util.function.ToIntFunction;
  *                      .mapToInt(w -> w.getWeight())
  *                      .sum();
  * }</pre>
- *
- * See the class documentation for {@link Stream} and the package documentation
- * for <a href="package-summary.html">java.util.stream</a> for additional
- * specification of streams, stream operations, stream pipelines, and
- * parallelism.
- *
- * @since 1.8
- * @see Stream
- * @see <a href="package-summary.html">java.util.stream</a>
+ * 
+ * 
+ * @see Stream 
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntIterator, IntStream> {
 

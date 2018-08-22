@@ -230,23 +230,12 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * are backed by collections, arrays, or generating functions, which require no
  * special resource management.  (If a stream does require closing, it can be
  * declared as a resource in a {@code try}-with-resources statement.)
+ * 
  *
- * <p>Stream pipelines may execute either sequentially or in
- * <a href="package-summary.html#Parallelism">parallel</a>.  This
- * execution mode is a property of the stream.  Streams are created
- * with an initial choice of sequential or parallel execution.  (For example,
- * {@link Collection#stream() Collection.stream()} creates a sequential stream,
- * and {@link Collection#parallelStream() Collection.parallelStream()} creates
- * a parallel one.)  This choice of execution mode may be modified by the
- * {@link #sequential()} or {@link #parallel()} methods, and may be queried with
- * the {@link #isParallel()} method.
- *
- * @param <T> the type of the stream elements
- * @since 1.8
+ * @param <T> the type of the stream elements 
  * @see IntStream
  * @see LongStream
- * @see DoubleStream
- * @see <a href="package-summary.html">java.util.stream</a>
+ * @see DoubleStream 
  */
 public abstract class Stream<T>
         extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Optional<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
@@ -927,6 +916,9 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<Set<T>> splitToSet(int size);
 
+    @SequentialOnly
+    public abstract Stream<Set<T>> splitToSet(Predicate<? super T> predicate);
+
     /**
      * Split the stream by the specified predicate.
      * 
@@ -948,7 +940,54 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
+    public abstract <U> Stream<Set<T>> splitToSet(U seed, BiPredicate<? super T, ? super U> predicate, Consumer<? super U> seedUpdate);
+
+    /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param size
+     * @param collectionSupplier
+     * @return
+     */
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> split(int size, IntFunction<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> split(Predicate<? super T> predicate, Supplier<C> collectionSupplier);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5), Suppliers.ofList).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @param seedUpdate
+     * @param collectionSupplier
+     * @return
+     */
+    @SequentialOnly
+    public abstract <U, C extends Collection<T>> Stream<C> split(U seed, BiPredicate<? super T, ? super U> predicate, Consumer<? super U> seedUpdate,
+            Supplier<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> sliding(int windowSize, IntFunction<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> sliding(int windowSize, int increment, IntFunction<C> collectionSupplier);
 
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>

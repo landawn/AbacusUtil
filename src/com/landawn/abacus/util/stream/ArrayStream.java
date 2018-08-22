@@ -1663,10 +1663,10 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> splitToSet(final int size) {
+    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
         N.checkArgPositive(size, "size");
 
-        return newStream(new ObjIteratorEx<Set<T>>() {
+        return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1675,12 +1675,12 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public Set<T> next() {
+            public C next() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
-                final Set<T> result = new HashSet<>(N.min(9, toIndex - cursor > size ? size : toIndex - cursor));
+                final C result = collectionSupplier.apply(toIndex - cursor > size ? size : toIndex - cursor);
 
                 for (int i = cursor, to = (cursor = size < toIndex - cursor ? cursor + size : toIndex); i < to; i++) {
                     result.add(elements[i]);
@@ -1756,7 +1756,43 @@ class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>();
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return N.asList(N.copyOfRange(elements, from, cursor));
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
+        return newStream(new ObjIteratorEx<C>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public C next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final C result = collectionSupplier.get();
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
@@ -1834,15 +1870,13 @@ class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>();
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.test(elements[cursor], seed);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
                     } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (seedUpdate != null) {
@@ -1853,15 +1887,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                return result;
+                return N.asList(N.copyOfRange(elements, from, cursor));
             }
-
         }, false, null);
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<Set<T>>() {
+    public <U, C extends Collection<T>> Stream<C> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate,
+            final Supplier<C> collectionSupplier) {
+        return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1871,12 +1905,12 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public Set<T> next() {
+            public C next() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
-                final Set<T> result = new HashSet<>();
+                final C result = collectionSupplier.get();
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
@@ -1982,6 +2016,61 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
 
                 final List<T> result = N.asList(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
+
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                if (toIndex - cursor == 0) {
+                    return 0;
+                } else if (toIndex - cursor <= windowSize) {
+                    return 1;
+                } else {
+                    final long len = (toIndex - cursor) - windowSize;
+                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    if (n >= count()) {
+                        cursor = toIndex;
+                    } else {
+                        cursor += n * increment;
+                    }
+                }
+            }
+
+        }, false, null);
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return newStream(new ObjIteratorEx<C>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public C next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final C result = collectionSupplier.apply(windowSize < toIndex - cursor ? windowSize : toIndex - cursor);
+
+                for (int i = cursor, to = windowSize < toIndex - cursor ? cursor + windowSize : toIndex; i < to; i++) {
+                    result.add(elements[i]);
+                }
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
