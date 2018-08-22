@@ -1,5 +1,9 @@
 ### 1.3.4
 
+* Add `Stream.split/sliding(...collectionSupplier)`.
+
+* Add `Iterators.skip/limit`.
+
 * Improvements and bug fix.
 
 
