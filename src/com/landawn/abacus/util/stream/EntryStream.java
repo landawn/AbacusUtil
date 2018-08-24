@@ -1085,6 +1085,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param collector
      * @return
      */
+    @SequentialOnly
     public <R, A> Stream<R> collapseByKey(final BiPredicate<? super K, ? super K> collapsible, final Collector<? super Entry<K, V>, A, R> collector) {
         final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
             @Override

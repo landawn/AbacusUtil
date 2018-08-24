@@ -929,8 +929,6 @@ public abstract class Stream<T>
      * </code>
      * </pre>
      * 
-     * This stream should be sorted by value which is used to verify the border.
-     * 
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
@@ -967,8 +965,6 @@ public abstract class Stream<T>
      * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5), Suppliers.ofList).forEach(N::println);
      * </code>
      * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -1143,8 +1139,6 @@ public abstract class Stream<T>
     public abstract <E extends Exception> Optional<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
      * @param predicate
@@ -1154,8 +1148,6 @@ public abstract class Stream<T>
     public abstract <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
      * @param predicate
@@ -1165,8 +1157,6 @@ public abstract class Stream<T>
     public abstract <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
      * @param predicate

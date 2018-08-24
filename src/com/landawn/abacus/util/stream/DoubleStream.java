@@ -214,6 +214,7 @@ public abstract class DoubleStream
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction);
 
     /**
@@ -237,6 +238,7 @@ public abstract class DoubleStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract DoubleStream scan(final DoubleBiFunction<Double> accumulator);
 
     /**
@@ -264,6 +266,7 @@ public abstract class DoubleStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator);
 
     /**
@@ -273,6 +276,7 @@ public abstract class DoubleStream
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract DoubleStream top(int n);
 
     /**
@@ -283,6 +287,7 @@ public abstract class DoubleStream
      * @param comparator
      * @return
      */
+    @SequentialOnly
     public abstract DoubleStream top(final int n, Comparator<? super Double> comparator);
 
     public abstract DoubleList toDoubleList();

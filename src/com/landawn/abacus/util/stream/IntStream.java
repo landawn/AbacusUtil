@@ -229,6 +229,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction);
 
     /**
@@ -252,6 +253,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract IntStream scan(final IntBiFunction<Integer> accumulator);
 
     /**
@@ -279,6 +281,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract IntStream scan(final int seed, final IntBiFunction<Integer> accumulator);
 
     /**
@@ -289,6 +292,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract IntStream top(int n);
 
     /**
@@ -300,6 +304,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param comparator
      * @return
      */
+    @SequentialOnly
     public abstract IntStream top(final int n, Comparator<? super Integer> comparator);
 
     public abstract IntList toIntList();

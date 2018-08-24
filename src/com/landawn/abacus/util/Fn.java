@@ -3292,10 +3292,17 @@ public final class Fn extends Comparators {
             throw new UnsupportedOperationException();
         }
 
+        @Deprecated
         public static final class IntFunctions extends Factory {
             private IntFunctions() {
                 // singleton.
             }
+        }
+    }
+
+    public static final class IntFunctions extends Factory {
+        private IntFunctions() {
+            // singleton.
         }
     }
 

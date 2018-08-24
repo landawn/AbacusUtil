@@ -180,6 +180,7 @@ public abstract class CharStream
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction);
 
     /**
@@ -203,6 +204,7 @@ public abstract class CharStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract CharStream scan(final CharBiFunction<Character> accumulator);
 
     /**
@@ -230,6 +232,7 @@ public abstract class CharStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract CharStream scan(final char seed, final CharBiFunction<Character> accumulator);
 
     public abstract CharList toCharList();

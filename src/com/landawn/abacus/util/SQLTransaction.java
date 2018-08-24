@@ -40,7 +40,6 @@ public final class SQLTransaction implements Transaction {
     private final int originalIsolationLevel;
     private final boolean originalAutoCommit;
     private Status status;
-    private boolean isRollbackOnly = false;
 
     private final AtomicInteger refCount = new AtomicInteger();
     private final Stack<IsolationLevel> isolationLevelStack = new Stack<>();
@@ -101,22 +100,20 @@ public final class SQLTransaction implements Transaction {
             return;
         }
 
-        if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("transaction is already " + status);
-        }
-
-        if (isRollbackOnly) {
+        if (status.equals(Status.MARKED_ROLLBACK)) {
             try {
-                throw new IllegalStateException("transaction will be rolled back because it's for roll back only");
+                throw new IllegalStateException("Transaction will be rolled back because it's marked for roll back only");
             } finally {
                 rollback();
             }
+        } else if (!status.equals(Status.ACTIVE)) {
+            throw new IllegalStateException("transaction is already " + status);
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info("Committing transaction with id: " + id);
             }
 
-            status = Status.COMMIT_FAILED;
+            status = Status.FAILED_COMMIT;
 
             try {
                 conn.commit();
@@ -145,11 +142,11 @@ public final class SQLTransaction implements Transaction {
     @Override
     public void rollback() throws UncheckedSQLException {
         if (decrementAndGetRef() > 0) {
-            isRollbackOnly = true;
+            status = Status.MARKED_ROLLBACK;
             return;
         }
 
-        if (!(status.equals(Status.ACTIVE) || status == Status.COMMIT_FAILED)) {
+        if (!(status.equals(Status.ACTIVE) || status.equals(Status.MARKED_ROLLBACK) || status == Status.FAILED_COMMIT)) {
             throw new IllegalStateException("transaction is already " + status);
         }
 
@@ -157,12 +154,12 @@ public final class SQLTransaction implements Transaction {
             logger.info("Rolling back transaction with id: " + id);
         }
 
-        status = Status.ROLLBACK_FAILED;
+        status = Status.FAILED_ROLLBACK;
 
         try {
             conn.rollback();
 
-            status = Status.ROLLBACKED;
+            status = Status.ROLLED_BACK;
         } catch (SQLException e) {
             throw new UncheckedSQLException("Failed to rollback transaction with id: " + id, e);
         } finally {

@@ -178,6 +178,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction);
 
     /**
@@ -201,6 +202,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract ByteStream scan(final ByteBiFunction<Byte> accumulator);
 
     /**
@@ -228,6 +230,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator);
 
     public abstract ByteList toByteList();

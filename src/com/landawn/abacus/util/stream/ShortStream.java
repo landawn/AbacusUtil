@@ -192,6 +192,7 @@ public abstract class ShortStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract ShortStream scan(final ShortBiFunction<Short> accumulator);
 
     /**
@@ -219,6 +220,7 @@ public abstract class ShortStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator);
 
     /**
@@ -228,6 +230,7 @@ public abstract class ShortStream
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract ShortStream top(int n);
 
     /**
@@ -237,6 +240,7 @@ public abstract class ShortStream
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract ShortStream top(final int n, Comparator<? super Short> comparator);
 
     public abstract ShortList toShortList();

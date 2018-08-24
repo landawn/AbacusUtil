@@ -214,6 +214,7 @@ public abstract class FloatStream
      * @param mergeFunction
      * @return
      */
+    @SequentialOnly
     public abstract FloatStream collapse(final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction);
 
     /**
@@ -237,6 +238,7 @@ public abstract class FloatStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract FloatStream scan(final FloatBiFunction<Float> accumulator);
 
     /**
@@ -264,6 +266,7 @@ public abstract class FloatStream
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator);
 
     /**
@@ -273,6 +276,7 @@ public abstract class FloatStream
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract FloatStream top(int n);
 
     /**
@@ -282,6 +286,7 @@ public abstract class FloatStream
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract FloatStream top(final int n, Comparator<? super Float> comparator);
 
     public abstract FloatList toFloatList();

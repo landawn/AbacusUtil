@@ -229,6 +229,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract LongStream scan(final LongBiFunction<Long> accumulator);
 
     /**
@@ -256,6 +257,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
+    @SequentialOnly
     public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator);
 
     /**
@@ -265,6 +267,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract LongStream top(int n);
 
     /**
@@ -274,6 +277,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param n
      * @return
      */
+    @SequentialOnly
     public abstract LongStream top(final int n, Comparator<? super Long> comparator);
 
     public abstract LongList toLongList();

@@ -135,7 +135,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     S removeIf(P predicate, C consumer);
 
     /**
-     * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * Returns Stream of {@code S} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
      * @param size
      * @return
@@ -144,7 +144,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     Stream<S> split(int size);
 
     /**
-     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * Returns Stream of {@code PL} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -172,8 +172,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     /**
      * Split the stream by the specified predicate.
      * 
-     * This stream should be sorted by value which is used to verify the border.
-     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param predicate
@@ -192,8 +190,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * </code>
      * </pre>
      * 
-     * This stream should be sorted by value which is used to verify the border.
-     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
@@ -214,8 +210,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * </code>
      * </pre>
      * 
-     * This stream should be sorted by value which is used to verify the border.
-     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
