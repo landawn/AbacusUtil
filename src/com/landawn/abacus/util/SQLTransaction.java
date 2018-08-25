@@ -128,11 +128,11 @@ public final class SQLTransaction implements Transaction {
                     rollback = true;
                 } catch (Throwable e2) {
                     // ignore;
-                    logger.error("Failed to rollback after error happened during committing", e2);
+                    logger.error("Failed to roll back after error happened during committing", e2);
                 }
 
                 throw new UncheckedSQLException(
-                        "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to rollback"), e);
+                        "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to roll back"), e);
             } finally {
                 closeConnection();
             }
@@ -161,7 +161,7 @@ public final class SQLTransaction implements Transaction {
 
             status = Status.ROLLED_BACK;
         } catch (SQLException e) {
-            throw new UncheckedSQLException("Failed to rollback transaction with id: " + id, e);
+            throw new UncheckedSQLException("Failed to roll back transaction with id: " + id, e);
         } finally {
             closeConnection();
         }

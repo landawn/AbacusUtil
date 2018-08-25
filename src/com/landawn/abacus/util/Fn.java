@@ -3293,6 +3293,24 @@ public final class Fn extends Comparators {
         }
 
         @Deprecated
+        public static <T, C extends Collection<T>> IntFunction<C> single(final IntFunction<C> supplier) {
+            return new IntFunction<C>() {
+                private C c = null;
+
+                @Override
+                public C apply(int t) {
+                    if (c == null) {
+                        c = supplier.apply(t);
+                    } else {
+                        c.clear();
+                    }
+
+                    return c;
+                }
+            };
+        }
+
+        @Deprecated
         public static final class IntFunctions extends Factory {
             private IntFunctions() {
                 // singleton.
@@ -3874,6 +3892,24 @@ public final class Fn extends Comparators {
         @Deprecated
         public static Supplier<ImmutableMap<?, ?>> ofImmutableMap() {
             throw new UnsupportedOperationException();
+        }
+
+        @Deprecated
+        public static <T, C extends Collection<T>> Supplier<C> single(final Supplier<C> supplier) {
+            return new Supplier<C>() {
+                private C c = null;
+
+                @Override
+                public C get() {
+                    if (c == null) {
+                        c = supplier.get();
+                    } else {
+                        c.clear();
+                    }
+
+                    return c;
+                }
+            };
         }
     }
 

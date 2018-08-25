@@ -350,6 +350,7 @@ public abstract class Comparators {
         };
     }
 
+    @Deprecated
     public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByKey(final Comparator<? super K> cmp) {
         N.checkArgNotNull(cmp);
 
@@ -361,6 +362,7 @@ public abstract class Comparators {
         };
     }
 
+    @Deprecated
     public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByValue(final Comparator<? super V> cmp) {
         N.checkArgNotNull(cmp);
 

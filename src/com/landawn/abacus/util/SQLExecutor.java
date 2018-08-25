@@ -4487,12 +4487,12 @@ public final class SQLExecutor implements Closeable {
          * 
          * @param entity
          * @param refreshPropNames
-         * @return {@code false} if the specified {@code refreshPropNames} is null or empty, or no record found by the ids in the specified {@code entity}.
+         * @return {@code false} if no record found by the ids in the specified {@code entity}.
          */
         @SuppressWarnings("deprecation")
         public boolean refresh(final Object entity, Collection<String> refreshPropNames) {
             if (N.isNullOrEmpty(refreshPropNames)) {
-                return false;
+                return idPropNameList.size() == 1 ? exists(ClassUtil.getPropValue(entity, idPropName)) : exists(entity);
             }
 
             final T dbEntity = idPropNameList.size() == 1 ? get(ClassUtil.getPropValue(entity, idPropName), refreshPropNames) : get(entity, refreshPropNames);
