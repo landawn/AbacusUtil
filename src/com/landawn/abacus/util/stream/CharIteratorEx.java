@@ -64,7 +64,8 @@ public abstract class CharIteratorEx extends CharIterator implements IteratorEx<
         return EMPTY;
     }
 
-    public static CharIteratorEx of(final char[] a) {
+    @SafeVarargs
+    public static CharIteratorEx of(final char... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class CharIteratorEx extends CharIterator implements IteratorEx<
     }
 
     public static CharIteratorEx of(final CharIterator iter) {
-        if (iter instanceof CharIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof CharIteratorEx) {
             return ((CharIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class CharIteratorEx extends CharIterator implements IteratorEx<
     }
 
     public static CharIteratorEx from(final Iterator<Character> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Character> iteratorEx = ((ObjIteratorEx<Character>) iter);
 
             return new CharIteratorEx() {

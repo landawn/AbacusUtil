@@ -6785,6 +6785,21 @@ public abstract class Stream<T>
         return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
+    public static <T, R> Stream<R> zip(final List<? extends Collection<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(ObjIterator.of(e));
+        }
+
+        return zipp(iterList, zipFunction);
+    }
+
     /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
@@ -7007,6 +7022,27 @@ public abstract class Stream<T>
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
+    public static <T, R> Stream<R> zip(final List<? extends Collection<? extends T>> c, final List<? extends T> valuesForNone,
+            Function<? super List<? extends T>, R> zipFunction) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+
+        if (len != valuesForNone.size()) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return zipp(iterList, valuesForNone, zipFunction);
+    }
+
     /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
@@ -7016,7 +7052,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final List<? extends T> valuesForNone,
             Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -7024,7 +7060,7 @@ public abstract class Stream<T>
 
         final int len = c.size();
 
-        if (len != valuesForNone.length) {
+        if (len != valuesForNone.size()) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
@@ -7044,7 +7080,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> zipp(final Collection<? extends Iterator<? extends T>> c, final List<? extends T> valuesForNone,
             final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -7052,7 +7088,7 @@ public abstract class Stream<T>
 
         final int len = c.size();
 
-        if (len != valuesForNone.length) {
+        if (len != valuesForNone.size()) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
@@ -7079,7 +7115,7 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx] = valuesForNone.get(idx);
                         idx++;
                     }
                 }
@@ -7510,6 +7546,26 @@ public abstract class Stream<T>
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
         return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b, c)));
+    }
+
+    public static <T, R> Stream<R> parallelZip(final List<? extends Collection<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
+        return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    public static <T, R> Stream<R> parallelZip(final List<? extends Collection<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
+            final int queueSize) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelZipp(iterList, zipFunction, queueSize);
     }
 
     /**
@@ -8193,6 +8249,32 @@ public abstract class Stream<T>
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
+    public static <T, R> Stream<R> parallelZip(final List<? extends Collection<? extends T>> c, final List<? extends T> valuesForNone,
+            Function<? super List<? extends T>, R> zipFunction) {
+        return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    public static <T, R> Stream<R> parallelZip(final List<? extends Collection<? extends T>> c, final List<? extends T> valuesForNone,
+            Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+
+        if (len != valuesForNone.size()) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelZipp(iterList, valuesForNone, zipFunction, queueSize);
+    }
+
     /**
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
@@ -8207,7 +8289,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final List<? extends T> valuesForNone,
             Function<? super List<? extends T>, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -8227,7 +8309,7 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final List<? extends T> valuesForNone,
             Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -8235,7 +8317,7 @@ public abstract class Stream<T>
 
         final int len = c.size();
 
-        if (len != valuesForNone.length) {
+        if (len != valuesForNone.size()) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
@@ -8262,7 +8344,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final List<? extends T> valuesForNone,
             Function<? super List<? extends T>, R> zipFunction) {
         return parallelZipp(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -8282,13 +8364,13 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final List<? extends T> valuesForNone,
             final Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        if (c.size() != valuesForNone.size()) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
@@ -8340,7 +8422,7 @@ public abstract class Stream<T>
                 }
 
                 for (int i = 0; i < len; i++) {
-                    next[i] = next[i] == NONE ? null : (next[i] == null ? valuesForNone[i] : next[i]);
+                    next[i] = next[i] == NONE ? null : (next[i] == null ? valuesForNone.get(i) : next[i]);
                 }
 
                 boolean isOK = false;
@@ -8601,6 +8683,27 @@ public abstract class Stream<T>
         return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
+    public static <T> Stream<T> merge(final List<? extends Collection<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        N.checkArgNotNull(nextSelector);
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return mergge(iterList, nextSelector);
+    }
+
     /**
      * 
      * @param c
@@ -8654,6 +8757,30 @@ public abstract class Stream<T>
         }
 
         return result;
+    }
+
+    public static <T> Stream<T> parallelMerge(final List<? extends Collection<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
+    }
+
+    public static <T> Stream<T> parallelMerge(final List<? extends Collection<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+            final int maxThreadNum) {
+        N.checkArgNotNull(nextSelector);
+        checkMaxThreadNum(maxThreadNum);
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+
+        for (Collection<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelMergge(iterList, nextSelector, maxThreadNum);
     }
 
     /**

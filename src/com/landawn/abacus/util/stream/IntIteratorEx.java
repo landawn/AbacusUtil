@@ -64,7 +64,8 @@ public abstract class IntIteratorEx extends IntIterator implements IteratorEx<In
         return EMPTY;
     }
 
-    public static IntIteratorEx of(final int[] a) {
+    @SafeVarargs
+    public static IntIteratorEx of(final int... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class IntIteratorEx extends IntIterator implements IteratorEx<In
     }
 
     public static IntIteratorEx of(final IntIterator iter) {
-        if (iter instanceof IntIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof IntIteratorEx) {
             return ((IntIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class IntIteratorEx extends IntIterator implements IteratorEx<In
     }
 
     public static IntIteratorEx from(final Iterator<Integer> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Integer> iteratorEx = ((ObjIteratorEx<Integer>) iter);
 
             return new IntIteratorEx() {

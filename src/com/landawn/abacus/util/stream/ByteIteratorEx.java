@@ -64,7 +64,8 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
         return EMPTY;
     }
 
-    public static ByteIteratorEx of(final byte[] a) {
+    @SafeVarargs
+    public static ByteIteratorEx of(final byte... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
     }
 
     public static ByteIteratorEx of(final ByteIterator iter) {
-        if (iter instanceof ByteIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ByteIteratorEx) {
             return ((ByteIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
     }
 
     public static ByteIteratorEx from(final Iterator<Byte> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Byte> iteratorEx = ((ObjIteratorEx<Byte>) iter);
 
             return new ByteIteratorEx() {

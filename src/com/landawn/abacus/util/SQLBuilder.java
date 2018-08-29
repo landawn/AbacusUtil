@@ -20,10 +20,13 @@ import static com.landawn.abacus.util.WD._PARENTHESES_L;
 import static com.landawn.abacus.util.WD._PARENTHESES_R;
 import static com.landawn.abacus.util.WD._SPACE;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.annotation.NonUpdatable;
+import com.landawn.abacus.annotation.ReadOnly;
+import com.landawn.abacus.annotation.ReadOnlyId;
+import com.landawn.abacus.annotation.Transient;
 import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Cell;
@@ -60,6 +67,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * 
  * @author Haiyang Li
  */
+@SuppressWarnings("deprecation")
 public abstract class SQLBuilder {
     private static final Logger logger = LoggerFactory.getLogger(SQLBuilder.class);
 
@@ -157,8 +165,7 @@ public abstract class SQLBuilder {
     private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<>(1024);
     private static final Map<Class<?>, Set<String>> subEntityPropNamesPool = new ObjectPool<>(1024);
     private static final Map<Class<?>, Set<String>> nonSubEntityPropNamesPool = new ObjectPool<>(1024);
-    private static final Map<Class<?>, List<String>> classPropNamesPool = new ConcurrentHashMap<>();
-    // private static final Map<Class<?>, Set<String>> classPropNameSetPool = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Set<String>[]> defaultPropNamesPool = new ObjectPool<>(1024);
     private static final Map<String, char[]> tableDeleteFrom = new ConcurrentHashMap<>();
     private static final AtomicInteger activeStringBuilderCounter = new AtomicInteger();
 
@@ -217,81 +224,137 @@ public abstract class SQLBuilder {
             nonSubEntityPropNamesPool.put(entityClass, set);
 
             subEntityPropNamesPool.remove(entityClass);
-            classPropNamesPool.remove(entityClass);
+            defaultPropNamesPool.remove(entityClass);
         }
     }
 
-    static Collection<String> getPropNamesByClass(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-        Set<String> subEntityPropNames = null;
+    static Collection<String> getSelectPropNamesByClass(final Class<?> entityClass, final boolean includeSubEntityProperties,
+            final Set<String> excludedPropNames) {
+        final Collection<String>[] val = loadPropNamesByClass(entityClass);
+        final Collection<String> propNames = includeSubEntityProperties ? val[0] : val[1];
 
-        if (N.isNullOrEmpty(excludedPropNames)
-                && (includeSubEntityProperties == false || N.isNullOrEmpty(subEntityPropNames = getSubEntityPropNames(entityClass)))) {
-            return getNonSubEntityPropNames(entityClass);
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return propNames;
         } else {
-            final Set<String> entityPropNames = new LinkedHashSet<>(ClassUtil.getPropGetMethodList(entityClass).keySet());
-            subEntityPropNames = subEntityPropNames == null ? getSubEntityPropNames(entityClass) : subEntityPropNames;
-
-            if (N.notNullOrEmpty(subEntityPropNames)) {
-                entityPropNames.removeAll(subEntityPropNames);
-
-                if (includeSubEntityProperties) {
-                    Method method = null;
-                    Class<?> subEntityClass = null;
-                    String subEntityClassName = null;
-
-                    for (String subEntityPropName : subEntityPropNames) {
-                        method = ClassUtil.getPropGetMethod(entityClass, subEntityPropName);
-                        subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
-                        subEntityClassName = ClassUtil.getSimpleClassName(subEntityClass);
-
-                        for (String pn : getPropNamesByClass(subEntityClass, false, null)) {
-                            entityPropNames.add(StringUtil.concat(subEntityClassName, WD.PERIOD, pn));
-                        }
-                    }
-                }
-            }
-
-            if (N.notNullOrEmpty(excludedPropNames)) {
-                Method method = null;
-
-                for (String propName : excludedPropNames) {
-                    if (!entityPropNames.remove(propName)) {
-                        method = ClassUtil.getPropGetMethod(entityClass, propName);
-
-                        if (method != null) {
-                            entityPropNames.remove(ClassUtil.getPropNameByMethod(method));
-                        }
-                    }
-                }
-            }
-
-            return entityPropNames;
+            final List<String> tmp = new ArrayList<>(propNames);
+            tmp.removeAll(excludedPropNames);
+            return tmp;
         }
     }
 
-    /**
-     * Returns an immutable list of the property name by the specified entity class.
-     * 
-     * @param entityClass
-     * @return
-     */
-    static List<String> getNonSubEntityPropNames(final Class<?> entityClass) {
-        synchronized (entityClass) {
-            List<String> nonSubEntityPropNames = classPropNamesPool.get(entityClass);
+    static Collection<String> getInsertPropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        final Collection<String>[] val = loadPropNamesByClass(entityClass);
+        final Collection<String> propNames = val[2];
 
-            if (nonSubEntityPropNames == null) {
-                nonSubEntityPropNames = new ArrayList<>(ClassUtil.getPropGetMethodList(entityClass).keySet());
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return propNames;
+        } else {
+            final List<String> tmp = new ArrayList<>(propNames);
+            tmp.removeAll(excludedPropNames);
+            return tmp;
+        }
+    }
+
+    static Collection<String> getUpdatePropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        final Collection<String>[] val = loadPropNamesByClass(entityClass);
+        final Collection<String> propNames = val[3];
+
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return propNames;
+        } else {
+            final List<String> tmp = new ArrayList<>(propNames);
+            tmp.removeAll(excludedPropNames);
+            return tmp;
+        }
+    }
+
+    static Collection<String>[] loadPropNamesByClass(final Class<?> entityClass) {
+        Set<String>[] val = defaultPropNamesPool.get(entityClass);
+
+        if (val == null) {
+            synchronized (entityClass) {
+                final Set<String> entityPropNames = new LinkedHashSet<>(ClassUtil.getPropGetMethodList(entityClass).keySet());
                 final Set<String> subEntityPropNames = getSubEntityPropNames(entityClass);
 
                 if (N.notNullOrEmpty(subEntityPropNames)) {
-                    nonSubEntityPropNames.removeAll(subEntityPropNames);
+                    entityPropNames.removeAll(subEntityPropNames);
                 }
 
-                classPropNamesPool.put(entityClass, nonSubEntityPropNames);
-            }
+                val = new Set[4];
+                val[0] = new LinkedHashSet<>(entityPropNames);
+                val[1] = new LinkedHashSet<>(entityPropNames);
+                val[2] = new LinkedHashSet<>(entityPropNames);
+                val[3] = new LinkedHashSet<>(entityPropNames);
 
-            return nonSubEntityPropNames;
+                Method method = null;
+                Class<?> subEntityClass = null;
+                String subEntityClassName = null;
+                Set<String> subEntityPropNameList = null;
+
+                for (String subEntityPropName : subEntityPropNames) {
+                    method = ClassUtil.getPropGetMethod(entityClass, subEntityPropName);
+                    subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
+                    subEntityClassName = ClassUtil.getSimpleClassName(subEntityClass);
+
+                    subEntityPropNameList = new LinkedHashSet<>(ClassUtil.getPropGetMethodList(subEntityClass).keySet());
+                    subEntityPropNameList.removeAll(getSubEntityPropNames(subEntityClass));
+
+                    for (String pn : subEntityPropNameList) {
+                        val[0].add(StringUtil.concat(subEntityClassName, WD.PERIOD, pn));
+                    }
+                }
+
+                final Set<String> readOnlyPropNames = new HashSet<>();
+                final Set<String> nonUpdatablePropNames = new HashSet<>();
+                final Set<String> transientPropNames = new HashSet<>();
+
+                final Set<Field> allFields = new HashSet<>();
+
+                for (Class<?> superClass : ClassUtil.getAllSuperclasses(entityClass)) {
+                    allFields.addAll(Array.asList(superClass.getDeclaredFields()));
+                }
+
+                allFields.addAll(Array.asList(entityClass.getDeclaredFields()));
+
+                for (Field field : allFields) {
+                    if (ClassUtil.getPropGetMethod(entityClass, field.getName()) == null
+                            && ClassUtil.getPropGetMethod(entityClass, ClassUtil.formalizePropName(field.getName())) == null) {
+                        continue;
+                    }
+
+                    if (field.isAnnotationPresent(ReadOnly.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                        readOnlyPropNames.add(field.getName());
+                    }
+
+                    if (field.isAnnotationPresent(NonUpdatable.class)) {
+                        nonUpdatablePropNames.add(field.getName());
+                    }
+
+                    if (field.isAnnotationPresent(Transient.class) || Modifier.isTransient(field.getModifiers())) {
+                        readOnlyPropNames.add(field.getName());
+
+                        transientPropNames.add(field.getName());
+                        transientPropNames.add(ClassUtil.formalizePropName(field.getName()));
+                    }
+                }
+
+                nonUpdatablePropNames.addAll(readOnlyPropNames);
+
+                val[0].removeAll(transientPropNames);
+                val[1].removeAll(transientPropNames);
+                val[2].removeAll(readOnlyPropNames);
+                val[3].removeAll(nonUpdatablePropNames);
+
+                val[0] = ImmutableSet.of(val[0]);
+                val[1] = ImmutableSet.of(val[1]);
+                val[2] = ImmutableSet.of(val[2]);
+                val[3] = ImmutableSet.of(val[3]);
+
+                defaultPropNamesPool.put(entityClass, val);
+            }
         }
+
+        return val;
     }
 
     static Set<String> getSubEntityPropNames(final Class<?> entityClass) {
@@ -1710,7 +1773,6 @@ public abstract class SQLBuilder {
      * @param excludedPropNames
      * @return
      */
-    @SuppressWarnings("deprecation")
     public SQLBuilder set(final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
             return set(N.asArray((String) entity));
@@ -1723,8 +1785,9 @@ public abstract class SQLBuilder {
                 return set(props);
             }
         } else {
-            final Collection<String> propNames = getPropNamesByClass(entity.getClass(), false, excludedPropNames);
-            final Set<String> dirtyPropNames = N.isDirtyMarker(entity.getClass()) ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Class<?> entityClass = entity.getClass();
+            final Collection<String> propNames = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+            final Set<String> dirtyPropNames = N.isDirtyMarker(entityClass) ? ((DirtyMarker) entity).dirtyPropNames() : null;
             final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
             for (String propName : propNames) {
@@ -1742,7 +1805,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder set(Class<?> entityClass, final Set<String> excludedPropNames) {
-        return set(getPropNamesByClass(entityClass, false, excludedPropNames));
+        return set(getUpdatePropNamesByClass(entityClass, excludedPropNames));
     }
 
     public <T, EX extends Exception> T apply(final Try.Function<? super SP, T, EX> func) throws EX {
@@ -2387,7 +2450,7 @@ public abstract class SQLBuilder {
                 Maps.removeKeys(instance.props, excludedPropNames);
             }
         } else {
-            final Collection<String> propNames = getPropNamesByClass(entity.getClass(), false, excludedPropNames);
+            final Collection<String> propNames = getInsertPropNamesByClass(entity.getClass(), excludedPropNames);
             final Map<String, Object> map = N.newHashMap(N.initHashCapacity(propNames.size()));
 
             for (String propName : propNames) {
@@ -2404,8 +2467,8 @@ public abstract class SQLBuilder {
         if (first.isPresent() && first.get() instanceof Map) {
             return (List<Map<String, Object>>) propsList;
         } else {
-            final Class<?> cls = first.get().getClass();
-            final Collection<String> propNames = getPropNamesByClass(cls, false, null);
+            final Class<?> entityClass = first.get().getClass();
+            final Collection<String> propNames = getInsertPropNamesByClass(entityClass, null);
             final List<Map<String, Object>> newPropsList = new ArrayList<>(propsList.size());
 
             for (Object entity : propsList) {
@@ -2492,7 +2555,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -2609,7 +2672,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -2629,12 +2692,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -2656,7 +2719,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -2741,7 +2804,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -2858,7 +2921,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -2878,12 +2941,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -2905,7 +2968,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -2989,7 +3052,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -3106,7 +3169,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -3126,12 +3189,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -3153,7 +3216,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -3238,7 +3301,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -3355,7 +3418,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -3375,12 +3438,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -3402,7 +3465,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -3487,7 +3550,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -3604,7 +3667,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -3624,12 +3687,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -3651,7 +3714,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -3736,7 +3799,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -3853,7 +3916,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -3873,12 +3936,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -3900,7 +3963,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -3985,7 +4048,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -4102,7 +4165,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -4122,12 +4185,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -4149,7 +4212,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -4234,7 +4297,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -4351,7 +4414,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -4371,12 +4434,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -4398,7 +4461,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -4483,7 +4546,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -4600,7 +4663,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -4620,12 +4683,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -4647,7 +4710,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -4732,7 +4795,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -4849,7 +4912,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -4869,12 +4932,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -4896,7 +4959,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -4981,7 +5044,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -5098,7 +5161,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -5118,12 +5181,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -5145,7 +5208,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }
@@ -5230,7 +5293,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, false, excludedPropNames));
+            return insert(getInsertPropNamesByClass(entityClass, excludedPropNames));
         }
 
         public static SQLBuilder insertInto(final Class<?> entityClass) {
@@ -5347,7 +5410,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
+            return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames));
         }
 
         public static SQLBuilder selectFrom(final Class<?> entityClass) {
@@ -5367,12 +5430,12 @@ public abstract class SQLBuilder {
                 final List<String> selectTableNames = getSelectTableNames(entityClass);
 
                 if (N.isNullOrEmpty(selectTableNames)) {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
-                    return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
+                    return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
                 }
             } else {
-                return select(getPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
+                return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
             }
         }
 
@@ -5394,7 +5457,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.tableName = ClassUtil.getSimpleClassName(entityClass);
-            instance.columnNameList = getPropNamesByClass(entityClass, false, excludedPropNames);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
         }

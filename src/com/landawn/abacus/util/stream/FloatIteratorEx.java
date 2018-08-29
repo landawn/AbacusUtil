@@ -64,7 +64,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
         return EMPTY;
     }
 
-    public static FloatIteratorEx of(final float[] a) {
+    @SafeVarargs
+    public static FloatIteratorEx of(final float... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
     }
 
     public static FloatIteratorEx of(final FloatIterator iter) {
-        if (iter instanceof FloatIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof FloatIteratorEx) {
             return ((FloatIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
     }
 
     public static FloatIteratorEx from(final Iterator<Float> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Float> iteratorEx = ((ObjIteratorEx<Float>) iter);
 
             return new FloatIteratorEx() {

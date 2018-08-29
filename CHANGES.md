@@ -1,3 +1,10 @@
+### 1.3.5
+
+* Refactoring `Stream.zip`, `SQLBuilder` and `SQLExecutor.Mapper`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.4
 
 * Add `Stream.split/sliding(...collectionSupplier)`.

@@ -61,7 +61,8 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
         return EMPTY;
     }
 
-    public static <T> ObjIteratorEx<T> of(final T[] a) {
+    @SafeVarargs
+    public static <T> ObjIteratorEx<T> of(final T... a) {
         return a == null ? EMPTY : of(a, 0, a.length);
     }
 
@@ -123,6 +124,10 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
     }
 
     public static <T> ObjIteratorEx<T> of(final Collection<T> c) {
+        if (c == null) {
+            return empty();
+        }
+
         final Iterator<? extends T> iter = c.iterator();
 
         return new QueuedIterator<T>(c.size()) {
@@ -144,7 +149,9 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
     }
 
     public static <T> ObjIteratorEx<T> of(final Iterator<T> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             return ((ObjIteratorEx<T>) iter);
         }
 

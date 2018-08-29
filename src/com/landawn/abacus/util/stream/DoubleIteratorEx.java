@@ -64,7 +64,8 @@ public abstract class DoubleIteratorEx extends DoubleIterator implements Iterato
         return EMPTY;
     }
 
-    public static DoubleIteratorEx of(final double[] a) {
+    @SafeVarargs
+    public static DoubleIteratorEx of(final double... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class DoubleIteratorEx extends DoubleIterator implements Iterato
     }
 
     public static DoubleIteratorEx of(final DoubleIterator iter) {
-        if (iter instanceof DoubleIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof DoubleIteratorEx) {
             return ((DoubleIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class DoubleIteratorEx extends DoubleIterator implements Iterato
     }
 
     public static DoubleIteratorEx from(final Iterator<Double> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Double> iteratorEx = ((ObjIteratorEx<Double>) iter);
 
             return new DoubleIteratorEx() {

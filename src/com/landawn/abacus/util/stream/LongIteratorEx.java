@@ -64,7 +64,8 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
         return EMPTY;
     }
 
-    public static LongIteratorEx of(final long[] a) {
+    @SafeVarargs
+    public static LongIteratorEx of(final long... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
     }
 
     public static LongIteratorEx of(final LongIterator iter) {
-        if (iter instanceof LongIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof LongIteratorEx) {
             return ((LongIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
     }
 
     public static LongIteratorEx from(final Iterator<Long> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Long> iteratorEx = ((ObjIteratorEx<Long>) iter);
 
             return new LongIteratorEx() {

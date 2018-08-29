@@ -64,7 +64,8 @@ public abstract class ShortIteratorEx extends ShortIterator implements IteratorE
         return EMPTY;
     }
 
-    public static ShortIteratorEx of(final short[] a) {
+    @SafeVarargs
+    public static ShortIteratorEx of(final short... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
@@ -120,7 +121,9 @@ public abstract class ShortIteratorEx extends ShortIterator implements IteratorE
     }
 
     public static ShortIteratorEx of(final ShortIterator iter) {
-        if (iter instanceof ShortIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ShortIteratorEx) {
             return ((ShortIteratorEx) iter);
         }
 
@@ -143,7 +146,9 @@ public abstract class ShortIteratorEx extends ShortIterator implements IteratorE
     }
 
     public static ShortIteratorEx from(final Iterator<Short> iter) {
-        if (iter instanceof ObjIteratorEx) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ObjIteratorEx) {
             final ObjIteratorEx<Short> iteratorEx = ((ObjIteratorEx<Short>) iter);
 
             return new ShortIteratorEx() {

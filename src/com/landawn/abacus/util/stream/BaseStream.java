@@ -1032,7 +1032,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * 
      * @param maxThreadNum
      * @return
+     * @deprecated
      */
+    @Deprecated
     S maxThreadNum(int maxThreadNum);
 
     /**
@@ -1049,7 +1051,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * 
      * @param splitor
      * @return
+     * @deprecated
      */
+    @Deprecated
     S splitor(Splitor splitor);
 
     //    /**
