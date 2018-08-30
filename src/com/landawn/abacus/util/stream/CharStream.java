@@ -471,24 +471,34 @@ public abstract class CharStream
      */
     public abstract CharStream tail();
 
+    public abstract Pair<OptionalChar, CharStream> headAndTail();
+
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract CharStream headd();
 
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract OptionalChar taill();
 
-    public abstract Pair<OptionalChar, CharStream> headAndTail();
-
+    /**
+     * 
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public abstract Pair<CharStream, OptionalChar> headAndTaill();
 
     /**

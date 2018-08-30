@@ -1010,6 +1010,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return Pair.of(head(), tail());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Pair<FloatStream, OptionalFloat> headAndTaill() {
         return Pair.of(headd(), taill());

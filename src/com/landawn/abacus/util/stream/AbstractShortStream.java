@@ -945,6 +945,7 @@ abstract class AbstractShortStream extends ShortStream {
         return Pair.of(head(), tail());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Pair<ShortStream, OptionalShort> headAndTaill() {
         return Pair.of(headd(), taill());

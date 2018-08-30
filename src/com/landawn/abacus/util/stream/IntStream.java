@@ -543,24 +543,34 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream tail();
 
+    public abstract Pair<OptionalInt, IntStream> headAndTail();
+
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract IntStream headd();
 
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract OptionalInt taill();
 
-    public abstract Pair<OptionalInt, IntStream> headAndTail();
-
+    /**
+     * 
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public abstract Pair<IntStream, OptionalInt> headAndTaill();
 
     /**

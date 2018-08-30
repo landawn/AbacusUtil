@@ -1789,8 +1789,11 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> tail();
 
+    @SequentialOnly
+    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
+
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() or taill() is called.
      * 
      * <br />
@@ -1804,7 +1807,7 @@ public abstract class Stream<T>
     public abstract Stream<T> headd();
 
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() or taill() is called. 
      * 
      * <br />
@@ -1816,9 +1819,6 @@ public abstract class Stream<T>
     @Deprecated
     @SequentialOnly
     public abstract Optional<T> taill();
-
-    @SequentialOnly
-    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
 
     /**
      * 

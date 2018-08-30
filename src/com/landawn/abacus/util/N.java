@@ -25893,7 +25893,7 @@ public final class N {
 
     public static <T> T median(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
-            throw new IllegalArgumentException("The length of array can not be null or empty");
+            throw new IllegalArgumentException("The length of collection can not be null or empty");
         }
 
         checkFromToIndex(from, to, c.size());

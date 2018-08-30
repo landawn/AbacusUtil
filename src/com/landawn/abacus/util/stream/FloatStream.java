@@ -527,25 +527,35 @@ public abstract class FloatStream
      */
     public abstract FloatStream tail();
 
+    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
+
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract FloatStream headd();
 
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract OptionalFloat taill();
 
+    /**
+     * 
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public abstract Pair<OptionalFloat, FloatStream> headAndTail();
-
-    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
 
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this

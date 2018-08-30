@@ -707,11 +707,11 @@ abstract class Any<T> {
         return value == null ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
     }
 
-    /**
-     * 
-     * @return <code>Optional.empty()</code> if the value is not present or {@code null}.
-     */
-    public Optional<T> __() {
-        return value == null ? Optional.<T> empty() : Optional.of(value);
-    }
+    //    /**
+    //     * 
+    //     * @return <code>Optional.empty()</code> if the value is not present or {@code null}.
+    //     */
+    //    public Optional<T> __() {
+    //        return value == null ? Optional.<T> empty() : Optional.of(value);
+    //    }
 }

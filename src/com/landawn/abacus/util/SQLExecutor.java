@@ -66,6 +66,14 @@ import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1614,9 +1622,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
-        final Nullable<Boolean> result = queryForSingleResult(boolean.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
+        return queryForSingleResult(Boolean.class, sql, parameters).mapToBoolean(ToBooleanFunction.UNBOX);
     }
 
     /**
@@ -1625,9 +1631,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalChar queryForChar(final String sql, final Object... parameters) {
-        final Nullable<Character> result = queryForSingleResult(char.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
+        return queryForSingleResult(Character.class, sql, parameters).mapToChar(ToCharFunction.UNBOX);
     }
 
     /**
@@ -1635,9 +1639,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalByte queryForByte(final String sql, final Object... parameters) {
-        final Nullable<Byte> result = queryForSingleResult(byte.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
+        return queryForSingleResult(Byte.class, sql, parameters).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1645,9 +1647,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalShort queryForShort(final String sql, final Object... parameters) {
-        final Nullable<Short> result = queryForSingleResult(short.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
+        return queryForSingleResult(Short.class, sql, parameters).mapToShort(ToShortFunction.UNBOX);
     }
 
     /**
@@ -1655,9 +1655,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalInt queryForInt(final String sql, final Object... parameters) {
-        final Nullable<Integer> result = queryForSingleResult(int.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
+        return queryForSingleResult(Integer.class, sql, parameters).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1665,9 +1663,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalLong queryForLong(final String sql, final Object... parameters) {
-        final Nullable<Long> result = queryForSingleResult(long.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
+        return queryForSingleResult(Long.class, sql, parameters).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1675,9 +1671,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
-        final Nullable<Float> result = queryForSingleResult(float.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
+        return queryForSingleResult(Float.class, sql, parameters).mapToFloat(ToFloatFunction.UNBOX);
     }
 
     /**
@@ -1685,9 +1679,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
-        final Nullable<Double> result = queryForSingleResult(double.class, null, sql, parameters);
-
-        return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
+        return queryForSingleResult(Double.class, sql, parameters).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1711,24 +1703,6 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
-        //    final Nullable<Date> date = this.queryForDate(sql, parameters);
-        //
-        //    if (date.isNotNull()) {
-        //        if (targetClass.isAssignableFrom(date.get().getClass())) {
-        //            return (Nullable) date;
-        //        } else if (targetClass.equals(Timestamp.class)) {
-        //            return (Nullable) Nullable.of((new Timestamp(date.get().getTime())));
-        //        } else if (targetClass.equals(Time.class)) {
-        //            return (Nullable) Nullable.of((new Time(date.get().getTime())));
-        //        } else if (targetClass.equals(java.sql.Date.class)) {
-        //            return (Nullable) Nullable.of((new java.sql.Date(date.get().getTime())));
-        //        } else {
-        //            return Nullable.of(N.as(targetClass, date.get()));
-        //        }
-        //    } else {
-        //        return (Nullable<T>) date;
-        //    }
-
         return queryForSingleResult(targetClass, sql, parameters);
     }
 
@@ -1775,7 +1749,8 @@ public final class SQLExecutor implements Closeable {
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         final Nullable<?> result = query(conn, sql, statementSetter, SINGLE_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
-        return result.isPresent() ? Nullable.of(N.as(targetClass, result.get())) : (Nullable<T>) Nullable.empty();
+        return result.isNotNull() && !targetClass.isAssignableFrom(result.get().getClass()) ? Nullable.of(N.as(targetClass, result.get()))
+                : (Nullable<T>) result;
     }
 
     //

@@ -1009,6 +1009,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return Pair.of(head(), tail());
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Pair<DoubleStream, OptionalDouble> headAndTaill() {
         return Pair.of(headd(), taill());

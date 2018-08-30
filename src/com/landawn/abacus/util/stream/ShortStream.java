@@ -480,24 +480,34 @@ public abstract class ShortStream
      */
     public abstract ShortStream tail();
 
+    public abstract Pair<OptionalShort, ShortStream> headAndTail();
+
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract ShortStream headd();
 
     /**
-     * Head2 and tail2 should be used by pair. 
+     * Headd and taill should be used by pair. 
      * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
+     * @deprecated
      */
+    @Deprecated
     public abstract OptionalShort taill();
 
-    public abstract Pair<OptionalShort, ShortStream> headAndTail();
-
+    /**
+     * 
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public abstract Pair<ShortStream, OptionalShort> headAndTaill();
 
     /**
