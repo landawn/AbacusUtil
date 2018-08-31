@@ -4219,28 +4219,28 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         return maxThreadNum;
     }
 
-    @Override
-    public Stream<T> maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public Stream<T> maxThreadNum(int maxThreadNum) {
+    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    @Override
-    public Stream<T> splitor(BaseStream.Splitor splitor) {
-        if (this.splitor == splitor) {
-            return this;
-        }
-
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public Stream<T> splitor(BaseStream.Splitor splitor) {
+    //        if (this.splitor == splitor) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public Stream<T> onClose(Runnable closeHandler) {

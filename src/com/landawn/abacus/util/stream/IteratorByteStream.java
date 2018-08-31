@@ -60,8 +60,8 @@ class IteratorByteStream extends AbstractByteStream {
     OptionalByte head;
     ByteStream tail;
 
-    ByteStream head2;
-    OptionalByte tail2;
+    //    ByteStream head2;
+    //    OptionalByte tail2;
 
     IteratorByteStream(final ByteIterator values) {
         this(values, null);
@@ -962,27 +962,27 @@ class IteratorByteStream extends AbstractByteStream {
         return tail;
     }
 
-    @Override
-    public ByteStream headd() {
-        if (head2 == null) {
-            final byte[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalByte taill() {
-        if (tail2 == null) {
-            final byte[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public ByteStream headd() {
+    //        if (head2 == null) {
+    //            final byte[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalByte taill() {
+    //        if (tail2 == null) {
+    //            final byte[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalByte min() {

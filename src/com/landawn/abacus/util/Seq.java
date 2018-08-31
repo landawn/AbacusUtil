@@ -810,23 +810,22 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.filter(coll, filter);
     }
 
+    public <E extends Exception> List<T> filter(Try.Predicate<? super T, E> filter, final int max) throws E {
+        return N.filter(coll, filter, max);
+    }
+
     public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, IntFunction<C> supplier) throws E {
         return N.filter(coll, filter, supplier);
     }
 
-    public <E extends Exception> List<T> filter(Try.Predicate<? super T, E> filter, final int max) throws E {
-        return N.filter(coll, filter, max);
+    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, final int max, IntFunction<C> supplier) throws E {
+        return N.filter(coll, filter, max, supplier);
     }
 
     public <U, E extends Exception> List<T> filter(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
         N.checkArgNotNull(filter);
 
-        return filter(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T value) throws E {
-                return filter.test(value, seed);
-            }
-        });
+        return filter(Fn.pp(seed, filter));
     }
 
     public <E extends Exception> List<T> takeWhile(Try.Predicate<? super T, E> filter) throws E {
@@ -852,12 +851,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <U, E extends Exception> List<T> takeWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
         N.checkArgNotNull(filter);
 
-        return takeWhile(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T value) throws E {
-                return filter.test(value, seed);
-            }
-        });
+        return takeWhile(Fn.pp(seed, filter));
     }
 
     public <E extends Exception> List<T> takeWhileInclusive(Try.Predicate<? super T, E> filter) throws E {
@@ -883,12 +877,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <U, E extends Exception> List<T> takeWhileInclusive(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
         N.checkArgNotNull(filter);
 
-        return takeWhileInclusive(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T value) throws E {
-                return filter.test(value, seed);
-            }
-        });
+        return takeWhileInclusive(Fn.pp(seed, filter));
     }
 
     public <E extends Exception> List<T> dropWhile(Try.Predicate<? super T, E> filter) throws E {
@@ -922,12 +911,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <U, E extends Exception> List<T> dropWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
         N.checkArgNotNull(filter);
 
-        return dropWhile(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T value) throws E {
-                return filter.test(value, seed);
-            }
-        });
+        return dropWhile(Fn.pp(seed, filter));
     }
 
     public <E extends Exception> List<T> skipUntil(final Try.Predicate<? super T, E> filter) throws E {

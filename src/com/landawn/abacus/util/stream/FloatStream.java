@@ -527,54 +527,54 @@ public abstract class FloatStream
      */
     public abstract FloatStream tail();
 
-    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract FloatStream headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called. 
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract OptionalFloat taill();
-
-    /**
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
     public abstract Pair<OptionalFloat, FloatStream> headAndTail();
 
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract FloatStream headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called. 
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract OptionalFloat taill();
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
+
     /**
-     * Returns an {@code OptionalFloat} describing the minimum element of this
-     * stream, or an empty OptionalFloat if this stream is empty.  The minimum
-     * element will be {@code Float.NaN} if any stream element was NaN. Unlike
-     * the numerical comparison operators, this method considers negative zero
-     * to be strictly smaller than positive zero. This is a special case of a
-     * <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return reduce(Float::min);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an {@code OptionalFloat} containing the minimum element of this
-     * stream, or an empty optional if the stream is empty
-     */
+    * Returns an {@code OptionalFloat} describing the minimum element of this
+    * stream, or an empty OptionalFloat if this stream is empty.  The minimum
+    * element will be {@code Float.NaN} if any stream element was NaN. Unlike
+    * the numerical comparison operators, this method considers negative zero
+    * to be strictly smaller than positive zero. This is a special case of a
+    * <a href="package-summary.html#Reduction">reduction</a> and is
+    * equivalent to:
+    * <pre>{@code
+    *     return reduce(Float::min);
+    * }</pre>
+    *
+    * <p>This is a <a href="package-summary.html#StreamOps">terminal
+    * operation</a>.
+    *
+    * @return an {@code OptionalFloat} containing the minimum element of this
+    * stream, or an empty optional if the stream is empty
+    */
     public abstract OptionalFloat min();
 
     /**

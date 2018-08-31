@@ -471,33 +471,33 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract Pair<OptionalByte, ByteStream> headAndTail();
 
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract ByteStream headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract OptionalByte taill();
-
-    /**
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract Pair<ByteStream, OptionalByte> headAndTaill();
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract ByteStream headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract OptionalByte taill();
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract Pair<ByteStream, OptionalByte> headAndTaill();
 
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this

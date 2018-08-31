@@ -940,11 +940,11 @@ abstract class AbstractCharStream extends CharStream {
         return Pair.of(head(), tail());
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public Pair<CharStream, OptionalChar> headAndTaill() {
-        return Pair.of(headd(), taill());
-    }
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<CharStream, OptionalChar> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
 
     @Override
     public Stream<IndexedChar> indexed() {

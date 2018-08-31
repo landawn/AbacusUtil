@@ -1481,19 +1481,19 @@ class ArrayFloatStream extends AbstractFloatStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public FloatStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalFloat taill() {
-        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public FloatStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalFloat taill() {
+    //        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalFloat min() {

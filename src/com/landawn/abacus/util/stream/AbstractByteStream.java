@@ -940,11 +940,11 @@ abstract class AbstractByteStream extends ByteStream {
         return Pair.of(head(), tail());
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public Pair<ByteStream, OptionalByte> headAndTaill() {
-        return Pair.of(headd(), taill());
-    }
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
 
     @Override
     public Stream<IndexedByte> indexed() {

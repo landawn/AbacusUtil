@@ -80,8 +80,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     Optional<T> head;
     Stream<T> tail;
 
-    Stream<T> head2;
-    Optional<T> tail2;
+    //    Stream<T> head2;
+    //    Optional<T> tail2;
 
     IteratorStream(final Iterator<? extends T> values) {
         this(values, null);
@@ -2111,27 +2111,27 @@ class IteratorStream<T> extends AbstractStream<T> {
         return tail;
     }
 
-    @Override
-    public Stream<T> headd() {
-        if (head2 == null) {
-            final Object[] a = this.toArray();
-            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
-            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public Optional<T> taill() {
-        if (tail2 == null) {
-            final Object[] a = this.toArray();
-            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
-            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public Stream<T> headd() {
+    //        if (head2 == null) {
+    //            final Object[] a = this.toArray();
+    //            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
+    //            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public Optional<T> taill() {
+    //        if (tail2 == null) {
+    //            final Object[] a = this.toArray();
+    //            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
+    //            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public Stream<T> last(final int n) {

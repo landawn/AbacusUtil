@@ -530,33 +530,33 @@ public abstract class DoubleStream
 
     public abstract Pair<OptionalDouble, DoubleStream> headAndTail();
 
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract DoubleStream headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called. 
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract OptionalDouble taill();
-
-    /**
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract Pair<DoubleStream, OptionalDouble> headAndTaill();
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract DoubleStream headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called. 
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract OptionalDouble taill();
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract Pair<DoubleStream, OptionalDouble> headAndTaill();
 
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this

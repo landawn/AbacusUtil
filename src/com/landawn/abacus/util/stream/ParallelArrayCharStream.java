@@ -1367,28 +1367,28 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         return maxThreadNum;
     }
 
-    @Override
-    public CharStream maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-            return this;
-        }
-
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public CharStream maxThreadNum(int maxThreadNum) {
+    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    @Override
-    public CharStream splitor(BaseStream.Splitor splitor) {
-        if (this.splitor == splitor) {
-            return this;
-        }
-
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public CharStream splitor(BaseStream.Splitor splitor) {
+    //        if (this.splitor == splitor) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public CharStream onClose(Runnable closeHandler) {

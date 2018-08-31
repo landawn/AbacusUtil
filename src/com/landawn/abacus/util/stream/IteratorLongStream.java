@@ -73,8 +73,8 @@ class IteratorLongStream extends AbstractLongStream {
     OptionalLong head;
     LongStream tail;
 
-    LongStream head2;
-    OptionalLong tail2;
+    //    LongStream head2;
+    //    OptionalLong tail2;
 
     IteratorLongStream(final LongIterator values) {
         this(values, null);
@@ -1271,27 +1271,27 @@ class IteratorLongStream extends AbstractLongStream {
         return tail;
     }
 
-    @Override
-    public LongStream headd() {
-        if (head2 == null) {
-            final long[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalLong taill() {
-        if (tail2 == null) {
-            final long[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public LongStream headd() {
+    //        if (head2 == null) {
+    //            final long[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalLong taill() {
+    //        if (tail2 == null) {
+    //            final long[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalLong min() {

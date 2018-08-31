@@ -68,8 +68,8 @@ class IteratorFloatStream extends AbstractFloatStream {
     OptionalFloat head;
     FloatStream tail;
 
-    FloatStream head2;
-    OptionalFloat tail2;
+    //    FloatStream head2;
+    //    OptionalFloat tail2;
 
     IteratorFloatStream(final FloatIterator values) {
         this(values, null);
@@ -1266,27 +1266,27 @@ class IteratorFloatStream extends AbstractFloatStream {
         return tail;
     }
 
-    @Override
-    public FloatStream headd() {
-        if (head2 == null) {
-            final float[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalFloat taill() {
-        if (tail2 == null) {
-            final float[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public FloatStream headd() {
+    //        if (head2 == null) {
+    //            final float[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalFloat taill() {
+    //        if (tail2 == null) {
+    //            final float[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalFloat min() {

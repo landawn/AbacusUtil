@@ -1792,45 +1792,45 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Pair<Optional<T>, Stream<T>> headAndTail();
 
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() or taill() is called.
-     * 
-     * <br />
-     * All elements will be loaded to memory.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @SequentialOnly
-    public abstract Stream<T> headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() or taill() is called. 
-     * 
-     * <br />
-     * All elements will be loaded to memory.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @SequentialOnly
-    public abstract Optional<T> taill();
-
-    /**
-     * 
-     * <br />
-     * All elements will be loaded to memory.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @SequentialOnly
-    public abstract Pair<Stream<T>, Optional<T>> headAndTaill();
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() or taill() is called.
+    //     * 
+    //     * <br />
+    //     * All elements will be loaded to memory.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    @SequentialOnly
+    //    public abstract Stream<T> headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() or taill() is called. 
+    //     * 
+    //     * <br />
+    //     * All elements will be loaded to memory.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    @SequentialOnly
+    //    public abstract Optional<T> taill();
+    //
+    //    /**
+    //     * 
+    //     * <br />
+    //     * All elements will be loaded to memory.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    @SequentialOnly
+    //    public abstract Pair<Stream<T>, Optional<T>> headAndTaill();
 
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
@@ -9106,7 +9106,7 @@ public abstract class Stream<T>
         COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, CARTESIAN_PRODUCT, //
         COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, //
         COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
-        LAST, HEAD, HEADD, TAIL, TAILL, HEAD_AND_TAIL, HEAD_AND_TAILL, //
+        LAST, HEAD, /*HEADD,*/ TAIL, /*TAILL,*/ HEAD_AND_TAIL, /*HEAD_AND_TAILL,*/ //
         TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
         BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
         PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST, ON_CLOSE, CLOSE;
@@ -9155,6 +9155,6 @@ public abstract class Stream<T>
      *
      */
     public static enum LRNO {
-        CACHED, HEADD, TAILL, HEAD_AND_TAILL;
+        CACHED/*, HEADD, TAILL, HEAD_AND_TAILL*/;
     }
 }

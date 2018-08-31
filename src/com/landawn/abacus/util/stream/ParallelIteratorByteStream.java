@@ -857,28 +857,28 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         return maxThreadNum;
     }
 
-    @Override
-    public ByteStream maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-            return this;
-        }
-
-        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public ByteStream maxThreadNum(int maxThreadNum) {
+    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    @Override
-    public ByteStream splitor(BaseStream.Splitor splitor) {
-        if (this.splitor == splitor) {
-            return this;
-        }
-
-        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public ByteStream splitor(BaseStream.Splitor splitor) {
+    //        if (this.splitor == splitor) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public ByteStream onClose(Runnable closeHandler) {

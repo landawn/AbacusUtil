@@ -1173,19 +1173,19 @@ class ArrayCharStream extends AbstractCharStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public CharStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalChar taill() {
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public CharStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalChar taill() {
+    //        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalChar min() {

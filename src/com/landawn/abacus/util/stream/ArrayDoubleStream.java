@@ -1481,19 +1481,19 @@ class ArrayDoubleStream extends AbstractDoubleStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public DoubleStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalDouble taill() {
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public DoubleStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalDouble taill() {
+    //        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalDouble min() {

@@ -60,8 +60,8 @@ class IteratorCharStream extends AbstractCharStream {
     OptionalChar head;
     CharStream tail;
 
-    CharStream head2;
-    OptionalChar tail2;
+    //    CharStream head2;
+    //    OptionalChar tail2;
 
     IteratorCharStream(final CharIterator values) {
         this(values, null);
@@ -961,27 +961,27 @@ class IteratorCharStream extends AbstractCharStream {
         return tail;
     }
 
-    @Override
-    public CharStream headd() {
-        if (head2 == null) {
-            final char[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalChar taill() {
-        if (tail2 == null) {
-            final char[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public CharStream headd() {
+    //        if (head2 == null) {
+    //            final char[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalChar taill() {
+    //        if (tail2 == null) {
+    //            final char[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalChar min() {

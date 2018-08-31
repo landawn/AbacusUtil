@@ -100,32 +100,17 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return predicate.test(value, seed);
-            }
-        });
+        return filter(Fn.p(seed, predicate));
     }
 
     @Override
     public <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return takeWhile(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return predicate.test(value, seed);
-            }
-        });
+        return takeWhile(Fn.p(seed, predicate));
     }
 
     @Override
     public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return dropWhile(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return predicate.test(value, seed);
-            }
-        });
+        return dropWhile(Fn.p(seed, predicate));
     }
 
     @Override
@@ -307,12 +292,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U, R> Stream<R> map(final U seed, final BiFunction<? super T, ? super U, ? extends R> mapper) {
-        return map(new Function<T, R>() {
-            @Override
-            public R apply(T t) {
-                return mapper.apply(t, seed);
-            }
-        });
+        return map(Fn.f(seed, mapper));
     }
 
     //    @Override
@@ -1435,22 +1415,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findFirst(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return findFirst(Fn.pp(seed, predicate));
     }
 
     @Override
     public <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findLast(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return findLast(Fn.pp(seed, predicate));
     }
 
     @Override
@@ -1517,42 +1487,22 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U, E extends Exception> Optional<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findAny(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return findAny(Fn.pp(seed, predicate));
     }
 
     @Override
     public <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return anyMatch(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return anyMatch(Fn.pp(seed, predicate));
     }
 
     @Override
     public <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return allMatch(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return allMatch(Fn.pp(seed, predicate));
     }
 
     @Override
     public <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return noneMatch(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T t) throws E {
-                return predicate.test(t, seed);
-            }
-        });
+        return noneMatch(Fn.pp(seed, predicate));
     }
 
     @Override
@@ -2469,11 +2419,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         return Pair.of(head(), tail());
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public Pair<Stream<T>, Optional<T>> headAndTaill() {
-        return Pair.of(headd(), taill());
-    }
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<Stream<T>, Optional<T>> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
 
     @Override
     public Stream<Indexed<T>> indexed() {

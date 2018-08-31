@@ -75,14 +75,6 @@ import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
 import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.WD;
-import com.landawn.abacus.util.function.ToBooleanFunction;
-import com.landawn.abacus.util.function.ToByteFunction;
-import com.landawn.abacus.util.function.ToCharFunction;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToFloatFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.ToShortFunction;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -1332,7 +1324,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
-        return queryForSingleResult(Boolean.class, sql, parameters).mapToBoolean(ToBooleanFunction.UNBOX);
+        final Nullable<Boolean> result = queryForSingleResult(Boolean.class, sql, parameters);
+
+        return result.isPresent() ? OptionalBoolean.of(result.orIfNull(false)) : OptionalBoolean.empty();
     }
 
     /**
@@ -1341,7 +1335,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalChar queryForChar(final String sql, final Object... parameters) {
-        return queryForSingleResult(Character.class, sql, parameters).mapToChar(ToCharFunction.UNBOX);
+        final Nullable<Character> result = queryForSingleResult(Character.class, sql, parameters);
+
+        return result.isPresent() ? OptionalChar.of(result.orIfNull((char) 0)) : OptionalChar.empty();
     }
 
     /**
@@ -1349,7 +1345,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalByte queryForByte(final String sql, final Object... parameters) {
-        return queryForSingleResult(Byte.class, sql, parameters).mapToByte(ToByteFunction.UNBOX);
+        final Nullable<Byte> result = queryForSingleResult(Byte.class, sql, parameters);
+
+        return result.isPresent() ? OptionalByte.of(result.orIfNull((byte) 0)) : OptionalByte.empty();
     }
 
     /**
@@ -1357,7 +1355,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalShort queryForShort(final String sql, final Object... parameters) {
-        return queryForSingleResult(Short.class, sql, parameters).mapToShort(ToShortFunction.UNBOX);
+        final Nullable<Short> result = queryForSingleResult(Short.class, sql, parameters);
+
+        return result.isPresent() ? OptionalShort.of(result.orIfNull((short) 0)) : OptionalShort.empty();
     }
 
     /**
@@ -1365,7 +1365,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalInt queryForInt(final String sql, final Object... parameters) {
-        return queryForSingleResult(Integer.class, sql, parameters).mapToInt(ToIntFunction.UNBOX);
+        final Nullable<Integer> result = queryForSingleResult(Integer.class, sql, parameters);
+
+        return result.isPresent() ? OptionalInt.of(result.orIfNull(0)) : OptionalInt.empty();
     }
 
     /**
@@ -1373,7 +1375,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalLong queryForLong(final String sql, final Object... parameters) {
-        return queryForSingleResult(Long.class, sql, parameters).mapToLong(ToLongFunction.UNBOX);
+        final Nullable<Long> result = queryForSingleResult(Long.class, sql, parameters);
+
+        return result.isPresent() ? OptionalLong.of(result.orIfNull(0L)) : OptionalLong.empty();
     }
 
     /**
@@ -1381,7 +1385,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
-        return queryForSingleResult(Float.class, sql, parameters).mapToFloat(ToFloatFunction.UNBOX);
+        final Nullable<Float> result = queryForSingleResult(Float.class, sql, parameters);
+
+        return result.isPresent() ? OptionalFloat.of(result.orIfNull(0f)) : OptionalFloat.empty();
     }
 
     /**
@@ -1389,7 +1395,9 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
-        return queryForSingleResult(Double.class, sql, parameters).mapToDouble(ToDoubleFunction.UNBOX);
+        final Nullable<Double> result = queryForSingleResult(Double.class, sql, parameters);
+
+        return result.isPresent() ? OptionalDouble.of(result.orIfNull(0d)) : OptionalDouble.empty();
     }
 
     /**

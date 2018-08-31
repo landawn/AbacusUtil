@@ -79,8 +79,8 @@ class IteratorIntStream extends AbstractIntStream {
     OptionalInt head;
     IntStream tail;
 
-    IntStream head2;
-    OptionalInt tail2;
+    //    IntStream head2;
+    //    OptionalInt tail2;
 
     IteratorIntStream(final IntIterator values) {
         this(values, null);
@@ -1554,27 +1554,27 @@ class IteratorIntStream extends AbstractIntStream {
         return tail;
     }
 
-    @Override
-    public IntStream headd() {
-        if (head2 == null) {
-            final int[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalInt taill() {
-        if (tail2 == null) {
-            final int[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public IntStream headd() {
+    //        if (head2 == null) {
+    //            final int[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalInt taill() {
+    //        if (tail2 == null) {
+    //            final int[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalInt min() {

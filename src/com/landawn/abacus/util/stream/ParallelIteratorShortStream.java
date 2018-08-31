@@ -859,28 +859,28 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         return maxThreadNum;
     }
 
-    @Override
-    public ShortStream maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-            return this;
-        }
-
-        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public ShortStream maxThreadNum(int maxThreadNum) {
+    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    @Override
-    public ShortStream splitor(BaseStream.Splitor splitor) {
-        if (this.splitor == splitor) {
-            return this;
-        }
-
-        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public ShortStream splitor(BaseStream.Splitor splitor) {
+    //        if (this.splitor == splitor) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public ShortStream onClose(Runnable closeHandler) {

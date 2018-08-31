@@ -482,33 +482,33 @@ public abstract class ShortStream
 
     public abstract Pair<OptionalShort, ShortStream> headAndTail();
 
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called. 
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract ShortStream headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called. 
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract OptionalShort taill();
-
-    /**
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract Pair<ShortStream, OptionalShort> headAndTaill();
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called. 
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract ShortStream headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called. 
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract OptionalShort taill();
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract Pair<ShortStream, OptionalShort> headAndTaill();
 
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this

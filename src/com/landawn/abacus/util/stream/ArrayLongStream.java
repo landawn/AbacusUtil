@@ -1482,19 +1482,19 @@ class ArrayLongStream extends AbstractLongStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public LongStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalLong taill() {
-        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public LongStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalLong taill() {
+    //        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalLong min() {

@@ -72,8 +72,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     OptionalDouble head;
     DoubleStream tail;
 
-    DoubleStream head2;
-    OptionalDouble tail2;
+    //    DoubleStream head2;
+    //    OptionalDouble tail2;
 
     IteratorDoubleStream(final DoubleIterator values) {
         this(values, null);
@@ -1270,27 +1270,27 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         return tail;
     }
 
-    @Override
-    public DoubleStream headd() {
-        if (head2 == null) {
-            final double[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalDouble taill() {
-        if (tail2 == null) {
-            final double[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public DoubleStream headd() {
+    //        if (head2 == null) {
+    //            final double[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalDouble taill() {
+    //        if (tail2 == null) {
+    //            final double[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalDouble min() {

@@ -2527,19 +2527,19 @@ class ArrayStream<T> extends AbstractStream<T> {
         return newStream(elements, fromIndex + 1, toIndex, sorted, cmp);
     }
 
-    @Override
-    public Stream<T> headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted, cmp);
-    }
-
-    @Override
-    public Optional<T> taill() {
-        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public Stream<T> headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted, cmp);
+    //    }
+    //
+    //    @Override
+    //    public Optional<T> taill() {
+    //        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public Stream<T> last(final int n) {

@@ -857,28 +857,28 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         return maxThreadNum;
     }
 
-    @Override
-    public CharStream maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-            return this;
-        }
-
-        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public CharStream maxThreadNum(int maxThreadNum) {
+    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    @Override
-    public CharStream splitor(BaseStream.Splitor splitor) {
-        if (this.splitor == splitor) {
-            return this;
-        }
-
-        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    }
+    //    @Override
+    //    public CharStream splitor(BaseStream.Splitor splitor) {
+    //        if (this.splitor == splitor) {
+    //            return this;
+    //        }
+    //
+    //        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    //    }
 
     @Override
     public CharStream onClose(Runnable closeHandler) {

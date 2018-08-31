@@ -1173,19 +1173,19 @@ class ArrayByteStream extends AbstractByteStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public ByteStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalByte taill() {
-        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public ByteStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalByte taill() {
+    //        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalByte min() {

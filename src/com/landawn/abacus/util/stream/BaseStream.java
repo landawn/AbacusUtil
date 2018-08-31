@@ -1025,17 +1025,17 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     int maxThreadNum();
 
-    /**
-     * Returns a parallel stream with the specified <code>maxThreadNum</code> . Or return
-     * itself, either because the stream was already parallel with same <code>maxThreadNum</code>, or because
-     * it's a sequential stream.
-     * 
-     * @param maxThreadNum
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    S maxThreadNum(int maxThreadNum);
+    //    /**
+    //     * Returns a parallel stream with the specified <code>maxThreadNum</code> . Or return
+    //     * itself, either because the stream was already parallel with same <code>maxThreadNum</code>, or because
+    //     * it's a sequential stream.
+    //     * 
+    //     * @param maxThreadNum
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    S maxThreadNum(int maxThreadNum);
 
     /**
      * Return the underlying <code>splitor</code> if the stream is parallel, otherwise the default value <code>splitor.ITERATOR</code> is returned.
@@ -1044,17 +1044,17 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     Splitor splitor();
 
-    /**
-     * Returns a parallel stream with the specified <code>splitor</code> . Or return
-     * itself, either because the stream was already parallel with same <code>splitor</code>, or because
-     * it's a sequential stream.
-     * 
-     * @param splitor
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    S splitor(Splitor splitor);
+    //    /**
+    //     * Returns a parallel stream with the specified <code>splitor</code> . Or return
+    //     * itself, either because the stream was already parallel with same <code>splitor</code>, or because
+    //     * it's a sequential stream.
+    //     * 
+    //     * @param splitor
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    S splitor(Splitor splitor);
 
     //    /**
     //     * Short-cut for s.parallel().__(op).sequential().

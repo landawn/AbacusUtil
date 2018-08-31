@@ -1818,19 +1818,19 @@ class ArrayIntStream extends AbstractIntStream {
         return newStream(elements, fromIndex + 1, toIndex, sorted);
     }
 
-    @Override
-    public IntStream headd() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    }
-
-    @Override
-    public OptionalInt taill() {
-        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[toIndex - 1]);
-    }
+    //    @Override
+    //    public IntStream headd() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
+    //    }
+    //
+    //    @Override
+    //    public OptionalInt taill() {
+    //        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[toIndex - 1]);
+    //    }
 
     @Override
     public OptionalInt min() {

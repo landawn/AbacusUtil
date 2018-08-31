@@ -518,33 +518,33 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract Pair<OptionalLong, LongStream> headAndTail();
 
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called. 
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract LongStream headd();
-
-    /**
-     * Headd and taill should be used by pair. 
-     * Don't call any other methods with this stream after headd() and taill() are called.
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract OptionalLong taill();
-
-    /**
-     * 
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    public abstract Pair<LongStream, OptionalLong> headAndTaill();
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called. 
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract LongStream headd();
+    //
+    //    /**
+    //     * Headd and taill should be used by pair. 
+    //     * Don't call any other methods with this stream after headd() and taill() are called.
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract OptionalLong taill();
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public abstract Pair<LongStream, OptionalLong> headAndTaill();
 
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this

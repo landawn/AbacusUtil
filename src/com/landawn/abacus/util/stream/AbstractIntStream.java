@@ -945,11 +945,11 @@ abstract class AbstractIntStream extends IntStream {
         return Pair.of(head(), tail());
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public Pair<IntStream, OptionalInt> headAndTaill() {
-        return Pair.of(headd(), taill());
-    }
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<IntStream, OptionalInt> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
 
     @Override
     public Stream<IndexedInt> indexed() {

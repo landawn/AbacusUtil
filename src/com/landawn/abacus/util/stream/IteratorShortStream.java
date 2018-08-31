@@ -65,8 +65,8 @@ class IteratorShortStream extends AbstractShortStream {
     OptionalShort head;
     ShortStream tail;
 
-    ShortStream head2;
-    OptionalShort tail2;
+    //    ShortStream head2;
+    //    OptionalShort tail2;
 
     IteratorShortStream(final ShortIterator values) {
         this(values, null);
@@ -1080,27 +1080,27 @@ class IteratorShortStream extends AbstractShortStream {
         return tail;
     }
 
-    @Override
-    public ShortStream headd() {
-        if (head2 == null) {
-            final short[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
-        }
-
-        return head2;
-    }
-
-    @Override
-    public OptionalShort taill() {
-        if (tail2 == null) {
-            final short[] a = elements.toArray();
-            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
-        }
-
-        return tail2;
-    }
+    //    @Override
+    //    public ShortStream headd() {
+    //        if (head2 == null) {
+    //            final short[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
+    //        }
+    //
+    //        return head2;
+    //    }
+    //
+    //    @Override
+    //    public OptionalShort taill() {
+    //        if (tail2 == null) {
+    //            final short[] a = elements.toArray();
+    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
+    //            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
+    //        }
+    //
+    //        return tail2;
+    //    }
 
     @Override
     public OptionalShort min() {

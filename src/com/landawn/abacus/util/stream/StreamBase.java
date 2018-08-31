@@ -673,13 +673,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return 1;
     }
 
-    @Override
-    public S maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException();  
-
-        // ignore, do nothing if it's sequential stream.
-        return (S) this;
-    }
+    //    @Override
+    //    public S maxThreadNum(int maxThreadNum) {
+    //        // throw new UnsupportedOperationException();  
+    //
+    //        // ignore, do nothing if it's sequential stream.
+    //        return (S) this;
+    //    }
 
     @Override
     public Splitor splitor() {
@@ -689,13 +689,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return DEFAULT_SPLITOR;
     }
 
-    @Override
-    public S splitor(Splitor splitor) {
-        // throw new UnsupportedOperationException();
-
-        // ignore, do nothing if it's sequential stream.
-        return (S) this;
-    }
+    //    @Override
+    //    public S splitor(Splitor splitor) {
+    //        // throw new UnsupportedOperationException();
+    //
+    //        // ignore, do nothing if it's sequential stream.
+    //        return (S) this;
+    //    }
 
     //    @Override
     //    @SuppressWarnings("rawtypes")
