@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -96,7 +95,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         return from(c, (char) 0);
     }
 
-    public static CharList from(Collection<Character> c, char defaultValueForNull) {
+    public static CharList from(Collection<Character> c, char defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new CharList();
         }
@@ -105,7 +104,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         int idx = 0;
 
         for (Character e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -121,37 +120,8 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         return from(c, fromIndex, toIndex, (char) 0);
     }
 
-    public static CharList from(final Collection<Character> c, final int fromIndex, final int toIndex, char defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new CharList();
-        } else if (c instanceof List) {
-            return from(((List<Character>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Character> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final CharList result = new CharList(toIndex - fromIndex);
-        Character next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static CharList from(final Collection<Character> c, final int fromIndex, final int toIndex, char defaultForNull) {
+        return of(N.toCharArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static CharList range(char startInclusive, final char endExclusive) {
@@ -222,6 +192,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
      * 
      * @return
      */
+    @Override
     public char[] array() {
         return elementData;
     }

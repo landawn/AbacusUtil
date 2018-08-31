@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -97,7 +96,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         return from(c, 0f);
     }
 
-    public static FloatList from(Collection<Float> c, float defaultValueForNull) {
+    public static FloatList from(Collection<Float> c, float defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new FloatList();
         }
@@ -106,7 +105,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         int idx = 0;
 
         for (Float e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -122,37 +121,8 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         return from(c, fromIndex, toIndex, 0);
     }
 
-    public static FloatList from(final Collection<Float> c, final int fromIndex, final int toIndex, float defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new FloatList();
-        } else if (c instanceof List) {
-            return from(((List<Float>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Float> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final FloatList result = new FloatList(toIndex - fromIndex);
-        Float next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static FloatList from(final Collection<Float> c, final int fromIndex, final int toIndex, float defaultForNull) {
+        return of(N.toFloatArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static FloatList repeat(float element, final int len) {
@@ -174,6 +144,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
      * 
      * @return
      */
+    @Override
     public float[] array() {
         return elementData;
     }

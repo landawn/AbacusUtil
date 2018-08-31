@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -97,7 +96,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         return from(c, 0d);
     }
 
-    public static DoubleList from(Collection<Double> c, double defaultValueForNull) {
+    public static DoubleList from(Collection<Double> c, double defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new DoubleList();
         }
@@ -106,7 +105,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         int idx = 0;
 
         for (Double e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -122,37 +121,8 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         return from(c, fromIndex, toIndex, 0);
     }
 
-    public static DoubleList from(final Collection<Double> c, final int fromIndex, final int toIndex, double defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new DoubleList();
-        } else if (c instanceof List) {
-            return from(((List<Double>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Double> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final DoubleList result = new DoubleList(toIndex - fromIndex);
-        Double next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static DoubleList from(final Collection<Double> c, final int fromIndex, final int toIndex, double defaultForNull) {
+        return of(N.toDoubleArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static DoubleList repeat(double element, final int len) {
@@ -174,6 +144,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
      * 
      * @return
      */
+    @Override
     public double[] array() {
         return elementData;
     }

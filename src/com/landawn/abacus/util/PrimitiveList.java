@@ -57,6 +57,13 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     }
 
     /**
+     * Returned the backed array.
+     * 
+     * @return
+     */
+    public abstract A array();
+
+    /**
      * 
      * @param a
      */

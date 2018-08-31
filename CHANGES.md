@@ -1,3 +1,10 @@
+### 1.3.6
+
+* Add `N.toBooleanArray/N.toCharArray/N.toByteArray/N.toShortArray/N.toIntArray/.../N.toDoubleArray`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.5
 
 * Refactoring `Stream.zip`, `SQLBuilder` and `SQLExecutor.Mapper`.

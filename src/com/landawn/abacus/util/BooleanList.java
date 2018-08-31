@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -96,7 +95,7 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
         return from(c, false);
     }
 
-    public static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
+    public static BooleanList from(Collection<Boolean> c, boolean defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new BooleanList();
         }
@@ -105,7 +104,7 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
         int idx = 0;
 
         for (Boolean e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -121,37 +120,8 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
         return from(c, fromIndex, toIndex, false);
     }
 
-    public static BooleanList from(final Collection<Boolean> c, final int fromIndex, final int toIndex, boolean defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new BooleanList();
-        } else if (c instanceof List) {
-            return from(((List<Boolean>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Boolean> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final BooleanList result = new BooleanList(toIndex - fromIndex);
-        Boolean next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static BooleanList from(final Collection<Boolean> c, final int fromIndex, final int toIndex, boolean defaultForNull) {
+        return of(N.toBooleanArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static BooleanList repeat(boolean element, final int len) {
@@ -173,6 +143,7 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
      * 
      * @return
      */
+    @Override
     public boolean[] array() {
         return elementData;
     }

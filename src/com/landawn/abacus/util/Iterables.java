@@ -23,7 +23,7 @@ package com.landawn.abacus.util;
  * 
  * @author Haiyang Li 
  */
-public class Iterables {
+public final class Iterables {
 
     private Iterables() {
         // singleton.

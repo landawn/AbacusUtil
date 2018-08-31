@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -97,7 +96,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         return from(c, (short) 0);
     }
 
-    public static ShortList from(Collection<Short> c, short defaultValueForNull) {
+    public static ShortList from(Collection<Short> c, short defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new ShortList();
         }
@@ -106,7 +105,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         int idx = 0;
 
         for (Short e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -122,37 +121,8 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         return from(c, fromIndex, toIndex, (short) 0);
     }
 
-    public static ShortList from(final Collection<Short> c, final int fromIndex, final int toIndex, short defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new ShortList();
-        } else if (c instanceof List) {
-            return from(((List<Short>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Short> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final ShortList result = new ShortList(toIndex - fromIndex);
-        Short next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static ShortList from(final Collection<Short> c, final int fromIndex, final int toIndex, short defaultForNull) {
+        return of(N.toShortArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static ShortList range(short startInclusive, final short endExclusive) {
@@ -190,6 +160,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
      * 
      * @return
      */
+    @Override
     public short[] array() {
         return elementData;
     }

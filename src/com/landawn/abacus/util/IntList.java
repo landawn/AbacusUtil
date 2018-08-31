@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -117,7 +116,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
         return from(c, 0);
     }
 
-    public static IntList from(Collection<Integer> c, int defaultValueForNull) {
+    public static IntList from(Collection<Integer> c, int defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new IntList();
         }
@@ -126,7 +125,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
         int idx = 0;
 
         for (Integer e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -142,37 +141,8 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
         return from(c, fromIndex, toIndex, 0);
     }
 
-    public static IntList from(final Collection<Integer> c, final int fromIndex, final int toIndex, int defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new IntList();
-        } else if (c instanceof List) {
-            return from(((List<Integer>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Integer> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final IntList result = new IntList(toIndex - fromIndex);
-        Integer next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static IntList from(final Collection<Integer> c, final int fromIndex, final int toIndex, int defaultForNull) {
+        return of(N.toIntArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static IntList range(int startInclusive, final int endExclusive) {
@@ -233,6 +203,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
      * 
      * @return
      */
+    @Override
     public int[] array() {
         return elementData;
     }

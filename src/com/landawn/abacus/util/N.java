@@ -1729,6 +1729,470 @@ public final class N {
         }
     }
 
+    public static boolean[] toBooleanArray(final Collection<Boolean> c) {
+        return toBooleanArray(c, false);
+    }
+
+    public static boolean[] toBooleanArray(final Collection<Boolean> c, final int fromIndex, final int toIndex) {
+        return toBooleanArray(c, fromIndex, toIndex, false);
+    }
+
+    public static boolean[] toBooleanArray(final Collection<Boolean> c, final boolean defaultForNull) {
+        return toBooleanArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static boolean[] toBooleanArray(final Collection<Boolean> c, final int fromIndex, final int toIndex, final boolean defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_BOOLEAN_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        boolean[] result = new boolean[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Boolean> list = (List<Boolean>) c;
+            Boolean val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Boolean> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Boolean val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static char[] toCharArray(final Collection<Character> c) {
+        return toCharArray(c, (char) 0);
+    }
+
+    public static char[] toCharArray(final Collection<Character> c, final int fromIndex, final int toIndex) {
+        return toCharArray(c, fromIndex, toIndex, (char) 0);
+    }
+
+    public static char[] toCharArray(final Collection<Character> c, final char defaultForNull) {
+        return toCharArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static char[] toCharArray(final Collection<Character> c, final int fromIndex, final int toIndex, final char defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_CHAR_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        char[] result = new char[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Character> list = (List<Character>) c;
+            Character val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Character> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Character val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] toByteArray(final Collection<Byte> c) {
+        return toByteArray(c, (byte) 0);
+    }
+
+    public static byte[] toByteArray(final Collection<Byte> c, final int fromIndex, final int toIndex) {
+        return toByteArray(c, fromIndex, toIndex, (byte) 0);
+    }
+
+    public static byte[] toByteArray(final Collection<Byte> c, final byte defaultForNull) {
+        return toByteArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static byte[] toByteArray(final Collection<Byte> c, final int fromIndex, final int toIndex, final byte defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_BYTE_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        byte[] result = new byte[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Byte> list = (List<Byte>) c;
+            Byte val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Byte> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Byte val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] toShortArray(final Collection<Short> c) {
+        return toShortArray(c, (short) 0);
+    }
+
+    public static short[] toShortArray(final Collection<Short> c, final int fromIndex, final int toIndex) {
+        return toShortArray(c, fromIndex, toIndex, (short) 0);
+    }
+
+    public static short[] toShortArray(final Collection<Short> c, final short defaultForNull) {
+        return toShortArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static short[] toShortArray(final Collection<Short> c, final int fromIndex, final int toIndex, final short defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_SHORT_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        short[] result = new short[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Short> list = (List<Short>) c;
+            Short val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Short> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Short val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] toIntArray(final Collection<Integer> c) {
+        return toIntArray(c, 0);
+    }
+
+    public static int[] toIntArray(final Collection<Integer> c, final int fromIndex, final int toIndex) {
+        return toIntArray(c, fromIndex, toIndex, 0);
+    }
+
+    public static int[] toIntArray(final Collection<Integer> c, final int defaultForNull) {
+        return toIntArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static int[] toIntArray(final Collection<Integer> c, final int fromIndex, final int toIndex, final int defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_INT_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        int[] result = new int[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Integer> list = (List<Integer>) c;
+            Integer val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Integer> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Integer val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] toLongArray(final Collection<Long> c) {
+        return toLongArray(c, 0);
+    }
+
+    public static long[] toLongArray(final Collection<Long> c, final int fromIndex, final int toIndex) {
+        return toLongArray(c, fromIndex, toIndex, 0);
+    }
+
+    public static long[] toLongArray(final Collection<Long> c, final long defaultForNull) {
+        return toLongArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static long[] toLongArray(final Collection<Long> c, final int fromIndex, final int toIndex, final long defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_LONG_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        long[] result = new long[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Long> list = (List<Long>) c;
+            Long val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Long> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Long val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] toFloatArray(final Collection<Float> c) {
+        return toFloatArray(c, 0);
+    }
+
+    public static float[] toFloatArray(final Collection<Float> c, final int fromIndex, final int toIndex) {
+        return toFloatArray(c, fromIndex, toIndex, 0);
+    }
+
+    public static float[] toFloatArray(final Collection<Float> c, final float defaultForNull) {
+        return toFloatArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static float[] toFloatArray(final Collection<Float> c, final int fromIndex, final int toIndex, final float defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_FLOAT_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        float[] result = new float[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Float> list = (List<Float>) c;
+            Float val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Float> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Float val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] toDoubleArray(final Collection<Double> c) {
+        return toDoubleArray(c, 0);
+    }
+
+    public static double[] toDoubleArray(final Collection<Double> c, final int fromIndex, final int toIndex) {
+        return toDoubleArray(c, fromIndex, toIndex, 0);
+    }
+
+    public static double[] toDoubleArray(final Collection<Double> c, final double defaultForNull) {
+        return toDoubleArray(c, 0, len(c), defaultForNull);
+    }
+
+    public static double[] toDoubleArray(final Collection<Double> c, final int fromIndex, final int toIndex, final double defaultForNull) {
+        N.checkFromToIndex(fromIndex, toIndex, len(c));
+
+        if (fromIndex == toIndex) {
+            return EMPTY_DOUBLE_ARRAY;
+        }
+
+        final int len = toIndex - fromIndex;
+        double[] result = new double[len];
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<Double> list = (List<Double>) c;
+            Double val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = list.get(i + fromIndex)) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        } else {
+            final Iterator<Double> iter = c.iterator();
+
+            if (fromIndex > 0) {
+                int offset = 0;
+
+                while (offset++ < fromIndex) {
+                    iter.next();
+                }
+            }
+
+            Double val = null;
+
+            for (int i = 0; i < len; i++) {
+                if ((val = iter.next()) == null) {
+                    result[i] = defaultForNull;
+                } else {
+                    result[i] = val;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public static List<Boolean> toList(final boolean[] a) {
         return toList(a, 0, len(a));
     }

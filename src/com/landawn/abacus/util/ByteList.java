@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -96,7 +95,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         return from(c, (byte) 0);
     }
 
-    public static ByteList from(final Collection<Byte> c, final byte defaultValueForNull) {
+    public static ByteList from(final Collection<Byte> c, final byte defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
         }
@@ -105,7 +104,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         int idx = 0;
 
         for (Byte e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -121,37 +120,8 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         return from(c, fromIndex, toIndex, (byte) 0);
     }
 
-    public static ByteList from(final Collection<Byte> c, final int fromIndex, final int toIndex, byte defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new ByteList();
-        } else if (c instanceof List) {
-            return from(((List<Byte>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Byte> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final ByteList result = new ByteList(toIndex - fromIndex);
-        Byte next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static ByteList from(final Collection<Byte> c, final int fromIndex, final int toIndex, byte defaultForNull) {
+        return of(N.toByteArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static ByteList range(byte startInclusive, final byte endExclusive) {
@@ -191,6 +161,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
      * 
      * @return
      */
+    @Override
     public byte[] array() {
         return elementData;
     }

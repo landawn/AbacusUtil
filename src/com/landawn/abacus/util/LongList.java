@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -97,7 +96,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         return from(c, 0);
     }
 
-    public static LongList from(Collection<Long> c, long defaultValueForNull) {
+    public static LongList from(Collection<Long> c, long defaultForNull) {
         if (N.isNullOrEmpty(c)) {
             return new LongList();
         }
@@ -106,7 +105,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         int idx = 0;
 
         for (Long e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e;
+            a[idx++] = e == null ? defaultForNull : e;
         }
 
         return of(a);
@@ -122,37 +121,8 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         return from(c, fromIndex, toIndex, 0);
     }
 
-    public static LongList from(final Collection<Long> c, final int fromIndex, final int toIndex, long defaultValueForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
-
-        if (fromIndex == toIndex) {
-            return new LongList();
-        } else if (c instanceof List) {
-            return from(((List<Long>) c).subList(fromIndex, toIndex), defaultValueForNull);
-        }
-
-        final Iterator<Long> iter = c.iterator();
-        int idx = 0;
-
-        while (idx < fromIndex) {
-            iter.next();
-            idx++;
-        }
-
-        final LongList result = new LongList(toIndex - fromIndex);
-        Long next = null;
-
-        for (; idx < toIndex; idx++) {
-            next = iter.next();
-
-            if (next == null) {
-                result.add(defaultValueForNull);
-            } else {
-                result.add(next);
-            }
-        }
-
-        return result;
+    public static LongList from(final Collection<Long> c, final int fromIndex, final int toIndex, long defaultForNull) {
+        return of(N.toLongArray(c, fromIndex, toIndex, defaultForNull));
     }
 
     public static LongList range(long startInclusive, final long endExclusive) {
@@ -190,6 +160,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
      * 
      * @return
      */
+    @Override
     public long[] array() {
         return elementData;
     }
