@@ -2,6 +2,8 @@
 
 * Add `N.toBooleanArray/N.toCharArray/N.toByteArray/N.toShortArray/N.toIntArray/.../N.toDoubleArray`.
 
+* Add `Seq.forEachNonNull/flterThenForEach/mapThenForEach/flatMapThenForEach`.
+
 * Improvements and bug fix.
 
 

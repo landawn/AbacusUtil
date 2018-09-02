@@ -13229,33 +13229,33 @@ public final class N {
         }
     }
 
-    //    public static <T, E extends Exception> void forEachNonNull(final T[] a, final Try.Consumer<? super T, E> action) throws E {
-    //        N.checkArgNotNull(action);
-    //
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        for (T e : a) {
-    //            if (e != null) {
-    //                action.accept(e);
-    //            }
-    //        }
-    //    }
-    //
-    //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Try.Consumer<? super T, E> action) throws E {
-    //        N.checkArgNotNull(action);
-    //
-    //        if (N.isNullOrEmpty(c)) {
-    //            return;
-    //        }
-    //
-    //        for (T e : c) {
-    //            if (e != null) {
-    //                action.accept(e);
-    //            }
-    //        }
-    //    }
+    public static <T, E extends Exception> void forEachNonNull(final T[] a, final Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                action.accept(e);
+            }
+        }
+    }
+
+    public static <T, E extends Exception> void forEachNonNull(final Collection<T> c, final Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                action.accept(e);
+            }
+        }
+    }
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final T[] a,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {

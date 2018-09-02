@@ -450,6 +450,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.averageDouble(coll, mapper);
     }
 
+    @Deprecated
     public <E extends Exception> void foreach(final Try.Consumer<? super T, E> action) throws E {
         N.forEach(coll, action);
     }
@@ -473,9 +474,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.forEach(coll, flatMapper, flatMapper2, action);
     }
 
-    //    public void forEachNonNull(final Consumer<? super T> action) throws E {
-    //        N.forEachNonNull(coll, action);
-    //    }
+    public <E extends Exception> void forEachNonNull(final Try.Consumer<? super T, E> action) throws E {
+        N.forEachNonNull(coll, action);
+    }
 
     public <U, E extends Exception, E2 extends Exception> void forEachNonNull(final Try.Function<? super T, ? extends Collection<U>, E> flatMapper,
             final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
@@ -1475,6 +1476,82 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         return result;
+    }
+
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param filter
+     * @param action
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> void filterThenForEach(final Try.Predicate<? super T, E> filter,
+            final Try.Consumer<? super T, E2> action) throws E, E2 {
+        N.checkArgNotNull(filter);
+        N.checkArgNotNull(action);
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                if (filter.test(e)) {
+                    action.accept(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param mapper
+     * @param action
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> void mapThenForEach(final Try.Function<? super T, ? extends R, E> mapper,
+            final Try.Consumer<? super R, E2> action) throws E, E2 {
+        N.checkArgNotNull(mapper);
+        N.checkArgNotNull(action);
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                action.accept(mapper.apply(e));
+            }
+        }
+    }
+
+    /**
+     * For better performance, comparing to {@code Stream}.
+     * 
+     * @param mapper
+     * @param action
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    @Beta
+    public <R, E extends Exception, E2 extends Exception> void flatMapThenForEach(final Try.Function<? super T, ? extends Collection<? extends R>, E> mapper,
+            final Try.Consumer<? super R, E2> action) throws E, E2 {
+        N.checkArgNotNull(mapper);
+        N.checkArgNotNull(action);
+
+        Collection<? extends R> c = null;
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                c = mapper.apply(e);
+
+                if (N.notNullOrEmpty(c)) {
+                    for (R r : c) {
+                        action.accept(r);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -2711,19 +2788,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @Override
     public ObjIterator<T> iterator() {
-        return coll == null ? ObjIterator.<T> empty() : new ObjIterator<T>() {
-            private final Iterator<T> iter = coll.iterator();
-
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return iter.next();
-            }
-        };
+        return ObjIterator.of(coll);
     }
 
     //    public Stream<T> stream() {
