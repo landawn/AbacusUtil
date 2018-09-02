@@ -1060,185 +1060,272 @@ public class Builder<T> {
             super(ds);
         }
 
-        public void renameColumn(String columnName, String newColumnName) {
+        public DataSetBuilder renameColumn(String columnName, String newColumnName) {
             val.renameColumn(columnName, newColumnName);
+
+            return this;
         }
 
-        public void renameColumn(Map<String, String> oldNewNames) {
+        public DataSetBuilder renameColumn(Map<String, String> oldNewNames) {
             val.renameColumn(oldNewNames);
+
+            return this;
         }
 
-        public <E extends Exception> void renameColumn(String columnName, Try.Function<String, String, E> func) throws E {
+        public <E extends Exception> DataSetBuilder renameColumn(String columnName, Try.Function<String, String, E> func) throws E {
             val.renameColumn(columnName, func);
+
+            return this;
         }
 
-        public <E extends Exception> void renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E {
+        public <E extends Exception> DataSetBuilder renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E {
             val.renameColumn(columnNames, func);
+
+            return this;
         }
 
-        public <E extends Exception> void renameColumn(Try.Function<String, String, E> func) throws E {
+        public <E extends Exception> DataSetBuilder renameColumn(Try.Function<String, String, E> func) throws E {
             val.renameColumn(func);
+
+            return this;
         }
 
-        public void addColumn(String columnName, List<?> column) {
+        public DataSetBuilder addColumn(String columnName, List<?> column) {
             val.addColumn(columnName, column);
+
+            return this;
         }
 
-        public void addColumn(int columnIndex, String columnName, List<?> column) {
+        public DataSetBuilder addColumn(int columnIndex, String columnName, List<?> column) {
             val.addColumn(columnIndex, columnName, column);
+
+            return this;
         }
 
-        public <T, E extends Exception> void addColumn(String newColumnName, String fromColumnName, Try.Function<T, ?, E> func) throws E {
+        public <T, E extends Exception> DataSetBuilder addColumn(String newColumnName, String fromColumnName, Try.Function<T, ?, E> func) throws E {
             val.addColumn(newColumnName, fromColumnName, func);
+
+            return this;
         }
 
-        public <T, E extends Exception> void addColumn(int columnIndex, String newColumnName, String fromColumnName, Try.Function<T, ?, E> func) throws E {
-            val.addColumn(columnIndex, newColumnName, fromColumnName, func);
-        }
-
-        public <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func)
+        public <T, E extends Exception> DataSetBuilder addColumn(int columnIndex, String newColumnName, String fromColumnName, Try.Function<T, ?, E> func)
                 throws E {
-            val.addColumn(newColumnName, fromColumnNames, func);
+            val.addColumn(columnIndex, newColumnName, fromColumnName, func);
+
+            return this;
         }
 
-        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
+        public <E extends Exception> DataSetBuilder addColumn(String newColumnName, Collection<String> fromColumnNames,
+                Try.Function<? super Object[], ?, E> func) throws E {
+            val.addColumn(newColumnName, fromColumnNames, func);
+
+            return this;
+        }
+
+        public <E extends Exception> DataSetBuilder addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
                 Try.Function<? super Object[], ?, E> func) throws E {
             val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+
+            return this;
         }
 
-        public <E extends Exception> void addColumn(String newColumnName, Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func) throws E {
+        public <E extends Exception> DataSetBuilder addColumn(String newColumnName, Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func)
+                throws E {
             val.addColumn(newColumnName, fromColumnNames, func);
+
+            return this;
         }
 
-        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple2<String, String> fromColumnNames,
+        public <E extends Exception> DataSetBuilder addColumn(int columnIndex, String newColumnName, Tuple2<String, String> fromColumnNames,
                 Try.BiFunction<?, ?, ?, E> func) throws E {
             val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+
+            return this;
         }
 
-        public <E extends Exception> void addColumn(String newColumnName, Tuple3<String, String, String> fromColumnNames, Try.TriFunction<?, ?, ?, ?, E> func)
-                throws E {
+        public <E extends Exception> DataSetBuilder addColumn(String newColumnName, Tuple3<String, String, String> fromColumnNames,
+                Try.TriFunction<?, ?, ?, ?, E> func) throws E {
             val.addColumn(newColumnName, fromColumnNames, func);
+
+            return this;
         }
 
-        public <E extends Exception> void addColumn(int columnIndex, String newColumnName, Tuple3<String, String, String> fromColumnNames,
+        public <E extends Exception> DataSetBuilder addColumn(int columnIndex, String newColumnName, Tuple3<String, String, String> fromColumnNames,
                 Try.TriFunction<?, ?, ?, ?, E> func) throws E {
             val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
+
+            return this;
         }
 
-        public void removeColumn(String columnName) {
+        public DataSetBuilder removeColumn(String columnName) {
             val.removeColumn(columnName);
+
+            return this;
         }
 
-        public void removeColumnAll(Collection<String> columnNames) {
+        public DataSetBuilder removeColumnAll(Collection<String> columnNames) {
             val.removeColumnAll(columnNames);
+
+            return this;
         }
 
-        public <E extends Exception> void removeColumnIf(Predicate<String, E> filter) throws E {
+        public <E extends Exception> DataSetBuilder removeColumnIf(Predicate<String, E> filter) throws E {
             val.removeColumnIf(filter);
+
+            return this;
         }
 
-        public <T, E extends Exception> void updateColumn(String columnName, Try.Function<T, ?, E> func) throws E {
+        public <T, E extends Exception> DataSetBuilder updateColumn(String columnName, Try.Function<T, ?, E> func) throws E {
             val.updateColumn(columnName, func);
+
+            return this;
         }
 
-        public <T, E extends Exception> void updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
+        public <T, E extends Exception> DataSetBuilder updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
             val.updateColumnAll(columnNames, func);
+
+            return this;
         }
 
-        public void convertColumn(String columnName, Class<?> targetType) {
+        public DataSetBuilder convertColumn(String columnName, Class<?> targetType) {
             val.convertColumn(columnName, targetType);
+
+            return this;
         }
 
-        public void convertColumn(Map<String, Class<?>> columnTargetTypes) {
+        public DataSetBuilder convertColumn(Map<String, Class<?>> columnTargetTypes) {
             val.convertColumn(columnTargetTypes);
+
+            return this;
         }
 
-        public void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass) {
+        public DataSetBuilder combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass) {
             val.combineColumn(columnNames, newColumnName, newColumnClass);
+
+            return this;
         }
 
-        public <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc)
-                throws E {
+        public <E extends Exception> DataSetBuilder combineColumn(Collection<String> columnNames, String newColumnName,
+                Try.Function<? super Object[], ?, E> combineFunc) throws E {
             val.combineColumn(columnNames, newColumnName, combineFunc);
+
+            return this;
         }
 
-        public <E extends Exception> void combineColumn(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc)
-                throws E {
+        public <E extends Exception> DataSetBuilder combineColumn(Tuple2<String, String> columnNames, String newColumnName,
+                Try.BiFunction<?, ?, ?, E> combineFunc) throws E {
             val.combineColumn(columnNames, newColumnName, combineFunc);
+
+            return this;
         }
 
-        public <E extends Exception> void combineColumn(Tuple3<String, String, String> columnNames, String newColumnName,
+        public <E extends Exception> DataSetBuilder combineColumn(Tuple3<String, String, String> columnNames, String newColumnName,
                 Try.TriFunction<?, ?, ?, ?, E> combineFunc) throws E {
             val.combineColumn(columnNames, newColumnName, combineFunc);
+
+            return this;
         }
 
-        public <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
+        public <E extends Exception> DataSetBuilder combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass)
+                throws E {
             val.combineColumn(columnNameFilter, newColumnName, newColumnClass);
+
+            return this;
         }
 
-        public <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
+        public <E extends Exception, E2 extends Exception> DataSetBuilder combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
                 Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
             val.combineColumn(columnNameFilter, newColumnName, combineFunc);
+
+            return this;
         }
 
-        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames,
+        public <T, E extends Exception> DataSetBuilder divideColumn(String columnName, Collection<String> newColumnNames,
                 Try.Function<T, ? extends List<?>, E> divideFunc) throws E {
             val.divideColumn(columnName, newColumnNames, divideFunc);
+
+            return this;
         }
 
-        public <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<T, Object[], E> output)
+        public <T, E extends Exception> DataSetBuilder divideColumn(String columnName, Collection<String> newColumnNames, Try.BiConsumer<T, Object[], E> output)
                 throws E {
             val.divideColumn(columnName, newColumnNames, output);
+
+            return this;
         }
 
-        public <T, E extends Exception> void divideColumn(String columnName, Tuple2<String, String> newColumnNames,
+        public <T, E extends Exception> DataSetBuilder divideColumn(String columnName, Tuple2<String, String> newColumnNames,
                 Try.BiConsumer<T, Pair<Object, Object>, E> output) throws E {
             val.divideColumn(columnName, newColumnNames, output);
+
+            return this;
         }
 
-        public <T, E extends Exception> void divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
+        public <T, E extends Exception> DataSetBuilder divideColumn(String columnName, Tuple3<String, String, String> newColumnNames,
                 Try.BiConsumer<T, Triple<Object, Object, Object>, E> output) throws E {
             val.divideColumn(columnName, newColumnNames, output);
+
+            return this;
         }
 
-        public <E extends Exception> void updateAll(Try.Function<?, ?, E> func) throws E {
+        public <E extends Exception> DataSetBuilder updateAll(Try.Function<?, ?, E> func) throws E {
             val.updateAll(func);
+
+            return this;
         }
 
-        public <E extends Exception> void replaceIf(Try.Predicate<?, E> func, Object newValue) throws E {
+        public <E extends Exception> DataSetBuilder replaceIf(Try.Predicate<?, E> func, Object newValue) throws E {
             val.replaceIf(func, newValue);
+
+            return this;
         }
 
-        public void sortBy(String columnName) {
+        public DataSetBuilder sortBy(String columnName) {
             val.sortBy(columnName);
+
+            return this;
         }
 
-        public <T> void sortBy(String columnName, Comparator<T> cmp) {
+        public <T> DataSetBuilder sortBy(String columnName, Comparator<T> cmp) {
             val.sortBy(columnName, cmp);
+
+            return this;
         }
 
-        public void sortBy(Collection<String> columnNames) {
+        public DataSetBuilder sortBy(Collection<String> columnNames) {
             val.sortBy(columnNames);
+
+            return this;
         }
 
-        public void sortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
+        public DataSetBuilder sortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
             val.sortBy(columnNames, cmp);
+
+            return this;
         }
 
-        public void parallelSortBy(String columnName) {
+        public DataSetBuilder parallelSortBy(String columnName) {
             val.parallelSortBy(columnName);
+
+            return this;
         }
 
-        public <T> void parallelSortBy(String columnName, Comparator<T> cmp) {
+        public <T> DataSetBuilder parallelSortBy(String columnName, Comparator<T> cmp) {
             val.parallelSortBy(columnName, cmp);
+
+            return this;
         }
 
-        public void parallelSortBy(Collection<String> columnNames) {
+        public DataSetBuilder parallelSortBy(Collection<String> columnNames) {
             val.parallelSortBy(columnNames);
+
+            return this;
         }
 
-        public void parallelSortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
+        public DataSetBuilder parallelSortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
             val.parallelSortBy(columnNames, cmp);
+
+            return this;
         }
     }
 
