@@ -3749,8 +3749,8 @@ public final class CodeGenerator {
                     throw new AbacusException("Family/Entity property can't/unnecessary to be HBaseColumn");
                 }
 
-                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().clazz())
-                        ? N.primitiveOf(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
+                String valueTypeName = Primitives.isWrapperType(hbaseColumnType.getElementType().clazz())
+                        ? Primitives.unwrap(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
 
                 // =========================
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
@@ -3812,8 +3812,8 @@ public final class CodeGenerator {
                     throw new AbacusException("Family/Entity property can't/unnecessary to be HBaseColumn");
                 }
 
-                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().clazz())
-                        ? N.primitiveOf(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
+                String valueTypeName = Primitives.isWrapperType(hbaseColumnType.getElementType().clazz())
+                        ? Primitives.unwrap(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
 
                 // =========================
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");

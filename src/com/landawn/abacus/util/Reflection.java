@@ -295,6 +295,6 @@ public final class Reflection<T> {
     }
 
     private Class<?> wrap(final Class<?> cls) {
-        return N.isPrimitive(cls) ? N.wrapperOf(cls) : cls;
+        return Primitives.isPrimitiveType(cls) ? Primitives.wrap(cls) : cls;
     }
 }

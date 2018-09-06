@@ -824,7 +824,7 @@ public final class ClassUtil {
         Package pkg = packagePool.get(cls);
 
         if (pkg == null) {
-            if (N.isPrimitive(cls)) {
+            if (Primitives.isPrimitiveType(cls)) {
                 return null;
             }
 

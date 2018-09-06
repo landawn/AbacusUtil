@@ -182,7 +182,7 @@ public final class Splitter {
             final Type<?> eleType = N.typeOf(eleCls);
             final Object a = N.newArray(eleCls, strs.length);
 
-            if (N.isPrimitive(eleCls)) {
+            if (Primitives.isPrimitiveType(eleCls)) {
                 for (int i = 0, len = strs.length; i < len; i++) {
                     Array.set(a, i, eleType.valueOf(strs[i]));
                 }

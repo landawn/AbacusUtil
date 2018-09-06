@@ -212,28 +212,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see IntList#intersection(IntList)
      */
     public List<T> intersection(Collection<?> b) {
-        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
-            return new ArrayList<>();
-        }
-
-        final Multiset<?> bOccurrences = Multiset.from(b);
-        final List<T> result = new ArrayList<>(N.min(9, size(), N.len(b)));
-
-        for (T e : coll) {
-            if (bOccurrences.getAndRemove(e) > 0) {
-                result.add(e);
-            }
-        }
-
-        return result;
+        return N.intersection(coll, b);
     }
 
     public List<T> intersection(final Object[] a) {
-        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
-        }
-
-        return intersection(Arrays.asList(a));
+        return N.intersection(coll, Array.asList(a));
     }
 
     /**
@@ -243,32 +226,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see IntList#difference(IntList)
      */
     public List<T> difference(Collection<?> b) {
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        } else if (N.isNullOrEmpty(b)) {
-            return new ArrayList<>(coll);
-        }
-
-        final Multiset<?> bOccurrences = Multiset.from(b);
-        final List<T> result = new ArrayList<>(N.min(size(), N.max(9, size() - N.len(b))));
-
-        for (T e : coll) {
-            if (bOccurrences.getAndRemove(e) < 1) {
-                result.add(e);
-            }
-        }
-
-        return result;
+        return N.difference(coll, b);
     }
 
     public List<T> difference(final Object[] a) {
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        } else if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>(coll);
-        }
-
-        return difference(Arrays.asList(a));
+        return N.difference(coll, Array.asList(a));
     }
 
     /**
@@ -278,42 +240,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see IntList#symmetricDifference(IntList)
      */
     public List<T> symmetricDifference(Collection<T> b) {
-        if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(coll) ? new ArrayList<T>() : new ArrayList<>(coll);
-        } else if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>(b);
-        }
-
-        final Multiset<?> bOccurrences = Multiset.from(b);
-        final List<T> result = new ArrayList<>(N.max(9, Math.abs(size() - N.len(b))));
-
-        for (T e : coll) {
-            if (bOccurrences.getAndRemove(e) < 1) {
-                result.add(e);
-            }
-        }
-
-        for (T e : b) {
-            if (bOccurrences.getAndRemove(e) > 0) {
-                result.add(e);
-            }
-
-            if (bOccurrences.isEmpty()) {
-                break;
-            }
-        }
-
-        return result;
+        return N.symmetricDifference(coll, b);
     }
 
     public List<T> symmetricDifference(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(coll) ? new ArrayList<T>() : new ArrayList<>(coll);
-        } else if (N.isNullOrEmpty(coll)) {
-            return N.asList(a);
-        }
-
-        return symmetricDifference(Arrays.asList(a));
+        return N.symmetricDifference(coll, Array.asList(a));
     }
 
     public int occurrencesOf(final Object objectToFind) {

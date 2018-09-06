@@ -2227,7 +2227,7 @@ public final class Array {
             return null;
         }
 
-        final Class<?> cls = N.primitiveOf(a.getClass());
+        final Class<?> cls = Primitives.unwrap(a.getClass());
         final Object defaultValue = valueForNull == null ? N.defaultValueOf(cls.getComponentType()) : valueForNull;
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 

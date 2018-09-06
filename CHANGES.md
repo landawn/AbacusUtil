@@ -4,6 +4,8 @@
 
 * Add `Seq.forEachNonNull/flterThenForEach/mapThenForEach/flatMapThenForEach`.
 
+* Add `Primitives`.
+
 * Refactoring `DataSetBuilder`.
 
 * Improvements and bug fix.

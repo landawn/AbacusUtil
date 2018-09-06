@@ -427,29 +427,6 @@ public final class N {
     private static final Comparator NATURAL_ORDER = Comparators.naturalOrder();
 
     // ...
-    static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = new BiMap<>();
-
-    static {
-        PRIMITIVE_2_WRAPPER.put(boolean.class, Boolean.class);
-        PRIMITIVE_2_WRAPPER.put(char.class, Character.class);
-        PRIMITIVE_2_WRAPPER.put(byte.class, Byte.class);
-        PRIMITIVE_2_WRAPPER.put(short.class, Short.class);
-        PRIMITIVE_2_WRAPPER.put(int.class, Integer.class);
-        PRIMITIVE_2_WRAPPER.put(long.class, Long.class);
-        PRIMITIVE_2_WRAPPER.put(float.class, Float.class);
-        PRIMITIVE_2_WRAPPER.put(double.class, Double.class);
-
-        PRIMITIVE_2_WRAPPER.put(boolean[].class, Boolean[].class);
-        PRIMITIVE_2_WRAPPER.put(char[].class, Character[].class);
-        PRIMITIVE_2_WRAPPER.put(byte[].class, Byte[].class);
-        PRIMITIVE_2_WRAPPER.put(short[].class, Short[].class);
-        PRIMITIVE_2_WRAPPER.put(int[].class, Integer[].class);
-        PRIMITIVE_2_WRAPPER.put(long[].class, Long[].class);
-        PRIMITIVE_2_WRAPPER.put(float[].class, Float[].class);
-        PRIMITIVE_2_WRAPPER.put(double[].class, Double[].class);
-    }
-
-    // ...
     static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
 
     static {
@@ -4621,44 +4598,6 @@ public final class N {
         }
 
         return b;
-    }
-
-    public static boolean isPrimitive(final Class<?> cls) {
-        return typeOf(cls).isPrimitiveType();
-    }
-
-    public static boolean isPrimitiveWapper(final Class<?> cls) {
-        return typeOf(cls).isPrimitiveWrapper();
-    }
-
-    public static boolean isPrimitiveOrWapper(final Class<?> cls) {
-        final Type<?> type = typeOf(cls);
-
-        return type.isPrimitiveType() || type.isPrimitiveWrapper();
-    }
-
-    public static boolean isPrimitiveArray(final Class<?> cls) {
-        return typeOf(cls).isPrimitiveArray();
-    }
-
-    public static Class<?> wrapperOf(final Class<?> primitiveClass) {
-        final Class<?> result = PRIMITIVE_2_WRAPPER.get(primitiveClass);
-
-        if (result == null) {
-            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(primitiveClass) + " is not a primitive (array) type");
-        }
-
-        return result;
-    }
-
-    public static Class<?> primitiveOf(final Class<?> primitiveWrapperClass) {
-        Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(primitiveWrapperClass);
-
-        if (result == null) {
-            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(primitiveWrapperClass) + " is not a wrapper of primitive (array) type");
-        }
-
-        return result;
     }
 
     /**
@@ -18544,11 +18483,38 @@ public final class N {
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
 
-        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+        final List<T> result = new ArrayList<>(N.min(9, a.size(), b.size()));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) > 0) {
                 result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> List<T> intersection(final Collection<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        } else if (c.size() == 1) {
+            return newArrayList(c.iterator().next());
+        }
+
+        for (Collection<? extends T> e : c) {
+            if (N.isNullOrEmpty(e)) {
+                return new ArrayList<>();
+            }
+        }
+
+        final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+        List<T> result = N.intersection(iter.next(), iter.next());
+
+        while (iter.hasNext()) {
+            result = N.intersection(result, iter.next());
+
+            if (result.size() == 0) {
+                break;
             }
         }
 
@@ -18717,7 +18683,7 @@ public final class N {
         }
 
         final Multiset<?> bOccurrences = Multiset.of(b);
-        final List<T> result = new ArrayList<>(N.min(9, a.length, b.length));
+        final List<T> result = new ArrayList<>(N.min(a.length, N.max(9, a.length - b.length)));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -18738,6 +18704,8 @@ public final class N {
     public static <T> List<T> difference(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
+        } else if (N.isNullOrEmpty(b)) {
+            return new ArrayList<>(a);
         }
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
@@ -27875,8 +27843,8 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> Nullable<T> castIfAssignable(final Object val, final Class<T> targetType) {
-        if (N.isPrimitive(targetType)) {
-            return val != null && N.wrapperOf(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((T) val) : Nullable.<T> empty();
+        if (Primitives.isPrimitiveType(targetType)) {
+            return val != null && Primitives.wrap(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((T) val) : Nullable.<T> empty();
         }
 
         return val == null || targetType.isAssignableFrom(val.getClass()) ? Nullable.of((T) val) : Nullable.<T> empty();
