@@ -54,14 +54,20 @@ public final class Primitives {
     }
 
     public static boolean isPrimitiveType(final Class<?> cls) {
+        N.checkArgNotNull(cls, "cls");
+
         return N.typeOf(cls).isPrimitiveType();
     }
 
     public static boolean isWrapperType(final Class<?> cls) {
+        N.checkArgNotNull(cls, "cls");
+
         return N.typeOf(cls).isPrimitiveWrapper();
     }
 
     public static boolean isPrimitiveArrayType(final Class<?> cls) {
+        N.checkArgNotNull(cls, "cls");
+
         return N.typeOf(cls).isPrimitiveArray();
     }
 
@@ -76,6 +82,8 @@ public final class Primitives {
      * </pre>
      */
     public static Class<?> wrap(final Class<?> cls) {
+        N.checkArgNotNull(cls, "cls");
+
         final Class<?> wrapped = PRIMITIVE_2_WRAPPER.get(cls);
 
         return wrapped == null ? cls : wrapped;
@@ -92,6 +100,8 @@ public final class Primitives {
      * </pre>
      */
     public static Class<?> unwrap(final Class<?> cls) {
+        N.checkArgNotNull(cls, "cls");
+
         Class<?> unwrapped = PRIMITIVE_2_WRAPPER.getByValue(cls);
 
         return unwrapped == null ? cls : unwrapped;

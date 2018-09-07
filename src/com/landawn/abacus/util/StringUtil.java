@@ -6568,9 +6568,9 @@ public abstract class StringUtil {
         }
     }
 
-    public static final class StrUtil extends StringUtil {
+    public static final class Strings extends StringUtil {
 
-        private StrUtil() {
+        private Strings() {
             // Singleton.
         }
     }

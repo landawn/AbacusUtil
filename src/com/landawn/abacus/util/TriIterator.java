@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.IndexedConsumer;
@@ -331,12 +332,41 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
     }
 
     /**
+     * 
+     * @param iter
+     * @param unzip output parameter.
+     * @return
+     */
+    public static <T, L, M, R> TriIterator<L, M, R> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        if (iter == null) {
+            return TriIterator.empty();
+        }
+
+        final BooleanSupplier hasNext = new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                return iter.hasNext();
+            }
+        };
+
+        final Consumer<Triple<L, M, R>> output = new Consumer<Triple<L, M, R>>() {
+            @Override
+            public void accept(Triple<L, M, R> out) {
+                unzip.accept(iter.next(), out);
+            }
+        };
+
+        return TriIterator.generate(hasNext, output);
+    }
+
+    /**
      * It's preferred to call <code>forEachRemaining(Try.TriConsumer)</code> to avoid the create the unnecessary <code>Triple</code> Objects.
      * 
      * @deprecated
      */
+    @Override
     @Deprecated
-    public void forEachRemaining(Consumer<? super Triple<A, B, C>> action) {
+    public void forEachRemaining(java.util.function.Consumer<? super Triple<A, B, C>> action) {
         super.forEachRemaining(action);
     }
 

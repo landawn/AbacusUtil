@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
@@ -324,12 +325,41 @@ public abstract class BiIterator<A, B> extends ImmutableIterator<Pair<A, B>> {
     }
 
     /**
+     * 
+     * @param iter
+     * @param unzip output parameter.
+     * @return
+     */
+    public static <T, L, R> BiIterator<L, R> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        if (iter == null) {
+            return BiIterator.empty();
+        }
+
+        final BooleanSupplier hasNext = new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                return iter.hasNext();
+            }
+        };
+
+        final Consumer<Pair<L, R>> output = new Consumer<Pair<L, R>>() {
+            @Override
+            public void accept(Pair<L, R> out) {
+                unzip.accept(iter.next(), out);
+            }
+        };
+
+        return BiIterator.generate(hasNext, output);
+    }
+
+    /**
      * It's preferred to call <code>forEachRemaining(Try.BiConsumer)</code> to avoid the create the unnecessary <code>Pair</code> Objects.
      * 
      * @deprecated
      */
+    @Override
     @Deprecated
-    public void forEachRemaining(Consumer<? super Pair<A, B>> action) {
+    public void forEachRemaining(java.util.function.Consumer<? super Pair<A, B>> action) {
         super.forEachRemaining(action);
     }
 

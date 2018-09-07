@@ -624,31 +624,31 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    @SafeVarargs
-    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
-        if (N.isNullOrEmpty(classes)) {
-            return new ArrayList<>();
-        }
-
-        final List<Type<T>> result = new ArrayList<>(classes.length);
-
-        for (int i = 0, len = classes.length; i < len; i++) {
-            result.add((Type<T>) typeOf(classes[i]));
-        }
-
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> List<Type<T>> typeOf(final Collection<? extends Class<?>> classes) {
-        final List<Type<T>> result = new ArrayList<>(classes.size());
-
-        for (Class<?> cls : classes) {
-            result.add((Type<T>) typeOf(cls));
-        }
-
-        return result;
-    }
+    //    @SafeVarargs
+    //    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
+    //        if (N.isNullOrEmpty(classes)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<Type<T>> result = new ArrayList<>(classes.length);
+    //
+    //        for (int i = 0, len = classes.length; i < len; i++) {
+    //            result.add((Type<T>) typeOf(classes[i]));
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    @SuppressWarnings("unchecked")
+    //    public static <T> List<Type<T>> typeOf(final Collection<? extends Class<?>> classes) {
+    //        final List<Type<T>> result = new ArrayList<>(classes.size());
+    //
+    //        for (Class<?> cls : classes) {
+    //            result.add((Type<T>) typeOf(cls));
+    //        }
+    //
+    //        return result;
+    //    }
 
     public static String stringOf(final boolean val) {
         return String.valueOf(val);
@@ -1587,6 +1587,81 @@ public final class N {
     @SafeVarargs
     public static <T> T[] asArray(final T... a) {
         return a;
+    }
+
+    /**
+     * 
+     * @param arrayClass
+     * @param c
+     * @return
+     * @deprecated replaced by {@code N#toArray(Class, Collection)}
+     */
+    @Deprecated
+    public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
+        if (c == null) {
+            return N.newArray(arrayClass.getComponentType(), 0);
+        }
+
+        return (T) N.typeOf(arrayClass).collection2Array(c);
+    }
+
+    /**
+     * 
+     * @param a
+     * @return
+     * @deprecated replaced by {@code N#toList(Object[])}
+     */
+    @Deprecated
+    public static <T> List<T> array2List(final Object a) {
+        if (a == null) {
+            return asList();
+        }
+
+        final List<T> c = asList();
+
+        N.typeOf(a.getClass()).array2Collection(c, a);
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param a
+     * @return
+     * @deprecated replaced by {@code N#toSet(Object[])}
+     */
+    @Deprecated
+    public static <T> Set<T> array2Set(final Object a) {
+        if (a == null) {
+            return asSet();
+        }
+
+        final Set<T> c = asSet();
+
+        N.typeOf(a.getClass()).array2Collection(c, a);
+
+        return c;
+    }
+
+    /**
+     * The input collection is returned
+     * @param c
+     * @param a
+     * @return the input collection.
+     * @deprecated replaced by {@code N#toCollection(Object[], IntFunction)}
+     */
+    @Deprecated
+    @SuppressWarnings({ "unchecked" })
+    public static <C extends Collection<?>> C array2Collection(final Object a, final IntFunction<? extends C> supplier) {
+        if (a == null) {
+            return supplier.apply(0);
+        }
+
+        final C c = supplier.apply(Array.getLength(a));
+
+        N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
+
+        return c;
     }
 
     /**
@@ -3842,6 +3917,39 @@ public final class N {
         return UUID.randomUUID().toString();
     }
 
+    public static boolean isEntity(final Class<?> cls) {
+        Boolean b = entityClassPool.get(cls);
+
+        if (b == null) {
+            b = typeOf(cls) instanceof EntityType;
+            entityClassPool.put(cls, b);
+        }
+
+        return b;
+    }
+
+    public static boolean isDirtyMarker(final Class<?> cls) {
+        Boolean b = dirtyMarkerClassPool.get(cls);
+
+        if (b == null) {
+            b = DirtyMarker.class.isAssignableFrom(cls);
+            dirtyMarkerClassPool.put(cls, b);
+        }
+
+        return b;
+    }
+
+    static boolean isDirtyMarkerEntity(final Class<?> cls) {
+        Boolean b = dirtyMarkerEntityClassPool.get(cls);
+
+        if (b == null) {
+            b = isDirtyMarker(cls) && N.isEntity(cls);
+            dirtyMarkerEntityClassPool.put(cls, b);
+        }
+
+        return b;
+    }
+
     private static final Set<Class<?>> notKryoCompatible = new HashSet<>();
 
     @SuppressWarnings("unchecked")
@@ -4567,112 +4675,6 @@ public final class N {
         return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareToIgnoreCase(b));
     }
 
-    public static boolean isEntity(final Class<?> cls) {
-        Boolean b = entityClassPool.get(cls);
-
-        if (b == null) {
-            b = typeOf(cls) instanceof EntityType;
-            entityClassPool.put(cls, b);
-        }
-
-        return b;
-    }
-
-    public static boolean isDirtyMarker(final Class<?> cls) {
-        Boolean b = dirtyMarkerClassPool.get(cls);
-
-        if (b == null) {
-            b = DirtyMarker.class.isAssignableFrom(cls);
-            dirtyMarkerClassPool.put(cls, b);
-        }
-
-        return b;
-    }
-
-    static boolean isDirtyMarkerEntity(final Class<?> cls) {
-        Boolean b = dirtyMarkerEntityClassPool.get(cls);
-
-        if (b == null) {
-            b = isDirtyMarker(cls) && N.isEntity(cls);
-            dirtyMarkerEntityClassPool.put(cls, b);
-        }
-
-        return b;
-    }
-
-    /**
-     * 
-     * @param arrayClass
-     * @param c
-     * @return
-     * @deprecated replaced by {@code N#toArray(Class, Collection)}
-     */
-    @Deprecated
-    public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
-        if (c == null) {
-            return N.newArray(arrayClass.getComponentType(), 0);
-        }
-
-        return (T) N.typeOf(arrayClass).collection2Array(c);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @deprecated replaced by {@code N#toList(Object[])}
-     */
-    @Deprecated
-    public static <T> List<T> array2List(final Object a) {
-        if (a == null) {
-            return asList();
-        }
-
-        final List<T> c = asList();
-
-        N.typeOf(a.getClass()).array2Collection(c, a);
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @deprecated replaced by {@code N#toSet(Object[])}
-     */
-    @Deprecated
-    public static <T> Set<T> array2Set(final Object a) {
-        if (a == null) {
-            return asSet();
-        }
-
-        final Set<T> c = asSet();
-
-        N.typeOf(a.getClass()).array2Collection(c, a);
-
-        return c;
-    }
-
-    /**
-     * The input collection is returned
-     * @param c
-     * @param a
-     * @return the input collection.
-     * @deprecated replaced by {@code N#toCollection(Object[], IntFunction)}
-     */
-    @Deprecated
-    @SuppressWarnings({ "unchecked" })
-    public static <T extends Collection<?>> T array2Collection(final T c, final Object a) {
-        if (a == null) {
-            return c;
-        }
-
-        N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
-
-        return c;
-    }
-
     /**
      * Returns an empty {@code List} that is immutable.
      * 
@@ -5223,6 +5225,13 @@ public final class N {
         return a == null ? EMPTY_STRING_ARRAY : a;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @deprecated replaced by {@link N#nullToEmpty(Class, Object[])}
+     */
+    @Deprecated
     public static Object[] nullToEmpty(final Object[] a) {
         return a == null ? EMPTY_OBJECT_ARRAY : a;
     }
@@ -22858,7 +22867,7 @@ public final class N {
             return false;
         }
 
-        return c.removeAll(N.asSet(element));
+        return Iterables.removeAll(c, N.asSet(element));
     }
 
     /**
@@ -23080,7 +23089,7 @@ public final class N {
         if (N.isNullOrEmpty(c) || N.isNullOrEmpty(elements)) {
             return false;
         } else {
-            return c.removeAll(N.asSet(elements));
+            return Iterables.removeAll(c, N.asSet(elements));
         }
     }
 

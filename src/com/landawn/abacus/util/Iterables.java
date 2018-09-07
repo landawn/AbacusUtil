@@ -17,9 +17,14 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.RandomAccess;
 import java.util.Set;
 
 /**
@@ -142,6 +147,100 @@ public final class Iterables {
             return c.retainAll(new HashSet<>(objsToKeep));
         } else {
             return c.retainAll(objsToKeep);
+        }
+    }
+
+    /**
+     * 
+     * @param iterable
+     * @return
+     * throws NonUniqueResultException if there are more than one elements in the specified {@code iterable}.
+     */
+    public static <T> Nullable<T> getOnlyElement(Iterable<? extends T> iterable) {
+        if (iterable == null) {
+            return Nullable.empty();
+        }
+
+        return Iterators.getOnlyElement(iterable.iterator());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param objToFind
+     * @return
+     */
+    public static OptionalInt indexOf(final Collection<?> c, final Object objToFind) {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalInt.empty();
+        }
+
+        int idx = 0;
+
+        for (Object e : c) {
+            if (N.equals(e, objToFind)) {
+                return OptionalInt.of(idx);
+            }
+
+            idx++;
+        }
+
+        return OptionalInt.empty();
+    }
+
+    /**
+     * 
+     * @param c
+     * @param objToFind
+     * @return
+     */
+    public static OptionalInt lastIndexOf(final Collection<?> c, final Object objToFind) {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalInt.empty();
+        }
+
+        final int size = c.size();
+
+        if (c instanceof List) {
+            final List<Object> list = (List<Object>) c;
+
+            if (c instanceof RandomAccess) {
+                for (int i = size - 1; i >= 0; i--) {
+                    if (N.equals(list.get(i), objToFind)) {
+                        return OptionalInt.of(i);
+                    }
+                }
+            } else {
+                final ListIterator<Object> iter = list.listIterator(list.size());
+
+                for (int i = size - 1; iter.hasPrevious(); i--) {
+                    if (N.equals(iter.previous(), objToFind)) {
+                        return OptionalInt.of(i);
+                    }
+                }
+            }
+
+            return OptionalInt.empty();
+        } else if (c instanceof Deque) {
+            final Iterator<Object> iter = ((Deque<Object>) c).descendingIterator();
+
+            for (int i = size - 1; iter.hasNext(); i--) {
+                if (N.equals(iter.next(), objToFind)) {
+                    return OptionalInt.of(i);
+                }
+            }
+
+            return OptionalInt.empty();
+        } else {
+            final Object[] a = c.toArray();
+
+            for (int i = a.length - 1; i >= 0; i--) {
+                if (N.equals(a[i], objToFind)) {
+                    return OptionalInt.of(i);
+                }
+            }
+
+            return OptionalInt.empty();
         }
     }
 }

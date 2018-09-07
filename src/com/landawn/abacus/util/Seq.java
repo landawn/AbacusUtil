@@ -597,11 +597,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return OptionalInt.empty();
         }
 
+        final int size = size();
+
         if (coll instanceof List) {
             final List<T> list = (List<T>) coll;
 
             if (coll instanceof RandomAccess) {
-                for (int i = size() - 1; i >= 0; i--) {
+                for (int i = size - 1; i >= 0; i--) {
                     if (predicate.test(list.get(i))) {
                         return OptionalInt.of(i);
                     }
@@ -609,7 +611,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             } else {
                 final ListIterator<T> iter = list.listIterator(list.size());
 
-                for (int i = size() - 1; iter.hasPrevious(); i--) {
+                for (int i = size - 1; iter.hasPrevious(); i--) {
                     if (predicate.test(iter.previous())) {
                         return OptionalInt.of(i);
                     }
@@ -620,7 +622,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         } else if (coll instanceof Deque) {
             final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
 
-            for (int i = coll.size() - 1; iter.hasNext(); i--) {
+            for (int i = size - 1; iter.hasNext(); i--) {
                 if (predicate.test(iter.next())) {
                     return OptionalInt.of(i);
                 }

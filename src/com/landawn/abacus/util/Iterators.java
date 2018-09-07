@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.util.Try.BiConsumer;
+import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -1184,12 +1184,88 @@ public final class Iterators {
     }
 
     @SafeVarargs
+    public static <T> ObjIterator<T> concat(final Collection<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ObjIterator.empty();
+        }
+
+        final List<Iterator<? extends T>> list = new ArrayList<>(a.length);
+
+        for (Collection<? extends T> e : a) {
+            if (N.notNullOrEmpty(e)) {
+                list.add(e.iterator());
+            }
+        }
+
+        return concat(list);
+    }
+
+    public static <T> ObjIterator<T> concatt(final Collection<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+            private Iterator<? extends T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    final Collection<? extends T> c = iter.next();
+                    cur = N.isNullOrEmpty(c) ? null : c.iterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        };
+    }
+
+    @SafeVarargs
     public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return ObjIterator.empty();
         }
 
         return concat(N.asList(a));
+    }
+
+    public static <T> ObjIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            private Iterator<? extends T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        };
     }
 
     @SafeVarargs
@@ -1221,7 +1297,7 @@ public final class Iterators {
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final BiConsumer<A, B, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<A, B, E> action) throws E {
                 while (hasNext()) {
                     cur.forEachRemaining(action);
                 }
@@ -1328,82 +1404,6 @@ public final class Iterators {
                         return mappedIter.next();
                     }
                 };
-            }
-        };
-    }
-
-    @SafeVarargs
-    public static <T> ObjIterator<T> concat(final Collection<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return ObjIterator.empty();
-        }
-
-        final List<Iterator<? extends T>> list = new ArrayList<>(a.length);
-
-        for (Collection<? extends T> e : a) {
-            if (N.notNullOrEmpty(e)) {
-                list.add(e.iterator());
-            }
-        }
-
-        return concat(list);
-    }
-
-    public static <T> ObjIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        if (N.isNullOrEmpty(c)) {
-            return ObjIterator.empty();
-        }
-
-        return new ObjIterator<T>() {
-            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
-            private Iterator<? extends T> cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        };
-    }
-
-    public static <T> ObjIterator<T> concatt(final Collection<? extends Collection<? extends T>> c) {
-        if (N.isNullOrEmpty(c)) {
-            return ObjIterator.empty();
-        }
-
-        return new ObjIterator<T>() {
-            private final Iterator<? extends Collection<? extends T>> iter = c.iterator();
-            private Iterator<? extends T> cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    final Collection<? extends T> c = iter.next();
-                    cur = N.isNullOrEmpty(c) ? null : c.iterator();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
             }
         };
     }
@@ -1600,48 +1600,8 @@ public final class Iterators {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, R, E extends Exception> Pair<List<L>, List<R>> unzip(final Iterator<? extends T> iter,
-            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip) throws E {
-        final List<L> l = new ArrayList<L>();
-        final List<R> r = new ArrayList<R>();
-        final Pair<L, R> p = new Pair<>();
-
-        if (iter != null) {
-            while (iter.hasNext()) {
-                unzip.accept(iter.next(), p);
-
-                l.add(p.left);
-                r.add(p.right);
-            }
-        }
-
-        return Pair.of(l, r);
-    }
-
-    /**
-     * 
-     * @param iter
-     * @param unzip the second parameter is an output parameter.
-     * @param supplier
-     * @return
-     */
-    public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>, E extends Exception> Pair<LC, RC> unzip(final Iterator<? extends T> iter,
-            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip, final Supplier<? extends Collection<?>> supplier) throws E {
-        final LC l = (LC) supplier.get();
-        final RC r = (RC) supplier.get();
-
-        final Pair<L, R> p = new Pair<>();
-
-        if (iter != null) {
-            while (iter.hasNext()) {
-                unzip.accept(iter.next(), p);
-
-                l.add(p.left);
-                r.add(p.right);
-            }
-        }
-
-        return Pair.of(l, r);
+    public static <T, L, R> BiIterator<L, R> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        return BiIterator.unzip(iter, unzip);
     }
 
     /**
@@ -1650,52 +1610,8 @@ public final class Iterators {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Iterator<? extends T> iter,
-            final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
-        final List<L> l = new ArrayList<L>();
-        final List<M> m = new ArrayList<M>();
-        final List<R> r = new ArrayList<R>();
-        final Triple<L, M, R> t = new Triple<>();
-
-        if (iter != null) {
-            while (iter.hasNext()) {
-                unzip.accept(iter.next(), t);
-
-                l.add(t.left);
-                m.add(t.middle);
-                r.add(t.right);
-            }
-        }
-
-        return Triple.of(l, m, r);
-    }
-
-    /**
-     * 
-     * @param iter
-     * @param unzip the second parameter is an output parameter.
-     * @param supplier
-     * @return
-     */
-    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
-            final Iterator<? extends T> iter, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final Supplier<? extends Collection<?>> supplier)
-            throws E {
-        final LC l = (LC) supplier.get();
-        final MC m = (MC) supplier.get();
-        final RC r = (RC) supplier.get();
-        final Triple<L, M, R> t = new Triple<>();
-
-        if (iter != null) {
-            while (iter.hasNext()) {
-                unzip.accept(iter.next(), t);
-
-                l.add(t.left);
-                m.add(t.middle);
-                r.add(t.right);
-            }
-        }
-
-        return Triple.of(l, m, r);
+    public static <T, L, M, R> TriIterator<L, M, R> unzipp(final Iterator<? extends T> iter, final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        return TriIterator.unzip(iter, unzip);
     }
 
     public static <T> ObjIterator<List<T>> split(final Iterator<? extends T> iter, final int size) {
@@ -1901,21 +1817,24 @@ public final class Iterators {
         };
     }
 
-    public static <T> ObjIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> supplier) {
-        N.checkArgNotNull(hasNext);
-        N.checkArgNotNull(supplier);
+    /**
+     * 
+     * @param iter
+     * @return
+     * throws NonUniqueResultException if there are more than one elements in the specified {@code iter}.
+     */
+    public static <T> Nullable<T> getOnlyElement(final Iterator<? extends T> iter) throws NonUniqueResultException {
+        if (iter == null) {
+            return Nullable.empty();
+        }
 
-        return new ObjIterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return hasNext.getAsBoolean();
-            }
+        final T first = iter.next();
 
-            @Override
-            public T next() {
-                return supplier.get();
-            }
-        };
+        if (iter.hasNext()) {
+            throw new NonUniqueResultException("Expected at most one element but was: [" + StringUtil.concat(first, ", ", iter.next(), "...]"));
+        }
+
+        return Nullable.of(first);
     }
 
     public static <T, U> ObjIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> supplier) {
