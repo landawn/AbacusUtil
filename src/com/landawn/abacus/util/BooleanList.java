@@ -432,6 +432,25 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
     }
 
     @Override
+    public void deleteRange(final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, size());
+
+        if (fromIndex == toIndex) {
+            return;
+        }
+
+        final int newSize = size() - (toIndex - fromIndex);
+
+        if (toIndex < size()) {
+            System.arraycopy(elementData, toIndex, elementData, fromIndex, size - toIndex);
+        }
+
+        N.fill(elementData, newSize, size(), false);
+
+        size = newSize;
+    }
+
+    @Override
     @SafeVarargs
     public final void deleteAll(int... indices) {
         final boolean[] tmp = N.deleteAll(elementData, indices);

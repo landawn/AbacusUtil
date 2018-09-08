@@ -387,7 +387,7 @@ public final class CodeGenerator {
             try {
                 existedDoc = XMLUtil.createDOMParser(true, true).parse(entityDefinitionXml);
             } catch (Exception e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
 
             NodeList nodes = existedDoc.getElementsByTagName(EntityDefEle.ENTITY_DEF);
@@ -646,7 +646,7 @@ public final class CodeGenerator {
                     }
                 }
             } catch (Exception e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
@@ -1118,7 +1118,7 @@ public final class CodeGenerator {
                 fileWrite.flush();
             }
         } catch (Exception e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         } finally {
             IOUtil.close(fileWrite);
         }

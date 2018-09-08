@@ -425,7 +425,7 @@ public abstract class SQLBuilder {
     //                registerColumnName(entityName, propColumnNameMap);
     //            }
     //        } catch (Exception e) {
-    //            throw new AbacusException(e);
+    //            throw N.toRuntimeException(e);
     //        }
     //    }
 
@@ -2356,7 +2356,7 @@ public abstract class SQLBuilder {
         } else if (cond instanceof Expression) {
             sb.append(cond.toString());
         } else {
-            throw new AbacusException("Unsupported condtion: " + cond.toString());
+            throw new IllegalArgumentException("Unsupported condtion: " + cond.toString());
         }
     }
 

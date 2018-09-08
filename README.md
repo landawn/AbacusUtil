@@ -197,6 +197,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Index](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/Index.html),
 [Median](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/Median.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/f.html),
+[Iterables](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/Iterables.html),
 [Primitives](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/Primitives.html),
 [Matth](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/Matth.html), 
 [SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util/1.3.5/com/landawn/abacus/util/SafeInitializer.html),

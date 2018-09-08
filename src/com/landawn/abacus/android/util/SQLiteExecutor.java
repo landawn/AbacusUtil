@@ -48,7 +48,6 @@ import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.DateUtil;
@@ -384,7 +383,7 @@ public final class SQLiteExecutor {
     @SuppressWarnings("deprecation")
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
         if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
-            throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
+            throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
 
@@ -1226,7 +1225,7 @@ public final class SQLiteExecutor {
     //            }
     //
     //            default:
-    //                throw new AbacusException("Unsupported naming policy");
+    //                throw new IllegalArgumentException("Unsupported naming policy");
     //        }
     //    }
 

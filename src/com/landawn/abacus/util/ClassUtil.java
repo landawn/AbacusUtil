@@ -91,7 +91,6 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.NameUtil;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -425,7 +424,7 @@ public final class ClassUtil {
         try {
             FIELD_MASK = ClassMask.class.getDeclaredField(ClassMask.FIELD_MASK);
         } catch (Exception e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         }
     }
 
@@ -982,7 +981,7 @@ public final class ClassUtil {
                             }
 
                             if (!skipClassLoaddingException) {
-                                throw new AbacusException("ClassNotFoundException loading " + className);
+                                throw new RuntimeException("ClassNotFoundException loading " + className);
                             }
                         }
                     } else if (files[i].isDirectory() && isRecursive) {
@@ -1023,7 +1022,7 @@ public final class ClassUtil {
                                     if (!skipClassLoaddingException) {
                                         IOUtil.close(jarFile);
                                         jarFile = null;
-                                        throw new AbacusException("ClassNotFoundException loading " + className);
+                                        throw new RuntimeException("ClassNotFoundException loading " + className);
                                     }
                                 }
                             } else if (entry.isDirectory() && (entryName.length() > (pkgPath.length() + 1)) && isRecursive) {
@@ -1973,7 +1972,7 @@ public final class ClassUtil {
                         }
                     }
 
-                    inlinePropSetMethodMap.put(propName, inlinePropSetMethodQueue);
+                    inlinePropSetMethodMap.put(propName, N.isNullOrEmpty(inlinePropSetMethodQueue) ? N.<Method> emptyList() : inlinePropSetMethodQueue);
                 }
 
                 if (inlinePropSetMethodQueue.size() == 0) {

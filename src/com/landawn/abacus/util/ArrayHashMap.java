@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.exception.AbacusException;
-
 /**
  * It's designed to supported primitive/object array key.
  * The elements in the array must not be modified after the array is put into the map as key.
@@ -65,9 +63,9 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
         try {
             map = Modifier.isAbstract(mapType.getModifiers()) ? N.newInstance(mapType) : mapType.newInstance();
         } catch (InstantiationException e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         } catch (IllegalAccessException e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         }
     }
 

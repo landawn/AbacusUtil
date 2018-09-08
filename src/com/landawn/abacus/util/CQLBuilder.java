@@ -159,7 +159,7 @@ public abstract class CQLBuilder {
     //                registerColumnName(entityName, propColumnNameMap);
     //            }
     //        } catch (Exception e) {
-    //            throw new AbacusException(e);
+    //            throw N.toRuntimeException(e);
     //        }
     //    }
 
@@ -1682,7 +1682,7 @@ public abstract class CQLBuilder {
         } else if (cond instanceof Expression) {
             sb.append(cond.toString());
         } else {
-            throw new AbacusException("Unsupported condtion: " + cond.toString());
+            throw new IllegalArgumentException("Unsupported condtion: " + cond.toString());
         }
     }
 

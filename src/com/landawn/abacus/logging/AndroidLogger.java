@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.logging;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.N;
 
 import android.util.Log;
@@ -35,7 +34,7 @@ class AndroidLogger extends AbstractLogger {
         try {
             Class.forName("android.util.Log");
         } catch (ClassNotFoundException e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         }
     }
 

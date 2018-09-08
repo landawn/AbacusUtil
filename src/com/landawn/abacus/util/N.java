@@ -91,7 +91,6 @@ import com.landawn.abacus.annotation.NullSafe;
 import com.landawn.abacus.core.EntityUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -4132,7 +4131,7 @@ public final class N {
                             ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
                         }
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new AbacusException(e);
+                        throw N.toRuntimeException(e);
                     }
                 }
             } else {
@@ -4143,7 +4142,7 @@ public final class N {
                         ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue().invoke(sourceEntity), ignoreUnknownProperty);
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new AbacusException(e);
+                    throw N.toRuntimeException(e);
                 }
             }
         } else {
@@ -4155,7 +4154,7 @@ public final class N {
                     ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
@@ -4189,7 +4188,7 @@ public final class N {
                         }
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new AbacusException(e);
+                    throw N.toRuntimeException(e);
                 }
             }
         } else {
@@ -4202,7 +4201,7 @@ public final class N {
                     }
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
@@ -9338,7 +9337,7 @@ public final class N {
         final Class<?> entityClass = entity.getClass();
 
         if (N.isEntity(entityClass) == false) {
-            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
         Type<Object> type = null;
@@ -9389,7 +9388,7 @@ public final class N {
      */
     public static <T> T fill(Class<T> entityClass) {
         if (N.isEntity(entityClass) == false) {
-            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
         final T entity = N.newInstance(entityClass);
@@ -9410,7 +9409,7 @@ public final class N {
     @Deprecated
     public static <T> List<T> fill(Class<T> entityClass, int len) {
         if (N.isEntity(entityClass) == false) {
-            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
         final List<T> resultList = new ArrayList<>(len);
@@ -22283,7 +22282,7 @@ public final class N {
                 try {
                     array = (T[]) listElementDataField.get(c);
                     N.copy(array, toIndex, array, fromIndex, c.size() - toIndex);
-                    listSizeField.set(c, c.size() - ((toIndex - fromIndex)));
+                    listSizeField.set(c, c.size() - (toIndex - fromIndex));
                     // update modCount
                     c.add(null);
                     c.remove(c.size() - 1);
@@ -22294,10 +22293,18 @@ public final class N {
                 }
             }
 
-            final Object[] a = c.toArray();
-            final Object[] b = deleteRange(a, fromIndex, toIndex);
+            final List<T> tmp = new ArrayList<>(c.size() - (toIndex - fromIndex));
+
+            if (fromIndex > 0) {
+                tmp.addAll(c.subList(0, fromIndex));
+            }
+
+            if (toIndex < c.size()) {
+                tmp.addAll(c.subList(toIndex, c.size()));
+            }
+
             c.clear();
-            c.addAll(Arrays.asList((T[]) b));
+            c.addAll(tmp);
         }
 
         return true;

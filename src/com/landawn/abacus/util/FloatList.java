@@ -442,6 +442,25 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
 
     }
 
+    @Override
+    public void deleteRange(final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, size());
+
+        if (fromIndex == toIndex) {
+            return;
+        }
+
+        final int newSize = size() - (toIndex - fromIndex);
+
+        if (toIndex < size()) {
+            System.arraycopy(elementData, toIndex, elementData, fromIndex, size - toIndex);
+        }
+
+        N.fill(elementData, newSize, size(), 0);
+
+        size = newSize;
+    }
+
     public int replaceAll(float oldVal, float newVal) {
         if (size() == 0) {
             return 0;

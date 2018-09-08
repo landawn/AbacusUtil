@@ -243,4 +243,72 @@ public final class Iterables {
             return OptionalInt.empty();
         }
     }
+
+    public static <T, E extends Exception> OptionalInt findFirstIndex(final Collection<? extends T> c, final Try.Predicate<? super T, E> predicate) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalInt.empty();
+        }
+
+        int idx = 0;
+
+        for (T e : c) {
+            if (predicate.test(e)) {
+                return OptionalInt.of(idx);
+            }
+
+            idx++;
+        }
+
+        return OptionalInt.empty();
+    }
+
+    public static <T, E extends Exception> OptionalInt findLastIndex(final Collection<? extends T> c, final Try.Predicate<? super T, E> predicate) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalInt.empty();
+        }
+
+        final int size = c.size();
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                for (int i = size - 1; i >= 0; i--) {
+                    if (predicate.test(list.get(i))) {
+                        return OptionalInt.of(i);
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+
+                for (int i = size - 1; iter.hasPrevious(); i--) {
+                    if (predicate.test(iter.previous())) {
+                        return OptionalInt.of(i);
+                    }
+                }
+            }
+
+            return OptionalInt.empty();
+        } else if (c instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) c).descendingIterator();
+
+            for (int i = size - 1; iter.hasNext(); i--) {
+                if (predicate.test(iter.next())) {
+                    return OptionalInt.of(i);
+                }
+            }
+
+            return OptionalInt.empty();
+        } else {
+            final T[] a = (T[]) c.toArray();
+
+            for (int i = a.length - 1; i >= 0; i--) {
+                if (predicate.test(a[i])) {
+                    return OptionalInt.of(i);
+                }
+            }
+
+            return OptionalInt.empty();
+        }
+    }
 }

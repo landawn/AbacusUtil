@@ -575,71 +575,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> OptionalInt findFirstIndex(Try.Predicate<? super T, E> predicate) throws E {
-        if (size() == 0) {
-            return OptionalInt.empty();
-        }
-
-        int idx = 0;
-
-        for (T e : coll) {
-            if (predicate.test(e)) {
-                return OptionalInt.of(idx);
-            }
-
-            idx++;
-        }
-
-        return OptionalInt.empty();
+        return Iterables.findFirstIndex(coll, predicate);
     }
 
     public <E extends Exception> OptionalInt findLastIndex(Try.Predicate<? super T, E> predicate) throws E {
-        if (size() == 0) {
-            return OptionalInt.empty();
-        }
-
-        final int size = size();
-
-        if (coll instanceof List) {
-            final List<T> list = (List<T>) coll;
-
-            if (coll instanceof RandomAccess) {
-                for (int i = size - 1; i >= 0; i--) {
-                    if (predicate.test(list.get(i))) {
-                        return OptionalInt.of(i);
-                    }
-                }
-            } else {
-                final ListIterator<T> iter = list.listIterator(list.size());
-
-                for (int i = size - 1; iter.hasPrevious(); i--) {
-                    if (predicate.test(iter.previous())) {
-                        return OptionalInt.of(i);
-                    }
-                }
-            }
-
-            return OptionalInt.empty();
-        } else if (coll instanceof Deque) {
-            final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
-
-            for (int i = size - 1; iter.hasNext(); i--) {
-                if (predicate.test(iter.next())) {
-                    return OptionalInt.of(i);
-                }
-            }
-
-            return OptionalInt.empty();
-        } else {
-            final T[] a = (T[]) coll.toArray();
-
-            for (int i = a.length - 1; i >= 0; i--) {
-                if (predicate.test(a[i])) {
-                    return OptionalInt.of(i);
-                }
-            }
-
-            return OptionalInt.empty();
-        }
+        return Iterables.findLastIndex(coll, predicate);
     }
 
     public <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,

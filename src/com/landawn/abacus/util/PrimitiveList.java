@@ -84,6 +84,8 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
 
     public abstract void deleteAll(int... indices);
 
+    public abstract void deleteRange(int fromIndex, int toIndex);
+
     // public abstract boolean containsAll(L l);
 
     public abstract boolean containsAll(A a);

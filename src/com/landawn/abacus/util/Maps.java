@@ -42,7 +42,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
@@ -1718,7 +1717,7 @@ public final class Maps {
                     throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
             }
         } catch (Exception e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         }
 
         return resultMap;
@@ -1966,7 +1965,7 @@ public final class Maps {
                     throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
             }
         } catch (Exception e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         }
 
         return resultMap;
@@ -2235,7 +2234,7 @@ public final class Maps {
                     }
 
                 } catch (Exception e) {
-                    throw new AbacusException(e);
+                    throw N.toRuntimeException(e);
                 }
             }
         } else {
@@ -2347,7 +2346,7 @@ public final class Maps {
                         throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
                 }
             } catch (Exception e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
         }
 

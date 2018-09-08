@@ -1609,7 +1609,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     private static void checkTargetClass(final Class<?> targetClass) {
         if (!(N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
-            throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
+            throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
     }

@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 
 /**
@@ -6561,7 +6560,7 @@ public abstract class StringUtil {
             try {
                 return sharedStringConstructor.newInstance(a, true);
             } catch (Exception e) {
-                throw new AbacusException(e);
+                throw N.toRuntimeException(e);
             }
         } else {
             return String.valueOf(a);

@@ -1319,7 +1319,7 @@ public final class SQLExecutor implements Closeable {
     //            }
     //
     //            default:
-    //                throw new AbacusException("Unsupported naming policy");
+    //                throw new IllegalArgumentException("Unsupported naming policy");
     //        }
     //    }
     //
@@ -1357,7 +1357,7 @@ public final class SQLExecutor implements Closeable {
     //            }
     //
     //            default:
-    //                throw new AbacusException("Unsupported naming policy");
+    //                throw new IllegalArgumentException("Unsupported naming policy");
     //        }
     //    }
     //
@@ -1450,7 +1450,7 @@ public final class SQLExecutor implements Closeable {
     //            }
     //
     //            default:
-    //                throw new AbacusException("Unsupported naming policy");
+    //                throw new IllegalArgumentException("Unsupported naming policy");
     //        }
     //    }
 

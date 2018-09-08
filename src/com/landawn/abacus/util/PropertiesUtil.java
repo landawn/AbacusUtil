@@ -914,7 +914,7 @@ public final class PropertiesUtil {
 
             writer.flush();
         } catch (Exception e) {
-            throw new AbacusException(e);
+            throw N.toRuntimeException(e);
         } finally {
             IOUtil.close(writer);
         }

@@ -57,7 +57,6 @@ import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.parser.ParserUtil.PropInfo;
@@ -528,7 +527,7 @@ public final class DynamoDBExecutor implements Closeable {
         } else if (x.getNULL() != null) {
             return (T) x.getNULL();
         } else {
-            throw new AbacusException("Unsupported Attribute type: " + x.toString());
+            throw new IllegalArgumentException("Unsupported Attribute type: " + x.toString());
         }
     }
 

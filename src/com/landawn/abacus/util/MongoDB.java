@@ -42,7 +42,6 @@ import org.bson.types.ObjectId;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.parser.JSONParser;
 import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.type.Type;
@@ -642,7 +641,7 @@ public final class MongoDB {
 
     private static <T> void checkTargetClass(final Class<T> targetClass) {
         if (!(N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
-            throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class/Document.class. But it is: "
+            throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class/Document.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
     }

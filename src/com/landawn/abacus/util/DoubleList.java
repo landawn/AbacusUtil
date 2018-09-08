@@ -441,6 +441,25 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         size = tmp.length;
     }
 
+    @Override
+    public void deleteRange(final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, size());
+
+        if (fromIndex == toIndex) {
+            return;
+        }
+
+        final int newSize = size() - (toIndex - fromIndex);
+
+        if (toIndex < size()) {
+            System.arraycopy(elementData, toIndex, elementData, fromIndex, size - toIndex);
+        }
+
+        N.fill(elementData, newSize, size(), 0);
+
+        size = newSize;
+    }
+
     public int replaceAll(double oldVal, double newVal) {
         if (size() == 0) {
             return 0;

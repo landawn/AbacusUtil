@@ -50,7 +50,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.Service;
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
@@ -624,7 +623,7 @@ public final class HBaseExecutor implements Closeable {
             case LOWER_CAMEL_CASE:
                 return name;
             default:
-                throw new AbacusException("Unsupported naming policy: " + namingPolicy);
+                throw new IllegalArgumentException("Unsupported naming policy: " + namingPolicy);
         }
     }
 
