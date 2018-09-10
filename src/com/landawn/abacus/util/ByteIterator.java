@@ -163,6 +163,12 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
         return ByteStream.of(this);
     }
 
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Byte> action) {
+        super.forEachRemaining(action);
+    }
+
     public <E extends Exception> void forEachRemaining(Try.ByteConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 

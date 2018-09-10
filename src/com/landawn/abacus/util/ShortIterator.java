@@ -163,6 +163,12 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
         return ShortStream.of(this);
     }
 
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Short> action) {
+        super.forEachRemaining(action);
+    }
+
     public <E extends Exception> void forEachRemaining(Try.ShortConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 

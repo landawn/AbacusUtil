@@ -1,3 +1,8 @@
+### 1.3.7
+
+* Improvements and bug fix.
+
+
 ### 1.3.6
 
 * Add `N.toBooleanArray/N.toCharArray/N.toByteArray/N.toShortArray/N.toIntArray/.../N.toDoubleArray`.

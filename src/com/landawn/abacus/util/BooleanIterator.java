@@ -156,6 +156,12 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
         return Stream.of(this);
     }
 
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Boolean> action) {
+        super.forEachRemaining(action);
+    }
+
     public <E extends Exception> void forEachRemaining(Try.BooleanConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 
