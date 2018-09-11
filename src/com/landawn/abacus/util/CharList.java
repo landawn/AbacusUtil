@@ -1286,6 +1286,13 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
     }
 
     @Override
+    public <E extends Exception> CharList copyThen(Try.Consumer<CharList, E> action) throws E {
+        final CharList copy = copy();
+        action.accept(copy);
+        return copy;
+    }
+
+    @Override
     public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

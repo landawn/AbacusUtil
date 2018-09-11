@@ -58,9 +58,20 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.ByteConsumer;
+import com.landawn.abacus.util.function.ByteFunction;
+import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.CharConsumer;
+import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiPredicate;
+import com.landawn.abacus.util.function.DoubleConsumer;
+import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.FloatConsumer;
+import com.landawn.abacus.util.function.FloatFunction;
+import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBiConsumer;
 import com.landawn.abacus.util.function.IndexedBiFunction;
@@ -69,12 +80,18 @@ import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IndexedFunction;
 import com.landawn.abacus.util.function.IndexedPredicate;
 import com.landawn.abacus.util.function.IntBiPredicate;
+import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.LongBiPredicate;
+import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadFunction;
+import com.landawn.abacus.util.function.ShortConsumer;
+import com.landawn.abacus.util.function.ShortFunction;
+import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -5377,6 +5394,139 @@ public final class Fn extends Comparators {
         @SuppressWarnings("rawtypes")
         public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
             return (Function) TRIPLE_TO_SET;
+        }
+    }
+
+    public static final class Fnn {
+
+        private Fnn() {
+            // utility class
+        }
+
+        public static CharPredicate cp(final CharPredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static BytePredicate bp(final BytePredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static ShortPredicate sp(final ShortPredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static IntPredicate ip(final IntPredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static LongPredicate lp(final LongPredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static FloatPredicate fp(final FloatPredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static DoublePredicate dp(final DoublePredicate p) {
+            N.checkArgNotNull(p);
+
+            return p;
+        }
+
+        public static <R> CharFunction<R> cf(final CharFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> ByteFunction<R> bf(final ByteFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> ShortFunction<R> sf(final ShortFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> IntFunction<R> iF(final IntFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> LongFunction<R> lf(final LongFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> FloatFunction<R> ff(final FloatFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static <R> DoubleFunction<R> df(final DoubleFunction<R> f) {
+            N.checkArgNotNull(f);
+
+            return f;
+        }
+
+        public static CharConsumer cc(final CharConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static ByteConsumer bc(final ByteConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static ShortConsumer sc(final ShortConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static IntConsumer ic(final IntConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static LongConsumer lc(final LongConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static FloatConsumer fc(final FloatConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
+        }
+
+        public static DoubleConsumer dc(final DoubleConsumer c) {
+            N.checkArgNotNull(c);
+
+            return c;
         }
     }
 }

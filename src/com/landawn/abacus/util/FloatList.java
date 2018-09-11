@@ -1259,6 +1259,13 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     @Override
+    public <E extends Exception> FloatList copyThen(Try.Consumer<FloatList, E> action) throws E {
+        final FloatList copy = copy();
+        action.accept(copy);
+        return copy;
+    }
+
+    @Override
     public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

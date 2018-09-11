@@ -4506,6 +4506,8 @@ public interface DataSet {
      */
     DataSet copy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
+    <E extends Exception> DataSet copyThen(Try.Consumer<? super DataSet, E> action) throws E;
+
     /**
      * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
      * 

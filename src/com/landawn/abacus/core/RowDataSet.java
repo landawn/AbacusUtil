@@ -6629,6 +6629,13 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
+    public <E extends Exception> DataSet copyThen(Try.Consumer<? super DataSet, E> action) throws E {
+        final DataSet copy = copy();
+        action.accept(copy);
+        return copy;
+    }
+
+    @Override
     public DataSet clone() {
         return clone(this._isFrozen);
     }
