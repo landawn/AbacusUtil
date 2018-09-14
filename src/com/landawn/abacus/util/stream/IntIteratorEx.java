@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.N;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class IntIteratorEx extends IntIterator implements IteratorEx<Integer> {
     public static final IntIteratorEx EMPTY = new IntIteratorEx() {
         @Override

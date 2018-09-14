@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class DoubleIteratorEx extends DoubleIterator implements IteratorEx<Double> {
     public static final DoubleIteratorEx EMPTY = new DoubleIteratorEx() {
         @Override

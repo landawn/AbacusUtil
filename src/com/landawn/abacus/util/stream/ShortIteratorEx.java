@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.ShortList;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class ShortIteratorEx extends ShortIterator implements IteratorEx<Short> {
     public static final ShortIteratorEx EMPTY = new ShortIteratorEx() {
         @Override

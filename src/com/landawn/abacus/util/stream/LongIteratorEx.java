@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class LongIteratorEx extends LongIterator implements IteratorEx<Long> {
     public static final LongIteratorEx EMPTY = new LongIteratorEx() {
         @Override

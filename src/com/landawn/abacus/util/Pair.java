@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @param <L>
  * @param <R>
  */
-public final class Pair<L, R> implements Map.Entry<L, R> {
+public final class Pair<L, R> { // implements Map.Entry<L, R> {
     public L left;
     public R right;
 
@@ -202,24 +202,39 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         return false;
     }
-
-    @Override
-    public L getKey() {
-        return left;
-    }
-
-    @Override
-    public R getValue() {
-        return right;
-    }
-
-    @Override
-    public R setValue(R value) {
-        R oldValue = this.right;
-        this.right = value;
-
-        return oldValue;
-    }
+    //
+    //    /**
+    //     * 
+    //     * @Deprecated don't access this method by {@code Pair} interface.
+    //     */
+    //    @Deprecated
+    //    @Override
+    //    public L getKey() {
+    //        return left;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @Deprecated don't access this method by {@code Pair} interface.
+    //     */
+    //    @Deprecated
+    //    @Override
+    //    public R getValue() {
+    //        return right;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @Deprecated don't access this method by {@code Pair} interface.
+    //     */
+    //    @Deprecated
+    //    @Override
+    //    public R setValue(R value) {
+    //        R oldValue = this.right;
+    //        this.right = value;
+    //
+    //        return oldValue;
+    //    }
 
     //    public R getAndSetValue(R newRight) {
     //        return getAndSetRight(newRight);
@@ -333,5 +348,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     @Override
     public String toString() {
         return "[" + N.toString(left) + ", " + N.toString(right) + "]";
+        // return N.toString(left) + "=" + N.toString(right);
     }
 }

@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.N;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<Byte> {
     public static final ByteIteratorEx EMPTY = new ByteIteratorEx() {
         @Override

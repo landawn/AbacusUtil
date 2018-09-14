@@ -19,7 +19,7 @@ package com.landawn.abacus.util;
 import java.util.List;
 
 public final class Index {
-    public static final OptionalInt NOT_FOUND = OptionalInt.of(N.INDEX_NOT_FOUND);
+    public static final OptionalInt NOT_FOUND = OptionalInt.empty();
 
     private Index() {
         // singleton.
@@ -218,7 +218,7 @@ public final class Index {
     }
 
     private static OptionalInt toOptionalInt(int index) {
-        return index == N.INDEX_NOT_FOUND ? NOT_FOUND : OptionalInt.of(index);
+        return index < 0 ? NOT_FOUND : OptionalInt.of(index);
     }
 
 }

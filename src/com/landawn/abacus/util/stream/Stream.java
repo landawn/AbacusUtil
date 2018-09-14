@@ -300,9 +300,13 @@ public abstract class Stream<T>
      * @param targetType
      * @return
      */
-    @ParallelSupported
+    @SequentialOnly
     public <U> Stream<U> select(Class<U> targetType) {
-        return (Stream<U>) filter(Fn.instanceOf(targetType));
+        if (isParallel()) {
+            return (Stream<U>) sequential().filter(Fn.instanceOf(targetType)).parallel(maxThreadNum(), splitor());
+        } else {
+            return (Stream<U>) filter(Fn.instanceOf(targetType));
+        }
     }
 
     /**
@@ -716,6 +720,7 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <A, D> Stream<Map.Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
+    @ParallelSupported
     public <K> Stream<Map.Entry<K, Integer>> countBy(final Function<? super T, ? extends K> classifier) {
         return groupBy(classifier, Collectors.countingInt());
     }
@@ -791,6 +796,7 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <A, D> EntryStream<Boolean, D> partitionByToEntry(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
+    @ParallelSupported
     public <K> EntryStream<K, Integer> countByToEntry(final Function<? super T, ? extends K> classifier) {
         return groupByToEntry(classifier, Collectors.countingInt());
     }
@@ -1004,6 +1010,7 @@ public abstract class Stream<T>
      * @param occurrencesFilter
      * @return
      */
+    @ParallelSupported
     public Stream<T> distinct(final Predicate<? super Long> occurrencesFilter) {
         final Supplier<? extends Map<T, Long>> supplier = isParallel() ? Suppliers.<T, Long> ofConcurrentHashMap() : Suppliers.<T, Long> ofLinkedHashMap();
 
@@ -2301,8 +2308,8 @@ public abstract class Stream<T>
      * @param valueMapper
      * @return
      */
-    @SequentialOnly
     @Beta
+    @SequentialOnly
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
     // Not efficient. Too many temporary objects will be created.
@@ -9098,18 +9105,18 @@ public abstract class Stream<T>
      *
      */
     public static enum SOO {
-        SPLIT, SPLIT_TO_LIST, SPLIT_TO_SET, SPLIT_AT, SPLIT_BY, SLIDING, //
-        INTERSECTION, DIFFERENCE, SYMMETRIC_DIFFERENCE, //
-        REVERSED, SHUFFLED, ROTATED, DISTINCT, HAS_DUPLICATE, //
-        APPEND, PREPEND, CACHED, INDEXED, SKIP, SKIP_LAST, LIMIT, STEP, //
-        QUEUED, MERGE, ZIP_WITH, PERSIST_FILE_OUTPUT_STREAM_WRITE, //
-        COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, CARTESIAN_PRODUCT, //
-        COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, //
-        COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
-        LAST, HEAD, /*HEADD,*/ TAIL, /*TAILL,*/ HEAD_AND_TAIL, /*HEAD_AND_TAILL,*/ //
-        TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
-        BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
-        PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST, ON_CLOSE, CLOSE;
+        split, splitToList, splitToSet, splitAt, splitBy, sliding, slidingToList, //
+        intersection, difference, symmetricDifference, //
+        reversed, shuffled, rotated, distinct, hasDuplicates, //
+        append, prepend, cached, indexed, skip, skipLast, limit, step, //
+        queued, merge, zipWith, persist, //
+        combinations, permutations, orderedPermutations, percentiles, cartesianProduct, //
+        collapse, rangeMap, scan, intersperse, top, kthLargest, //
+        count, findFirstOrLast, findFirstAndLast, //
+        last, head, /*HEADD,*/ tail, /*TAILL,*/ headAndTail, /*HEAD_AND_TAILL,*/ //
+        toArray, toList, toSte, toMultiset, toLongMultiset, toMatrix, toDataSet, //
+        boxed, iterator, asIntStream, asLongStream, asFloatStream, asDoubleStream, //
+        select, println, tried, onClosed, close;
     }
 
     /**
@@ -9122,39 +9129,40 @@ public abstract class Stream<T>
      *
      */
     public static enum PSO {
-        MAP, BI_MAP, TRI_MAP, SLIDING_MAP, MAP_TO_ENTRY, MAP_TO_, MAP_FIRST, MAP_FIRST_, MAP_LAST, MAP_LAST_, RANGE_MAP, //
-        FLAT_MAP, FLAT_MAP_TO_, FLAT_ARRAY, FLAT_COLLECION, //
-        FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
-        SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, PEEK_FIRST, PEEK_LAST, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, PARTITION_BY, PARTITION_BY_TO_ENTRY, PARTITION_TO, TO_MAP, TO_MULTIMAP, //
-        MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
-        FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, FIND_ANY, //
-        REDUCE, COLLECT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN;
+        map, slidingMap, mapToEntry, mapTo_, mapFirst, mapFirstOrElse, mapLast, mapLastOrElse, //
+        flatMap, flattMap, flatMapp, flatMapTo_, //
+        filter, takeWhile, dropWhile, removeIf, removeWhile, skipNull, //
+        sorted, reverseSorted, distinctBy, distinct_filter, join, peek, peekFirst, peekLast, //
+        groupBy, groupByEntry, groupTo, partitionBy, partitionByToEntry, paritionTo, countBy, countByToEntry, //
+        min, minBy, max, maxBy, sumInt, sumLong, sumDouble, averageInt, averageLong, averageDouble, //
+        toMap, toMulitmap, summerize, summerizze, //
+        forEach, forEachPair, forEachTriple, anyMatch, allMatch, noneMatch, findFirst, findLast, findAny, //
+        reduce, collect, innerJoin, fullJoin, leftJoin, rightJoin;
     }
 
     /**
      * LAIO = Loading All Intermediate Operations.
      * 
      * Intermediate operations which will load or go through all the elements in the stream.
+     * <br />
+     * These operation are “stateful intermediate operations”, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
      * 
-     * @author haiyangl
-     *
      */
     public static enum LAIO {
-        SORTED, SORTED_BY, REVERSE_SORTED, CACHED, REVERSED, SHUFFLED, ROTATED, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, //
-        HEADD, TAILL, HEAD_AND_TAILL;
+        sorted, sortedBy, reverseSorted, cached, resversed, shuffled, rotated, //
+        groupBy, groupByToEntity, partitionBy, partitionByToEntity, countBy, countByToEntry; //
+        // HEADD, TAILL, HEAD_AND_TAILL;
     }
 
     /**
-     * LAIO = Loading Right Now Operations.
+     * LAIIO = Loading All Immediately Intermediate Operations.
      * 
      * Intermediate operations which will load or go through all the elements in the stream when it's called.
+     * <br />
+     * These operation are “stateful intermediate operations”, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
      * 
-     * @author haiyangl
-     *
      */
-    public static enum LRNO {
-        CACHED/*, HEADD, TAILL, HEAD_AND_TAILL*/;
+    public static enum LAIIO {
+        cached/*, HEADD, TAILL, HEAD_AND_TAILL*/;
     }
 }

@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjIterator;
 
@@ -28,6 +29,7 @@ import com.landawn.abacus.util.ObjIterator;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements IteratorEx<T> {
     @SuppressWarnings("rawtypes")
     public static final ObjIteratorEx EMPTY = new QueuedIterator(0) {

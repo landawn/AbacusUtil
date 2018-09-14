@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.N;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
+@Internal
 public abstract class FloatIteratorEx extends FloatIterator implements IteratorEx<Float> {
     public static final FloatIteratorEx EMPTY = new FloatIteratorEx() {
         @Override

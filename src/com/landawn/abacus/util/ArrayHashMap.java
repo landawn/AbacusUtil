@@ -202,7 +202,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             if (o instanceof Map.Entry) {
                 final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
 
-                return set.contains(Pair.of(Wrapper.of(entry.getKey()), entry.getValue()));
+                return set.contains(N.newEntry(Wrapper.of(entry.getKey()), entry.getValue()));
             }
 
             return false;

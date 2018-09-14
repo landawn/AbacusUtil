@@ -5495,8 +5495,8 @@ public class Collectors {
             return new AbstractSet<Map.Entry<Boolean, T>>() {
                 @Override
                 public Iterator<Map.Entry<Boolean, T>> iterator() {
-                    Map.Entry<Boolean, T> falseEntry = Tuple.of(false, forFalse);
-                    Map.Entry<Boolean, T> trueEntry = Tuple.of(true, forTrue);
+                    Map.Entry<Boolean, T> falseEntry = N.newImmutableEntry(false, forFalse);
+                    Map.Entry<Boolean, T> trueEntry = N.newImmutableEntry(true, forTrue);
                     return Arrays.asList(falseEntry, trueEntry).iterator();
                 }
 

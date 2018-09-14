@@ -34,6 +34,7 @@ import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
+import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -1044,6 +1045,14 @@ public final class N {
         return new ArrayDeque<>(c);
     }
 
+    public static <K, V> Map.Entry<K, V> newEntry(K key, V value) {
+        return new AbstractMap.SimpleEntry<>(key, value);
+    }
+
+    public static <K, V> ImmutableEntry<K, V> newImmutableEntry(K key, V value) {
+        return new ImmutableEntry<>(key, value);
+    }
+
     public static <K, V> HashMap<K, V> newHashMap() {
         return new HashMap<>();
     }
@@ -1576,17 +1585,6 @@ public final class N {
     //
     //        return new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
     //    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    @SafeVarargs
-    public static <T> T[] asArray(final T... a) {
-        return a;
-    }
 
     /**
      * 
@@ -2809,19 +2807,14 @@ public final class N {
     }
 
     /**
+     * The input array is returned.
      *
      * @param a
-     *            pairs of property name and value or a Java Entity Object what
-     *            allows access to properties using getter and setter methods.
      * @return
      */
     @SafeVarargs
-    public static Map<String, Object> asProps(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new LinkedHashMap<>();
-        }
-
-        return newMap(new LinkedHashMap<String, Object>(N.initHashCapacity(a.length / 2)), a);
+    public static <T> T[] asArray(final T... a) {
+        return a;
     }
 
     @SuppressWarnings("unchecked")
@@ -2928,6 +2921,22 @@ public final class N {
         }
 
         return newMap(new HashMap<K, V>(N.initHashCapacity(a.length / 2)), a);
+    }
+
+    /**
+     *
+     * @param a
+     *            pairs of property name and value or a Java Entity Object what
+     *            allows access to properties using getter and setter methods.
+     * @return
+     */
+    @SafeVarargs
+    public static Map<String, Object> asProps(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedHashMap<>();
+        }
+
+        return newMap(new LinkedHashMap<String, Object>(N.initHashCapacity(a.length / 2)), a);
     }
 
     public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1) {
@@ -3066,6 +3075,33 @@ public final class N {
         list.add(e5);
         list.add(e6);
         list.add(e7);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7, final T e8) {
+        final List<T> list = new ArrayList<>(8);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        list.add(e7);
+        list.add(e8);
+        return list;
+    }
+
+    public static <T> List<T> asList(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7, final T e8, final T e9) {
+        final List<T> list = new ArrayList<>(9);
+        list.add(e1);
+        list.add(e2);
+        list.add(e3);
+        list.add(e4);
+        list.add(e5);
+        list.add(e6);
+        list.add(e7);
+        list.add(e8);
+        list.add(e9);
         return list;
     }
 
@@ -3232,6 +3268,33 @@ public final class N {
         set.add(e5);
         set.add(e6);
         set.add(e7);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7, final T e8) {
+        final Set<T> set = new HashSet<>(8);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        set.add(e7);
+        set.add(e8);
+        return set;
+    }
+
+    public static <T> Set<T> asSet(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6, final T e7, final T e8, final T e9) {
+        final Set<T> set = new HashSet<>(9);
+        set.add(e1);
+        set.add(e2);
+        set.add(e3);
+        set.add(e4);
+        set.add(e5);
+        set.add(e6);
+        set.add(e7);
+        set.add(e8);
+        set.add(e9);
         return set;
     }
 
@@ -4369,11 +4432,7 @@ public final class N {
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
         int res = N.compare(a1, b1);
 
-        if (res != 0) {
-            return res;
-        }
-
-        return N.compare(a2, b2);
+        return res == 0 ? N.compare(a2, b2) : res;
     }
 
     /**
@@ -4389,15 +4448,11 @@ public final class N {
      * @return
      */
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
-        int res = N.compare(a1, b1);
+        int res = 0;
 
-        if (res != 0) {
+        if ((res = N.compare(a1, b1)) != 0) {
             return res;
-        }
-
-        res = N.compare(a2, b2);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a2, b2)) != 0) {
             return res;
         }
 
@@ -4420,21 +4475,13 @@ public final class N {
      */
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> int compare(T1 a1, T1 b1, T2 a2,
             T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
-        int res = N.compare(a1, b1);
+        int res = 0;
 
-        if (res != 0) {
+        if ((res = N.compare(a1, b1)) != 0) {
             return res;
-        }
-
-        res = N.compare(a2, b2);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a2, b2)) != 0) {
             return res;
-        }
-
-        res = N.compare(a3, b3);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a3, b3)) != 0) {
             return res;
         }
 
@@ -4459,31 +4506,97 @@ public final class N {
      */
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> int compare(
             T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
-        int res = N.compare(a1, b1);
+        int res = 0;
 
-        if (res != 0) {
+        if ((res = N.compare(a1, b1)) != 0) {
             return res;
-        }
-
-        res = N.compare(a2, b2);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a2, b2)) != 0) {
             return res;
-        }
-
-        res = N.compare(a3, b3);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a3, b3)) != 0) {
             return res;
-        }
-
-        res = N.compare(a4, b4);
-
-        if (res != 0) {
+        } else if ((res = N.compare(a4, b4)) != 0) {
             return res;
         }
 
         return N.compare(a5, b5);
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @param a6
+     * @param b6
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        } else if ((res = N.compare(a4, b4)) != 0) {
+            return res;
+        } else if ((res = N.compare(a5, b5)) != 0) {
+            return res;
+        }
+
+        return N.compare(a6, b6);
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6), (a7, b7)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @param a6
+     * @param b6
+     * @param a7
+     * @param b7
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>, T7 extends Comparable<T7>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6, T7 a7, T7 b7) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        } else if ((res = N.compare(a4, b4)) != 0) {
+            return res;
+        } else if ((res = N.compare(a5, b5)) != 0) {
+            return res;
+        } else if ((res = N.compare(a6, b6)) != 0) {
+            return res;
+        }
+
+        return N.compare(a7, b7);
     }
 
     public static int compare(final boolean[] a, final boolean[] b) {
@@ -7553,6 +7666,15 @@ public final class N {
 
         if (obj.getClass().isArray()) {
             return typeOf(obj.getClass()).toString(obj);
+        } else if (obj instanceof Iterator) {
+            final Iterator<?> iter = (Iterator<?>) obj;
+            final Joiner joiner = Joiner.with(", ", "[", "]").reuseStringBuilder(true);
+
+            while (iter.hasNext()) {
+                joiner.append(N.toString(iter.next()));
+            }
+
+            return joiner.toString();
         }
 
         final Integer typeIdx = CLASS_TYPE_ENUM.get(obj.getClass());
@@ -27847,6 +27969,21 @@ public final class N {
         System.out.printf(format, args);
         System.out.println();
         return args;
+    }
+
+    /**
+     * Returns the value of the {@code long} argument; throwing an exception if the value overflows an {@code int}.
+     *
+     * @param value the long value
+     * @return the argument as an int
+     * @throws ArithmeticException if the {@code argument} overflows an int 
+     */
+    public static int toIntExact(long value) {
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            throw new ArithmeticException("integer overflow");
+        }
+
+        return (int) value;
     }
 
     /**

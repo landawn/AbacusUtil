@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 /**
@@ -22,10 +23,16 @@ import java.util.Map;
  * 
  * @author Haiyang Li
  */
-public interface ImmutableEntry<K, V> extends Map.Entry<K, V> {
+public class ImmutableEntry<K, V> extends AbstractMap.SimpleImmutableEntry<K, V> implements Map.Entry<K, V> {
 
-    public static <K, V> ImmutableEntry<K, V> of(K key, V value) {
-        return Tuple.of(key, value);
+    private static final long serialVersionUID = -7667037689002186862L;
+
+    public ImmutableEntry(K key, V value) {
+        super(key, value);
+    }
+
+    public ImmutableEntry(Map.Entry<? extends K, ? extends V> entry) {
+        super(entry);
     }
 
     /**
@@ -36,5 +43,7 @@ public interface ImmutableEntry<K, V> extends Map.Entry<K, V> {
      */
     @Deprecated
     @Override
-    V setValue(V v);
+    public V setValue(V v) {
+        throw new UnsupportedOperationException();
+    }
 }
