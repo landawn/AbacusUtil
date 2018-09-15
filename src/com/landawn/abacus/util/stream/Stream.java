@@ -826,6 +826,10 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction);
 
+    @SequentialOnly
+    public abstract <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
+            final BiConsumer<R, ? super T> accumulator);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.

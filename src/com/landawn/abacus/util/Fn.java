@@ -5332,18 +5332,16 @@ public final class Fn extends Comparators {
         private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
             @Override
             public List apply(Pair t) {
-                return N.asList(t.getLeft(), t.getRight());
+                return N.asList(t.left(), t.right());
             }
-
         };
 
         @SuppressWarnings("rawtypes")
         private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
             @Override
             public Set apply(Pair t) {
-                return N.asSet(t.getLeft(), t.getRight());
+                return N.asSet(t.left(), t.right());
             }
-
         };
 
         private Pairs() {
@@ -5368,18 +5366,16 @@ public final class Fn extends Comparators {
         private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
             @Override
             public List apply(Triple t) {
-                return N.asList(t.getLeft(), t.getMiddle(), t.getRight());
+                return N.asList(t.left(), t.middle(), t.right());
             }
-
         };
 
         @SuppressWarnings("rawtypes")
         private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
             @Override
             public Set apply(Triple t) {
-                return N.asSet(t.getLeft(), t.getMiddle(), t.getRight());
+                return N.asSet(t.left(), t.middle(), t.right());
             }
-
         };
 
         private Triples() {

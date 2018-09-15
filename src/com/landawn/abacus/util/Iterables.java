@@ -46,15 +46,66 @@ public final class Iterables {
      * @param b
      * @return
      */
-    public static <T> Set<T> commonElements(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> Set<T> differentSet(final Collection<? extends T> a, final Collection<?> b) {
+        if (N.isNullOrEmpty(a)) {
+            return new HashSet<>();
+        } else if (N.isNullOrEmpty(b)) {
+            return new HashSet<>(a);
+        }
+
+        final Set<T> result = new HashSet<>(a);
+
+        Iterables.removeAll(a, b);
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <T> Set<T> symmetricDifferentSet(final Collection<? extends T> a, final Collection<? extends T> b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new HashSet<T>() : new HashSet<>(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? new HashSet<T>() : new HashSet<>(a);
+        }
+
+        final Set<T> commonSet = Iterables.commonSet(a, b);
+        final Set<T> result = new HashSet<>(a);
+
+        for (T e : a) {
+            if (!commonSet.contains(e)) {
+                result.add(e);
+            }
+        }
+
+        for (T e : b) {
+            if (!commonSet.contains(e)) {
+                result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <T> Set<T> commonSet(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return new HashSet<>();
         }
 
-        return commonElements(N.asList(a, (Collection<? extends T>) b));
+        return commonSet(N.asList(a, (Collection<? extends T>) b));
     }
 
-    public static <T> Set<T> commonElements(final Collection<? extends Collection<? extends T>> c) {
+    public static <T> Set<T> commonSet(final Collection<? extends Collection<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
             return new HashSet<>();
         } else if (c.size() == 1) {

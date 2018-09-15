@@ -650,6 +650,37 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                final R res = supplier.get();
+                accumulator.accept(res, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
     public <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector) {
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
