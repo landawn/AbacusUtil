@@ -76,6 +76,12 @@ public final class Multiset<T> implements Iterable<T> {
         this.valueMap = new HashMap<T, MutableInt>(initialCapacity);
     }
 
+    public Multiset(final Collection<? extends T> c) {
+        this();
+    
+        addAll(c);
+    }
+
     @SuppressWarnings("rawtypes")
     public Multiset(final Class<? extends Map> valueMapType) {
         this(Maps.mapType2Supplier(valueMapType));
@@ -85,12 +91,6 @@ public final class Multiset<T> implements Iterable<T> {
     public Multiset(final Supplier<? extends Map<T, ?>> mapSupplier) {
         this.mapSupplier = (Supplier) mapSupplier;
         this.valueMap = this.mapSupplier.get();
-    }
-
-    public Multiset(final Collection<? extends T> c) {
-        this();
-
-        addAll(c);
     }
 
     /**

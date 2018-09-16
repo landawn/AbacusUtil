@@ -794,6 +794,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
 
     public OptionalDouble kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkFromToIndex(fromIndex, toIndex);
+        N.checkArgPositive(k, "k");
 
         return toIndex - fromIndex < k ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }

@@ -19662,6 +19662,19 @@ public final class N {
         return result;
     }
 
+    public static <T> ObjIterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
+        return Iterators.concat(a, b);
+    }
+
+    @SafeVarargs
+    public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
+        return Iterators.concat(a);
+    }
+
+    public static <T> ObjIterator<T> concatt(final Collection<? extends Iterator<? extends T>> c) {
+        return Iterators.concat(c);
+    }
+
     public static int replaceAll(final boolean[] a, final boolean oldVal, final boolean newVal) {
         if (N.isNullOrEmpty(a)) {
             return 0;

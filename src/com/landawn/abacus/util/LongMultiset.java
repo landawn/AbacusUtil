@@ -76,6 +76,12 @@ public final class LongMultiset<T> implements Iterable<T> {
         this.valueMap = new HashMap<T, MutableLong>(initialCapacity);
     }
 
+    public LongMultiset(final Collection<? extends T> c) {
+        this();
+    
+        addAll(c);
+    }
+
     @SuppressWarnings("rawtypes")
     public LongMultiset(final Class<? extends Map> valueMapType) {
         this(Maps.mapType2Supplier(valueMapType));
@@ -85,12 +91,6 @@ public final class LongMultiset<T> implements Iterable<T> {
     public LongMultiset(final Supplier<? extends Map<T, ?>> mapSupplier) {
         this.mapSupplier = (Supplier) mapSupplier;
         this.valueMap = this.mapSupplier.get();
-    }
-
-    public LongMultiset(final Collection<? extends T> c) {
-        this();
-
-        addAll(c);
     }
 
     /**

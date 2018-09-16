@@ -842,6 +842,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
 
     public OptionalChar kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkFromToIndex(fromIndex, toIndex);
+        N.checkArgPositive(k, "k");
 
         return toIndex - fromIndex < k ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }

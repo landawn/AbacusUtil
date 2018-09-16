@@ -810,6 +810,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
 
     public OptionalShort kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkFromToIndex(fromIndex, toIndex);
+        N.checkArgPositive(k, "k");
 
         return toIndex - fromIndex < k ? OptionalShort.empty() : OptionalShort.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }

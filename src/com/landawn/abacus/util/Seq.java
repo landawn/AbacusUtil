@@ -290,10 +290,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @SuppressWarnings("rawtypes")
     public Nullable<T> kthLargest(final int k) {
+        N.checkArgPositive(k, "k");
+
         return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of((T) N.kthLargest((Collection) coll, k));
     }
 
     public Nullable<T> kthLargest(final int k, Comparator<? super T> cmp) {
+        N.checkArgPositive(k, "k");
+
         return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(N.kthLargest(coll, k, cmp));
     }
 
