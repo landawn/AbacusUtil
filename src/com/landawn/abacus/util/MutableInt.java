@@ -72,7 +72,9 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
      * Gets the value as a Integer instance.
      * 
      * @return the value as a Integer, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public int getValue() {
         return value;
     }

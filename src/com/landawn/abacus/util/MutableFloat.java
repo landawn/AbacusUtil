@@ -72,7 +72,9 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      * Gets the value as a Float instance.
      * 
      * @return the value as a Float, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public float getValue() {
         return value;
     }

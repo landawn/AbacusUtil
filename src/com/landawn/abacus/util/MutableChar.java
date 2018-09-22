@@ -64,7 +64,9 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
      * Gets the value as a Char instance.
      * 
      * @return the value as a Char, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public char getValue() {
         return value;
     }

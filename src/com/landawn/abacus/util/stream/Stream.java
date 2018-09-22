@@ -9149,7 +9149,7 @@ public abstract class Stream<T>
      * 
      * Intermediate operations which will load or go through all the elements in the stream.
      * <br />
-     * These operation are “stateful intermediate operations”, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
+     * These operation are stateful intermediate operations, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
      * 
      */
     public static enum LAIO {
@@ -9163,8 +9163,8 @@ public abstract class Stream<T>
      * 
      * Intermediate operations which will load or go through all the elements in the stream when it's called.
      * <br />
-     * These operation are “stateful intermediate operations”, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
-     * 
+     * These operation are stateful intermediate operations, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
+     *
      */
     public static enum LAIIO {
         cached/*, HEADD, TAILL, HEAD_AND_TAILL*/;

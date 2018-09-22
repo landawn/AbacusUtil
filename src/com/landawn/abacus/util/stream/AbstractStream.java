@@ -2086,9 +2086,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 Object key = hashKey(keyExtractor.apply(value));
                 key = key == null ? NONE : key;
 
-                synchronized (map) {
-                    return map.put(key, Stream.NONE) == null;
-                }
+                return map.put(key, Stream.NONE) == null;
             }
         } : new Predicate<T>() {
             private final Set<Object> set = new HashSet<>();

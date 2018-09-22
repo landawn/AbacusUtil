@@ -1716,24 +1716,73 @@ public final class Iterators {
     }
 
     /**
-     * Moves the specified {@code iter} to {@code n} steps if it's not {@code null} and {@code n} > 0.
+     * Note: copied from Google Guava under Apache license v2
+     * <br />
+     * Calls {@code next()} on {@code iterator}, either {@code numberToAdvance} times
+     * or until {@code hasNext()} returns {@code false}, whichever comes first.
+     *
+     * @return the number of elements the iterator was advanced 
+     */
+    public static long advance(Iterator<?> iterator, long numberToAdvance) {
+        N.checkArgNotNegative(numberToAdvance, "numberToAdvance");
+
+        long i;
+
+        for (i = 0; i < numberToAdvance && iterator.hasNext(); i++) {
+            iterator.next();
+        }
+
+        return i;
+    }
+
+    /**
+     * Calls {@code next()} on {@code iterator}, either {@code n} times
+     * or until {@code hasNext()} returns {@code false}, whichever comes first.
+     * 
+     * This is a lazy evaluation operation. The {@code skip} action is only triggered when {@code Iterator.hasNext()} or {@code Iterator.next()} is called.
      * 
      * @param iter
      * @param n
      * @return
      */
-    public static <T> Iterator<T> skip(final Iterator<T> iter, long n) {
+    public static <T> ObjIterator<T> skip(final Iterator<T> iter, final long n) {
         N.checkArgNotNegative(n, "n");
 
         if (iter == null || n == 0) {
-            return iter;
+            return ObjIterator.of(iter);
         }
 
-        while (n-- > 0 && iter.hasNext()) {
-            iter.next();
-        }
+        return new ObjIterator<T>() {
+            private boolean skipped = false;
 
-        return iter;
+            @Override
+            public boolean hasNext() {
+                if (skipped == false) {
+                    skip();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return iter.next();
+            }
+
+            private void skip() {
+                long idx = 0;
+
+                while (idx++ < n && iter.hasNext()) {
+                    iter.next();
+                }
+
+                skipped = true;
+            }
+        };
     }
 
     /**
@@ -1766,6 +1815,60 @@ public final class Iterators {
 
                 cnt--;
                 return iter.next();
+            }
+        };
+    }
+
+    /**
+     * Calls {@code next()} on {@code iterator}, either {@code offset} times
+     * or until {@code hasNext()} returns {@code false}, whichever comes first.
+     * 
+     * This is a lazy evaluation operation. The {@code skip} action is only triggered when {@code Iterator.hasNext()} or {@code Iterator.next()} is called.
+     *  
+     * @param iter
+     * @param offset
+     * @param count
+     * @return
+     */
+    public static <T> ObjIterator<T> limit(final Iterator<T> iter, final long offset, final long count) {
+        N.checkArgNotNegative(count, "offset");
+        N.checkArgNotNegative(count, "count");
+
+        if (iter == null) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private long cnt = count;
+            private boolean skipped = false;
+
+            @Override
+            public boolean hasNext() {
+                if (skipped == false) {
+                    skip();
+                }
+
+                return cnt > 0 && iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt--;
+                return iter.next();
+            }
+
+            private void skip() {
+                long idx = 0;
+
+                while (idx++ < offset && iter.hasNext()) {
+                    iter.next();
+                }
+
+                skipped = true;
             }
         };
     }

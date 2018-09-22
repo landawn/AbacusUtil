@@ -72,7 +72,9 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * Gets the value as a Long instance.
      * 
      * @return the value as a Long, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public long getValue() {
         return value;
     }

@@ -1,3 +1,10 @@
+### 1.3.9
+
+* Refactoring: `Iterators.skip`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.8
 
 * Improvements and bug fix.

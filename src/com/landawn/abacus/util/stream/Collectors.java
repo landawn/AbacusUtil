@@ -1878,6 +1878,13 @@ public class Collectors {
         return new CollectorImpl<>(downstream.supplier(), downstream.accumulator(), downstream.combiner(), thenFinisher, characteristics);
     }
 
+    public static <T, A, R, RR> Collector<T, A, RR> collectingAndThen(final java.util.stream.Collector<T, A, R> downstream, final Function<R, RR> finisher) {
+        N.checkArgNotNull(downstream);
+        N.checkArgNotNull(finisher);
+
+        return collectingAndThen(Collector.of(downstream), finisher);
+    }
+
     public static <T, A, R> Collector<T, ?, R> distinct(final Collector<? super T, A, R> downstream) {
         Predicate<T> filter = null;
         if (N.notNullOrEmpty(downstream.characteristics()) && downstream.characteristics().contains(Characteristics.CONCURRENT)) {

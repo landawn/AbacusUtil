@@ -243,7 +243,7 @@ public final class SQLTransaction implements Transaction {
             try {
                 conn.setTransactionIsolation(isolationLevel.intValue());
             } catch (SQLException e) {
-                new UncheckedSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
 
@@ -271,7 +271,7 @@ public final class SQLTransaction implements Transaction {
                 try {
                     conn.setTransactionIsolation(tmp.intValue());
                 } catch (SQLException e) {
-                    new UncheckedSQLException(e);
+                    throw new UncheckedSQLException(e);
                 }
             }
 

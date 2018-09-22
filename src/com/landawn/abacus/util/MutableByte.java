@@ -72,7 +72,9 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      * Gets the value as a Byte instance.
      * 
      * @return the value as a Byte, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public byte getValue() {
         return value;
     }

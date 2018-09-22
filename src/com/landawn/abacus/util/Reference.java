@@ -38,6 +38,12 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return value;
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replace by {@link #value()}.
+     */
+    @Deprecated
     public T getValue() {
         return value;
     }

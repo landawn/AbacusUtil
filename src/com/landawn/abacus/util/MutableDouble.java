@@ -72,7 +72,9 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * Gets the value as a Double instance.
      * 
      * @return the value as a Double, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public double getValue() {
         return value;
     }

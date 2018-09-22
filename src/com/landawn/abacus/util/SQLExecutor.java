@@ -357,7 +357,6 @@ public final class SQLExecutor implements Closeable {
     private final String _dbProudctVersion;
     private final DBVersion _dbVersion;
     private final IsolationLevel _defaultIsolationLevel;
-    private final int _originalIsolationLevel;
     private final AsyncSQLExecutor _asyncSQLExecutor;
 
     private final Map<Class<?>, Mapper<?>> mapperPool = new ConcurrentHashMap<>();
@@ -508,20 +507,23 @@ public final class SQLExecutor implements Closeable {
         this._asyncExecutor = asyncExecutor == null ? new AsyncExecutor(64, 300, TimeUnit.SECONDS) : asyncExecutor;
         this._isReadOnly = isReadOnly;
 
+        int originalIsolationLevel;
         Connection conn = getConnection();
 
         try {
             _dbProudctName = conn.getMetaData().getDatabaseProductName();
             _dbProudctVersion = conn.getMetaData().getDatabaseProductVersion();
             _dbVersion = JdbcUtil.getDBVersion(conn);
-            _originalIsolationLevel = conn.getTransactionIsolation();
+            originalIsolationLevel = conn.getTransactionIsolation();
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(conn);
         }
 
-        _defaultIsolationLevel = this._ds instanceof SQLDataSource ? ((SQLDataSource) this._ds).getDefaultIsolationLevel() : IsolationLevel.DEFAULT;
+        final IsolationLevel tmp = this._ds instanceof SQLDataSource ? ((SQLDataSource) this._ds).getDefaultIsolationLevel() : IsolationLevel.DEFAULT;
+        _defaultIsolationLevel = tmp == IsolationLevel.DEFAULT ? IsolationLevel.valueOf(originalIsolationLevel) : tmp;
+
         this._asyncSQLExecutor = new AsyncSQLExecutor(this, _asyncExecutor);
     }
 
@@ -1007,8 +1009,7 @@ public final class SQLExecutor implements Closeable {
 
     private void setIsolationLevel(JdbcSettings jdbcSettings, Connection localConn) throws SQLException {
         final int isolationLevel = jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT
-                ? (_defaultIsolationLevel == IsolationLevel.DEFAULT ? _originalIsolationLevel : _defaultIsolationLevel.intValue())
-                : jdbcSettings.getIsolationLevel().intValue();
+                ? _defaultIsolationLevel.intValue() : jdbcSettings.getIsolationLevel().intValue();
 
         if (isolationLevel == localConn.getTransactionIsolation()) {
             // ignore.

@@ -75,7 +75,9 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
      * Gets the value as a Boolean instance.
      * 
      * @return the value as a Boolean, never null
+     * @deprecated replace by {@link #value()}.
      */
+    @Deprecated
     public boolean getValue() {
         return value;
     }
