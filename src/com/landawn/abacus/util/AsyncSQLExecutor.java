@@ -15,7 +15,6 @@
 package com.landawn.abacus.util;
 
 import java.sql.Connection;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -23,7 +22,7 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
-import com.landawn.abacus.util.SQLExecutor.ResultSetExtractor;
+import com.landawn.abacus.util.SQLExecutor.ResultExtractor;
 import com.landawn.abacus.util.SQLExecutor.StatementSetter;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -747,21 +746,31 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final ContinuableFuture<Nullable<Date>> queryForDate(final String sql, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+    public final ContinuableFuture<Nullable<java.sql.Date>> queryForDate(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<java.sql.Date>>() {
             @Override
-            public Nullable<Date> call() throws Exception {
+            public Nullable<java.sql.Date> call() throws Exception {
                 return sqlExecutor.queryForDate(sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T extends Date> ContinuableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+    public final ContinuableFuture<Nullable<java.sql.Time>> queryForTime(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<java.sql.Time>>() {
             @Override
-            public Nullable<T> call() throws Exception {
-                return sqlExecutor.queryForDate(targetClass, sql, parameters);
+            public Nullable<java.sql.Time> call() throws Exception {
+                return sqlExecutor.queryForTime(sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final ContinuableFuture<Nullable<java.sql.Timestamp>> queryForTimestamp(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<java.sql.Timestamp>>() {
+            @Override
+            public Nullable<java.sql.Timestamp> call() throws Exception {
+                return sqlExecutor.queryForTimestamp(sql, parameters);
             }
         });
     }
@@ -952,23 +961,23 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    public final <T> ContinuableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                return sqlExecutor.query(sql, statementSetter, resultSetExtractor, parameters);
+                return sqlExecutor.query(sql, statementSetter, resultExtractor, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    public final <T> ContinuableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                return sqlExecutor.query(sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
+                return sqlExecutor.query(sql, statementSetter, resultExtractor, jdbcSettings, parameters);
             }
         });
     }
@@ -995,22 +1004,22 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final ResultSetExtractor<T> resultSetExtractor, final Object... parameters) {
+            final ResultExtractor<T> resultExtractor, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                return sqlExecutor.query(conn, sql, statementSetter, resultSetExtractor, parameters);
+                return sqlExecutor.query(conn, sql, statementSetter, resultExtractor, parameters);
             }
         });
     }
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final ResultSetExtractor<T> resultSetExtractor, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final ResultExtractor<T> resultExtractor, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                return sqlExecutor.query(conn, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
+                return sqlExecutor.query(conn, sql, statementSetter, resultExtractor, jdbcSettings, parameters);
             }
         });
     }

@@ -361,9 +361,16 @@ public final class Fn extends Comparators {
         }
     };
 
-    private static final Function<String, Integer> LENGTH = new Function<String, Integer>() {
+    private static final Function<CharSequence, Integer> LENGTH = new Function<CharSequence, Integer>() {
         @Override
-        public Integer apply(String t) {
+        public Integer apply(CharSequence t) {
+            return N.len(t);
+        }
+    };
+
+    private static final Function<Object[], Integer> LEN = new Function<Object[], Integer>() {
+        @Override
+        public Integer apply(Object[] t) {
             return N.len(t);
         }
     };
@@ -742,7 +749,7 @@ public final class Fn extends Comparators {
     };
 
     @SuppressWarnings("rawtypes")
-    public static <T, K, V> Function<Map.Entry<Keyed<K, T>, Long>, T> kk() {
+    public static <T, K, V> Function<Map.Entry<Keyed<K, T>, V>, T> kk() {
         return (Function) KK;
     }
 
@@ -883,8 +890,13 @@ public final class Fn extends Comparators {
         return (Function) NULL_TO_EMPTY_M;
     }
 
-    public static Function<String, Integer> length() {
-        return LENGTH;
+    public static <T extends CharSequence> Function<T, Integer> length() {
+        return (Function<T, Integer>) LENGTH;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Function<T[], Integer> len() {
+        return (Function) LEN;
     }
 
     @SuppressWarnings("rawtypes")

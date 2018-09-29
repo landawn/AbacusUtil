@@ -59,9 +59,8 @@ import com.landawn.abacus.parser.Exclusion;
 import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.SQLExecutor.AbstractResultSetExtractor;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
-import com.landawn.abacus.util.SQLExecutor.ResultSetExtractor;
+import com.landawn.abacus.util.SQLExecutor.ResultExtractor;
 
 /**
  *
@@ -75,9 +74,9 @@ public final class PropertiesUtil {
     private static final String TYPE = "type";
     private static final XMLSerializationConfig xsc = XSC.of(true, true, DateTimeFormat.ISO_8601_DATETIME, Exclusion.NONE, null);
 
-    private static final ResultSetExtractor<ConfigEntity> CONFIG_ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<ConfigEntity>() {
+    private static final ResultExtractor<ConfigEntity> CONFIG_ENTITY_RESULT_SET_EXTRACTOR = new ResultExtractor<ConfigEntity>() {
         @Override
-        public ConfigEntity extractData(Class<?> cls, NamedSQL namedSQL, ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
+        public ConfigEntity extractData(ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
             long count = jdbcSettings.getCount();
 
@@ -87,7 +86,7 @@ public final class PropertiesUtil {
             if (offset <= 0) {
                 while ((count-- > 0) && rs.next()) {
                     ConfigEntity entity = new ConfigEntity();
-                    List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
+                    List<String> columnLabelList = JdbcUtil.getColumnLabelList(rs);
                     int columnCount = columnLabelList.size();
                     Method method = null;
                     Object propValue = null;
@@ -144,7 +143,7 @@ public final class PropertiesUtil {
                     File file = null;
                     SQLExecutor sqlExecutor = null;
                     String sql = null;
-                    ResultSetExtractor<ConfigEntity> resultSetExtractor = null;
+                    ResultExtractor<ConfigEntity> resultExtractor = null;
 
                     for (Map.Entry<Resource, Properties<?, ?>> entry : registeredAutoRefreshProperties.entrySet()) {
                         resource = entry.getKey();
@@ -192,13 +191,13 @@ public final class PropertiesUtil {
                         } else {
                             sqlExecutor = resource.getSqlExecutor();
                             sql = resource.getSql();
-                            resultSetExtractor = resource.getResultSetExtractor();
+                            resultExtractor = resource.getResultSetExtractor();
                             try {
-                                if (resultSetExtractor == null) {
-                                    resultSetExtractor = CONFIG_ENTITY_RESULT_SET_EXTRACTOR;
+                                if (resultExtractor == null) {
+                                    resultExtractor = CONFIG_ENTITY_RESULT_SET_EXTRACTOR;
                                 }
 
-                                ConfigEntity entity = sqlExecutor.query(sql, null, resultSetExtractor);
+                                ConfigEntity entity = sqlExecutor.query(sql, null, resultExtractor);
 
                                 if (entity == null || N.isNullOrEmpty(entity.getContent())) {
                                     throw new AbacusException("No record found or the content of properties is empty");
@@ -969,8 +968,8 @@ public final class PropertiesUtil {
 
                 if (duplicatedPropNameSet.contains(propName)) {
                     String listPropName = propName + "List";
-                    String elementTypeName = N.typeOf(typeName).isPrimitiveType()
-                            ? ClassUtil.getSimpleClassName(Primitives.wrap(N.typeOf(typeName).clazz())) : typeName;
+                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(Primitives.wrap(N.typeOf(typeName).clazz()))
+                            : typeName;
 
                     writer.write(spaces + "    " + (isPublicField ? "public " : "private ") + "List<" + elementTypeName + "> " + listPropName
                             + " = Collections.synchronizedList(new ArrayList<" + elementTypeName + ">());" + IOUtil.LINE_SEPARATOR);
@@ -1113,8 +1112,7 @@ public final class PropertiesUtil {
 
     private static void writeMethod(Writer writer, String spaces, String propName, String typeName, Set<String> duplicatedPropNameSet) throws IOException {
         String listPropName = propName + "List";
-        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(Primitives.wrap(N.typeOf(typeName).clazz()))
-                : typeName;
+        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(Primitives.wrap(N.typeOf(typeName).clazz())) : typeName;
 
         writer.write(spaces + "public " + typeName + " get" + StringUtil.capitalize(propName) + "() {" + IOUtil.LINE_SEPARATOR);
         writer.write(spaces + "    " + "return " + propName + ";" + IOUtil.LINE_SEPARATOR);
@@ -1382,7 +1380,7 @@ public final class PropertiesUtil {
         private final String filePath;
         private final SQLExecutor sqlExecutor;
         private final String sql;
-        private final ResultSetExtractor<ConfigEntity> resultSetExtractor;
+        private final ResultExtractor<ConfigEntity> resultExtractor;
         private long lastLoadTime;
         private final ResourceType resourceType;
 
@@ -1392,17 +1390,17 @@ public final class PropertiesUtil {
             this.filePath = file.getPath();
             this.sqlExecutor = null;
             this.sql = null;
-            this.resultSetExtractor = null;
+            this.resultExtractor = null;
             this.resourceType = resourceType;
         }
 
-        public Resource(Class<?> cls, SQLExecutor sqlExecutor, String sql, ResultSetExtractor<ConfigEntity> resultSetExtractor, ResourceType resourceType) {
+        public Resource(Class<?> cls, SQLExecutor sqlExecutor, String sql, ResultExtractor<ConfigEntity> resultExtractor, ResourceType resourceType) {
             this.targetClass = cls;
             this.file = null;
             this.filePath = null;
             this.sqlExecutor = sqlExecutor;
             this.sql = sql;
-            this.resultSetExtractor = resultSetExtractor;
+            this.resultExtractor = resultExtractor;
             this.resourceType = resourceType;
         }
 
@@ -1426,8 +1424,8 @@ public final class PropertiesUtil {
             return sql;
         }
 
-        public ResultSetExtractor<ConfigEntity> getResultSetExtractor() {
-            return resultSetExtractor;
+        public ResultExtractor<ConfigEntity> getResultSetExtractor() {
+            return resultExtractor;
         }
 
         public ResourceType getType() {

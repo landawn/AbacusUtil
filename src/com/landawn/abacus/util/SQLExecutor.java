@@ -27,7 +27,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -60,6 +59,7 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.JdbcUtil.PreparedQuery;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
@@ -178,16 +178,16 @@ public final class SQLExecutor implements Closeable {
 
     static final ResultSetExtractor<?> DEFAULT_RESULT_SET_EXTRACTOR = new DefaultResultSetExtractor();
 
-    static final ResultSetExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<RowIterator>() {
+    static final ResultExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new ResultExtractor<RowIterator>() {
         @Override
-        public RowIterator extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+        public RowIterator extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             return new RowIterator(rs, jdbcSettings.getOffset(), jdbcSettings.getCount(), true, true);
         }
     };
 
-    static final ResultSetExtractor<Boolean> EXISTS_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<Boolean>() {
+    static final ResultExtractor<Boolean> EXISTS_RESULT_SET_EXTRACTOR = new ResultExtractor<Boolean>() {
         @Override
-        public Boolean extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+        public Boolean extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
 
             while ((offset-- > 0) && rs.next()) {
@@ -197,9 +197,9 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
-    static final ResultSetExtractor<Nullable<?>> SINGLE_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<Nullable<?>>() {
+    static final ResultExtractor<Nullable<?>> SINGLE_RESULT_SET_EXTRACTOR = new ResultExtractor<Nullable<?>>() {
         @Override
-        public Nullable<?> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+        public Nullable<?> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
 
             while ((offset-- > 0) && rs.next()) {
@@ -213,10 +213,10 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
-    static final ResultSetExtractor<List<Object>> LIST_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<List<Object>>() {
+    static final ResultExtractor<List<Object>> LIST_RESULT_SET_EXTRACTOR = new ResultExtractor<List<Object>>() {
         @Override
-        public List<Object> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-            N.checkArgument(rs.getMetaData().getColumnCount() == 1, "Multiple columns selected in sql %s", namedSQL.getPureSQL());
+        public List<Object> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            N.checkArgument(rs.getMetaData().getColumnCount() == 1, "Multiple columns selected in query");
 
             long offset = jdbcSettings.getOffset();
             long count = jdbcSettings.getCount();
@@ -238,7 +238,8 @@ public final class SQLExecutor implements Closeable {
     private static final ResultSetExtractor ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<Object>() {
         @SuppressWarnings("deprecation")
         @Override
-        public Object extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+        public Object extractData(final Class<?> targetClass, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings)
+                throws SQLException {
             long offset = jdbcSettings.getOffset();
 
             while ((offset-- > 0) && rs.next()) {
@@ -247,9 +248,15 @@ public final class SQLExecutor implements Closeable {
             if (offset <= 0 && rs.next()) {
                 final List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
                 final int columnCount = columnLabelList.size();
-                final Object entity = N.newInstance(cls);
+                final Object entity = N.newInstance(targetClass);
 
-                if (Map.class.isAssignableFrom(cls)) {
+                if (List.class.isAssignableFrom(targetClass)) {
+                    final List<Object> list = (List<Object>) entity;
+
+                    for (int i = 0; i < columnCount; i++) {
+                        list.add(rs.getObject(i + 1));
+                    }
+                } else if (Map.class.isAssignableFrom(targetClass)) {
                     final Map<String, Object> m = (Map<String, Object>) entity;
 
                     for (int i = 0; i < columnCount; i++) {
@@ -270,7 +277,7 @@ public final class SQLExecutor implements Closeable {
                         ClassUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
                     }
 
-                    if (N.isDirtyMarker(cls)) {
+                    if (N.isDirtyMarker(targetClass)) {
                         ((DirtyMarker) entity).markDirty(false);
                     }
                 }
@@ -286,7 +293,8 @@ public final class SQLExecutor implements Closeable {
     private static final ResultSetExtractor ENTITY_LIST_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<List<Object>>() {
         @SuppressWarnings("deprecation")
         @Override
-        public List<Object> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+        public List<Object> extractData(final Class<?> targetClass, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings)
+                throws SQLException {
             final List<Object> resultList = new ArrayList<>();
 
             long offset = jdbcSettings.getOffset();
@@ -298,13 +306,18 @@ public final class SQLExecutor implements Closeable {
             if (offset <= 0 && count > 0) {
                 final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(N.EMPTY_STRING_ARRAY);
                 final int columnCount = columnLabels.length;
-                final boolean isMap = Map.class.isAssignableFrom(cls);
-                final boolean isDirtyMarker = N.isDirtyMarker(cls);
+                final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
                 while ((count-- > 0) && rs.next()) {
-                    final Object entity = N.newInstance(cls);
+                    final Object entity = N.newInstance(targetClass);
 
-                    if (isMap) {
+                    if (List.class.isAssignableFrom(targetClass)) {
+                        final List<Object> list = (List<Object>) entity;
+
+                        for (int i = 0; i < columnCount; i++) {
+                            list.add(rs.getObject(i + 1));
+                        }
+                    } else if (Map.class.isAssignableFrom(targetClass)) {
                         final Map<String, Object> m = (Map<String, Object>) entity;
 
                         for (int i = 0; i < columnCount; i++) {
@@ -696,7 +709,7 @@ public final class SQLExecutor implements Closeable {
 
             localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.INSERT, false);
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, false, parameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, true, false, parameters);
 
             result = executeInsert(namedSQL, stmt);
         } catch (SQLException e) {
@@ -877,7 +890,7 @@ public final class SQLExecutor implements Closeable {
                 setIsolationLevel(jdbcSettings, localConn);
             }
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, true, parametersList);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, true, true, parametersList);
 
             if (len <= batchSize) {
                 for (int i = 0; i < len; i++) {
@@ -1085,7 +1098,7 @@ public final class SQLExecutor implements Closeable {
 
             localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.UPDATE, false);
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
             return executeUpdate(namedSQL, stmt);
         } catch (SQLException e) {
@@ -1196,7 +1209,7 @@ public final class SQLExecutor implements Closeable {
                 setIsolationLevel(jdbcSettings, localConn);
             }
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, true, parametersList);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, true, parametersList);
 
             int result = 0;
 
@@ -1695,16 +1708,24 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final Nullable<Date> queryForDate(final String sql, final Object... parameters) {
-        return queryForSingleResult(Date.class, sql, parameters);
+    public final Nullable<java.sql.Date> queryForDate(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Date.class, sql, parameters);
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
-        return queryForSingleResult(targetClass, sql, parameters);
+    public final Nullable<java.sql.Time> queryForTime(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Time.class, sql, parameters);
+    }
+
+    /**
+    * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
+    */
+    @SafeVarargs
+    public final Nullable<java.sql.Timestamp> queryForTimestamp(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Timestamp.class, sql, parameters);
     }
 
     @SafeVarargs
@@ -1892,15 +1913,14 @@ public final class SQLExecutor implements Closeable {
     }
 
     //
-    // public <T> T query(String sql, ResultSetExtractor<T> resultSetExtractor,
+    // public <T> T query(String sql, ResultSetExtractor<T> resultExtractor,
     // Object... parameters) {
-    // return query(null, sql, null, resultSetExtractor, null, parameters);
+    // return query(null, sql, null, resultExtractor, null, parameters);
     // }
     //
     @SafeVarargs
-    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
-            final Object... parameters) {
-        return query(sql, statementSetter, resultSetExtractor, null, parameters);
+    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor, final Object... parameters) {
+        return query(sql, statementSetter, resultExtractor, null, parameters);
     }
 
     /** 
@@ -1928,15 +1948,15 @@ public final class SQLExecutor implements Closeable {
      * 
      * @param sql
      * @param statementSetter
-     * @param resultSetExtractor
+     * @param resultExtractor
      * @param jdbcSettings
      * @param parameters
      * @return
      */
     @SafeVarargs
-    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
-        return query(null, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
+    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return query(null, sql, statementSetter, resultExtractor, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -1950,9 +1970,9 @@ public final class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor,
             final Object... parameters) {
-        return query(conn, sql, statementSetter, resultSetExtractor, null, parameters);
+        return query(conn, sql, statementSetter, resultExtractor, null, parameters);
     }
 
     /**
@@ -1981,22 +2001,28 @@ public final class SQLExecutor implements Closeable {
      * @param conn
      * @param sql
      * @param statementSetter
-     * @param resultSetExtractor
+     * @param resultExtractor
      * @param jdbcSettings
      * @param parameters
      * @return
      */
     @SafeVarargs
-    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        return query(null, conn, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
+        return query(null, conn, sql, statementSetter, new ResultSetExtractor<T>() {
+            @Override
+            public T extractData(Class<?> targetClass, NamedSQL namedSQL, ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
+                return resultExtractor.extractData(rs, jdbcSettings);
+            }
+
+        }, jdbcSettings, parameters);
     }
 
     protected <T> T query(final Class<T> targetClass, final Connection conn, final String sql, StatementSetter statementSetter,
-            ResultSetExtractor<T> resultSetExtractor, JdbcSettings jdbcSettings, final Object... parameters) {
+            ResultSetExtractor<T> resultExtractor, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
-        resultSetExtractor = checkResultSetExtractor(namedSQL, resultSetExtractor);
+        resultExtractor = checkResultSetExtractor(namedSQL, resultExtractor);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
 
         T result = null;
@@ -2009,13 +2035,13 @@ public final class SQLExecutor implements Closeable {
         try {
             ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
 
-            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, resultSetExtractor == ROW_ITERATOR_RESULT_SET_EXTRACTOR);
+            localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, resultExtractor == ROW_ITERATOR_RESULT_SET_EXTRACTOR);
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
             rs = stmt.executeQuery();
 
-            result = resultSetExtractor.extractData(targetClass, namedSQL, rs, jdbcSettings);
+            result = resultExtractor.extractData(targetClass, namedSQL, rs, jdbcSettings);
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
@@ -2624,6 +2650,30 @@ public final class SQLExecutor implements Closeable {
         return skipAndLimit(s, jdbcSettings).tried();
     }
 
+    public PreparedQuery prepareQuery(String query) throws SQLException {
+        return prepareQuery(query, null);
+    }
+
+    public PreparedQuery prepareQuery(String query, JdbcSettings jdbcSettings) throws SQLException {
+        return prepareQuery(null, query, jdbcSettings);
+    }
+
+    public PreparedQuery prepareQuery(Connection conn, String query) throws SQLException {
+        return prepareQuery(conn, query, null);
+    }
+
+    @SuppressWarnings("resource")
+    public PreparedQuery prepareQuery(Connection conn, String query, JdbcSettings jdbcSettings) throws SQLException {
+        final NamedSQL namedSQL = getNamedSQL(query);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+
+        final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
+        final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, false);
+        final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, DEFAULT_STATEMENT_SETTER, jdbcSettings, false, false, N.EMPTY_OBJECT_ARRAY);
+
+        return new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
+    }
+
     public final void execute(final String sql, final Object... parameters) {
         execute(null, sql, parameters);
     }
@@ -2653,7 +2703,7 @@ public final class SQLExecutor implements Closeable {
 
             localConn = getConnection(conn, ds, jdbcSettings, op, false);
 
-            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, false, parameters);
+            stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
             stmt.execute();
         } catch (SQLException e) {
@@ -2892,7 +2942,7 @@ public final class SQLExecutor implements Closeable {
     }
 
     protected PreparedStatement prepareStatement(final DataSource ds, final Connection localConn, final NamedSQL namedSQL,
-            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final int autoGeneratedKeys, final boolean isBatch,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final boolean autoGeneratedKeys, final boolean isBatch,
             final Object... parameters) throws SQLException {
         String sql = namedSQL.getPureSQL();
 
@@ -2927,7 +2977,7 @@ public final class SQLExecutor implements Closeable {
                 }
 
                 stmt = localConn.prepareStatement(sql, jdbcSettings.getColumnNames());
-            } else if ((jdbcSettings.getAutoGeneratedKeys() == Statement.RETURN_GENERATED_KEYS) || (autoGeneratedKeys == Statement.RETURN_GENERATED_KEYS)) {
+            } else if (jdbcSettings.isAutoGeneratedKeys() || autoGeneratedKeys) {
                 stmt = localConn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             } else if ((jdbcSettings.getResultSetType() != -1) || (jdbcSettings.getResultSetConcurrency() != -1)
                     || (jdbcSettings.getResultSetHoldability() != -1)) {
@@ -3090,12 +3140,12 @@ public final class SQLExecutor implements Closeable {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> ResultSetExtractor<T> checkResultSetExtractor(final NamedSQL namedSQL, ResultSetExtractor<T> resultSetExtractor) {
-        if (resultSetExtractor == null) {
-            resultSetExtractor = (ResultSetExtractor<T>) DEFAULT_RESULT_SET_EXTRACTOR;
+    protected <T> ResultSetExtractor<T> checkResultSetExtractor(final NamedSQL namedSQL, ResultSetExtractor<T> resultExtractor) {
+        if (resultExtractor == null) {
+            resultExtractor = (ResultSetExtractor<T>) DEFAULT_RESULT_SET_EXTRACTOR;
         }
 
-        return resultSetExtractor;
+        return resultExtractor;
     }
 
     protected JdbcSettings checkJdbcSettings(final JdbcSettings jdbcSettings, final NamedSQL namedSQL) {
@@ -3774,30 +3824,16 @@ public final class SQLExecutor implements Closeable {
             return queryForSingleResult(String.class, propName, whereCause);
         }
 
-        public Nullable<Date> queryForDate(final String propName, final Condition whereCause) {
-            return queryForSingleResult(Date.class, propName, whereCause);
+        public Nullable<java.sql.Date> queryForDate(final String propName, final Condition whereCause) {
+            return queryForSingleResult(java.sql.Date.class, propName, whereCause);
         }
 
-        public <V extends Date> Nullable<V> queryForDate(final Class<V> targetClass, final String propName, final Condition whereCause) {
-            //    final Nullable<Date> date = this.queryForDate(propName, whereCause);
-            //
-            //    if (date.isNotNull()) {
-            //        if (targetClass.isAssignableFrom(date.get().getClass())) {
-            //            return (Nullable) date;
-            //        } else if (targetClass.equals(Timestamp.class)) {
-            //            return (Nullable) Nullable.of((new Timestamp(date.get().getTime())));
-            //        } else if (targetClass.equals(Time.class)) {
-            //            return (Nullable) Nullable.of((new Time(date.get().getTime())));
-            //        } else if (targetClass.equals(java.sql.Date.class)) {
-            //            return (Nullable) Nullable.of((new java.sql.Date(date.get().getTime())));
-            //        } else {
-            //            return Nullable.of(N.as(targetClass, date.get()));
-            //        }
-            //    } else {
-            //        return (Nullable<T>) date;
-            //    }
+        public Nullable<java.sql.Time> queryForTime(final String propName, final Condition whereCause) {
+            return queryForSingleResult(java.sql.Time.class, propName, whereCause);
+        }
 
-            return queryForSingleResult(targetClass, propName, whereCause);
+        public Nullable<java.sql.Timestamp> queryForTimestamp(final String propName, final Condition whereCause) {
+            return queryForSingleResult(java.sql.Timestamp.class, propName, whereCause);
         }
 
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
@@ -5264,21 +5300,29 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Nullable<Date>> queryForDate(final String propName, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Nullable<Date>>() {
+        public ContinuableFuture<Nullable<java.sql.Date>> queryForDate(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<java.sql.Date>>() {
                 @Override
-                public Nullable<Date> call() throws Exception {
+                public Nullable<java.sql.Date> call() throws Exception {
                     return mapper.queryForDate(propName, whereCause);
                 }
             });
         }
 
-        @SuppressWarnings("hiding")
-        public <T extends Date> ContinuableFuture<Nullable<T>> queryForDate(final Class<T> targetClass, final String propName, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Nullable<T>>() {
+        public ContinuableFuture<Nullable<java.sql.Time>> queryForTime(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<java.sql.Time>>() {
                 @Override
-                public Nullable<T> call() throws Exception {
-                    return mapper.queryForDate(targetClass, propName, whereCause);
+                public Nullable<java.sql.Time> call() throws Exception {
+                    return mapper.queryForTime(propName, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Nullable<java.sql.Timestamp>> queryForTimestamp(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<java.sql.Timestamp>>() {
+                @Override
+                public Nullable<java.sql.Timestamp> call() throws Exception {
+                    return mapper.queryForTimestamp(propName, whereCause);
                 }
             });
         }
@@ -6021,7 +6065,17 @@ public final class SQLExecutor implements Closeable {
      * @author Haiyang Li
      *
      */
-    public static interface ResultSetExtractor<T> {
+    public static interface ResultExtractor<T> {
+        public T extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException;
+    }
+
+    /**
+     * Refer to http://landawn.com/introduction-to-jdbc.html about how to read columns/rows from <code>java.sql.ResultSet</code>
+     *
+     * @author Haiyang Li
+     *
+     */
+    static interface ResultSetExtractor<T> {
         public T extractData(final Class<?> targetClass, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException;
     }
 
@@ -6110,7 +6164,48 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public static abstract class AbstractResultSetExtractor<T> implements ResultSetExtractor<T> {
+    public static abstract class AbstractResultExtractor<T> implements ResultExtractor<T> {
+        @Override
+        public T extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            final List<String> columnLabelList = JdbcUtil.getColumnLabelList(rs);
+            final int columnCount = columnLabelList.size();
+            final List<String> columnNameList = new ArrayList<>(columnCount);
+            final List<List<Object>> columnList = new ArrayList<>(columnCount);
+
+            for (int i = 0; i < columnCount; i++) {
+                columnNameList.add(columnLabelList.get(i));
+                columnList.add(new ArrayList<>());
+            }
+
+            long offset = jdbcSettings.getOffset();
+            long count = jdbcSettings.getCount();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0) {
+                while ((count-- > 0) && rs.next()) {
+                    for (int i = 0; i < columnCount;) {
+                        columnList.get(i).add(rs.getObject(++i));
+                    }
+                }
+            }
+
+            DataSet dataSet = new RowDataSet(columnNameList, columnList);
+
+            return handle(dataSet);
+        }
+
+        protected T handle(final DataSet dataSet) {
+            return (T) dataSet;
+        }
+
+        protected List<String> getColumnLabelList(final NamedSQL namedSQL, final ResultSet rs) throws SQLException {
+            return SQLExecutor.getColumnLabelList(namedSQL.getPureSQL(), rs);
+        }
+    }
+
+    static abstract class AbstractResultSetExtractor<T> implements ResultSetExtractor<T> {
         @Override
         public T extractData(final Class<?> targetClass, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             final List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
@@ -6181,7 +6276,7 @@ public final class SQLExecutor implements Closeable {
         private boolean logSQLWithParameters = false;
         private int batchSize = -1;
         private int queryTimeout = -1;
-        private int autoGeneratedKeys = -1;
+        private boolean autoGeneratedKeys = false;
         private int[] columnIndexes = null;
         private String[] columnNames = null;
         private int maxRows = -1;
@@ -6281,11 +6376,11 @@ public final class SQLExecutor implements Closeable {
             return this;
         }
 
-        public int getAutoGeneratedKeys() {
+        public boolean isAutoGeneratedKeys() {
             return autoGeneratedKeys;
         }
 
-        public JdbcSettings setAutoGeneratedKeys(final int autoGeneratedKeys) {
+        public JdbcSettings setAutoGeneratedKeys(final boolean autoGeneratedKeys) {
             assertNotFrozen();
 
             this.autoGeneratedKeys = autoGeneratedKeys;
@@ -6511,7 +6606,7 @@ public final class SQLExecutor implements Closeable {
             result = (prime * result) + (logSQLWithParameters ? 1231 : 1237);
             result = (prime * result) + batchSize;
             result = (prime * result) + queryTimeout;
-            result = (prime * result) + autoGeneratedKeys;
+            result = (prime * result) + (autoGeneratedKeys ? 1231 : 1237);
             result = (prime * result) + Arrays.hashCode(columnIndexes);
             result = (prime * result) + Arrays.hashCode(columnNames);
             result = (prime * result) + maxRows;

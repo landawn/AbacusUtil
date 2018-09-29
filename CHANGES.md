@@ -2,6 +2,10 @@
 
 * Refactoring: `Iterators.skip`.
 
+* Refactoring: `ResultSetExtractor`.
+
+* Add `PreparedQuery`.
+
 * Improvements and bug fix.
 
 

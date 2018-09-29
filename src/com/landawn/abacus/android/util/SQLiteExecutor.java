@@ -1411,34 +1411,24 @@ public final class SQLiteExecutor {
      * @see SQLiteExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final Nullable<Date> queryForDate(final String sql, final Object... parameters) {
-        return queryForSingleResult(Date.class, sql, parameters);
+    public final Nullable<java.sql.Date> queryForDate(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Date.class, sql, parameters);
     }
 
     /**
      * @see SQLiteExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final <T extends Date> Nullable<T> queryForDate(final Class<T> targetClass, final String sql, final Object... parameters) {
-        //    final Nullable<Date> date = this.queryForDate(sql, parameters);
-        //
-        //    if (date.isNotNull()) {
-        //        if (targetClass.isAssignableFrom(date.get().getClass())) {
-        //            return (Nullable) date;
-        //        } else if (targetClass.equals(Timestamp.class)) {
-        //            return (Nullable) Nullable.of((new Timestamp(date.get().getTime())));
-        //        } else if (targetClass.equals(Time.class)) {
-        //            return (Nullable) Nullable.of((new Time(date.get().getTime())));
-        //        } else if (targetClass.equals(java.sql.Date.class)) {
-        //            return (Nullable) Nullable.of((new java.sql.Date(date.get().getTime())));
-        //        } else {
-        //            return Nullable.of(N.as(targetClass, date.get()));
-        //        }
-        //    } else {
-        //        return (Nullable<T>) date;
-        //    }
+    public final Nullable<java.sql.Time> queryForTime(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Time.class, sql, parameters);
+    }
 
-        return this.queryForSingleResult(targetClass, sql, parameters);
+    /**
+     * @see SQLiteExecutor#queryForSingleResult(Class, String, Object...).
+     */
+    @SafeVarargs
+    public final Nullable<java.sql.Timestamp> queryForTimestamp(final String sql, final Object... parameters) {
+        return queryForSingleResult(java.sql.Timestamp.class, sql, parameters);
     }
 
     /**

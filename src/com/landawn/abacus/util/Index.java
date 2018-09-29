@@ -25,196 +25,196 @@ public final class Index {
         // singleton.
     }
 
-    public static OptionalInt of(final boolean[] a, final boolean e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final boolean[] a, final boolean objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final boolean[] a, final int fromIndex, final boolean e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final boolean[] a, final int fromIndex, final boolean objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final char[] a, final char e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final char[] a, final char objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final char[] a, final int fromIndex, final char e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final char[] a, final int fromIndex, final char objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final byte[] a, final byte e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final byte[] a, final byte objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final byte[] a, final int fromIndex, final byte e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final byte[] a, final int fromIndex, final byte objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final short[] a, final short e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final short[] a, final short objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final short[] a, final int fromIndex, final short e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final short[] a, final int fromIndex, final short objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final int[] a, final int e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final int[] a, final int objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final int[] a, final int fromIndex, final int e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final int[] a, final int fromIndex, final int objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final long[] a, final long e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final long[] a, final long objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final long[] a, final int fromIndex, final long e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final long[] a, final int fromIndex, final long objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final float[] a, final float e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final float[] a, final float objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final float[] a, final int fromIndex, final float e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final float[] a, final int fromIndex, final float objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final double[] a, final double e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final double[] a, final double objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final double[] a, final int fromIndex, final double e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final double[] a, final int fromIndex, final double objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final Object[] a, final Object e) {
-        return toOptionalInt(N.indexOf(a, e));
+    public static OptionalInt of(final Object[] a, final Object objToFind) {
+        return toOptionalInt(N.indexOf(a, objToFind));
     }
 
-    public static OptionalInt of(final Object[] a, final int fromIndex, final Object e) {
-        return toOptionalInt(N.indexOf(a, fromIndex, e));
+    public static OptionalInt of(final Object[] a, final int fromIndex, final Object objToFind) {
+        return toOptionalInt(N.indexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final List<?> list, final Object e) {
-        return toOptionalInt(N.indexOf(list, e));
+    public static OptionalInt of(final List<?> list, final Object objToFind) {
+        return toOptionalInt(N.indexOf(list, objToFind));
     }
 
-    public static OptionalInt of(final List<?> list, final int fromIndex, final Object e) {
-        return toOptionalInt(N.indexOf(list, fromIndex, e));
+    public static OptionalInt of(final List<?> list, final int fromIndex, final Object objToFind) {
+        return toOptionalInt(N.indexOf(list, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final String str, final int targetChar) {
-        return toOptionalInt(StringUtil.indexOf(str, targetChar));
+    public static OptionalInt of(final String str, final int objToFind) {
+        return toOptionalInt(StringUtil.indexOf(str, objToFind));
     }
 
-    public static OptionalInt of(final String str, final int fromIndex, final int targetChar) {
-        return toOptionalInt(StringUtil.indexOf(str, fromIndex, targetChar));
+    public static OptionalInt of(final String str, final int fromIndex, final int objToFind) {
+        return toOptionalInt(StringUtil.indexOf(str, fromIndex, objToFind));
     }
 
-    public static OptionalInt of(final String str, final String substr) {
-        return toOptionalInt(StringUtil.indexOf(str, substr));
+    public static OptionalInt of(final String str, final String objToFind) {
+        return toOptionalInt(StringUtil.indexOf(str, objToFind));
     }
 
-    public static OptionalInt of(final String str, final int fromIndex, final String substr) {
-        return toOptionalInt(StringUtil.indexOf(str, fromIndex, substr));
+    public static OptionalInt of(final String str, final int fromIndex, final String objToFind) {
+        return toOptionalInt(StringUtil.indexOf(str, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final boolean[] a, final boolean e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final boolean[] a, final boolean objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final boolean[] a, final int fromIndex, final boolean e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final boolean[] a, final int fromIndex, final boolean objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final char[] a, final char e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final char[] a, final char objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final char[] a, final int fromIndex, final char e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final char[] a, final int fromIndex, final char objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final byte[] a, final byte e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final byte[] a, final byte objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final byte[] a, final int fromIndex, final byte e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final byte[] a, final int fromIndex, final byte objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final short[] a, final short e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final short[] a, final short objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final short[] a, final int fromIndex, final short e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final short[] a, final int fromIndex, final short objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final int[] a, final int e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final int[] a, final int objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final int[] a, final int fromIndex, final int e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final int[] a, final int fromIndex, final int objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final long[] a, final long e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final long[] a, final long objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final long[] a, final int fromIndex, final long e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final long[] a, final int fromIndex, final long objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final float[] a, final float e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final float[] a, final float objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final float[] a, final int fromIndex, final float e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final float[] a, final int fromIndex, final float objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final double[] a, final double e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final double[] a, final double objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final double[] a, final int fromIndex, final double e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final double[] a, final int fromIndex, final double objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final Object[] a, final Object e) {
-        return toOptionalInt(N.lastIndexOf(a, e));
+    public static OptionalInt last(final Object[] a, final Object objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, objToFind));
     }
 
-    public static OptionalInt last(final Object[] a, final int fromIndex, final Object e) {
-        return toOptionalInt(N.lastIndexOf(a, fromIndex, e));
+    public static OptionalInt last(final Object[] a, final int fromIndex, final Object objToFind) {
+        return toOptionalInt(N.lastIndexOf(a, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final List<?> list, final Object e) {
-        return toOptionalInt(N.lastIndexOf(list, e));
+    public static OptionalInt last(final List<?> list, final Object objToFind) {
+        return toOptionalInt(N.lastIndexOf(list, objToFind));
     }
 
-    public static OptionalInt last(final List<?> list, final int fromIndex, final Object e) {
-        return toOptionalInt(N.lastIndexOf(list, fromIndex, e));
+    public static OptionalInt last(final List<?> list, final int fromIndex, final Object objToFind) {
+        return toOptionalInt(N.lastIndexOf(list, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final String str, final int targetChar) {
-        return toOptionalInt(StringUtil.lastIndexOf(str, targetChar));
+    public static OptionalInt last(final String str, final int objToFind) {
+        return toOptionalInt(StringUtil.lastIndexOf(str, objToFind));
     }
 
-    public static OptionalInt last(final String str, final int fromIndex, final int targetChar) {
-        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, targetChar));
+    public static OptionalInt last(final String str, final int fromIndex, final int objToFind) {
+        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, objToFind));
     }
 
-    public static OptionalInt last(final String str, final String substr) {
-        return toOptionalInt(StringUtil.lastIndexOf(str, substr));
+    public static OptionalInt last(final String str, final String objToFind) {
+        return toOptionalInt(StringUtil.lastIndexOf(str, objToFind));
     }
 
-    public static OptionalInt last(final String str, final int fromIndex, final String substr) {
-        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, substr));
+    public static OptionalInt last(final String str, final int fromIndex, final String objToFind) {
+        return toOptionalInt(StringUtil.lastIndexOf(str, fromIndex, objToFind));
     }
 
     private static OptionalInt toOptionalInt(int index) {

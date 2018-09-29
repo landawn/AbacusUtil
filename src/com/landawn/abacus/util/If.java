@@ -50,7 +50,9 @@ public final class If {
      * 
      * @param index
      * @return
+     * @deprecated replaced with {@link Index#of(Object[], Object)}
      */
+    @Deprecated
     public static If exists(final int index) {
         return index >= 0 ? TRUE : FALSE;
     }
