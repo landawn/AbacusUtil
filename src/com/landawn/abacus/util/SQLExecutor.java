@@ -2650,28 +2650,32 @@ public final class SQLExecutor implements Closeable {
         return skipAndLimit(s, jdbcSettings).tried();
     }
 
-    public PreparedQuery prepareQuery(String query) throws SQLException {
+    public PreparedQuery prepareQuery(String query) throws UncheckedSQLException {
         return prepareQuery(query, null);
     }
 
-    public PreparedQuery prepareQuery(String query, JdbcSettings jdbcSettings) throws SQLException {
+    public PreparedQuery prepareQuery(String query, JdbcSettings jdbcSettings) throws UncheckedSQLException {
         return prepareQuery(null, query, jdbcSettings);
     }
 
-    public PreparedQuery prepareQuery(Connection conn, String query) throws SQLException {
+    public PreparedQuery prepareQuery(Connection conn, String query) throws UncheckedSQLException {
         return prepareQuery(conn, query, null);
     }
 
     @SuppressWarnings("resource")
-    public PreparedQuery prepareQuery(Connection conn, String query, JdbcSettings jdbcSettings) throws SQLException {
+    public PreparedQuery prepareQuery(Connection conn, String query, JdbcSettings jdbcSettings) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(query);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
 
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, false);
-        final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, DEFAULT_STATEMENT_SETTER, jdbcSettings, false, false, N.EMPTY_OBJECT_ARRAY);
-
-        return new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
+        try {
+            final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, DEFAULT_STATEMENT_SETTER, jdbcSettings, false, false,
+                    N.EMPTY_OBJECT_ARRAY);
+            return new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        }
     }
 
     public final void execute(final String sql, final Object... parameters) {

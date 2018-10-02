@@ -41,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLType;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -724,8 +725,26 @@ public final class JdbcUtil {
         }
     }
 
+    /**
+     * 
+     * @param stmt will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * @return
+     * @throws SQLException
+     */
     public static PreparedQuery prepareQuery(final PreparedStatement stmt) throws SQLException {
         return new PreparedQuery(stmt);
+    }
+
+    /**
+     * 
+     * @param stmt will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * @return
+     * @throws SQLException
+     */
+    public static PreparedCallableQuery prepareQuery(final CallableStatement stmt) throws SQLException {
+        return new PreparedCallableQuery(stmt);
     }
 
     public static PreparedQuery prepareQuery(final Connection conn, final String sql) throws SQLException {
@@ -2793,100 +2812,130 @@ public final class JdbcUtil {
         }
     }
 
-    /**
-     * The underline {@code PreparedStatement} will be closed after any execution method is call
-     * <br />
-     * Don't cache or reuse the instance of this class.
-     * 
-     * @author haiyangl
-     *
-     */
-    public static class PreparedQuery implements AutoCloseable {
-        private final java.sql.PreparedStatement stmt;
-        private Connection conn;
-        private boolean isClosed = false;
-        private int columnIndexForSetter = 1;
+    static abstract class AbstractPreparedQuery<Q extends AbstractPreparedQuery<Q>> implements AutoCloseable {
+        final java.sql.PreparedStatement stmt;
+        Connection conn;
+        boolean isClosed = false;
+        int parameterIndexForSetter = 1;
 
-        PreparedQuery(java.sql.PreparedStatement stmt) {
+        AbstractPreparedQuery(java.sql.PreparedStatement stmt) {
             this.stmt = stmt;
         }
 
-        public PreparedQuery setBoolean(boolean x) throws SQLException {
-            stmt.setBoolean(columnIndexForSetter++, x);
+        public Q setBoolean(boolean x) throws SQLException {
+            stmt.setBoolean(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setByte(byte x) throws SQLException {
-            stmt.setByte(columnIndexForSetter++, x);
+        public Q setByte(byte x) throws SQLException {
+            stmt.setByte(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setShort(short x) throws SQLException {
-            stmt.setShort(columnIndexForSetter++, x);
+        public Q setShort(short x) throws SQLException {
+            stmt.setShort(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setInt(int x) throws SQLException {
-            stmt.setInt(columnIndexForSetter++, x);
+        public Q setInt(int x) throws SQLException {
+            stmt.setInt(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setLong(long x) throws SQLException {
-            stmt.setLong(columnIndexForSetter++, x);
+        public Q setLong(long x) throws SQLException {
+            stmt.setLong(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setFloat(float x) throws SQLException {
-            stmt.setFloat(columnIndexForSetter++, x);
+        public Q setFloat(float x) throws SQLException {
+            stmt.setFloat(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setDouble(double x) throws SQLException {
-            stmt.setDouble(columnIndexForSetter++, x);
+        public Q setDouble(double x) throws SQLException {
+            stmt.setDouble(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setString(String x) throws SQLException {
-            stmt.setString(columnIndexForSetter++, x);
+        public Q setString(String x) throws SQLException {
+            stmt.setString(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setTime(java.sql.Time x) throws SQLException {
-            stmt.setTime(columnIndexForSetter++, x);
+        public Q setTime(java.sql.Time x) throws SQLException {
+            stmt.setTime(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setDate(java.sql.Date x) throws SQLException {
-            stmt.setDate(columnIndexForSetter++, x);
+        public Q setDate(java.sql.Date x) throws SQLException {
+            stmt.setDate(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setTimestamp(java.sql.Timestamp x) throws SQLException {
-            stmt.setTimestamp(columnIndexForSetter++, x);
+        public Q setTimestamp(java.sql.Timestamp x) throws SQLException {
+            stmt.setTimestamp(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery setObject(Object x) throws SQLException {
-            stmt.setObject(columnIndexForSetter++, x);
+        public Q setObject(Object x) throws SQLException {
+            stmt.setObject(parameterIndexForSetter++, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedQuery addBatch() throws SQLException {
+        public Q setObject(Object x, int sqlType) throws SQLException {
+            stmt.setObject(parameterIndexForSetter++, x, sqlType);
+
+            return (Q) this;
+        }
+
+        public Q setObject(Object x, int sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterIndexForSetter++, x, sqlType, scaleOrLength);
+
+            return (Q) this;
+        }
+
+        public Q setObject(Object x, SQLType sqlType) throws SQLException {
+            stmt.setObject(parameterIndexForSetter++, x, sqlType);
+
+            return (Q) this;
+        }
+
+        public Q setObject(Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterIndexForSetter++, x, sqlType, scaleOrLength);
+
+            return (Q) this;
+        }
+
+        public Q setParameters(List<?> parameters) throws SQLException {
+            N.checkArgNotNull(parameters);
+
+            for (int i = 0, len = parameters.size(); i < len; i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+
+            return (Q) this;
+        }
+
+        public Q addBatch() throws SQLException {
             stmt.addBatch();
 
-            return this;
+            return (Q) this;
+        }
+
+        public Try<Q> tried() throws SQLException {
+            return Try.of((Q) this);
         }
 
         public OptionalBoolean queryForBoolean() throws SQLException {
@@ -3407,6 +3456,24 @@ public final class JdbcUtil {
             }
         }
 
+        public long largeUpate() throws SQLException {
+            try {
+                return stmt.executeLargeUpdate();
+            } finally {
+                close();
+            }
+        }
+
+        public long[] largeBatchUpdate() throws SQLException {
+            try {
+                final long[] result = stmt.executeLargeBatch();
+                stmt.clearBatch();
+                return result;
+            } finally {
+                close();
+            }
+        }
+
         public boolean execute() throws SQLException {
             try {
                 return stmt.execute();
@@ -3415,29 +3482,275 @@ public final class JdbcUtil {
             }
         }
 
-        PreparedQuery onClose(Connection conn) {
+        Q onClose(Connection conn) {
             this.conn = conn;
 
-            return this;
+            return (Q) this;
         }
 
         @Override
         public void close() throws SQLException {
-            if (isClosed || stmt == null) {
+            if (isClosed) {
                 return;
             }
 
             isClosed = true;
-            stmt.clearParameters();
-            stmt.close();
 
-            if (conn != null) {
-                conn.close();
+            try {
+                stmt.clearParameters();
+                stmt.close();
+            } finally {
+                if (conn != null) {
+                    conn.close();
+                }
+            }
+        }
+    }
+
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}) is called.
+     * <br />
+     * Don't cache or reuse the instance of this class.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static class PreparedQuery extends AbstractPreparedQuery<PreparedQuery> {
+        PreparedQuery(java.sql.PreparedStatement stmt) {
+            super(stmt);
+        }
+    }
+
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}) is called.
+     * <br />
+     * Don't cache or reuse the instance of this class.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static class PreparedCallableQuery extends AbstractPreparedQuery<PreparedCallableQuery> {
+        private final java.sql.CallableStatement stmt;
+
+        PreparedCallableQuery(java.sql.CallableStatement stmt) {
+            super(stmt);
+            this.stmt = stmt;
+        }
+
+        public PreparedCallableQuery setBoolean(String parameterName, boolean x) throws SQLException {
+            stmt.setBoolean(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setByte(String parameterName, byte x) throws SQLException {
+            stmt.setByte(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setShort(String parameterName, short x) throws SQLException {
+            stmt.setShort(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setInt(String parameterName, int x) throws SQLException {
+            stmt.setInt(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setLong(String parameterName, long x) throws SQLException {
+            stmt.setLong(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setFloat(String parameterName, float x) throws SQLException {
+            stmt.setFloat(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setDouble(String parameterName, double x) throws SQLException {
+            stmt.setDouble(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setString(String parameterName, String x) throws SQLException {
+            stmt.setString(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setTime(String parameterName, java.sql.Time x) throws SQLException {
+            stmt.setTime(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setDate(String parameterName, java.sql.Date x) throws SQLException {
+            stmt.setDate(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+            stmt.setTimestamp(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setObject(String parameterName, Object x) throws SQLException {
+            stmt.setObject(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType) throws SQLException {
+            stmt.setObject(parameterName, x, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterName, x, sqlType, scaleOrLength);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setObject(String parameterName, Object x, SQLType sqlType) throws SQLException {
+            stmt.setObject(parameterName, x, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setObject(String parameterName, Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterName, x, sqlType, scaleOrLength);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setParameters(Map<String, Object> parameters) throws SQLException {
+            N.checkArgNotNull(parameters);
+
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                stmt.setObject(entry.getKey(), entry.getValue());
+            }
+
+            return this;
+        }
+
+        /**
+         * 
+         * @param parameterNames
+         * @param entity
+         * @return
+         * @throws SQLException
+         */
+        public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
+            N.checkArgNotNull(parameterNames);
+            N.checkArgNotNull(entity);
+
+            for (String parameterName : parameterNames) {
+                stmt.setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
+            }
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType, scale);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType, typeName);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType, scale);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
+            stmt.registerOutParameter(parameterIndex, sqlType, typeName);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, scale);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, typeName);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, scale);
+
+            return this;
+        }
+
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, typeName);
+
+            return this;
+        }
+
+        public <T, E extends Exception> T executeThen(CallableStatementGetter<T, E> getter) throws SQLException, E {
+            try {
+                stmt.execute();
+                return getter.apply(stmt);
+            } finally {
+                close();
             }
         }
     }
 
     public static interface RecordGetter<T, E extends Exception> {
+        public static final RecordGetter<Object, RuntimeException> SINGLE = new RecordGetter<Object, RuntimeException>() {
+            @Override
+            public Object apply(ResultSet rs) throws SQLException, RuntimeException {
+                return rs.getObject(1);
+            }
+        };
+
         public static final RecordGetter<List<Object>, RuntimeException> LIST = new RecordGetter<List<Object>, RuntimeException>() {
             @Override
             public List<Object> apply(ResultSet rs) throws SQLException, RuntimeException {
@@ -3486,6 +3799,13 @@ public final class JdbcUtil {
     }
 
     public static interface BiRecordGetter<T, E extends Exception> {
+        public static final BiRecordGetter<Object, RuntimeException> SINGLE = new BiRecordGetter<Object, RuntimeException>() {
+            @Override
+            public Object apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getObject(1);
+            }
+        };
+
         public static final BiRecordGetter<List<Object>, RuntimeException> LIST = new BiRecordGetter<List<Object>, RuntimeException>() {
             @Override
             public List<Object> apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
@@ -3545,5 +3865,9 @@ public final class JdbcUtil {
 
     public static interface BiRecordPredicate<E extends Exception> {
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+    }
+
+    public static interface CallableStatementGetter<T, E extends Exception> {
+        T apply(CallableStatement stmt) throws SQLException, E;
     }
 }
