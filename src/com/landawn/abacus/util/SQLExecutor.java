@@ -176,8 +176,6 @@ public final class SQLExecutor implements Closeable {
 
     static final StatementSetter DEFAULT_STATEMENT_SETTER = new DefaultStatementSetter();
 
-    static final ResultSetExtractor<?> DEFAULT_RESULT_SET_EXTRACTOR = new DefaultResultSetExtractor();
-
     static final ResultExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new ResultExtractor<RowIterator>() {
         @Override
         public RowIterator extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
@@ -1909,15 +1907,15 @@ public final class SQLExecutor implements Closeable {
 
     @SafeVarargs
     public final DataSet query(final String sql, final StatementSetter statementSetter, final Object... parameters) {
-        return query(sql, statementSetter, null, parameters);
+        return query(sql, statementSetter, ResultExtractor.DATA_SET, parameters);
     }
 
     //
     // public <T> T query(String sql, ResultSetExtractor<T> resultExtractor,
     // Object... parameters) {
-    // return query(null, sql, null, resultExtractor, null, parameters);
+    // return query(null, sql, null, DATA_SET_EXTRACTOR, null, parameters);
     // }
-    //
+
     @SafeVarargs
     public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultExtractor<T> resultExtractor, final Object... parameters) {
         return query(sql, statementSetter, resultExtractor, null, parameters);
@@ -1966,7 +1964,7 @@ public final class SQLExecutor implements Closeable {
 
     @SafeVarargs
     public final DataSet query(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
-        return query(conn, sql, statementSetter, null, parameters);
+        return query(conn, sql, statementSetter, ResultExtractor.DATA_SET, parameters);
     }
 
     @SafeVarargs
@@ -3146,7 +3144,7 @@ public final class SQLExecutor implements Closeable {
     @SuppressWarnings("unchecked")
     protected <T> ResultSetExtractor<T> checkResultSetExtractor(final NamedSQL namedSQL, ResultSetExtractor<T> resultExtractor) {
         if (resultExtractor == null) {
-            resultExtractor = (ResultSetExtractor<T>) DEFAULT_RESULT_SET_EXTRACTOR;
+            resultExtractor = (ResultSetExtractor<T>) ResultExtractor.DATA_SET;
         }
 
         return resultExtractor;
@@ -6070,6 +6068,9 @@ public final class SQLExecutor implements Closeable {
      *
      */
     public static interface ResultExtractor<T> {
+        public static final ResultExtractor<DataSet> DATA_SET = new AbstractResultExtractor<DataSet>() {
+        };
+
         public T extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException;
     }
 
