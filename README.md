@@ -247,6 +247,9 @@ compile 'com.landawn:abacus-android-se:1.3.9'
 ## User Guide:
 Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki).
 
+[Introduction to JDBC](https://www.javacodegeeks.com/2015/02/jdbc-tutorial.html)
+
+
 ## Recommended Java programming libraries/frameworks:
 [Guava](https://github.com/google/guava), [Abacus-StreamEx](https://github.com/landawn/streamex), [Kyro](https://github.com/EsotericSoftware/kryo), [snappy-java](https://github.com/xerial/snappy-java), [lz4-java](https://github.com/lz4/lz4-java), [Caffeine](https://github.com/ben-manes/caffeine), [Ehcache](http://www.ehcache.org/), [Chronicle-Map](https://github.com/OpenHFT/Chronicle-Map), [Sharding-JDBC](http://shardingjdbc.io/) ...[awesome-java](https://github.com/akullpp/awesome-java)
 
