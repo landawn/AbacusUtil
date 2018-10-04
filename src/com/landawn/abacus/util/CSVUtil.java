@@ -40,9 +40,6 @@ import java.util.Set;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.dataChannel.DataChannel;
-import com.landawn.abacus.dataChannel.ResultSetChannel;
-import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -994,7 +991,6 @@ public final class CSVUtil {
                 bw.write(IOUtil.LINE_SEPARATOR);
             }
 
-            final DataChannel dc = new ResultSetChannel(rs);
             final Type<Object>[] typeArray = new Type[columnCount];
             Type<Object> type = null;
             Object value = null;
@@ -1035,9 +1031,9 @@ public final class CSVUtil {
                         }
                     } else {
                         if (type.isSerializable()) {
-                            type.writeCharacter(bw, type.get(dc, i), config);
+                            type.writeCharacter(bw, type.get(rs, i + 1), config);
                         } else {
-                            strType.writeCharacter(bw, jsonParser.serialize(type.get(dc, i), config), config);
+                            strType.writeCharacter(bw, jsonParser.serialize(type.get(rs, i + 1), config), config);
                         }
                     }
                 }
@@ -1221,7 +1217,6 @@ public final class CSVUtil {
             }
 
             final Type<Object>[] columnTypes = columnTypeList.toArray(new Type[columnTypeList.size()]);
-            final DataChannel dc = new StatementDataChannel(stmt);
             final String[] strs = new String[columnTypeList.size()];
             String line = null;
             Type<Object> type = null;
@@ -1233,14 +1228,14 @@ public final class CSVUtil {
                     continue;
                 }
 
-                for (int i = 0, parameterIndex = 0, len = strs.length; i < len; i++) {
+                for (int i = 0, parameterIndex = 1, len = strs.length; i < len; i++) {
                     type = columnTypes[i];
 
                     if (type == null) {
                         continue;
                     }
 
-                    type.set(dc, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
+                    type.set(stmt, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
                 }
 
                 stmt.addBatch();
@@ -1453,7 +1448,6 @@ public final class CSVUtil {
             }
 
             final boolean isNullOrEmptyTypes = N.isNullOrEmpty(columnTypes);
-            final DataChannel dc = isNullOrEmptyTypes ? null : new StatementDataChannel(stmt);
             final String[] strs = new String[titles.length];
             Type<Object> type = null;
 
@@ -1469,14 +1463,14 @@ public final class CSVUtil {
                         stmt.setObject(i + 1, strs[i]);
                     }
                 } else {
-                    for (int i = 0, parameterIndex = 0, len = strs.length; i < len; i++) {
+                    for (int i = 0, parameterIndex = 1, len = strs.length; i < len; i++) {
                         type = columnTypes[i];
 
                         if (type == null) {
                             continue;
                         }
 
-                        type.set(dc, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
+                        type.set(stmt, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
                     }
                 }
 

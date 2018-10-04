@@ -52,7 +52,6 @@ import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Equal;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
-import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -6098,7 +6097,6 @@ public final class SQLExecutor implements Closeable {
                         "The count of parameter in sql is: " + namedSQL.getParameterCount() + ". But the specified parameters is null or empty");
             }
 
-            final StatementDataChannel sdc = new StatementDataChannel(stmt);
             Object[] a = null;
             int[] sqlTypes = null;
 
@@ -6150,10 +6148,10 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            setParameters(sdc, parameterCount, a, sqlTypes);
+            setParameters(stmt, parameterCount, a, sqlTypes);
         }
 
-        protected abstract void setParameters(StatementDataChannel sdc, int parameterCount, Object[] a, int[] sqlTypes) throws SQLException;
+        protected abstract void setParameters(PreparedStatement stmt, int parameterCount, Object[] a, int[] sqlTypes) throws SQLException;
 
         protected Object[] getArrayParameters(final NamedSQL namedSQL, final Object... parameters) {
             if ((parameters.length == 1) && (parameters[0] != null)) {
@@ -6253,14 +6251,14 @@ public final class SQLExecutor implements Closeable {
 
     static class DefaultStatementSetter extends AbstractStatementSetter {
         @Override
-        protected void setParameters(final StatementDataChannel sdc, final int parameterCount, final Object[] a, final int[] sqlTypes) throws SQLException {
+        protected void setParameters(final PreparedStatement stmt, final int parameterCount, final Object[] a, final int[] sqlTypes) throws SQLException {
             if (N.isNullOrEmpty(sqlTypes)) {
                 for (int i = 0; i < parameterCount; i++) {
-                    sdc.setObject(i, a[i]);
+                    stmt.setObject(i + 1, a[i]);
                 }
             } else {
                 for (int i = 0; i < parameterCount; i++) {
-                    sdc.setObject(i, a[i], sqlTypes[i]);
+                    stmt.setObject(i + 1, a[i], sqlTypes[i]);
                 }
             }
         }

@@ -18,7 +18,6 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.landawn.abacus.util.stream.Stream;
 
@@ -127,10 +126,6 @@ public abstract class Tuple {
         return new Tuple9<>(_1, _2, _3, _4, _5, _6, _7, _8, _9);
     }
 
-    public static <K, V> Tuple2<K, V> copyOf(final Map.Entry<K, V> entry) {
-        return new Tuple2<>(entry.getKey(), entry.getValue());
-    }
-
     public static <T extends Tuple> T from(final Object[] a) {
         final int len = a == null ? 0 : a.length;
 
@@ -173,9 +168,12 @@ public abstract class Tuple {
                 result = new Tuple8<>(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]);
                 break;
 
-            default:
+            case 9:
                 result = new Tuple9<>(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
                 break;
+
+            default:
+                throw new RuntimeException("Too many elements(" + a.length + ") to fill in Tuple.");
         }
 
         return (T) result;
@@ -224,9 +222,12 @@ public abstract class Tuple {
                 result = new Tuple8<>(iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next());
                 break;
 
-            default:
+            case 9:
                 result = new Tuple9<>(iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next(), iter.next());
                 break;
+
+            default:
+                throw new RuntimeException("Too many elements(" + c.size() + ") to fill in Tuple.");
         }
 
         return (T) result;

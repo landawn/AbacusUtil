@@ -16,10 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -49,48 +45,6 @@ public final class Triple<L, M, R> {
 
     public static <L, M, R> Triple<L, M, R> of(final L l, final M m, final R r) {
         return new Triple<>(l, m, r);
-    }
-
-    public static <T> Triple<T, T, T> from(T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return new Triple<>(null, null, null);
-        } else if (a.length == 1) {
-            return new Triple<>(a[0], null, null);
-        } else if (a.length == 2) {
-            return new Triple<>(a[0], a[1], null);
-        } else {
-            return new Triple<>(a[0], a[1], a[2]);
-        }
-    }
-
-    public static <T> Triple<T, T, T> from(Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return new Triple<>(null, null, null);
-        }
-
-        final List<T> list = c instanceof List ? (List<T>) c : null;
-
-        if (c.size() == 1) {
-            if (list != null) {
-                return new Triple<T, T, T>(list.get(0), null, null);
-            } else {
-                return new Triple<T, T, T>(c.iterator().next(), null, null);
-            }
-        } else if (c.size() == 2) {
-            if (list != null) {
-                return new Triple<T, T, T>(list.get(0), list.get(1), null);
-            } else {
-                final Iterator<? extends T> iter = c.iterator();
-                return new Triple<T, T, T>(iter.next(), iter.next(), null);
-            }
-        } else {
-            if (list != null) {
-                return new Triple<T, T, T>(list.get(0), list.get(1), list.get(2));
-            } else {
-                final Iterator<? extends T> iter = c.iterator();
-                return new Triple<T, T, T>(iter.next(), iter.next(), iter.next());
-            }
-        }
     }
 
     public L left() {
