@@ -16,6 +16,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Map;
+
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -42,6 +44,10 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
 
     public static <L, R> Pair<L, R> of(final L l, final R r) {
         return new Pair<>(l, r);
+    }
+
+    public static <K, V> Pair<K, V> from(final Map.Entry<K, V> entry) {
+        return new Pair<>(entry.getKey(), entry.getValue());
     }
 
     public L left() {

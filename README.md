@@ -245,9 +245,7 @@ compile 'com.landawn:abacus-android-se:1.3.9'
 
 
 ## User Guide:
-Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki).
-
-[Introduction to JDBC](https://www.javacodegeeks.com/2015/02/jdbc-tutorial.html)
+Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki), [Introduction to JDBC](https://www.javacodegeeks.com/2015/02/jdbc-tutorial.html).
 
 
 ## Recommended Java programming libraries/frameworks:
