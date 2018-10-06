@@ -9188,7 +9188,7 @@ public class RowDataSet implements DataSet, Cloneable {
         }
 
         @Override
-        public int pageLength() {
+        public int pageSize() {
             return pageSize;
         }
 
