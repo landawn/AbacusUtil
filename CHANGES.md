@@ -1,5 +1,7 @@
 ### 1.3.10
 
+* Add `PreparedQuery`.
+
 * Improvements and bug fix.
 
 
