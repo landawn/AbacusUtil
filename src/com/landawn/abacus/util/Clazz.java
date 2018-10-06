@@ -127,6 +127,16 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
+    public static <K, V> Class<List<Map<K, V>>> ofListOfMap(final Class<K> keyCls, final Class<V> valueCls) {
+        return (Class) List.class;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> Class<Set<Map<K, V>>> ofSetOfMap(final Class<K> keyCls, final Class<V> valueCls) {
+        return (Class) Set.class;
+    }
+
+    @SuppressWarnings("rawtypes")
     public static <T> Class<Set<T>> ofSet() {
         return (Class) Set.class;
     }

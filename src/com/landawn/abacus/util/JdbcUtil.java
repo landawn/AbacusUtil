@@ -796,7 +796,7 @@ public final class JdbcUtil {
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
      * <code>
-     * JdbcUtil.prepareQuery(dataSource.getConnection(), sql);
+     * JdbcUtil.prepareCallableQuery(dataSource.getConnection(), sql);
      * </code>
      * </pre>
      * 
@@ -2871,7 +2871,7 @@ public final class JdbcUtil {
         }
     }
 
-    static abstract class AbstractPreparedQuery<Q extends AbstractPreparedQuery<Q>> implements AutoCloseable {
+    static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
         final java.sql.PreparedStatement stmt;
         Connection conn;
         boolean isClosed = false;
@@ -3553,6 +3553,26 @@ public final class JdbcUtil {
             }
         }
 
+        public <T, E extends Exception> T executeThenApply(final StatementGetter<T, S, E> getter) throws SQLException, E {
+            try {
+                stmt.execute();
+
+                return getter.apply((S) stmt);
+            } finally {
+                close();
+            }
+        }
+
+        public <E extends Exception> void executeThenAccept(final StatementConsumer<S, E> consumer) throws SQLException, E {
+            try {
+                stmt.execute();
+
+                consumer.accept((S) stmt);
+            } finally {
+                close();
+            }
+        }
+
         Q onClose(Connection conn) {
             this.conn = conn;
 
@@ -3586,7 +3606,7 @@ public final class JdbcUtil {
      * @author haiyangl
      *
      */
-    public static class PreparedQuery extends AbstractPreparedQuery<PreparedQuery> {
+    public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
         PreparedQuery(java.sql.PreparedStatement stmt) {
             super(stmt);
         }
@@ -3600,7 +3620,7 @@ public final class JdbcUtil {
      * @author haiyangl
      *
      */
-    public static class PreparedCallableQuery extends AbstractPreparedQuery<PreparedCallableQuery> {
+    public static class PreparedCallableQuery extends AbstractPreparedQuery<CallableStatement, PreparedCallableQuery> {
         private final java.sql.CallableStatement stmt;
 
         PreparedCallableQuery(java.sql.CallableStatement stmt) {
@@ -3815,15 +3835,6 @@ public final class JdbcUtil {
 
             return this;
         }
-
-        public <T, E extends Exception> T executeThen(CallableStatementGetter<T, E> getter) throws SQLException, E {
-            try {
-                stmt.execute();
-                return getter.apply(stmt);
-            } finally {
-                close();
-            }
-        }
     }
 
     public static interface RecordGetter<T, E extends Exception> {
@@ -3966,7 +3977,11 @@ public final class JdbcUtil {
         void register(CallableStatement stmt, PreparedCallableQuery query) throws SQLException, E;
     }
 
-    public static interface CallableStatementGetter<T, E extends Exception> {
-        T apply(CallableStatement stmt) throws SQLException, E;
+    public static interface StatementGetter<T, S extends PreparedStatement, E extends Exception> {
+        T apply(S stmt) throws SQLException, E;
+    }
+
+    public static interface StatementConsumer<S extends PreparedStatement, E extends Exception> {
+        void accept(S stmt) throws SQLException, E;
     }
 }
