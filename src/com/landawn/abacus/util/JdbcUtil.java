@@ -2871,119 +2871,353 @@ public final class JdbcUtil {
         }
     }
 
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
+     * @author haiyangl
+     *
+     * @param <S>
+     * @param <Q>
+     */
     public static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
         final PreparedStatement stmt;
         Connection conn;
         boolean closeAfterExecution = true;
         boolean isClosed = false;
         Try.Runnable<SQLException> actionAfterClose;
-        int parameterIndexForSetter = 1;
 
         AbstractPreparedQuery(java.sql.PreparedStatement stmt) {
             this.stmt = stmt;
         }
 
-        public Q setBoolean(boolean x) throws SQLException {
-            stmt.setBoolean(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setBoolean(int parameterIndex, boolean x) throws SQLException {
+            stmt.setBoolean(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setByte(byte x) throws SQLException {
-            stmt.setByte(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setByte(int parameterIndex, byte x) throws SQLException {
+            stmt.setByte(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setShort(short x) throws SQLException {
-            stmt.setShort(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setShort(int parameterIndex, short x) throws SQLException {
+            stmt.setShort(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setInt(int x) throws SQLException {
-            stmt.setInt(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setInt(int parameterIndex, int x) throws SQLException {
+            stmt.setInt(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setLong(long x) throws SQLException {
-            stmt.setLong(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setLong(int parameterIndex, long x) throws SQLException {
+            stmt.setLong(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setFloat(float x) throws SQLException {
-            stmt.setFloat(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setFloat(int parameterIndex, float x) throws SQLException {
+            stmt.setFloat(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setDouble(double x) throws SQLException {
-            stmt.setDouble(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setDouble(int parameterIndex, double x) throws SQLException {
+            stmt.setDouble(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setString(String x) throws SQLException {
-            stmt.setString(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setString(int parameterIndex, String x) throws SQLException {
+            stmt.setString(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setTime(java.sql.Time x) throws SQLException {
-            stmt.setTime(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setTime(int parameterIndex, java.sql.Time x) throws SQLException {
+            stmt.setTime(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setDate(java.sql.Date x) throws SQLException {
-            stmt.setDate(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setDate(int parameterIndex, java.sql.Date x) throws SQLException {
+            stmt.setDate(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setTimestamp(java.sql.Timestamp x) throws SQLException {
-            stmt.setTimestamp(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setTimestamp(int parameterIndex, java.sql.Timestamp x) throws SQLException {
+            stmt.setTimestamp(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setObject(Object x) throws SQLException {
-            stmt.setObject(parameterIndexForSetter++, x);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setObject(int parameterIndex, Object x) throws SQLException {
+            stmt.setObject(parameterIndex, x);
 
             return (Q) this;
         }
 
-        public Q setObject(Object x, int sqlType) throws SQLException {
-            stmt.setObject(parameterIndexForSetter++, x, sqlType);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @param sqlType
+         * @return
+         * @throws SQLException
+         */
+        public Q setObject(int parameterIndex, Object x, int sqlType) throws SQLException {
+            stmt.setObject(parameterIndex, x, sqlType);
 
             return (Q) this;
         }
 
-        public Q setObject(Object x, int sqlType, int scaleOrLength) throws SQLException {
-            stmt.setObject(parameterIndexForSetter++, x, sqlType, scaleOrLength);
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param x
+         * @param sqlType
+         * @param scaleOrLength
+         * @return
+         * @throws SQLException
+         */
+        public Q setObject(int parameterIndex, Object x, int sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterIndex, x, sqlType, scaleOrLength);
 
             return (Q) this;
         }
 
-        public Q setObject(Object x, SQLType sqlType) throws SQLException {
-            stmt.setObject(parameterIndexForSetter++, x, sqlType);
+        /**
+         * 
+         * @param parameters
+         * @return
+         * @throws SQLException
+         */
+        public Q setObject(int parameterIndex, Object x, SQLType sqlType) throws SQLException {
+            stmt.setObject(parameterIndex, x, sqlType);
 
             return (Q) this;
         }
 
-        public Q setObject(Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
-            stmt.setObject(parameterIndexForSetter++, x, sqlType, scaleOrLength);
+        public Q setObject(int parameterIndex, Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
+            stmt.setObject(parameterIndex, x, sqlType, scaleOrLength);
 
             return (Q) this;
         }
 
-        public Q setParameters(List<?> parameters) throws SQLException {
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, String param1, String param2) throws SQLException {
+            stmt.setString(startParameterIndex++, param1);
+            stmt.setString(startParameterIndex++, param2);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @param param3
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, String param1, String param2, String param3) throws SQLException {
+            stmt.setString(startParameterIndex++, param1);
+            stmt.setString(startParameterIndex++, param2);
+            stmt.setString(startParameterIndex++, param3);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2) throws SQLException {
+            stmt.setObject(startParameterIndex++, param1);
+            stmt.setObject(startParameterIndex++, param2);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @param param3
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3) throws SQLException {
+            stmt.setObject(startParameterIndex++, param1);
+            stmt.setObject(startParameterIndex++, param2);
+            stmt.setObject(startParameterIndex++, param3);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4) throws SQLException {
+            stmt.setObject(startParameterIndex++, param1);
+            stmt.setObject(startParameterIndex++, param2);
+            stmt.setObject(startParameterIndex++, param3);
+            stmt.setObject(startParameterIndex++, param4);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5) throws SQLException {
+            stmt.setObject(startParameterIndex++, param1);
+            stmt.setObject(startParameterIndex++, param2);
+            stmt.setObject(startParameterIndex++, param3);
+            stmt.setObject(startParameterIndex++, param4);
+            stmt.setObject(startParameterIndex++, param5);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param parameters
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, List<?> parameters) throws SQLException {
             N.checkArgNotNull(parameters);
 
             for (int i = 0, len = parameters.size(); i < len; i++) {
-                stmt.setObject(i + 1, parameters.get(i));
+                stmt.setObject(startParameterIndex++, parameters.get(i));
             }
 
             return (Q) this;
@@ -3007,14 +3241,64 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        /**
+         * 
+         * @param direction one of <code>ResultSet.FETCH_FORWARD</code>,
+         * <code>ResultSet.FETCH_REVERSE</code>, or <code>ResultSet.FETCH_UNKNOWN</code>
+         * @return
+         * @throws SQLException
+         * @see {@link java.sql.Statement#setFetchDirection(int)}
+         */
+        public Q setFetchDirection(int direction) throws SQLException {
+            stmt.setFetchDirection(direction);
+
+            return (Q) this;
+        }
+
+        public Q setFetchSize(int rows) throws SQLException {
+            stmt.setFetchSize(rows);
+
+            return (Q) this;
+        }
+
+        public Q setMaxRows(int max) throws SQLException {
+            stmt.setMaxRows(max);
+
+            return (Q) this;
+        }
+
+        public Q setLargeMaxRows(long max) throws SQLException {
+            stmt.setLargeMaxRows(max);
+
+            return (Q) this;
+        }
+
+        public Q setMaxFieldSize(int max) throws SQLException {
+            stmt.setMaxFieldSize(max);
+
+            return (Q) this;
+        }
+
+        public Q setQueryTimeout(int seconds) throws SQLException {
+            stmt.setQueryTimeout(seconds);
+
+            return (Q) this;
+        }
+
         public Q closeAfterExecution(boolean closeAfterExecution) throws SQLException {
             this.closeAfterExecution = closeAfterExecution;
 
             return (Q) this;
         }
 
-        public Q doAfterClose(Try.Runnable<SQLException> actionAfterClose) throws SQLException {
-            this.actionAfterClose = actionAfterClose;
+        /**
+         * 
+         * @param closeHandler A task to execute after this {@code Query} is closed
+         * @return
+         * @throws SQLException
+         */
+        public Q onClose(Try.Runnable<SQLException> closeHandler) throws SQLException {
+            this.actionAfterClose = closeHandler;
 
             return (Q) this;
         }
@@ -3730,6 +4014,9 @@ public final class JdbcUtil {
      * Generally, don't cache or reuse the instance of this class, 
      * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
      * @author haiyangl
      *
      */
@@ -3747,6 +4034,9 @@ public final class JdbcUtil {
      * <br />
      * Generally, don't cache or reuse the instance of this class, 
      * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
      * 
      * @author haiyangl
      *
@@ -3883,36 +4173,82 @@ public final class JdbcUtil {
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @param scale
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @param typeName
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @param scale
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
             return this;
         }
 
+        /**
+         * 
+         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param sqlType
+         * @param typeName
+         * @return
+         * @throws SQLException
+         */
         public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
@@ -3976,6 +4312,20 @@ public final class JdbcUtil {
             }
         };
 
+        public static final RecordGetter<Object[], RuntimeException> ARRAY = new RecordGetter<Object[], RuntimeException>() {
+            @Override
+            public Object[] apply(ResultSet rs) throws SQLException, RuntimeException {
+                final int columnCount = rs.getMetaData().getColumnCount();
+                final Object[] result = new Object[columnCount];
+
+                for (int i = 1; i <= columnCount; i++) {
+                    result[i - 1] = rs.getObject(i);
+                }
+
+                return result;
+            }
+        };
+
         public static final RecordGetter<List<Object>, RuntimeException> LIST = new RecordGetter<List<Object>, RuntimeException>() {
             @Override
             public List<Object> apply(ResultSet rs) throws SQLException, RuntimeException {
@@ -4028,6 +4378,20 @@ public final class JdbcUtil {
             @Override
             public Object apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getObject(1);
+            }
+        };
+
+        public static final BiRecordGetter<Object[], RuntimeException> ARRAY = new BiRecordGetter<Object[], RuntimeException>() {
+            @Override
+            public Object[] apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                final int columnCount = columnLabels.size();
+                final Object[] result = new Object[columnCount];
+
+                for (int i = 1; i <= columnCount; i++) {
+                    result[i - 1] = rs.getObject(i);
+                }
+
+                return result;
             }
         };
 

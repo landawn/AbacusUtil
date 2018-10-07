@@ -33,7 +33,7 @@ class AndroidLogger extends AbstractLogger {
 
         try {
             Class.forName("android.util.Log");
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable e) {
             throw N.toRuntimeException(e);
         }
     }
