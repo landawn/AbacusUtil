@@ -10803,7 +10803,7 @@ public final class N {
                 N.listSizeField.set(list, a.length);
 
                 return list;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 N.isListElementDataFieldSettable = false;
             }
@@ -22422,7 +22422,7 @@ public final class N {
                     c.add(null);
                     c.remove(c.size() - 1);
                     return true;
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore;
                     isListElementDataFieldSettable = false;
                 }
@@ -27589,7 +27589,7 @@ public final class N {
 
                                     elementParser.accept(element);
                                 }
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 synchronized (errorHolder) {
                                     if (errorHolder.value() == null) {
                                         errorHolder.setValue(e);
@@ -27611,7 +27611,7 @@ public final class N {
                 if (errorHolder.value() == null && onComplete != null) {
                     try {
                         onComplete.run();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         errorHolder.setValue(e);
                     }
                 }
@@ -28025,7 +28025,7 @@ public final class N {
     public static <R> Nullable<R> tryOrEmpty(final Callable<R> cmd) {
         try {
             return Nullable.of(cmd.call());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return Nullable.<R> empty();
         }
     }
@@ -28040,7 +28040,7 @@ public final class N {
     public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T seed, final Try.Function<T, R, E> func) {
         try {
             return Nullable.of(func.apply(seed));
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return Nullable.<R> empty();
         }
     }

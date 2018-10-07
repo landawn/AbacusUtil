@@ -240,7 +240,7 @@ final class LittleEndianByteArray {
             if ("amd64".equals(arch) || "aarch64".equals(arch)) {
                 theGetter = ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN) ? UnsafeByteArray.UNSAFE_LITTLE_ENDIAN : UnsafeByteArray.UNSAFE_BIG_ENDIAN;
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             // ensure we really catch *everything*
         }
         byteArray = theGetter;

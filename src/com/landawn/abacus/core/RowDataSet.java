@@ -3131,7 +3131,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
                             try {
                                 jsonParser.serialize(bw, element, jsc);
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 // ignore.
 
                                 strType.writeCharacter(bw, N.toString(element), jsc);
@@ -3350,7 +3350,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
                             try {
                                 xmlParser.serialize(bw, element, xsc);
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 // ignore.
 
                                 strType.writeCharacter(bw, N.toString(element), xsc);
@@ -3557,7 +3557,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
                             try {
                                 strType.writeCharacter(bw, jsonParser.serialize(element, config), config);
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 // ignore.
 
                                 strType.writeCharacter(bw, N.toString(element), config);

@@ -332,7 +332,7 @@ public class Builder<T> {
     //    public <R> Nullable<R> tryOrEmpty(final Try.Function<? super T, R, ? extends Exception> cmd) {
     //        try {
     //            return Nullable.of(cmd.apply(val));
-    //        } catch (Throwable e) {
+    //        } catch (Exception e) {
     //            return Nullable.<R> empty();
     //        }
     //    }

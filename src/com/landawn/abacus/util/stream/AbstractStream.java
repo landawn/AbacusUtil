@@ -2643,14 +2643,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             if (stmt instanceof PreparedStatement) {
                 try {
                     ((PreparedStatement) stmt).clearParameters();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     logger.error("Failed to clear parameters", e);
                 }
             }
 
             try {
                 stmt.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to close Statement", e);
             }
         }

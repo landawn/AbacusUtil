@@ -2103,7 +2103,7 @@ public final class CassandraExecutor implements Closeable {
             } else {
                 try {
                     values[i] = N.as(javaClass, values[i]);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore.
                 }
             }

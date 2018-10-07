@@ -1668,7 +1668,7 @@ public abstract class ShortStream
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }

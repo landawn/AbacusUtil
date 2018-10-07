@@ -38,7 +38,7 @@ class Log4Jv2Logger extends AbstractLogger {
     // try {
     // URL url = Loader.getResource(LOG4J_XML);
     // temp = (url != null) && (url.getFile() != null);
-    // } catch (Throwable e) {
+    // } catch (Exception e) {
     // // ignore
     // }
     //

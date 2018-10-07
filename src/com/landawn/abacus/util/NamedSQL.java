@@ -222,7 +222,7 @@ public final class NamedSQL {
                         isNamedParametersByNum = false;
                         break;
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore;
                     isNamedParametersByNum = false;
                     break;

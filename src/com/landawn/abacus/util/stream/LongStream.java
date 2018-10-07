@@ -1876,7 +1876,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }

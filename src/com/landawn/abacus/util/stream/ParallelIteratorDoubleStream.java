@@ -333,7 +333,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
                             action.accept(next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -412,7 +412,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
                             result = op.applyAsDouble(result, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -479,7 +479,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
                             result = accumulator.applyAsDouble(result, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -541,7 +541,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
                             accumulator.accept(container, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -602,7 +602,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -645,7 +645,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -688,7 +688,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -738,7 +738,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -786,7 +786,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 }
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -834,7 +834,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }

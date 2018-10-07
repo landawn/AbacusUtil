@@ -2484,7 +2484,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(c);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }
@@ -2695,7 +2695,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -2734,7 +2734,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -2816,7 +2816,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -2855,7 +2855,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -2937,7 +2937,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -2976,7 +2976,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3058,7 +3058,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -3097,7 +3097,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3179,7 +3179,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -3218,7 +3218,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3300,7 +3300,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -3339,7 +3339,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3440,7 +3440,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -3479,7 +3479,7 @@ public final class Array {
 
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3593,7 +3593,7 @@ public final class Array {
                         }
 
                         Arrays.sort(a, start, end, comparator);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(errorHolder, e);
                     } finally {
                         activeThreadNum.decrementAndGet();
@@ -3633,7 +3633,7 @@ public final class Array {
                                 merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left,
                                         comparator);
 
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 setError(errorHolder, e);
                             } finally {
                                 activeThreadNum.decrementAndGet();
@@ -3703,7 +3703,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(c);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }
@@ -4423,7 +4423,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(list);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }

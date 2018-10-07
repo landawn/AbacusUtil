@@ -2390,7 +2390,7 @@ public abstract class Stream<T>
 
             try {
                 array = (T[]) listElementDataField.get(c);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 isListElementDataFieldGettable = false;
             }
@@ -4284,7 +4284,7 @@ public abstract class Stream<T>
                                 }
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     } finally {
                         threadCounter.decrementAndGet();
@@ -4306,7 +4306,7 @@ public abstract class Stream<T>
                             }
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 }
 
@@ -7340,7 +7340,7 @@ public abstract class Stream<T>
 
                             return false;
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     }
 
@@ -7453,7 +7453,7 @@ public abstract class Stream<T>
 
                             return false;
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     }
 
@@ -7694,7 +7694,7 @@ public abstract class Stream<T>
 
                                 return false;
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e, onGoing);
                         }
 
@@ -7994,7 +7994,7 @@ public abstract class Stream<T>
                         while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                             nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     }
 
@@ -8118,7 +8118,7 @@ public abstract class Stream<T>
                         while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
                             nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     }
 
@@ -8406,7 +8406,7 @@ public abstract class Stream<T>
                             while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
                                 next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e, onGoing);
                         }
 
@@ -8897,7 +8897,7 @@ public abstract class Stream<T>
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -8938,7 +8938,7 @@ public abstract class Stream<T>
                             // continue
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterA.decrementAndGet();
@@ -8963,7 +8963,7 @@ public abstract class Stream<T>
                             // continue
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterB.decrementAndGet();
@@ -8993,7 +8993,7 @@ public abstract class Stream<T>
                             // continue
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterA.decrementAndGet();
@@ -9018,7 +9018,7 @@ public abstract class Stream<T>
                             // continue
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterB.decrementAndGet();
@@ -9043,7 +9043,7 @@ public abstract class Stream<T>
                             // continue
                         }
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterC.decrementAndGet();
@@ -9081,7 +9081,7 @@ public abstract class Stream<T>
                                 // continue
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e, onGoing);
                     } finally {
                         count.decrementAndGet();

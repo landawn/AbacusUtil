@@ -424,7 +424,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                             while (cursor < to && eHolder.value() == null) {
                                 action.accept(elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -452,7 +452,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
 
                                 action.accept(next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -532,7 +532,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                             while (cursor < to && eHolder.value() == null) {
                                 result = op.applyAsInt(result, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -563,7 +563,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
 
                                 result = op.applyAsInt(result, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -626,7 +626,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                             while (cursor < to && eHolder.value() == null) {
                                 result = accumulator.applyAsInt(result, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -666,7 +666,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
 
                                 result = accumulator.applyAsInt(result, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -729,7 +729,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                             while (cursor < to && eHolder.value() == null) {
                                 accumulator.accept(container, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -760,7 +760,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
 
                                 accumulator.accept(container, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -1011,7 +1011,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1042,7 +1042,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1085,7 +1085,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1116,7 +1116,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1159,7 +1159,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1190,7 +1190,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1242,7 +1242,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1278,7 +1278,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1330,7 +1330,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1366,7 +1366,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1417,7 +1417,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1452,7 +1452,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }

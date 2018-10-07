@@ -45,7 +45,7 @@ public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, 
                     && ClassUtil.forClass("com.landawn.abacus.util.stream.ParallelIteratorIntStream") != null) {
                 tmp = true;
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // ignore.
         }
 

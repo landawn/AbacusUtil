@@ -693,7 +693,7 @@ public final class JdbcUtil {
         if (rs != null) {
             try {
                 rs.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to close ResultSet", e);
             }
         }
@@ -702,14 +702,14 @@ public final class JdbcUtil {
             if (stmt instanceof PreparedStatement) {
                 try {
                     ((PreparedStatement) stmt).clearParameters();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     logger.error("Failed to clear parameters", e);
                 }
             }
 
             try {
                 stmt.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to close Statement", e);
             }
         }
@@ -717,7 +717,7 @@ public final class JdbcUtil {
         if (conn != null) {
             try {
                 conn.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to close Connection", e);
             }
         }
@@ -2704,7 +2704,7 @@ public final class JdbcUtil {
 
             try {
                 method = ClassUtil.getDeclaredMethod(sqlDataSource.getClass(), "close");
-            } catch (Throwable e) {
+            } catch (Exception e) {
 
             }
 
@@ -2803,7 +2803,7 @@ public final class JdbcUtil {
             if (closeMethod != null) {
                 try {
                     ClassUtil.invokeMethod(sqlDataSource, closeMethod);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore.
                 }
             }
@@ -2871,10 +2871,12 @@ public final class JdbcUtil {
         }
     }
 
-    static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
-        final java.sql.PreparedStatement stmt;
+    public static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
+        final PreparedStatement stmt;
         Connection conn;
+        boolean closeAfterExecution = true;
         boolean isClosed = false;
+        Try.Runnable<SQLException> actionAfterClose;
         int parameterIndexForSetter = 1;
 
         AbstractPreparedQuery(java.sql.PreparedStatement stmt) {
@@ -2987,14 +2989,14 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
-        public <E extends Exception> Q setParameters(StatementSetter<E> setter) throws SQLException, E {
-            setter.set(stmt);
+        public <E extends Exception> Q setParameters(StatementSetter<S, E> setter) throws SQLException, E {
+            setter.set((S) stmt);
 
             return (Q) this;
         }
 
-        public <E extends Exception> Q setParameters(BiStatementSetter<E> setter) throws SQLException, E {
-            setter.set(stmt, (PreparedQuery) this);
+        public <E extends Exception> Q setParameters(BiStatementSetter<S, Q, E> setter) throws SQLException, E {
+            setter.set((S) stmt, (Q) this);
 
             return (Q) this;
         }
@@ -3005,111 +3007,149 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q closeAfterExecution(boolean closeAfterExecution) throws SQLException {
+            this.closeAfterExecution = closeAfterExecution;
+
+            return (Q) this;
+        }
+
+        public Q doAfterClose(Try.Runnable<SQLException> actionAfterClose) throws SQLException {
+            this.actionAfterClose = actionAfterClose;
+
+            return (Q) this;
+        }
+
         public Try<Q> tried() throws SQLException {
             return Try.of((Q) this);
         }
 
         public OptionalBoolean queryForBoolean() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalBoolean.of(rs.getBoolean(1)) : OptionalBoolean.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalChar queryForChar() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalChar.of(Character.valueOf((char) rs.getInt(1))) : OptionalChar.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalByte queryForByte() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalByte.of(rs.getByte(1)) : OptionalByte.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalShort queryForShort() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalShort.of(rs.getShort(1)) : OptionalShort.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalInt queryForInt() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalInt.of(rs.getInt(1)) : OptionalInt.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalLong queryForLong() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalLong.of(rs.getLong(1)) : OptionalLong.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalFloat queryForFloat() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalFloat.of(rs.getFloat(1)) : OptionalFloat.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public OptionalDouble queryForDouble() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? OptionalDouble.of(rs.getDouble(1)) : OptionalDouble.empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public Nullable<String> queryForString() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getString(1)) : Nullable.<String> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public Nullable<java.sql.Date> queryForDate() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getDate(1)) : Nullable.<java.sql.Date> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public Nullable<java.sql.Time> queryForTime() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getTime(1)) : Nullable.<java.sql.Time> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public Nullable<java.sql.Timestamp> queryForTimestamp() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getTimestamp(1)) : Nullable.<java.sql.Timestamp> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T> Nullable<T> queryForSingleResult(Class<T> targetClass) throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(N.as(targetClass, rs.getObject(1))) : Nullable.<T> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
@@ -3151,6 +3191,8 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <T> Optional<T> queryForEntity(final Class<T> targetClass) throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
@@ -3159,27 +3201,33 @@ public final class JdbcUtil {
                     return Optional.empty();
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception> Nullable<T> queryForEntity(RecordGetter<T, E> resultGetter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(resultGetter.apply(rs)) : Nullable.<T> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception> Nullable<T> queryForEntity(BiRecordGetter<T, E> resultGetter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(resultGetter.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Nullable.<T> empty();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T> List<T> find(final Class<T> targetClass) throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 final List<T> result = new ArrayList<>();
@@ -3190,11 +3238,13 @@ public final class JdbcUtil {
 
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception> List<T> find(RecordGetter<T, E> recordGetter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<T> result = new ArrayList<>();
 
@@ -3204,12 +3254,14 @@ public final class JdbcUtil {
 
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception, E2 extends Exception> List<T> find(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<T> result = new ArrayList<>();
 
@@ -3221,11 +3273,13 @@ public final class JdbcUtil {
 
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception> List<T> find(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 final List<T> result = new ArrayList<>();
@@ -3236,12 +3290,14 @@ public final class JdbcUtil {
 
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception, E2 extends Exception> List<T> find(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 final List<T> result = new ArrayList<>();
@@ -3254,47 +3310,57 @@ public final class JdbcUtil {
 
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public DataSet query() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return JdbcUtil.extractData(rs);
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public boolean exists() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> void ifExists(RecordConsumer<E> recordConsumer) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs);
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> void ifExists(BiRecordConsumer<E> recordConsumer) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public int count() throws SQLException {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 int cnt = 0;
 
@@ -3304,11 +3370,13 @@ public final class JdbcUtil {
 
                 return cnt;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> int count(RecordPredicate<E> recordFilter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 int cnt = 0;
 
@@ -3320,11 +3388,13 @@ public final class JdbcUtil {
 
                 return cnt;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> int count(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 int cnt = 0;
@@ -3337,13 +3407,14 @@ public final class JdbcUtil {
 
                 return cnt;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> boolean anyMatch(RecordPredicate<E> recordFilter) throws SQLException, E {
-            try (ResultSet rs = stmt.executeQuery()) {
+            assertNotClosed();
 
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
                         return true;
@@ -3352,11 +3423,13 @@ public final class JdbcUtil {
 
                 return false;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> boolean anyMatch(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
@@ -3368,13 +3441,14 @@ public final class JdbcUtil {
 
                 return false;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> boolean allMatch(RecordPredicate<E> recordFilter) throws SQLException, E {
-            try (ResultSet rs = stmt.executeQuery()) {
+            assertNotClosed();
 
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs) == false) {
                         return false;
@@ -3383,11 +3457,13 @@ public final class JdbcUtil {
 
                 return true;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> boolean allMatch(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
@@ -3399,7 +3475,7 @@ public final class JdbcUtil {
 
                 return true;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
@@ -3412,6 +3488,8 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void forEach(RecordConsumer<E> recordConsumer) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
 
                 while (rs.next()) {
@@ -3419,12 +3497,14 @@ public final class JdbcUtil {
                 }
 
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception, E2 extends Exception> void forEach(RecordPredicate<E> recordFilter, RecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
 
                 while (rs.next()) {
@@ -3433,11 +3513,13 @@ public final class JdbcUtil {
                     }
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> void forEach(BiRecordConsumer<E> recordConsumer) throws SQLException, E {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
@@ -3446,12 +3528,14 @@ public final class JdbcUtil {
                 }
 
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception, E2 extends Exception> void forEach(BiRecordPredicate<E> recordFilter, BiRecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
+            assertNotClosed();
+
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
@@ -3462,7 +3546,7 @@ public final class JdbcUtil {
                 }
 
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
@@ -3472,6 +3556,7 @@ public final class JdbcUtil {
          * @return
          */
         public <T> Optional<T> insert() throws SQLException {
+            assertNotClosed();
 
             try {
                 stmt.executeUpdate();
@@ -3480,7 +3565,7 @@ public final class JdbcUtil {
                     return rs.next() ? Optional.of((T) rs.getObject(1)) : Optional.<T> empty();
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
@@ -3490,6 +3575,8 @@ public final class JdbcUtil {
          * @return
          */
         public <T> List<T> batchInsert() throws SQLException {
+            assertNotClosed();
+
             try {
                 stmt.executeBatch();
 
@@ -3505,71 +3592,85 @@ public final class JdbcUtil {
                     stmt.clearBatch();
                 }
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public int upate() throws SQLException {
+            assertNotClosed();
+
             try {
                 return stmt.executeUpdate();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public int[] batchUpdate() throws SQLException {
+            assertNotClosed();
+
             try {
                 final int[] result = stmt.executeBatch();
                 stmt.clearBatch();
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public long largeUpate() throws SQLException {
+            assertNotClosed();
+
             try {
                 return stmt.executeLargeUpdate();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public long[] largeBatchUpdate() throws SQLException {
+            assertNotClosed();
+
             try {
                 final long[] result = stmt.executeLargeBatch();
                 stmt.clearBatch();
                 return result;
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public boolean execute() throws SQLException {
+            assertNotClosed();
+
             try {
                 return stmt.execute();
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <T, E extends Exception> T executeThenApply(final StatementGetter<T, S, E> getter) throws SQLException, E {
+            assertNotClosed();
+
             try {
                 stmt.execute();
 
                 return getter.apply((S) stmt);
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
         public <E extends Exception> void executeThenAccept(final StatementConsumer<S, E> consumer) throws SQLException, E {
+            assertNotClosed();
+
             try {
                 stmt.execute();
 
                 consumer.accept((S) stmt);
             } finally {
-                close();
+                closeAfterExecutionIfAllowed();
             }
         }
 
@@ -3592,16 +3693,42 @@ public final class JdbcUtil {
                 stmt.close();
             } finally {
                 if (conn != null) {
-                    conn.close();
+                    if (actionAfterClose == null) {
+                        conn.close();
+                    } else {
+                        try {
+                            conn.close();
+                        } finally {
+                            actionAfterClose.run();
+                        }
+                    }
+                } else if (actionAfterClose != null) {
+                    actionAfterClose.run();
                 }
+            }
+        }
+
+        private void closeAfterExecutionIfAllowed() throws SQLException {
+            if (closeAfterExecution) {
+                close();
+            }
+        }
+
+        private void assertNotClosed() {
+            if (isClosed) {
+                throw new IllegalStateException();
             }
         }
     }
 
     /**
-     * The backed {@code PreparedStatement/CallableStatement} will be closed after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}) is called.
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
      * <br />
-     * Don't cache or reuse the instance of this class.
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
      * @author haiyangl
      *
@@ -3613,9 +3740,13 @@ public final class JdbcUtil {
     }
 
     /**
-     * The backed {@code PreparedStatement/CallableStatement} will be closed after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}) is called.
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
      * <br />
-     * Don't cache or reuse the instance of this class.
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
      * @author haiyangl
      *
@@ -3808,19 +3939,19 @@ public final class JdbcUtil {
 
         public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType);
-        
+
             return this;
         }
 
         public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, scale);
-        
+
             return this;
         }
 
         public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, typeName);
-        
+
             return this;
         }
 
@@ -3961,12 +4092,20 @@ public final class JdbcUtil {
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
     }
 
-    public static interface StatementSetter<E extends Exception> {
-        void set(PreparedStatement stmt) throws SQLException, E;
+    public static interface StatementSetter<S extends PreparedStatement, E extends Exception> {
+        void set(S stmt) throws SQLException, E;
     }
 
-    public static interface BiStatementSetter<E extends Exception> {
-        void set(PreparedStatement stmt, PreparedQuery query) throws SQLException, E;
+    public static interface BiStatementSetter<S extends PreparedStatement, Q extends AbstractPreparedQuery<?, ?>, E extends Exception> {
+        void set(S stmt, Q query) throws SQLException, E;
+    }
+
+    public static interface StatementGetter<T, S extends PreparedStatement, E extends Exception> {
+        T apply(S stmt) throws SQLException, E;
+    }
+
+    public static interface StatementConsumer<S extends PreparedStatement, E extends Exception> {
+        void accept(S stmt) throws SQLException, E;
     }
 
     public static interface OutParameterRegister<E extends Exception> {
@@ -3977,11 +4116,4 @@ public final class JdbcUtil {
         void register(CallableStatement stmt, PreparedCallableQuery query) throws SQLException, E;
     }
 
-    public static interface StatementGetter<T, S extends PreparedStatement, E extends Exception> {
-        T apply(S stmt) throws SQLException, E;
-    }
-
-    public static interface StatementConsumer<S extends PreparedStatement, E extends Exception> {
-        void accept(S stmt) throws SQLException, E;
-    }
 }

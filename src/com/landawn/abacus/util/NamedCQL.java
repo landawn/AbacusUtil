@@ -217,7 +217,7 @@ public final class NamedCQL {
                         isNamedParametersByNum = false;
                         break;
                     }
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore;
                     isNamedParametersByNum = false;
                     break;

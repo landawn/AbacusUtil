@@ -1577,7 +1577,7 @@ public abstract class FloatStream
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }

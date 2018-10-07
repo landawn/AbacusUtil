@@ -1661,7 +1661,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             action.accept(next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -1728,7 +1728,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             action.accept(first, second);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -1806,7 +1806,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             action.accept(first, second, third);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -1857,7 +1857,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             Collectors.merge(map, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -1943,7 +1943,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             downstreamAccumulator.accept(value, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2034,7 +2034,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             map.put(keyExtractor.apply(next), valueMapper.apply(next));
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2117,7 +2117,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             result = accumulator.apply(result, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2175,7 +2175,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             result = result == NONE ? next : accumulator.apply(result, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2237,7 +2237,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             result = accumulator.apply(result, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2297,7 +2297,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             accumulator.accept(container, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2361,7 +2361,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
                             accumulator.accept(container, next);
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
 
@@ -2459,7 +2459,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2502,7 +2502,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2545,7 +2545,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2595,7 +2595,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2643,7 +2643,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2691,7 +2691,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 break;
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
@@ -2830,7 +2830,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     //                        }
     //
     //                        result.addAndGet(cnt);
-    //                    } catch (Throwable e) {
+    //                    } catch (Exception e) {
     //                        setError(eHolder, e);
     //                    }
     //                }

@@ -143,7 +143,7 @@ public class ProgressBarTask {
         synchronized (this) {
             try {
                 future.cancel(true);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore.
             } finally {
                 if (progressBar != null) {

@@ -2331,7 +2331,7 @@ public class Collectors {
                         ((Collection) c).clear();
 
                         isCollection.setTrue();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         // ignore
                     }
                 }

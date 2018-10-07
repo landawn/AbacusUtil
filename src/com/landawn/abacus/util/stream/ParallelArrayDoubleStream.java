@@ -322,7 +322,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                             while (cursor < to && eHolder.value() == null) {
                                 action.accept(elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -349,7 +349,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
 
                                 action.accept(next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -429,7 +429,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                             while (cursor < to && eHolder.value() == null) {
                                 result = op.applyAsDouble(result, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -459,7 +459,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
 
                                 result = op.applyAsDouble(result, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -522,7 +522,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                             while (cursor < to && eHolder.value() == null) {
                                 result = accumulator.applyAsDouble(result, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -561,7 +561,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
 
                                 result = accumulator.applyAsDouble(result, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -624,7 +624,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                             while (cursor < to && eHolder.value() == null) {
                                 accumulator.accept(container, elements[cursor++]);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -654,7 +654,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
 
                                 accumulator.accept(container, next);
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
 
@@ -1012,7 +1012,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1042,7 +1042,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1085,7 +1085,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1115,7 +1115,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1158,7 +1158,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1188,7 +1188,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1240,7 +1240,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1276,7 +1276,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1328,7 +1328,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1364,7 +1364,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1415,7 +1415,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }
@@ -1450,7 +1450,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                                     break;
                                 }
                             }
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             setError(eHolder, e);
                         }
                     }

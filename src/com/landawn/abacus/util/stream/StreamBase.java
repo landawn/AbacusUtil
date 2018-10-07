@@ -730,7 +730,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         for (Runnable closeHandler : closeHandlers) {
             try {
                 closeHandler.run();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 if (ex == null) {
                     ex = e;
                 } else {
@@ -750,7 +750,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         for (IteratorEx<?> iter : iters) {
             try {
                 iter.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 if (ex == null) {
                     ex = e;
                 } else {
@@ -1115,7 +1115,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
                 for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> s : c) {
                     try {
                         s.close();
-                    } catch (Throwable throwable) {
+                    } catch (Exception throwable) {
                         if (runtimeException == null) {
                             runtimeException = N.toRuntimeException(throwable);
                         } else {
@@ -1165,7 +1165,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
             try {
                 return (T[]) listElementDataField.get(c);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore;
                 isListElementDataFieldGettable = false;
             }

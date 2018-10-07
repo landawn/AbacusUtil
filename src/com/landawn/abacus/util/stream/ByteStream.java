@@ -1660,7 +1660,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }

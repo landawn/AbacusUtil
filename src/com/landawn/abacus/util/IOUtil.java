@@ -108,7 +108,7 @@ public final class IOUtil {
                 }
             }
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // e.printStackTrace();
             // ignore
         }
@@ -133,13 +133,13 @@ public final class IOUtil {
                         return InetAddress.getLocalHost().getHostName();
                     }
                 }).get();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to get host name");
             }
         } else {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to get host name");
             }
         }
@@ -2427,7 +2427,7 @@ public final class IOUtil {
         for (AutoCloseable closeable : c) {
             try {
                 close(closeable);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 if (ex == null) {
                     ex = e;
                 } else {
@@ -2445,7 +2445,7 @@ public final class IOUtil {
         if (closeable != null) {
             try {
                 closeable.close();
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore
                 logger.error("Failed to close", e);
             }

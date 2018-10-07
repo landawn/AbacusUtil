@@ -904,12 +904,12 @@ public final class CodeGenerator {
             try {
                 try {
                     ClassUtil.forClass(className);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     className = attr.indexOf('.') > 0 ? attr : pkgName + "." + attr;
                 }
 
                 extendedClass = ClassUtil.forClass(className);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore for second time run.
                 if (logger.isWarnEnabled()) {
                     logger.warn("No class found by name: " + className + ". Please run it again after the generated codes are compiled");
@@ -928,12 +928,12 @@ public final class CodeGenerator {
                 try {
                     try {
                         ClassUtil.forClass(className);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         className = str.indexOf('.') > 0 ? str : pkgName + "." + str;
                     }
 
                     implementedInterfaces.add(ClassUtil.forClass(className));
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     // ignore for second time run.
 
                     if (logger.isWarnEnabled()) {
@@ -1790,14 +1790,14 @@ public final class CodeGenerator {
                         Class<?> eleClass = null;
                         try {
                             eleClass = ClassUtil.forClass(attrs.getTypeParameters()[0]);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore.
                         }
 
                         if (eleClass == null && N.notNullOrEmpty(packageName)) {
                             try {
                                 eleClass = ClassUtil.forClass(packageName + "." + attrs.getTypeParameters()[0]);
-                            } catch (Throwable e) {
+                            } catch (Exception e) {
                                 // ignore.
                             }
 
@@ -1814,13 +1814,13 @@ public final class CodeGenerator {
 
                         try {
                             keyClass = ClassUtil.forClass(attrs.getTypeParameters()[0]);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore.
                         }
 
                         try {
                             valueClass = ClassUtil.forClass(attrs.getTypeParameters()[1]);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             // ignore.
                         }
 
@@ -1832,7 +1832,7 @@ public final class CodeGenerator {
                                     if (keyClass != null) {
                                         keyTypeName = keyClass.getCanonicalName();
                                     }
-                                } catch (Throwable e) {
+                                } catch (Exception e) {
                                     // ignore.
                                 }
                             }
@@ -1844,7 +1844,7 @@ public final class CodeGenerator {
                                     if (valueClass != null) {
                                         valueTypeName = valueClass.getCanonicalName();
                                     }
-                                } catch (Throwable e) {
+                                } catch (Exception e) {
                                     // ignore.
                                 }
                             }
@@ -3700,7 +3700,7 @@ public final class CodeGenerator {
                         fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
                     }
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.error("Failed to generate fluent set methods for parent properties", e);
             }
         }

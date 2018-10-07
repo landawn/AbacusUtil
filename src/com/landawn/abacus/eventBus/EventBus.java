@@ -306,7 +306,7 @@ public class EventBus {
                     if (sub.isMyEvent(entry.getKey().getClass(), entry.getValue())) {
                         try {
                             dispatch(sub, entry.getKey());
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             logger.error("Failed to post sticky event: " + N.toString(entry.getValue()) + " to subscriber: " + N.toString(sub), e);
                         }
                     }
@@ -481,7 +481,7 @@ public class EventBus {
                 if (sub.isMyEvent(cls, eventId)) {
                     try {
                         dispatch(sub, event);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         logger.error("Failed to post event: " + N.toString(event) + " to subscriber: " + N.toString(sub), e);
                     }
                 }
@@ -629,7 +629,7 @@ public class EventBus {
         return threadMode == null || threadMode == ThreadMode.DEFAULT || threadMode == ThreadMode.THREAD_POOL_EXECUTOR;
     }
 
-    protected void dispatch(final SubIdentifier identifier, final Object event) throws Throwable {
+    protected void dispatch(final SubIdentifier identifier, final Object event) {
         switch (identifier.threadMode) {
             case DEFAULT:
                 post(identifier, event);
@@ -687,7 +687,7 @@ public class EventBus {
 
                 sub.method.invoke(sub.obj, event);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error("Failed to post event: " + N.toString(event) + " to subscriber: " + N.toString(sub), e);
         }
     }

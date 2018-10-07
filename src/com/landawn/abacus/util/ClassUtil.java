@@ -1014,7 +1014,7 @@ public final class ClassUtil {
                                             || (clazz.getPackage().getName().startsWith(pkgName) && isRecursive)) && predicate.test(clazz)) {
                                         classes.add(clazz);
                                     }
-                                } catch (Throwable e) {
+                                } catch (Exception e) {
                                     if (logger.isWarnEnabled()) {
                                         logger.warn("ClassNotFoundException loading " + className);
                                     }

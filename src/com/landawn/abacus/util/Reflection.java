@@ -43,7 +43,7 @@ public final class Reflection<T> {
             ClassUtil.forClass("com.esotericsoftware.reflectasm.ConstructorAccess");
             ClassUtil.forClass("com.esotericsoftware.reflectasm.FieldAccess");
             ClassUtil.forClass("com.esotericsoftware.reflectasm.MethodAccess");
-        } catch (Throwable e) {
+        } catch (Exception e) {
             tmp = false;
         }
 

@@ -126,7 +126,7 @@ public final class SQLTransaction implements Transaction {
                     rollback();
 
                     rollback = true;
-                } catch (Throwable e2) {
+                } catch (Exception e2) {
                     // ignore;
                     logger.error("Failed to roll back after error happened during committing", e2);
                 }

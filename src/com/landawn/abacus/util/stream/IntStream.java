@@ -2047,7 +2047,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
                                 queue.offer(c);
                             }
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         setError(eHolder, e);
                     }
                 }
