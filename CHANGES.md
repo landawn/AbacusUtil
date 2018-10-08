@@ -1,3 +1,12 @@
+### 1.3.11
+
+* Refactoring: `PreparedQuery`.
+
+* Rename `queryForEntity` to `findFirst`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.10
 
 * Add `PreparedQuery`.
