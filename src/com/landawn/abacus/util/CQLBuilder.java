@@ -1140,10 +1140,6 @@ public abstract class CQLBuilder {
         return this;
     }
 
-    public <T, EX extends Exception> T apply(final Try.Function<? super CP, T, EX> func) throws EX {
-        return func.apply(this.pair());
-    }
-
     /**
      * This CQLBuilder will be closed after <code>cql()</code> is called.
      * 
@@ -1178,179 +1174,6 @@ public abstract class CQLBuilder {
     public CP pair() {
         return new CP(cql(), parameters);
     }
-
-    //    /**
-    //     * 
-    //     * @param cassandraExecutor
-    //     * @return
-    //     */
-    //    @Beta
-    //    public boolean exists(final CassandraExecutor cassandraExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return cassandraExecutor.exists(cql(), this.parameters);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param cassandraExecutor
-    //     * @return
-    //     */
-    //    @Beta
-    //    public boolean exists(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            return cassandraExecutor.exists(cql(), this.parameters);
-    //        } else {
-    //            return cassandraExecutor.exists(cql(), parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param cassandraExecutor
-    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
-    //     */
-    //    @Beta
-    //    public T execute(final CassandraExecutor cassandraExecutor) {
-    //        if (op == OperationType.QUERY) {
-    //            return (T) cassandraExecutor.query(cql(), this.parameters);
-    //        } else {
-    //            return (T) cassandraExecutor.execute(cql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param cassandraExecutor
-    //     * @param parameters
-    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
-    //     */
-    //    @Beta
-    //    public T execute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (op == OperationType.QUERY) {
-    //                return (T) cassandraExecutor.query(cql(), this.parameters);
-    //            } else {
-    //                return (T) cassandraExecutor.execute(cql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (op == OperationType.QUERY) {
-    //                return (T) cassandraExecutor.query(cql(), parameters);
-    //            } else {
-    //                return (T) cassandraExecutor.execute(cql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-    //     * 
-    //     * @param targetClass
-    //     * @param cassandraExecutor
-    //     * @return 
-    //     */
-    //    @Beta
-    //    public <R> Nullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //            return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
-    //        } else {
-    //            return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-    //     * 
-    //     * @param targetClass
-    //     * @param cassandraExecutor
-    //     * @param parameters
-    //     * @return
-    //     */
-    //    @Beta
-    //    public <R> Nullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
-    //            } else {
-    //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
-    //            } else {
-    //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public ContinuableFuture asyncExecute(final CassandraExecutor cassandraExecutor) {
-    //        if (op == OperationType.QUERY) {
-    //            return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
-    //        } else {
-    //            return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public ContinuableFuture asyncExecute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (op == OperationType.QUERY) {
-    //                return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
-    //            } else {
-    //                return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (op == OperationType.QUERY) {
-    //                return (ContinuableFuture) cassandraExecutor.asyncQuery(cql(), parameters);
-    //            } else {
-    //                return (ContinuableFuture) cassandraExecutor.asyncExecute(cql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<Nullable<R>>() {
-    //            @Override
-    //            public Nullable<R> call() throws Exception {
-    //                return execute(targetClass, cassandraExecutor);
-    //            }
-    //        });
-    //    }
-    //
-    //    @Beta
-    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
-    //            final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<Nullable<R>>() {
-    //            @Override
-    //            public Nullable<R> call() throws Exception {
-    //                return execute(targetClass, cassandraExecutor, parameters);
-    //            }
-    //        });
-    //    }
 
     void init(boolean setForUpdate) {
         if (sb.length() > 0) {
@@ -1724,6 +1547,14 @@ public abstract class CQLBuilder {
             default:
                 return propName;
         }
+    }
+
+    public <T, EX extends Exception> T apply(final Try.Function<? super CP, T, EX> func) throws EX {
+        return func.apply(this.pair());
+    }
+
+    public <EX extends Exception> void accept(final Try.Consumer<? super CP, EX> consumer) throws EX {
+        consumer.accept(this.pair());
     }
 
     //    @Override

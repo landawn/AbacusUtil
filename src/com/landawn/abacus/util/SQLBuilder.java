@@ -1808,193 +1808,6 @@ public abstract class SQLBuilder {
         return set(getUpdatePropNamesByClass(entityClass, excludedPropNames));
     }
 
-    public <T, EX extends Exception> T apply(final Try.Function<? super SP, T, EX> func) throws EX {
-        return func.apply(this.pair());
-    }
-
-    //    /**
-    //     * 
-    //     * @param sqlExecutor
-    //     * @return
-    //     */
-    //    @Beta
-    //    public boolean exists(final SQLExecutor sqlExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return sqlExecutor.exists(sql(), this.parameters);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param sqlExecutor
-    //     * @return
-    //     */
-    //    @Beta
-    //    public boolean exists(final SQLExecutor sqlExecutor, final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            return sqlExecutor.exists(sql(), this.parameters);
-    //        } else {
-    //            return sqlExecutor.exists(sql(), parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param sqlExecutor
-    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, the updated record count. 
-    //     */
-    //    @Beta
-    //    public T execute(final SQLExecutor sqlExecutor) {
-    //        if (op == OperationType.QUERY) {
-    //            return (T) sqlExecutor.query(sql(), this.parameters);
-    //        } /* else if (op == OperationType.ADD) {
-    //            return (T) sqlExecutor.insert(sql(), this.parameters);
-    //          } */ else {
-    //            return (T) (Integer) sqlExecutor.update(sql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param sqlExecutor
-    //     * @param parameters
-    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, the updated record count. 
-    //     */
-    //    @Beta
-    //    public T execute(final SQLExecutor sqlExecutor, final Object... parameters) {
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (op == OperationType.QUERY) {
-    //                return (T) sqlExecutor.query(sql(), this.parameters);
-    //            } /* else if (op == OperationType.ADD) {
-    //                 return (T) sqlExecutor.insert(sql(), this.parameters);
-    //              } */ else {
-    //                return (T) (Integer) sqlExecutor.update(sql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (op == OperationType.QUERY) {
-    //                return (T) sqlExecutor.query(sql(), parameters);
-    //            } /* else if (op == OperationType.ADD) {
-    //                return (T) sqlExecutor.insert(sql(), parameters);
-    //              } */ else {
-    //                return (T) (Integer) sqlExecutor.update(sql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-    //     * 
-    //     * @param targetClass
-    //     * @param sqlExecutor
-    //     * @return 
-    //     */
-    //    @Beta
-    //    public <R> Nullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //            return Nullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
-    //        } else {
-    //            return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-    //     * 
-    //     * @param targetClass
-    //     * @param sqlExecutor
-    //     * @param parameters
-    //     * @return
-    //     */
-    //    @Beta
-    //    public <R> Nullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return Nullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
-    //            } else {
-    //                return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return Nullable.from(sqlExecutor.queryForEntity(targetClass, sql(), parameters));
-    //            } else {
-    //                return sqlExecutor.queryForSingleResult(targetClass, sql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public ContinuableFuture asyncExecute(final SQLExecutor sqlExecutor) {
-    //        if (op == OperationType.QUERY) {
-    //            return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
-    //        } /* else if (op == OperationType.ADD) {
-    //            return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
-    //          } */ else {
-    //            return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public ContinuableFuture asyncExecute(final SQLExecutor sqlExecutor, final Object... parameters) {
-    //        if (N.isNullOrEmpty(parameters)) {
-    //            if (op == OperationType.QUERY) {
-    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), this.parameters);
-    //            } /* else if (op == OperationType.ADD) {
-    //                return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
-    //              } */ else {
-    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), this.parameters);
-    //            }
-    //        } else {
-    //            if (op == OperationType.QUERY) {
-    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().query(sql(), parameters);
-    //            } /* else if (op == OperationType.ADD) {
-    //                return (ContinuableFuture) sqlExecutor.asyncSQLExecutor().insert(sql(), parameters);
-    //              } */ else {
-    //                return (ContinuableFuture) sqlExecutor.asyncExecutor().update(sql(), parameters);
-    //            }
-    //        }
-    //    }
-    //
-    //    @Beta
-    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<Nullable<R>>() {
-    //            @Override
-    //            public Nullable<R> call() throws Exception {
-    //                return execute(targetClass, sqlExecutor);
-    //            }
-    //        });
-    //    }
-    //
-    //    @Beta
-    //    public <R> ContinuableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
-    //        if (op != OperationType.QUERY) {
-    //            throw new IllegalArgumentException("Only SELECT statement is supported");
-    //        }
-    //
-    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<Nullable<R>>() {
-    //            @Override
-    //            public Nullable<R> call() throws Exception {
-    //                return execute(targetClass, sqlExecutor, parameters);
-    //            }
-    //        });
-    //    }
     /**
      * This SQLBuilder will be closed after <code>sql()</code> is called.
      * 
@@ -2028,6 +1841,14 @@ public abstract class SQLBuilder {
      */
     public SP pair() {
         return new SP(sql(), parameters);
+    }
+
+    public <T, EX extends Exception> T apply(final Try.Function<? super SP, T, EX> func) throws EX {
+        return func.apply(this.pair());
+    }
+
+    public <EX extends Exception> void accept(final Try.Consumer<? super SP, EX> consumer) throws EX {
+        consumer.accept(this.pair());
     }
 
     void init(boolean setForUpdate) {

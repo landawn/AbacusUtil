@@ -111,6 +111,50 @@ public final class MongoCollectionMapper<T> {
         return collExecutor.gett(targetClass, objectId, selectPropNames);
     }
 
+    public Optional<T> findFirst(final Bson filter) {
+        return collExecutor.findFirst(targetClass, filter);
+    }
+
+    public Optional<T> findFirst(final Collection<String> selectPropNames, final Bson filter) {
+        return collExecutor.findFirst(targetClass, selectPropNames, filter);
+    }
+
+    public Optional<T> findFirst(final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        return collExecutor.findFirst(targetClass, selectPropNames, filter, sort);
+    }
+
+    public Optional<T> findFirst(final Bson filter, final Bson sort, final Bson projection) {
+        return collExecutor.findFirst(targetClass, filter, sort, projection);
+    }
+
+    public List<T> find(final Bson filter) {
+        return collExecutor.find(targetClass, filter);
+    }
+
+    public List<T> find(final Collection<String> selectPropNames, final Bson filter) {
+        return collExecutor.find(targetClass, selectPropNames, filter);
+    }
+
+    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
+        return collExecutor.find(targetClass, selectPropNames, filter, offset, count);
+    }
+
+    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        return collExecutor.find(targetClass, selectPropNames, filter, sort);
+    }
+
+    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset, final int count) {
+        return collExecutor.find(targetClass, selectPropNames, filter, sort, offset, count);
+    }
+
+    public List<T> find(final Bson filter, final Bson sort, final Bson projection) {
+        return collExecutor.find(targetClass, filter, sort, projection);
+    }
+
+    public List<T> find(final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
+        return collExecutor.find(targetClass, filter, sort, projection, offset, count);
+    }
+
     @Beta
     public OptionalBoolean queryForBoolean(final String propName, final Bson filter) {
         return collExecutor.queryForBoolean(propName, filter);
@@ -167,50 +211,6 @@ public final class MongoCollectionMapper<T> {
 
     public <P> Nullable<P> queryForSingleResult(final Class<P> targetPropClass, final String propName, final Bson filter) {
         return collExecutor.queryForSingleResult(targetPropClass, propName, filter);
-    }
-
-    public Optional<T> queryForEntity(final Bson filter) {
-        return collExecutor.queryForEntity(targetClass, filter);
-    }
-
-    public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Bson filter) {
-        return collExecutor.queryForEntity(targetClass, selectPropNames, filter);
-    }
-
-    public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        return collExecutor.queryForEntity(targetClass, selectPropNames, filter, sort);
-    }
-
-    public Optional<T> queryForEntity(final Bson filter, final Bson sort, final Bson projection) {
-        return collExecutor.queryForEntity(targetClass, filter, sort, projection);
-    }
-
-    public List<T> find(final Bson filter) {
-        return collExecutor.find(targetClass, filter);
-    }
-
-    public List<T> find(final Collection<String> selectPropNames, final Bson filter) {
-        return collExecutor.find(targetClass, selectPropNames, filter);
-    }
-
-    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
-        return collExecutor.find(targetClass, selectPropNames, filter, offset, count);
-    }
-
-    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        return collExecutor.find(targetClass, selectPropNames, filter, sort);
-    }
-
-    public List<T> find(final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset, final int count) {
-        return collExecutor.find(targetClass, selectPropNames, filter, sort, offset, count);
-    }
-
-    public List<T> find(final Bson filter, final Bson sort, final Bson projection) {
-        return collExecutor.find(targetClass, filter, sort, projection);
-    }
-
-    public List<T> find(final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
-        return collExecutor.find(targetClass, filter, sort, projection, offset, count);
     }
 
     public DataSet query(final Bson filter) {

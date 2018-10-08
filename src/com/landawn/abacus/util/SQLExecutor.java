@@ -107,7 +107,7 @@ import com.landawn.abacus.util.stream.Stream;
         // read
         String sql_selectByGUI = NE.selectFrom(Account.class, N.asSet(DEVICES)).where(L.eq(GUI, L.QME)).sql();
         N.println(sql_selectByGUI);
-        Account dbAccount = sqlExecutor.queryForEntity(Account.class, sql_selectByGUI, account);
+        Account dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
         assertEquals(account.getFirstName(), dbAccount.getFirstName());
 
         // update
@@ -121,7 +121,7 @@ import com.landawn.abacus.util.stream.Stream;
         N.println(sql_deleteByFirstName);
         sqlExecutor.update(sql_deleteByFirstName, dbAccount);
 
-        dbAccount = sqlExecutor.queryForEntity(Account.class, sql_selectByGUI, account);
+        dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
         assertNull(dbAccount);
  * </code>
  * </pre>
@@ -1510,26 +1510,132 @@ public final class SQLExecutor implements Closeable {
         return (entities.size() > 0) ? entities.get(0) : null;
     }
 
+    /**
+     * 
+     * @param targetClass
+     * @param sql
+     * @param parameters
+     * @return
+     * @throws NonUniqueResultException if two or more records are found.
+     */
     @SafeVarargs
     public final <T> Optional<T> gett(final Class<T> targetClass, final String sql, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, sql, parameters));
     }
 
+    /**
+     * 
+     * @param targetClass
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     * @throws NonUniqueResultException if two or more records are found.
+     */
     @SafeVarargs
     public final <T> Optional<T> gett(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, sql, statementSetter, jdbcSettings, parameters));
     }
 
+    /**
+     * 
+     * @param targetClass
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     * @throws NonUniqueResultException if two or more records are found.
+     */
     @SafeVarargs
     public final <T> Optional<T> gett(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, conn, sql, parameters));
     }
 
+    /**
+     * 
+     * @param targetClass
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     * @throws NonUniqueResultException if two or more records are found.
+     */
     @SafeVarargs
     public final <T> Optional<T> gett(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, conn, sql, statementSetter, jdbcSettings, parameters));
+    }
+
+    //
+    //    public Map<String, Object> queryForMap(String sql, Object... parameters) {
+    //        return queryForMap(sql, null, parameters);
+    //    }
+    //
+    //    public Map<String, Object> queryForMap(String sql, StatementSetter statementSetter, Object... parameters) {
+    //        return queryForMap(null, sql, statementSetter, parameters);
+    //    }
+    //
+    //    public Map<String, Object> queryForMap(final Connection conn, final String sql, Object... parameters) {
+    //        return queryForMap(conn, sql, null, parameters);
+    //    }
+    //
+    //    /**
+    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found.
+    //     *
+    //     * Remember to add {@code limit} condition if big result will be returned by the query.
+    //     *
+    //     * @param conn
+    //     * @param sql
+    //     * @param statementSetter
+    //     * @param parameters
+    //     * @return
+    //     */
+    //    public Map<String, Object> queryForMap(final Connection conn, final String sql, StatementSetter statementSetter, Object... parameters) {
+    //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
+    //    }
+
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final String sql, final Object... parameters) {
+        return findFirst(targetClass, sql, null, null, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return findFirst(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+        return findFirst(targetClass, conn, sql, null, null, parameters);
+    }
+
+    /**
+     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
+     * convert the column value to the type of mapping entity property if the mapping entity property is not assignable
+     * from column value.
+     *
+     * Remember to add {@code limit} condition if big result will be returned by the query.
+     *
+     * @param targetClass
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        final T result = (T) query(targetClass, conn, sql, statementSetter, ENTITY_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
+
+        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
     }
 
     @SafeVarargs
@@ -1801,46 +1907,6 @@ public final class SQLExecutor implements Closeable {
     //    public Map<String, Object> queryForMap(final Connection conn, final String sql, StatementSetter statementSetter, Object... parameters) {
     //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
     //    }
-
-    @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final Object... parameters) {
-        return queryForEntity(targetClass, sql, null, null, parameters);
-    }
-
-    @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
-        return queryForEntity(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
-    }
-
-    @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
-        return queryForEntity(targetClass, conn, sql, null, null, parameters);
-    }
-
-    /**
-     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
-     * convert the column value to the type of mapping entity property if the mapping entity property is not assignable
-     * from column value.
-     *
-     * Remember to add {@code limit} condition if big result will be returned by the query.
-     *
-     * @param targetClass
-     * @param conn
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
-        final T result = (T) query(targetClass, conn, sql, statementSetter, ENTITY_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
-
-        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
-    }
 
     /**
      * Query single column.
@@ -3960,27 +4026,27 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.queryForSingleResult(targetValueClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
-        public Optional<T> queryForEntity(final Condition whereCause) {
-            return queryForEntity(null, whereCause);
+        public Optional<T> findFirst(final Condition whereCause) {
+            return findFirst(null, whereCause);
         }
 
-        public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
-            return queryForEntity(selectPropNames, whereCause, null);
+        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
+            return findFirst(selectPropNames, whereCause, null);
         }
 
-        public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return queryForEntity(null, selectPropNames, whereCause, jdbcSettings);
+        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropNames, whereCause, jdbcSettings);
         }
 
-        public Optional<T> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return queryForEntity(conn, selectPropNames, whereCause, null);
+        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return findFirst(conn, selectPropNames, whereCause, null);
         }
 
-        public Optional<T> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause, 1);
 
-            return sqlExecutor.queryForEntity(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.findFirst(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public <E> List<E> queryForList(final String propName, final Condition whereCause) {
@@ -4451,7 +4517,7 @@ public final class SQLExecutor implements Closeable {
                 and.add(L.eq(propName, ClassUtil.getPropValue(entity, propName)));
             }
 
-            final T dbEntity = queryForEntity(and).orNull();
+            final T dbEntity = findFirst(and).orNull();
 
             if (dbEntity == null) {
                 add(entity);
@@ -5475,49 +5541,48 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Optional<T>> queryForEntity(final Condition whereCause) {
+        public ContinuableFuture<Optional<T>> findFirst(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(whereCause);
+                    return mapper.findFirst(whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(selectPropNames, whereCause);
+                    return mapper.findFirst(selectPropNames, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(selectPropNames, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(conn, selectPropNames, whereCause, jdbcSettings);
+                    return mapper.findFirst(conn, selectPropNames, whereCause, jdbcSettings);
                 }
             });
         }

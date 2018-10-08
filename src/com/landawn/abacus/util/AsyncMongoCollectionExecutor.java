@@ -219,6 +219,127 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
+    public ContinuableFuture<Optional<Document>> findFirst(final Bson filter) {
+        return asyncExecutor.execute(new Callable<Optional<Document>>() {
+            @Override
+            public Optional<Document> call() throws Exception {
+                return collExecutor.findFirst(filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Optional<T>> findFirst(final Class<T> targetClass, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return collExecutor.findFirst(targetClass, filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Optional<T>> findFirst(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return collExecutor.findFirst(targetClass, selectPropNames, filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Optional<T>> findFirst(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter,
+            final Bson sort) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return collExecutor.findFirst(targetClass, selectPropNames, filter, sort);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Optional<T>> findFirst(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return collExecutor.findFirst(targetClass, filter, sort, projection);
+            }
+        });
+    }
+
+    public ContinuableFuture<List<Document>> find(final Bson filter) {
+        return asyncExecutor.execute(new Callable<List<Document>>() {
+            @Override
+            public List<Document> call() throws Exception {
+                return collExecutor.find(filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, selectPropNames, filter);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset,
+            final int count) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, selectPropNames, filter, offset, count);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, selectPropNames, filter, sort);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort,
+            final int offset, final int count) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, selectPropNames, filter, sort, offset, count);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, filter, sort, projection);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset,
+            final int count) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return collExecutor.find(targetClass, filter, sort, projection, offset, count);
+            }
+        });
+    }
+
     public ContinuableFuture<OptionalBoolean> queryForBoolean(final String propName, final Bson filter) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
@@ -323,127 +444,6 @@ public final class AsyncMongoCollectionExecutor {
             @Override
             public Nullable<T> call() throws Exception {
                 return collExecutor.queryForSingleResult(targetClass, propName, filter);
-            }
-        });
-    }
-
-    public ContinuableFuture<Optional<Document>> queryForEntity(final Bson filter) {
-        return asyncExecutor.execute(new Callable<Optional<Document>>() {
-            @Override
-            public Optional<Document> call() throws Exception {
-                return collExecutor.queryForEntity(filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Bson filter) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
-            @Override
-            public Optional<T> call() throws Exception {
-                return collExecutor.queryForEntity(targetClass, filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
-            @Override
-            public Optional<T> call() throws Exception {
-                return collExecutor.queryForEntity(targetClass, selectPropNames, filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter,
-            final Bson sort) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
-            @Override
-            public Optional<T> call() throws Exception {
-                return collExecutor.queryForEntity(targetClass, selectPropNames, filter, sort);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
-            @Override
-            public Optional<T> call() throws Exception {
-                return collExecutor.queryForEntity(targetClass, filter, sort, projection);
-            }
-        });
-    }
-
-    public ContinuableFuture<List<Document>> find(final Bson filter) {
-        return asyncExecutor.execute(new Callable<List<Document>>() {
-            @Override
-            public List<Document> call() throws Exception {
-                return collExecutor.find(filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset,
-            final int count) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, offset, count);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, sort);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort,
-            final int offset, final int count) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, sort, offset, count);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter, sort, projection);
-            }
-        });
-    }
-
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset,
-            final int count) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter, sort, projection, offset, count);
             }
         });
     }

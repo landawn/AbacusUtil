@@ -882,6 +882,16 @@ public final class CassandraExecutor implements Closeable {
         return count(pair.cql, pair.parameters.toArray());
     }
 
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Condition whereCause) {
+        return findFirst(targetClass, null, whereCause);
+    }
+
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause, 1);
+
+        return findFirst(targetClass, pair.cql, pair.parameters.toArray());
+    }
+
     public <T> List<T> find(final Class<T> targetClass, final Condition whereCause) {
         return find(targetClass, null, whereCause);
     }
@@ -962,16 +972,6 @@ public final class CassandraExecutor implements Closeable {
         final CP pair = prepareQuery(targetClass, Arrays.asList(propName), whereCause, 1);
 
         return queryForSingleResult(valueClass, pair.cql, pair.parameters.toArray());
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Condition whereCause) {
-        return queryForEntity(targetClass, null, whereCause);
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
-        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause, 1);
-
-        return queryForEntity(targetClass, pair.cql, pair.parameters.toArray());
     }
 
     public <T> Stream<T> stream(final Class<T> targetClass, final Condition whereCause) {
@@ -1083,7 +1083,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final String query, final Object... parameters) {
         final ResultSet resultSet = execute(query, parameters);
         final Row row = resultSet.one();
 
@@ -1662,21 +1662,21 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return queryForEntity(targetClass, whereCause);
+                return findFirst(targetClass, whereCause);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final Collection<String> selectPropName,
+    public <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final Collection<String> selectPropName,
             final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return queryForEntity(targetClass, selectPropName, whereCause);
+                return findFirst(targetClass, selectPropName, whereCause);
             }
         });
     }
@@ -1846,11 +1846,11 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return queryForEntity(targetClass, query, parameters);
+                return findFirst(targetClass, query, parameters);
             }
         });
     }

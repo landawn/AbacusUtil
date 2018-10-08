@@ -75,6 +75,7 @@ import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
 import com.landawn.abacus.core.sql.dataSource.SQLDataSourceManager;
 import com.landawn.abacus.core.sql.dataSource.SimpleSourceSelector;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -2900,8 +2901,19 @@ public final class JdbcUtil {
         }
 
         /**
+         * It's designed to void try-catch. 
+         * This method should be called immediately after {@code JdbcUtil#prepareCallableQuery/SQLExecutor#prepareQuery}.
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @return
+         * @throws SQLException
+         */
+        public Try<Q> tried() throws SQLException {
+            return Try.of((Q) this);
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2914,7 +2926,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2927,7 +2939,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2940,7 +2952,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2953,7 +2965,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2966,7 +2978,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2979,7 +2991,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2992,7 +3004,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -3005,7 +3017,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -3018,7 +3030,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -3031,7 +3043,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -3044,7 +3056,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -3057,7 +3069,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @param sqlType
          * @return
@@ -3071,7 +3083,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @param sqlType
          * @param scaleOrLength
@@ -3086,7 +3098,9 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameters
+         * @param startParameterIndex
+         * @param x
+         * @param sqlType
          * @return
          * @throws SQLException
          */
@@ -3104,7 +3118,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @return
@@ -3119,7 +3133,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @param param3
@@ -3136,7 +3150,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @return
@@ -3151,7 +3165,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @param param3
@@ -3168,7 +3182,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @param param3
@@ -3187,7 +3201,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param param1
          * @param param2
          * @param param3
@@ -3208,7 +3222,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex parameter index starts from 1, not 0.
+         * @param startParameterIndex
          * @param parameters
          * @return
          * @throws SQLException
@@ -3301,10 +3315,6 @@ public final class JdbcUtil {
             this.actionAfterClose = closeHandler;
 
             return (Q) this;
-        }
-
-        public Try<Q> tried() throws SQLException {
-            return Try.of((Q) this);
         }
 
         public OptionalBoolean queryForBoolean() throws SQLException {
@@ -3472,9 +3482,95 @@ public final class JdbcUtil {
          * 
          * @param targetClass
          * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
          * @throws SQLException
          */
-        public <T> Optional<T> queryForEntity(final Class<T> targetClass) throws SQLException {
+        public <T> Optional<T> get(final Class<T> targetClass) throws NonUniqueResultException, SQLException {
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+                    final T result = get(targetClass, rs, columnLabels);
+
+                    if (rs.next()) {
+                        throw new NonUniqueResultException("There are more than one record found by the query");
+                    }
+
+                    return Optional.of(result);
+                } else {
+                    return Optional.empty();
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param resultGetter
+         * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> Optional<T> get(RecordGetter<T, E> resultGetter) throws NonUniqueResultException, SQLException, E {
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    final T result = resultGetter.apply(rs);
+
+                    if (rs.next()) {
+                        throw new NonUniqueResultException("There are more than one record found by the query");
+                    }
+
+                    return Optional.of(result);
+                } else {
+                    return Optional.empty();
+                }
+
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param resultGetter
+         * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> resultGetter) throws NonUniqueResultException, SQLException, E {
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    final T result = resultGetter.apply(rs, JdbcUtil.getColumnLabelList(rs));
+
+                    if (rs.next()) {
+                        throw new NonUniqueResultException("There are more than one record found by the query");
+                    }
+
+                    return Optional.of(result);
+                } else {
+                    return Optional.empty();
+                }
+
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param targetClass
+         * @return
+         * @throws SQLException
+         */
+        public <T> Optional<T> findFirst(final Class<T> targetClass) throws SQLException {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -3489,27 +3585,27 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> Nullable<T> queryForEntity(RecordGetter<T, E> resultGetter) throws SQLException, E {
+        public <T, E extends Exception> Optional<T> findFirst(RecordGetter<T, E> resultGetter) throws SQLException, E {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Nullable.of(resultGetter.apply(rs)) : Nullable.<T> empty();
+                return rs.next() ? Optional.of(resultGetter.apply(rs)) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public <T, E extends Exception> Nullable<T> queryForEntity(BiRecordGetter<T, E> resultGetter) throws SQLException, E {
+        public <T, E extends Exception> Optional<T> findFirst(BiRecordGetter<T, E> resultGetter) throws SQLException, E {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Nullable.of(resultGetter.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Nullable.<T> empty();
+                return rs.next() ? Optional.of(resultGetter.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public <T> List<T> find(final Class<T> targetClass) throws SQLException {
+        public <T> List<T> list(final Class<T> targetClass) throws SQLException {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -3526,7 +3622,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> List<T> find(RecordGetter<T, E> recordGetter) throws SQLException, E {
+        public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -3542,7 +3638,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> find(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             assertNotClosed();
 
@@ -3561,7 +3657,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> List<T> find(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
+        public <T, E extends Exception> List<T> list(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -3578,7 +3674,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> find(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             assertNotClosed();
 
@@ -4175,7 +4271,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @return
          * @throws SQLException
@@ -4188,7 +4284,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @param scale
          * @return
@@ -4202,7 +4298,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @param typeName
          * @return
@@ -4216,7 +4312,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @return
          * @throws SQLException
@@ -4229,7 +4325,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @param scale
          * @return
@@ -4243,7 +4339,7 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param parameterIndex parameter index starts from 1, not 0.
+         * @param parameterIndex starts from 1, not 0.
          * @param sqlType
          * @param typeName
          * @return

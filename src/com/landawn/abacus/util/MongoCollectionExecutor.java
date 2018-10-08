@@ -138,7 +138,7 @@ public final class MongoCollectionExecutor {
     }
 
     public <T> T get(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null).orElse(null);
+        return findFirst(targetClass, selectPropNames, createFilter(objectId), null).orElse(null);
     }
 
     public Optional<Document> gett(final String objectId) {
@@ -162,7 +162,92 @@ public final class MongoCollectionExecutor {
     }
 
     public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null);
+        return findFirst(targetClass, selectPropNames, createFilter(objectId), null);
+    }
+
+    public Optional<Document> findFirst(final Bson filter) {
+        return findFirst(Document.class, filter);
+    }
+
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Bson filter) {
+        return findFirst(targetClass, null, filter);
+    }
+
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+        return findFirst(targetClass, selectPropNames, filter, null);
+    }
+
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, 0, 1);
+
+        final T result = toEntity(targetClass, findIterable);
+
+        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
+    }
+
+    public <T> Optional<T> findFirst(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+        final FindIterable<Document> findIterable = query(filter, sort, projection, 0, 1);
+
+        final T result = toEntity(targetClass, findIterable);
+
+        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
+    }
+
+    public List<Document> find(final Bson filter) {
+        return find(Document.class, filter);
+    }
+
+    public <T> List<T> find(final Class<T> targetClass, final Bson filter) {
+        return find(targetClass, null, filter);
+    }
+
+    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+        return find(targetClass, selectPropNames, filter, 0, Integer.MAX_VALUE);
+    }
+
+    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
+        return find(targetClass, selectPropNames, filter, null, offset, count);
+    }
+
+    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        return find(targetClass, selectPropNames, filter, sort, 0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
+     * @param selectPropNames
+     * @param filter
+     * @param sort
+     * @param offset
+     * @param count
+     * @return
+     */
+    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset,
+            final int count) {
+        final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, offset, count);
+
+        return MongoDB.toList(targetClass, findIterable);
+    }
+
+    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+        return find(targetClass, filter, sort, projection, 0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
+     * @param filter
+     * @param sort
+     * @param projection
+     * @param offset
+     * @param count
+     * @return
+     */
+    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
+        final FindIterable<Document> findIterable = query(filter, sort, projection, offset, count);
+
+        return MongoDB.toList(targetClass, findIterable);
     }
 
     @Beta
@@ -227,95 +312,10 @@ public final class MongoCollectionExecutor {
         return N.isNullOrEmpty(doc) ? (Nullable<T>) Nullable.empty() : Nullable.of(N.as(targetClass, doc.get(propName)));
     }
 
-    public Optional<Document> queryForEntity(final Bson filter) {
-        return queryForEntity(Document.class, filter);
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Bson filter) {
-        return queryForEntity(targetClass, null, filter);
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
-        return queryForEntity(targetClass, selectPropNames, filter, null);
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, 0, 1);
-
-        final T result = toEntity(targetClass, findIterable);
-
-        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
-    }
-
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
-        final FindIterable<Document> findIterable = query(filter, sort, projection, 0, 1);
-
-        final T result = toEntity(targetClass, findIterable);
-
-        return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
-    }
-
     private <T> T toEntity(final Class<T> targetClass, final FindIterable<Document> findIterable) {
         final Document doc = findIterable.first();
 
         return N.isNullOrEmpty(doc) ? null : MongoDB.toEntity(targetClass, doc);
-    }
-
-    public List<Document> find(final Bson filter) {
-        return find(Document.class, filter);
-    }
-
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter) {
-        return find(targetClass, null, filter);
-    }
-
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
-        return find(targetClass, selectPropNames, filter, 0, Integer.MAX_VALUE);
-    }
-
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
-        return find(targetClass, selectPropNames, filter, null, offset, count);
-    }
-
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        return find(targetClass, selectPropNames, filter, sort, 0, Integer.MAX_VALUE);
-    }
-
-    /**
-     * 
-     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
-     * @param selectPropNames
-     * @param filter
-     * @param sort
-     * @param offset
-     * @param count
-     * @return
-     */
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset,
-            final int count) {
-        final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, offset, count);
-
-        return MongoDB.toList(targetClass, findIterable);
-    }
-
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
-        return find(targetClass, filter, sort, projection, 0, Integer.MAX_VALUE);
-    }
-
-    /**
-     * 
-     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
-     * @param filter
-     * @param sort
-     * @param projection
-     * @param offset
-     * @param count
-     * @return
-     */
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
-        final FindIterable<Document> findIterable = query(filter, sort, projection, offset, count);
-
-        return MongoDB.toList(targetClass, findIterable);
     }
 
     public DataSet query(final Bson filter) {

@@ -712,6 +712,33 @@ public final class CouchbaseExecutor implements Closeable {
         return Optional.ofNullable(get(targetClass, id, timeout, timeUnit));
     }
 
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final String query, final Object... parameters) {
+        final QueryResult resultSet = execute(query, parameters);
+        final Iterator<QueryRow> it = resultSet.rows();
+        final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
+    
+        if (jsonObject == null || jsonObject.size() == 0) {
+            return Optional.empty();
+        } else {
+            return Optional.of(toEntity(targetClass, jsonObject));
+        }
+    }
+
+    /**
+     * 
+     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
+     * @param query
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final String query, final Object... parameters) {
+        final QueryResult resultSet = execute(query, parameters);
+    
+        return toList(targetClass, resultSet);
+    }
+
     /**
      * Always remember to set "<code>LIMIT 1</code>" in the sql statement for better performance.
      *
@@ -808,33 +835,6 @@ public final class CouchbaseExecutor implements Closeable {
         } else {
             return Nullable.of(N.as(targetClass, jsonObject.get(jsonObject.getNames().iterator().next())));
         }
-    }
-
-    @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
-        final Iterator<QueryRow> it = resultSet.rows();
-        final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
-
-        if (jsonObject == null || jsonObject.size() == 0) {
-            return Optional.empty();
-        } else {
-            return Optional.of(toEntity(targetClass, jsonObject));
-        }
-    }
-
-    /**
-     * 
-     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
-     * @param query
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final <T> List<T> find(final Class<T> targetClass, final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
-
-        return toList(targetClass, resultSet);
     }
 
     @SafeVarargs
@@ -1329,11 +1329,11 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> asyncQueryForEntity(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return queryForEntity(targetClass, query, parameters);
+                return findFirst(targetClass, query, parameters);
             }
         });
     }

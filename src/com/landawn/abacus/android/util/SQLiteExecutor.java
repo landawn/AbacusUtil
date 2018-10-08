@@ -1498,16 +1498,16 @@ public final class SQLiteExecutor {
                 columnName, whereClause);
     }
 
-    //    <T> T queryForEntity(final Class<T> targetClass, String... selectColumnNames) {
-    //        return queryForEntity(targetClass, N.asList(selectColumnNames));
+    //    <T> T findFirst(final Class<T> targetClass, String... selectColumnNames) {
+    //        return findFirst(targetClass, N.asList(selectColumnNames));
     //    }
     //
-    //    <T> T queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames) {
-    //        return queryForEntity(targetClass, selectColumnNames, null);
+    //    <T> T findFirst(final Class<T> targetClass, Collection<String> selectColumnNames) {
+    //        return findFirst(targetClass, selectColumnNames, null);
     //    }
 
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
-        return queryForEntity(targetClass, selectColumnNames, whereClause, null);
+    public <T> Optional<T> findFirst(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
+        return findFirst(targetClass, selectColumnNames, whereClause, null);
     }
 
     /**
@@ -1521,7 +1521,7 @@ public final class SQLiteExecutor {
      * @param orderby How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
      * @return
      */
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
+    public <T> Optional<T> findFirst(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
         final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
 
         return N.isNullOrEmpty(resultList) ? (Optional<T>) Optional.empty() : Optional.of(resultList.get(0));
@@ -1543,7 +1543,7 @@ public final class SQLiteExecutor {
      * @return
      */
     @SafeVarargs
-    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
+    public final <T> Optional<T> findFirst(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, 1, parameters);
 
         return N.isNullOrEmpty(rs) ? (Optional<T>) Optional.empty() : Optional.of(rs.getRow(targetClass, 0));
