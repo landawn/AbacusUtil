@@ -1,3 +1,8 @@
+### 1.3.12
+
+* Improvements and bug fix.
+
+
 ### 1.3.11
 
 * Refactoring: `PreparedQuery`.

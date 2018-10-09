@@ -109,9 +109,29 @@ abstract class Any<T> {
      * Return {@code true} if there is a value not null, otherwise {@code false}.
      *
      * @return {@code true} if there is a value not null, otherwise {@code false}
+     * @deprecated replaced by {@link #notNull()}
      */
+    @Deprecated
     public boolean isNotNull() {
         return value != null;
+    }
+
+    /**
+     * Return {@code true} if there is a value not null, otherwise {@code false}.
+     *
+     * @return {@code true} if there is a value not null, otherwise {@code false}
+     */
+    public boolean notNull() {
+        return value != null;
+    }
+
+    /**
+     * Returns {@code true} if it's not present or the value null, otherwise {@code false}.
+     *
+     * @return {@code true} if it's not present or the value null, otherwise {@code false}.
+     */
+    public boolean isNull() {
+        return value == null;
     }
 
     /**
@@ -157,7 +177,7 @@ abstract class Any<T> {
     public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> action) throws E {
         N.checkArgNotNull(action);
 
-        if (isNotNull()) {
+        if (notNull()) {
             action.accept(value);
         }
     }
@@ -173,7 +193,7 @@ abstract class Any<T> {
         N.checkArgNotNull(action);
         N.checkArgNotNull(emptyAction);
 
-        if (isNotNull()) {
+        if (notNull()) {
             action.accept(value);
         } else {
             emptyAction.run();
@@ -365,7 +385,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalBoolean mapToBooleanIfNotNull(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
         } else {
             return OptionalBoolean.empty();
@@ -375,7 +395,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalChar mapToCharIfNotNull(final Try.ToCharFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalChar.of(mapper.applyAsChar(value));
         } else {
             return OptionalChar.empty();
@@ -385,7 +405,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalByte mapToByteIfNotNull(final Try.ToByteFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalByte.of(mapper.applyAsByte(value));
         } else {
             return OptionalByte.empty();
@@ -395,7 +415,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalShort mapToShortIfNotNull(final Try.ToShortFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalShort.of(mapper.applyAsShort(value));
         } else {
             return OptionalShort.empty();
@@ -405,7 +425,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalInt mapToIntIfNotNull(final Try.ToIntFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalInt.of(mapper.applyAsInt(value));
         } else {
             return OptionalInt.empty();
@@ -415,7 +435,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalLong mapToLongIfNotNull(final Try.ToLongFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalLong.of(mapper.applyAsLong(value));
         } else {
             return OptionalLong.empty();
@@ -425,7 +445,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalFloat mapToFloatIfNotNull(final Try.ToFloatFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalFloat.of(mapper.applyAsFloat(value));
         } else {
             return OptionalFloat.empty();
@@ -435,7 +455,7 @@ abstract class Any<T> {
     public <E extends Exception> OptionalDouble mapToDoubleIfNotNull(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
         N.checkArgNotNull(mapper);
 
-        if (isNotNull()) {
+        if (notNull()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
         } else {
             return OptionalDouble.empty();
@@ -553,7 +573,7 @@ abstract class Any<T> {
      * @return the value, if not present or null, otherwise {@code other}
      */
     public T orIfNull(T other) {
-        return isNotNull() ? value : other;
+        return notNull() ? value : other;
     }
 
     /**
@@ -564,7 +584,7 @@ abstract class Any<T> {
      * @throws IllegalArgumentException if value is not present and {@code other} is null
      */
     public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
-        return isNotNull() ? value : other.get();
+        return notNull() ? value : other.get();
     }
 
     /**
@@ -582,7 +602,7 @@ abstract class Any<T> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
-        if (isNotNull()) {
+        if (notNull()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -616,7 +636,7 @@ abstract class Any<T> {
      * @return an empty stream if it's null.
      */
     public Stream<T> streamIfNotNull() {
-        return isNotNull() ? Stream.of(value) : Stream.<T> empty();
+        return notNull() ? Stream.of(value) : Stream.<T> empty();
     }
 
     /**
@@ -634,7 +654,7 @@ abstract class Any<T> {
      * @return
      */
     public List<T> toListIfNotNull() {
-        return isNotNull() ? N.asList(value) : new ArrayList<T>();
+        return notNull() ? N.asList(value) : new ArrayList<T>();
     }
 
     /**
@@ -652,7 +672,7 @@ abstract class Any<T> {
      * @return
      */
     public Set<T> toSetIfNotNull() {
-        return isNotNull() ? N.asSet(value) : new HashSet<T>();
+        return notNull() ? N.asSet(value) : new HashSet<T>();
     }
 
     /**
@@ -670,7 +690,7 @@ abstract class Any<T> {
      * @return
      */
     public ImmutableList<T> toImmutableListIfNotNull() {
-        return isNotNull() ? ImmutableList.of(value) : ImmutableList.<T> empty();
+        return notNull() ? ImmutableList.of(value) : ImmutableList.<T> empty();
     }
 
     /**
@@ -688,7 +708,7 @@ abstract class Any<T> {
      * @return
      */
     public ImmutableSet<T> toImmutableSetIfNotNull() {
-        return isNotNull() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
+        return notNull() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
     }
 
     /**

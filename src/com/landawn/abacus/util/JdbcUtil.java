@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -2914,6 +2915,33 @@ public final class JdbcUtil {
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
+         * @param sqlType
+         * @return
+         * @throws SQLException
+         */
+        public Q setNull(int parameterIndex, int sqlType) throws SQLException {
+            stmt.setNull(parameterIndex, sqlType);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param sqlType
+         * @param typeName
+         * @return
+         * @throws SQLException
+         */
+        public Q setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
+            stmt.setNull(parameterIndex, sqlType, typeName);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
          * @param x
          * @return
          * @throws SQLException
@@ -2998,6 +3026,19 @@ public final class JdbcUtil {
          */
         public Q setDouble(int parameterIndex, double x) throws SQLException {
             stmt.setDouble(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
+            stmt.setBigDecimal(parameterIndex, x);
 
             return (Q) this;
         }
@@ -3243,6 +3284,15 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        /**
+         * 
+         * @param setter
+         * @return
+         * @throws SQLException
+         * @throws E
+         * @deprecated
+         */
+        @Deprecated
         public <E extends Exception> Q setParameters(BiStatementSetter<S, Q, E> setter) throws SQLException, E {
             setter.set((S) stmt, (Q) this);
 
@@ -4145,6 +4195,18 @@ public final class JdbcUtil {
             this.stmt = stmt;
         }
 
+        public PreparedCallableQuery setNull(String parameterName, int sqlType) throws SQLException {
+            stmt.setNull(parameterName, sqlType);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setNull(String parameterName, int sqlType, String typeName) throws SQLException {
+            stmt.setNull(parameterName, sqlType, typeName);
+
+            return this;
+        }
+
         public PreparedCallableQuery setBoolean(String parameterName, boolean x) throws SQLException {
             stmt.setBoolean(parameterName, x);
 
@@ -4183,6 +4245,12 @@ public final class JdbcUtil {
 
         public PreparedCallableQuery setDouble(String parameterName, double x) throws SQLException {
             stmt.setDouble(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
+            stmt.setBigDecimal(parameterName, x);
 
             return this;
         }
@@ -4393,6 +4461,15 @@ public final class JdbcUtil {
             return this;
         }
 
+        /**
+         * 
+         * @param register
+         * @return
+         * @throws SQLException
+         * @throws E
+         * @deprecated
+         */
+        @Deprecated
         public <E extends Exception> PreparedCallableQuery registerOutParameters(final BiOutParameterRegister<E> register) throws SQLException, E {
             register.register(stmt, this);
 
@@ -4556,6 +4633,16 @@ public final class JdbcUtil {
         void set(S stmt) throws SQLException, E;
     }
 
+    /**
+     * 
+     * @author haiyangl
+     *
+     * @param <S>
+     * @param <Q>
+     * @param <E>
+     * @deprecated
+     */
+    @Deprecated
     public static interface BiStatementSetter<S extends PreparedStatement, Q extends AbstractPreparedQuery<?, ?>, E extends Exception> {
         void set(S stmt, Q query) throws SQLException, E;
     }
@@ -4572,6 +4659,14 @@ public final class JdbcUtil {
         void register(CallableStatement stmt) throws SQLException, E;
     }
 
+    /**
+     * 
+     * @author haiyangl
+     *
+     * @param <E>
+     * @deprecated
+     */
+    @Deprecated
     public static interface BiOutParameterRegister<E extends Exception> {
         void register(CallableStatement stmt, PreparedCallableQuery query) throws SQLException, E;
     }
