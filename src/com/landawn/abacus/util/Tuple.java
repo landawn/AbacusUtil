@@ -1214,7 +1214,7 @@ public abstract class Tuple {
                 return true;
             }
 
-            if (obj != null && obj.getClass().equals(Tuple7.class)) {
+            if (obj != null && obj.getClass().equals(Tuple8.class)) {
                 final Tuple8<?, ?, ?, ?, ?, ?, ?, ?> other = (Tuple8<?, ?, ?, ?, ?, ?, ?, ?>) obj;
 
                 return N.equals(this._1, other._1) && N.equals(this._2, other._2) && N.equals(this._3, other._3) && N.equals(this._4, other._4)
@@ -1357,7 +1357,7 @@ public abstract class Tuple {
                 return true;
             }
 
-            if (obj != null && obj.getClass().equals(Tuple7.class)) {
+            if (obj != null && obj.getClass().equals(Tuple9.class)) {
                 final Tuple9<?, ?, ?, ?, ?, ?, ?, ?, ?> other = (Tuple9<?, ?, ?, ?, ?, ?, ?, ?, ?>) obj;
 
                 return N.equals(this._1, other._1) && N.equals(this._2, other._2) && N.equals(this._3, other._3) && N.equals(this._4, other._4)

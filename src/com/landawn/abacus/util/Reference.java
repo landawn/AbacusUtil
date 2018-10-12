@@ -110,32 +110,22 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return false;
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@link #notNull()}
-     */
-    @Deprecated
-    public boolean isNotNull() {
-        return value != null;
-    }
-
-    public boolean notNull() {
-        return value != null;
-    }
-
     public boolean isNull() {
         return value == null;
     }
 
+    public boolean isNotNull() {
+        return value != null;
+    }
+
     public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
-        if (notNull()) {
+        if (isNotNull()) {
             consumer.accept(value);
         }
     }
 
     public <E extends Exception, E2 extends Exception> void ifNotNullOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
-        if (notNull()) {
+        if (isNotNull()) {
             action.accept(value);
         } else {
             emptyAction.run();
@@ -154,7 +144,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      */
     @Deprecated
     public <E extends Exception> void acceptIfNotNull(final Try.Consumer<? super T, E> action) throws E {
-        if (notNull()) {
+        if (isNotNull()) {
             action.accept(value);
         }
     }
@@ -170,7 +160,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @return
      */
     public <U, E extends Exception> Nullable<U> mapIfNotNull(final Try.Function<? super T, U, E> mapper) throws E {
-        return notNull() ? Nullable.of(mapper.apply(value)) : Nullable.<U> empty();
+        return isNotNull() ? Nullable.of(mapper.apply(value)) : Nullable.<U> empty();
     }
 
     public <E extends Exception> Nullable<T> filter(final Try.Predicate<? super T, E> predicate) throws E {
@@ -178,7 +168,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
     }
 
     public <E extends Exception> Optional<T> filterIfNotNull(final Try.Predicate<? super T, E> predicate) throws E {
-        return notNull() && predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
+        return isNotNull() && predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
     }
 
     public Stream<T> stream() {
@@ -190,7 +180,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @return an empty Stream if the value is null.
      */
     public Stream<T> streamIfNotNull() {
-        return notNull() ? Stream.of(value) : Stream.<T> empty();
+        return isNotNull() ? Stream.of(value) : Stream.<T> empty();
     }
 
     /**
@@ -200,7 +190,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @return the value, if not present or null, otherwise {@code other}
      */
     public T orIfNull(T other) {
-        return notNull() ? value : other;
+        return isNotNull() ? value : other;
     }
 
     /**
@@ -211,7 +201,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @throws IllegalArgumentException if value is not present and {@code other} is null
      */
     public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
-        return notNull() ? value : other.get();
+        return isNotNull() ? value : other.get();
     }
 
     /**
@@ -229,7 +219,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
-        if (notNull()) {
+        if (isNotNull()) {
             return value;
         } else {
             throw exceptionSupplier.get();

@@ -3457,6 +3457,16 @@ public final class JdbcUtil {
             }
         }
 
+        public Nullable<BigDecimal> queryBigDecimal() throws SQLException {
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Nullable.of(rs.getBigDecimal(1)) : Nullable.<BigDecimal> empty();
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
         public Nullable<java.sql.Date> queryForDate() throws SQLException {
             assertNotClosed();
 

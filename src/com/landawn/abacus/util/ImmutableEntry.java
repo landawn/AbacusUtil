@@ -36,7 +36,7 @@ public class ImmutableEntry<K, V> extends AbstractMap.SimpleImmutableEntry<K, V>
     }
 
     /**
-     * Should always throw UnsupportedOperationException.
+     * Always throw UnsupportedOperationException.
      * 
      * @deprecated
      * @throws UnsupportedOperationException

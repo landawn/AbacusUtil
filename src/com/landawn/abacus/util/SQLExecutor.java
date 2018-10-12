@@ -1876,7 +1876,7 @@ public final class SQLExecutor implements Closeable {
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         final Nullable<?> result = query(conn, sql, statementSetter, SINGLE_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
-        return result.notNull() && !targetClass.isAssignableFrom(result.get().getClass()) ? Nullable.of(N.as(targetClass, result.get()))
+        return result.isNotNull() && !targetClass.isAssignableFrom(result.get().getClass()) ? Nullable.of(N.as(targetClass, result.get()))
                 : (Nullable<T>) result;
     }
 
