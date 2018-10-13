@@ -2031,6 +2031,115 @@ public final class SQLExecutor implements Closeable {
         return query(conn, sql, statementSetter, resultExtractor, jdbcSettings, parameters);
     }
 
+    @SafeVarargs
+    public final <T> List<T> listAll(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return listAll(sql, recordGetter, null, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> List<T> listAll(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+
+        if (jdbcSettings == null || N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
+            return list(sql, recordGetter, statementSetter, jdbcSettings, parameters);
+        }
+
+        final Collection<String> dss = jdbcSettings.getQueryWithDataSources();
+
+        if (jdbcSettings.isQueryInParallel()) {
+            final List<List<T>> resultList = Stream.of(dss).map(new Function<String, JdbcSettings>() {
+                @Override
+                public JdbcSettings apply(String ds) {
+                    final JdbcSettings newJdbcSettings = jdbcSettings.copy();
+                    newJdbcSettings.setQueryWithDataSources(null);
+                    newJdbcSettings.setQueryWithDataSource(ds);
+                    return newJdbcSettings;
+                }
+            }).parallel(dss.size()).map(new Function<JdbcSettings, List<T>>() {
+                @Override
+                public List<T> apply(JdbcSettings newJdbcSettings) {
+                    return list(sql, recordGetter, statementSetter, newJdbcSettings, parameters);
+                }
+            }).toList();
+
+            List<T> finalResult = null;
+
+            for (List<T> result : resultList) {
+                if (finalResult == null) {
+                    finalResult = result;
+                } else {
+                    finalResult.addAll(result);
+                }
+            }
+
+            return finalResult;
+        } else {
+            final JdbcSettings newJdbcSettings = jdbcSettings.copy();
+            newJdbcSettings.setQueryWithDataSources(null);
+            List<T> finalResult = null;
+
+            for (String ds : dss) {
+                newJdbcSettings.setQueryWithDataSource(ds);
+
+                if (finalResult == null) {
+                    finalResult = list(sql, recordGetter, statementSetter, newJdbcSettings, parameters);
+                } else {
+                    finalResult.addAll(list(sql, recordGetter, statementSetter, newJdbcSettings, parameters));
+                }
+            }
+
+            return finalResult;
+        }
+    }
+
+    @SafeVarargs
+    public final <T> List<T> listAll(final List<String> sqls, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return listAll(sqls, recordGetter, null, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> List<T> listAll(final List<String> sqls, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        if (sqls.size() == 1) {
+            return listAll(sqls.get(0), recordGetter, statementSetter, jdbcSettings, parameters);
+        }
+
+        if (jdbcSettings != null && jdbcSettings.isQueryInParallel()) {
+            final List<List<T>> resultList = Stream.of(sqls).parallel(sqls.size()).map(new Function<String, List<T>>() {
+                @Override
+                public List<T> apply(String sql) {
+                    return listAll(sql, recordGetter, statementSetter, jdbcSettings, parameters);
+                }
+            }).toList();
+
+            List<T> finalResult = null;
+
+            for (List<T> result : resultList) {
+                if (finalResult == null) {
+                    finalResult = result;
+                } else {
+                    finalResult.addAll(result);
+                }
+            }
+
+            return finalResult;
+        } else {
+            List<T> finalResult = null;
+
+            for (String sql : sqls) {
+                if (finalResult == null) {
+                    finalResult = listAll(sql, recordGetter, statementSetter, jdbcSettings, parameters);
+                } else {
+                    finalResult.addAll(listAll(sql, recordGetter, statementSetter, jdbcSettings, parameters));
+                }
+            }
+
+            return finalResult;
+        }
+    }
+
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */

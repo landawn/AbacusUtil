@@ -3162,6 +3162,42 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setBlob(int parameterIndex, java.sql.Blob x) throws SQLException {
+            stmt.setBlob(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
+            stmt.setBlob(parameterIndex, inputStream);
+
+            return (Q) this;
+        }
+
+        public Q setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+            stmt.setBlob(parameterIndex, inputStream, length);
+
+            return (Q) this;
+        }
+
+        public Q setClob(int parameterIndex, java.sql.Clob x) throws SQLException {
+            stmt.setClob(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setClob(int parameterIndex, Reader reader) throws SQLException {
+            stmt.setClob(parameterIndex, reader);
+
+            return (Q) this;
+        }
+
+        public Q setClob(int parameterIndex, Reader reader, long length) throws SQLException {
+            stmt.setClob(parameterIndex, reader, length);
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -4433,6 +4469,42 @@ public final class JdbcUtil {
 
         public PreparedCallableQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
             stmt.setTimestamp(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
+            stmt.setBlob(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream) throws SQLException {
+            stmt.setBlob(parameterName, inputStream);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
+            stmt.setBlob(parameterName, inputStream, length);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setClob(String parameterName, java.sql.Clob x) throws SQLException {
+            stmt.setClob(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setClob(String parameterName, Reader reader) throws SQLException {
+            stmt.setClob(parameterName, reader);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setClob(String parameterName, Reader reader, long length) throws SQLException {
+            stmt.setClob(parameterName, reader, length);
 
             return this;
         }
