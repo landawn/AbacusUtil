@@ -18,13 +18,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,14 +71,6 @@ import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.ToBooleanFunction;
-import com.landawn.abacus.util.function.ToByteFunction;
-import com.landawn.abacus.util.function.ToCharFunction;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToFloatFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -177,14 +173,14 @@ public final class SQLExecutor implements Closeable {
 
     static final StatementSetter DEFAULT_STATEMENT_SETTER = new DefaultStatementSetter();
 
-    static final ResultExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new ResultExtractor<RowIterator>() {
+    private static final ResultExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new ResultExtractor<RowIterator>() {
         @Override
         public RowIterator extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             return new RowIterator(rs, jdbcSettings.getOffset(), jdbcSettings.getCount(), true, true);
         }
     };
 
-    static final ResultExtractor<Boolean> EXISTS_RESULT_SET_EXTRACTOR = new ResultExtractor<Boolean>() {
+    private static final ResultExtractor<Boolean> EXISTS_RESULT_SET_EXTRACTOR = new ResultExtractor<Boolean>() {
         @Override
         public Boolean extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
@@ -196,7 +192,217 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
-    static final ResultExtractor<Nullable<?>> SINGLE_RESULT_SET_EXTRACTOR = new ResultExtractor<Nullable<?>>() {
+    private static final ResultExtractor<OptionalBoolean> SINGLE_BOOLEAN_EXTRACTOR = new ResultExtractor<OptionalBoolean>() {
+        @Override
+        public OptionalBoolean extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalBoolean.of(rs.getBoolean(1));
+            }
+
+            return OptionalBoolean.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalChar> SINGLE_CHAR_EXTRACTOR = new ResultExtractor<OptionalChar>() {
+        @Override
+        public OptionalChar extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                final String str = rs.getString(1);
+
+                return OptionalChar.of(str == null || str.length() == 0 ? N.CHAR_0 : str.charAt(0));
+            }
+
+            return OptionalChar.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalByte> SINGLE_BYTE_EXTRACTOR = new ResultExtractor<OptionalByte>() {
+        @Override
+        public OptionalByte extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalByte.of(rs.getByte(1));
+            }
+
+            return OptionalByte.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalShort> SINGLE_SHORT_EXTRACTOR = new ResultExtractor<OptionalShort>() {
+        @Override
+        public OptionalShort extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalShort.of(rs.getShort(1));
+            }
+
+            return OptionalShort.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalInt> SINGLE_INT_EXTRACTOR = new ResultExtractor<OptionalInt>() {
+        @Override
+        public OptionalInt extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalInt.of(rs.getInt(1));
+            }
+
+            return OptionalInt.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalLong> SINGLE_LONG_EXTRACTOR = new ResultExtractor<OptionalLong>() {
+        @Override
+        public OptionalLong extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalLong.of(rs.getLong(1));
+            }
+
+            return OptionalLong.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalFloat> SINGLE_FLOAT_EXTRACTOR = new ResultExtractor<OptionalFloat>() {
+        @Override
+        public OptionalFloat extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalFloat.of(rs.getFloat(1));
+            }
+
+            return OptionalFloat.empty();
+        }
+    };
+
+    private static final ResultExtractor<OptionalDouble> SINGLE_DOUBLE_EXTRACTOR = new ResultExtractor<OptionalDouble>() {
+        @Override
+        public OptionalDouble extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return OptionalDouble.of(rs.getDouble(1));
+            }
+
+            return OptionalDouble.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<BigDecimal>> SINGLE_BIG_DECIMAL_EXTRACTOR = new ResultExtractor<Nullable<BigDecimal>>() {
+        @Override
+        public Nullable<BigDecimal> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return Nullable.of(rs.getBigDecimal(1));
+            }
+
+            return Nullable.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<String>> SINGLE_STRING_EXTRACTOR = new ResultExtractor<Nullable<String>>() {
+        @Override
+        public Nullable<String> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return Nullable.of(rs.getString(1));
+            }
+
+            return Nullable.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<Date>> SINGLE_DATE_EXTRACTOR = new ResultExtractor<Nullable<Date>>() {
+        @Override
+        public Nullable<Date> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return Nullable.of(rs.getDate(1));
+            }
+
+            return Nullable.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<Time>> SINGLE_TIME_EXTRACTOR = new ResultExtractor<Nullable<Time>>() {
+        @Override
+        public Nullable<Time> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return Nullable.of(rs.getTime(1));
+            }
+
+            return Nullable.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<Timestamp>> SINGLE_TIMESTAMP_EXTRACTOR = new ResultExtractor<Nullable<Timestamp>>() {
+        @Override
+        public Nullable<Timestamp> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            long offset = jdbcSettings.getOffset();
+
+            while ((offset-- > 0) && rs.next()) {
+            }
+
+            if (offset <= 0 && rs.next()) {
+                return Nullable.of(rs.getTimestamp(1));
+            }
+
+            return Nullable.empty();
+        }
+    };
+
+    private static final ResultExtractor<Nullable<?>> SINGLE_RESULT_SET_EXTRACTOR = new ResultExtractor<Nullable<?>>() {
         @Override
         public Nullable<?> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
@@ -209,27 +415,6 @@ public final class SQLExecutor implements Closeable {
             }
 
             return Nullable.empty();
-        }
-    };
-
-    static final ResultExtractor<List<Object>> LIST_RESULT_SET_EXTRACTOR = new ResultExtractor<List<Object>>() {
-        @Override
-        public List<Object> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-            N.checkArgument(rs.getMetaData().getColumnCount() == 1, "Multiple columns selected in query");
-
-            long offset = jdbcSettings.getOffset();
-            long count = jdbcSettings.getCount();
-
-            while ((offset-- > 0) && rs.next()) {
-            }
-
-            final List<Object> result = new ArrayList<>((int) N.min(count, 16));
-
-            while (count-- > 0 && rs.next()) {
-                result.add(rs.getObject(1));
-            }
-
-            return result;
         }
     };
 
@@ -1639,6 +1824,60 @@ public final class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
+    public final <T> Optional<T> findFirst(final String sql, final Try.Function<ResultSet, T, SQLException> recordGetter, final Object... parameters) {
+        return findFirst(sql, null, recordGetter, null, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final String sql, final StatementSetter statementSetter, final Try.Function<ResultSet, T, SQLException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return findFirst(null, sql, statementSetter, recordGetter, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final Try.Function<ResultSet, T, SQLException> recordGetter,
+            final Object... parameters) {
+        return findFirst(conn, sql, null, recordGetter, null, parameters);
+    }
+
+    /**
+     *
+     * Remember to add {@code limit} condition if big result will be returned by the query.
+     *
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param recordGetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final Try.Function<ResultSet, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        N.checkArgNotNull(recordGetter);
+
+        final ResultExtractor<Optional<T>> resultExtractor = new ResultExtractor<Optional<T>>() {
+            @Override
+            public Optional<T> extractData(ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
+                long offset = jdbcSettings.getOffset();
+
+                while ((offset-- > 0) && rs.next()) {
+                }
+
+                if (offset <= 0 && rs.next()) {
+                    return Optional.of(recordGetter.apply(rs));
+                }
+
+                return Optional.empty();
+            }
+        };
+
+        return query(conn, sql, statementSetter, resultExtractor, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
     public final <T> List<T> find(final Class<T> targetClass, final String sql, final Object... parameters) {
         return find(targetClass, sql, null, null, parameters);
     }
@@ -1736,12 +1975,68 @@ public final class SQLExecutor implements Closeable {
         return queryAll(conn, sqls, statementSetter, jdbcSettings, parameters).toList(targetClass);
     }
 
+    @SafeVarargs
+    public final <T> List<T> list(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+        return list(sql, null, recordGetter, null, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> List<T> list(final String sql, final StatementSetter statementSetter,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return list(null, sql, statementSetter, recordGetter, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <T> List<T> list(final Connection conn, final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final Object... parameters) {
+        return list(conn, sql, null, recordGetter, null, parameters);
+    }
+
+    /**
+     *
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param recordGetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final <T> List<T> list(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        N.checkArgNotNull(recordGetter);
+
+        final ResultExtractor<List<T>> resultExtractor = new ResultExtractor<List<T>>() {
+            @Override
+            public List<T> extractData(ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
+                long offset = jdbcSettings.getOffset();
+                long count = jdbcSettings.getCount();
+
+                while ((offset-- > 0) && rs.next()) {
+                }
+
+                final List<T> result = new ArrayList<>((int) N.min(count, 16));
+                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+
+                while (count-- > 0 && rs.next()) {
+                    result.add(recordGetter.apply(rs, columnLabels));
+                }
+
+                return result;
+            }
+        };
+
+        return query(conn, sql, statementSetter, resultExtractor, jdbcSettings, parameters);
+    }
+
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     @SafeVarargs
     public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
-        return queryForSingleResult(Boolean.class, sql, parameters).mapToBoolean(ToBooleanFunction.UNBOX);
+        return query(sql, null, SINGLE_BOOLEAN_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1750,7 +2045,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalChar queryForChar(final String sql, final Object... parameters) {
-        return queryForSingleResult(Character.class, sql, parameters).mapToChar(ToCharFunction.UNBOX);
+        return query(sql, null, SINGLE_CHAR_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1758,7 +2053,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalByte queryForByte(final String sql, final Object... parameters) {
-        return queryForSingleResult(Byte.class, sql, parameters).mapToByte(ToByteFunction.UNBOX);
+        return query(sql, null, SINGLE_BYTE_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1766,7 +2061,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalShort queryForShort(final String sql, final Object... parameters) {
-        return queryForSingleResult(Short.class, sql, parameters).mapToShort(ToShortFunction.UNBOX);
+        return query(sql, null, SINGLE_SHORT_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1774,7 +2069,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalInt queryForInt(final String sql, final Object... parameters) {
-        return queryForSingleResult(Integer.class, sql, parameters).mapToInt(ToIntFunction.UNBOX);
+        return query(sql, null, SINGLE_INT_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1782,7 +2077,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalLong queryForLong(final String sql, final Object... parameters) {
-        return queryForSingleResult(Long.class, sql, parameters).mapToLong(ToLongFunction.UNBOX);
+        return query(sql, null, SINGLE_LONG_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1790,7 +2085,7 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
-        return queryForSingleResult(Float.class, sql, parameters).mapToFloat(ToFloatFunction.UNBOX);
+        return query(sql, null, SINGLE_FLOAT_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1798,7 +2093,15 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
-        return queryForSingleResult(Double.class, sql, parameters).mapToDouble(ToDoubleFunction.UNBOX);
+        return query(sql, null, SINGLE_DOUBLE_EXTRACTOR, null, parameters);
+    }
+
+    /**
+     * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
+     */
+    @SafeVarargs
+    public final Nullable<BigDecimal> queryForBigDecimal(final String sql, final Object... parameters) {
+        return query(sql, null, SINGLE_BIG_DECIMAL_EXTRACTOR, null, parameters);
     }
 
     /**
@@ -1806,31 +2109,31 @@ public final class SQLExecutor implements Closeable {
      */
     @SafeVarargs
     public final Nullable<String> queryForString(final String sql, final Object... parameters) {
-        return queryForSingleResult(String.class, null, sql, parameters);
+        return query(sql, null, SINGLE_STRING_EXTRACTOR, null, parameters);
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final Nullable<java.sql.Date> queryForDate(final String sql, final Object... parameters) {
-        return queryForSingleResult(java.sql.Date.class, sql, parameters);
+    public final Nullable<Date> queryForDate(final String sql, final Object... parameters) {
+        return query(sql, null, SINGLE_DATE_EXTRACTOR, null, parameters);
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final Nullable<java.sql.Time> queryForTime(final String sql, final Object... parameters) {
-        return queryForSingleResult(java.sql.Time.class, sql, parameters);
+    public final Nullable<Time> queryForTime(final String sql, final Object... parameters) {
+        return query(sql, null, SINGLE_TIME_EXTRACTOR, null, parameters);
     }
 
     /**
     * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
     */
     @SafeVarargs
-    public final Nullable<java.sql.Timestamp> queryForTimestamp(final String sql, final Object... parameters) {
-        return queryForSingleResult(java.sql.Timestamp.class, sql, parameters);
+    public final Nullable<Timestamp> queryForTimestamp(final String sql, final Object... parameters) {
+        return query(sql, null, SINGLE_TIMESTAMP_EXTRACTOR, null, parameters);
     }
 
     @SafeVarargs
@@ -1907,65 +2210,6 @@ public final class SQLExecutor implements Closeable {
     //    public Map<String, Object> queryForMap(final Connection conn, final String sql, StatementSetter statementSetter, Object... parameters) {
     //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
     //    }
-
-    /**
-     * Query single column.
-     * 
-     * @param sql
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final <T> List<T> queryForList(final String sql, final Object... parameters) {
-        return queryForList(sql, null, null, parameters);
-    }
-
-    /**
-     * Query single column.
-     * 
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final <T> List<T> queryForList(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        return queryForList(null, sql, statementSetter, jdbcSettings, parameters);
-    }
-
-    /**
-     * Query single column.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object... parameters) {
-        return queryForList(conn, sql, null, null, parameters);
-    }
-
-    /**
-     * Query single column.
-     * 
-     * @param conn
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @throws ClassCastException
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @SafeVarargs
-    public final <T> List<T> queryForList(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        final List<Object> result = query(conn, sql, statementSetter, LIST_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
-
-        return (List) result;
-    }
 
     @SafeVarargs
     public final DataSet query(final String sql, final Object... parameters) {
@@ -2734,13 +2978,24 @@ public final class SQLExecutor implements Closeable {
 
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, false);
+        PreparedQuery result = null;
+        boolean isOk = false;
+
         try {
             final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, DEFAULT_STATEMENT_SETTER, jdbcSettings, false, false,
                     N.EMPTY_OBJECT_ARRAY);
-            return new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
+
+            result = new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
+            isOk = true;
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
+        } finally {
+            if (isOk == false && conn == null) {
+                closeQuietly(localConn);
+            }
         }
+
+        return result;
     }
 
     public PreparedCallableQuery prepareCallableQuery(String query) throws UncheckedSQLException {
@@ -2762,13 +3017,23 @@ public final class SQLExecutor implements Closeable {
 
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT, false);
+        PreparedCallableQuery result = null;
+        boolean isOk = false;
+
         try {
             final CallableStatement stmt = prepareCallableStatement(ds, localConn, namedSQL, DEFAULT_STATEMENT_SETTER, jdbcSettings, false, false,
                     N.EMPTY_OBJECT_ARRAY);
-            return new PreparedCallableQuery(stmt).onClose(conn == null ? localConn : null);
+
+            result = new PreparedCallableQuery(stmt).onClose(conn == null ? localConn : null);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
+        } finally {
+            if (isOk == false && conn == null) {
+                closeQuietly(localConn);
+            }
         }
+
+        return result;
     }
 
     public final void execute(final String sql, final Object... parameters) {
@@ -2975,6 +3240,8 @@ public final class SQLExecutor implements Closeable {
             try {
                 columnNameList = ImmutableList.of(JdbcUtil.getColumnNameList(conn, tableName));
                 _tableColumnNamePool.put(tableName, columnNameList);
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
             } finally {
                 closeQuietly(conn);
             }
@@ -3939,67 +4206,81 @@ public final class SQLExecutor implements Closeable {
         }
 
         public OptionalBoolean queryForBoolean(final String propName, final Condition whereCause) {
-            final Nullable<Boolean> res = queryForSingleResult(Boolean.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalBoolean.of(res.orIfNull(false)) : OptionalBoolean.empty();
+            return sqlExecutor.queryForBoolean(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalChar queryForChar(final String propName, final Condition whereCause) {
-            final Nullable<Character> res = queryForSingleResult(Character.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalChar.of(res.orIfNull((char) 0)) : OptionalChar.empty();
+            return sqlExecutor.queryForChar(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalByte queryForByte(final String propName, final Condition whereCause) {
-            final Nullable<Byte> res = queryForSingleResult(Byte.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalByte.of(res.orIfNull((byte) 0)) : OptionalByte.empty();
+            return sqlExecutor.queryForByte(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalShort queryForShort(final String propName, final Condition whereCause) {
-            final Nullable<Short> res = queryForSingleResult(Short.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalShort.of(res.orIfNull((short) 0)) : OptionalShort.empty();
+            return sqlExecutor.queryForShort(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalInt queryForInt(final String propName, final Condition whereCause) {
-            final Nullable<Integer> res = queryForSingleResult(Integer.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalInt.of(res.orIfNull(0)) : OptionalInt.empty();
+            return sqlExecutor.queryForInt(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalLong queryForLong(final String propName, final Condition whereCause) {
-            final Nullable<Long> res = queryForSingleResult(Long.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalLong.of(res.orIfNull(0L)) : OptionalLong.empty();
+            return sqlExecutor.queryForLong(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalFloat queryForFloat(final String propName, final Condition whereCause) {
-            final Nullable<Float> res = queryForSingleResult(Float.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalFloat.of(res.orIfNull(0F)) : OptionalFloat.empty();
+            return sqlExecutor.queryForFloat(pair.sql, pair.parameters.toArray());
         }
 
         public OptionalDouble queryForDouble(final String propName, final Condition whereCause) {
-            final Nullable<Double> res = queryForSingleResult(Double.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return res.isPresent() ? OptionalDouble.of(res.orIfNull(0D)) : OptionalDouble.empty();
+            return sqlExecutor.queryForDouble(pair.sql, pair.parameters.toArray());
+        }
+
+        public Nullable<BigDecimal> queryForBigDecimal(final String propName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+
+            return sqlExecutor.queryForBigDecimal(pair.sql, pair.parameters.toArray());
         }
 
         public Nullable<String> queryForString(final String propName, final Condition whereCause) {
-            return queryForSingleResult(String.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+
+            return sqlExecutor.queryForString(pair.sql, pair.parameters.toArray());
         }
 
         public Nullable<java.sql.Date> queryForDate(final String propName, final Condition whereCause) {
-            return queryForSingleResult(java.sql.Date.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+
+            return sqlExecutor.queryForDate(pair.sql, pair.parameters.toArray());
         }
 
         public Nullable<java.sql.Time> queryForTime(final String propName, final Condition whereCause) {
-            return queryForSingleResult(java.sql.Time.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+
+            return sqlExecutor.queryForTime(pair.sql, pair.parameters.toArray());
         }
 
         public Nullable<java.sql.Timestamp> queryForTimestamp(final String propName, final Condition whereCause) {
-            return queryForSingleResult(java.sql.Timestamp.class, propName, whereCause);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+
+            return sqlExecutor.queryForTimestamp(pair.sql, pair.parameters.toArray());
         }
 
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
@@ -4047,24 +4328,6 @@ public final class SQLExecutor implements Closeable {
             final SP pair = prepareQuery(selectPropNames, whereCause, 1);
 
             return sqlExecutor.findFirst(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
-        }
-
-        public <E> List<E> queryForList(final String propName, final Condition whereCause) {
-            return queryForList(propName, whereCause, null);
-        }
-
-        public <E> List<E> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return queryForList(null, propName, whereCause, jdbcSettings);
-        }
-
-        public <E> List<E> queryForList(final Connection conn, final String propName, final Condition whereCause) {
-            return queryForList(conn, propName, whereCause, null);
-        }
-
-        public <E> List<E> queryForList(final Connection conn, final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause);
-
-            return sqlExecutor.queryForList(conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public Try<Stream<T>> stream(final Condition whereCause) {
@@ -5457,6 +5720,15 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public ContinuableFuture<Nullable<BigDecimal>> queryForBigDecimal(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<BigDecimal>>() {
+                @Override
+                public Nullable<BigDecimal> call() throws Exception {
+                    return mapper.queryForBigDecimal(propName, whereCause);
+                }
+            });
+        }
+
         public ContinuableFuture<Nullable<String>> queryForString(final String propName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<String>>() {
                 @Override
@@ -5583,43 +5855,6 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Optional<T> call() throws Exception {
                     return mapper.findFirst(conn, selectPropNames, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public <E> ContinuableFuture<List<E>> queryForList(final String propName, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
-                @Override
-                public List<E> call() throws Exception {
-                    return mapper.queryForList(propName, whereCause);
-                }
-            });
-        }
-
-        public <E> ContinuableFuture<List<E>> queryForList(final String propName, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
-                @Override
-                public List<E> call() throws Exception {
-                    return mapper.queryForList(propName, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public <E> ContinuableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
-                @Override
-                public List<E> call() throws Exception {
-                    return mapper.queryForList(conn, propName, whereCause);
-                }
-            });
-        }
-
-        public <E> ContinuableFuture<List<E>> queryForList(final Connection conn, final String propName, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
-                @Override
-                public List<E> call() throws Exception {
-                    return mapper.queryForList(conn, propName, whereCause, jdbcSettings);
                 }
             });
         }

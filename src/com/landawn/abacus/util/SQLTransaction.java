@@ -85,6 +85,11 @@ public final class SQLTransaction implements Transaction {
         return status;
     }
 
+    @Override
+    public boolean isActive() {
+        return status == Status.ACTIVE;
+    }
+
     /**
      * DO NOT CLOSE the connection manually. It will be automatically closed after the transaction is committed or rolled back.
      * 

@@ -14,7 +14,10 @@
 
 package com.landawn.abacus.util;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -565,7 +568,7 @@ public final class AsyncSQLExecutor {
     //            }
     //        });
     //    }
-    //
+
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final Class<T> targetClass, final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
@@ -604,6 +607,50 @@ public final class AsyncSQLExecutor {
             @Override
             public Optional<T> call() throws Exception {
                 return sqlExecutor.findFirst(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final Try.Function<ResultSet, T, SQLException> recordGetter,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return sqlExecutor.findFirst(sql, recordGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final StatementSetter statementSetter,
+            final Try.Function<ResultSet, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return sqlExecutor.findFirst(sql, statementSetter, recordGetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql,
+            final Try.Function<ResultSet, T, SQLException> recordGetter, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return sqlExecutor.findFirst(conn, sql, recordGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final Try.Function<ResultSet, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return sqlExecutor.findFirst(conn, sql, statementSetter, recordGetter, jdbcSettings, parameters);
             }
         });
     }
@@ -735,6 +782,50 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
+    public final <T> ContinuableFuture<List<T>> list(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.list(sql, recordGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<List<T>> list(final String sql, final StatementSetter statementSetter,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.list(sql, statementSetter, recordGetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.list(conn, sql, recordGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<T>>() {
+            @Override
+            public List<T> call() throws Exception {
+                return sqlExecutor.list(conn, sql, statementSetter, recordGetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
     public final ContinuableFuture<OptionalBoolean> queryForBoolean(final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<OptionalBoolean>() {
             @Override
@@ -810,6 +901,16 @@ public final class AsyncSQLExecutor {
             @Override
             public OptionalDouble call() throws Exception {
                 return sqlExecutor.queryForDouble(sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final ContinuableFuture<Nullable<BigDecimal>> queryForBigDecimal(final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<BigDecimal>>() {
+            @Override
+            public Nullable<BigDecimal> call() throws Exception {
+                return sqlExecutor.queryForBigDecimal(sql, parameters);
             }
         });
     }
@@ -893,48 +994,6 @@ public final class AsyncSQLExecutor {
             @Override
             public Nullable<T> call() throws Exception {
                 return sqlExecutor.queryForSingleResult(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
-            }
-        });
-    }
-
-    @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> queryForList(final String sql, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return sqlExecutor.queryForList(sql, parameters);
-            }
-        });
-    }
-
-    @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> queryForList(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return sqlExecutor.queryForList(sql, statementSetter, jdbcSettings, parameters);
-            }
-        });
-    }
-
-    @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> queryForList(final Connection conn, final String sql, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return sqlExecutor.queryForList(conn, sql, parameters);
-            }
-        });
-    }
-
-    @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> queryForList(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return sqlExecutor.queryForList(conn, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }

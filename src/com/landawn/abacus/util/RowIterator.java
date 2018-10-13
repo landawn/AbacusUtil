@@ -65,11 +65,11 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
         try {
             this.metaData = rs.getMetaData();
             this.columnCount = metaData.getColumnCount();
+
+            JdbcUtil.skip(rs, offset);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         }
-
-        JdbcUtil.skip(rs, offset);
 
         this.closeStatement = closeStatement;
         this.closeConnection = closeConnection;
@@ -85,7 +85,11 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
 
     public List<String> columnLabels() throws UncheckedSQLException {
         if (columnLabelList == null) {
-            columnLabelList = ImmutableList.of(JdbcUtil.getColumnLabelList(rs));
+            try {
+                columnLabelList = ImmutableList.of(JdbcUtil.getColumnLabelList(rs));
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            }
         }
 
         return columnLabelList;
@@ -114,7 +118,13 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
         }
 
         final long m = Math.min(hasNext ? n - 1 : n, count - cnt);
-        JdbcUtil.skip(rs, m);
+
+        try {
+            JdbcUtil.skip(rs, m);
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        }
+
         cnt += Math.min(n, count - cnt);
         hasNext = false;
     }
