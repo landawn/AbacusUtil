@@ -956,44 +956,88 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String sql, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetClass, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<T> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return sqlExecutor.queryForSingleResult(targetClass, sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<T> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return sqlExecutor.queryForSingleResult(targetClass, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetClass, final Connection conn, final String sql,
             final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<T> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return sqlExecutor.queryForSingleResult(targetClass, conn, sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetClass, final Connection conn, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<T> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return sqlExecutor.queryForSingleResult(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final String sql, final Try.Function<ResultSet, V, SQLException> resultGetter,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForSingleResult(sql, resultGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final String sql, final StatementSetter statementSetter,
+            final Try.Function<ResultSet, V, SQLException> resultGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForSingleResult(sql, statementSetter, resultGetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Connection conn, final String sql,
+            final Try.Function<ResultSet, V, SQLException> resultGetter, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForSingleResult(conn, sql, resultGetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Connection conn, final String sql, final StatementSetter statementSetter,
+            final Try.Function<ResultSet, V, SQLException> resultGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForSingleResult(conn, sql, statementSetter, resultGetter, jdbcSettings, parameters);
             }
         });
     }

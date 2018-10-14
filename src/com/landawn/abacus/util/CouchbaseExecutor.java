@@ -825,7 +825,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
         final Iterator<QueryRow> it = resultSet.rows();
         final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
@@ -1319,10 +1319,10 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Nullable<T>>() {
+    public final <V> ContinuableFuture<Nullable<V>> asyncQueryForSingleResult(final Class<V> targetClass, final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<T> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return queryForSingleResult(targetClass, query, parameters);
             }
         });

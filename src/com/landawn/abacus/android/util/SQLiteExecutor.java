@@ -1325,7 +1325,7 @@ public final class SQLiteExecutor {
     public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
         final Nullable<Boolean> result = queryForSingleResult(Boolean.class, sql, parameters);
 
-        return result.isPresent() ? OptionalBoolean.of(result.orIfNull(false)) : OptionalBoolean.empty();
+        return result.isPresent() ? OptionalBoolean.of(result.orElseIfNull(false)) : OptionalBoolean.empty();
     }
 
     /**
@@ -1336,7 +1336,7 @@ public final class SQLiteExecutor {
     public final OptionalChar queryForChar(final String sql, final Object... parameters) {
         final Nullable<Character> result = queryForSingleResult(Character.class, sql, parameters);
 
-        return result.isPresent() ? OptionalChar.of(result.orIfNull((char) 0)) : OptionalChar.empty();
+        return result.isPresent() ? OptionalChar.of(result.orElseIfNull((char) 0)) : OptionalChar.empty();
     }
 
     /**
@@ -1346,7 +1346,7 @@ public final class SQLiteExecutor {
     public final OptionalByte queryForByte(final String sql, final Object... parameters) {
         final Nullable<Byte> result = queryForSingleResult(Byte.class, sql, parameters);
 
-        return result.isPresent() ? OptionalByte.of(result.orIfNull((byte) 0)) : OptionalByte.empty();
+        return result.isPresent() ? OptionalByte.of(result.orElseIfNull((byte) 0)) : OptionalByte.empty();
     }
 
     /**
@@ -1356,7 +1356,7 @@ public final class SQLiteExecutor {
     public final OptionalShort queryForShort(final String sql, final Object... parameters) {
         final Nullable<Short> result = queryForSingleResult(Short.class, sql, parameters);
 
-        return result.isPresent() ? OptionalShort.of(result.orIfNull((short) 0)) : OptionalShort.empty();
+        return result.isPresent() ? OptionalShort.of(result.orElseIfNull((short) 0)) : OptionalShort.empty();
     }
 
     /**
@@ -1366,7 +1366,7 @@ public final class SQLiteExecutor {
     public final OptionalInt queryForInt(final String sql, final Object... parameters) {
         final Nullable<Integer> result = queryForSingleResult(Integer.class, sql, parameters);
 
-        return result.isPresent() ? OptionalInt.of(result.orIfNull(0)) : OptionalInt.empty();
+        return result.isPresent() ? OptionalInt.of(result.orElseIfNull(0)) : OptionalInt.empty();
     }
 
     /**
@@ -1376,7 +1376,7 @@ public final class SQLiteExecutor {
     public final OptionalLong queryForLong(final String sql, final Object... parameters) {
         final Nullable<Long> result = queryForSingleResult(Long.class, sql, parameters);
 
-        return result.isPresent() ? OptionalLong.of(result.orIfNull(0L)) : OptionalLong.empty();
+        return result.isPresent() ? OptionalLong.of(result.orElseIfNull(0L)) : OptionalLong.empty();
     }
 
     /**
@@ -1386,7 +1386,7 @@ public final class SQLiteExecutor {
     public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
         final Nullable<Float> result = queryForSingleResult(Float.class, sql, parameters);
 
-        return result.isPresent() ? OptionalFloat.of(result.orIfNull(0f)) : OptionalFloat.empty();
+        return result.isPresent() ? OptionalFloat.of(result.orElseIfNull(0f)) : OptionalFloat.empty();
     }
 
     /**
@@ -1396,7 +1396,7 @@ public final class SQLiteExecutor {
     public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
         final Nullable<Double> result = queryForSingleResult(Double.class, sql, parameters);
 
-        return result.isPresent() ? OptionalDouble.of(result.orIfNull(0d)) : OptionalDouble.empty();
+        return result.isPresent() ? OptionalDouble.of(result.orElseIfNull(0d)) : OptionalDouble.empty();
     }
 
     /**
@@ -1453,7 +1453,7 @@ public final class SQLiteExecutor {
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
+    public final <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final String sql, Object... parameters) {
         DataSet rs = null;
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1467,7 +1467,7 @@ public final class SQLiteExecutor {
         if (N.isNullOrEmpty(rs)) {
             return Nullable.empty();
         } else {
-            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
+            return targetClass == null ? Nullable.of((V) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
         }
     }
 

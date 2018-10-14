@@ -1,176 +1,83 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (c) 2017, Haiyang Li.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.IntStream;
 
-/**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
- * <br />
- *
- * A container object which may or may not contain a {@code int} value.
- * If a value is present, {@code isPresent()} will return {@code true} and
- * {@code get()} will return the value.
- *
- * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #or(int) orElse()}
- * (return a default value if value not present) and
- * {@link #ifPresent(java.util.function.IntConsumer) ifPresent()} (execute a block
- * of code if the value is present).
- *
- * <p>This is a <a href="../lang/doc-files/ValueBased.html">value-based</a>
- * class; use of identity-sensitive operations (including reference equality
- * ({@code ==}), identity hash code, or synchronization) on instances of
- * {@code OptionalInt} may have unpredictable results and should be avoided.
- *
- * @since 1.8
- */
 public final class OptionalInt implements Comparable<OptionalInt> {
-    /**
-     * Common instance for {@code empty()}.
-     */
     private static final OptionalInt EMPTY = new OptionalInt();
 
-    /**
-     * If true then the value is present, otherwise indicates no value is present
-     */
-    private final boolean isPresent;
     private final int value;
+    private final boolean isPresent;
 
-    /**
-     * Construct an empty instance.
-     *
-     * @implNote Generally only one empty instance, {@link OptionalInt#EMPTY},
-     * should exist per VM.
-     */
     private OptionalInt() {
-        this.isPresent = false;
         this.value = 0;
+        this.isPresent = false;
     }
 
-    /**
-     * Returns an empty {@code OptionalInt} instance.  No value is present for this
-     * OptionalInt.
-     *
-     * @apiNote Though it may be tempting to do so, avoid testing if an object
-     * is empty by comparing with {@code ==} against instances returned by
-     * {@code OptionalInt.empty()}. There is no guarantee that it is a singleton.
-     * Instead, use {@link #isPresent()}.
-     *
-     *  @return an empty {@code OptionalInt}
-     */
+    private OptionalInt(int value) {
+        this.value = value;
+        this.isPresent = true;
+    }
+
     public static OptionalInt empty() {
         return EMPTY;
     }
 
-    /**
-     * Construct an instance with the value present.
-     *
-     * @param value the int value to be present
-     */
-    private OptionalInt(int value) {
-        this.isPresent = true;
-        this.value = value;
-    }
-
-    /**
-     * Returns an empty {@code OptionalInt} if the specified {@code Integer} is null.
-     * 
-     * @param val
-     * @return
-     */
-    public static OptionalInt ofNullable(Integer val) {
-        return val == null ? empty() : OptionalInt.of(val);
-    }
-
-    /**
-     * Return an {@code OptionalInt} with the specified value present.
-     *
-     * @param value the value to be present
-     * @return an {@code OptionalInt} with the value present
-     */
     public static OptionalInt of(int value) {
         return new OptionalInt(value);
+    }
+
+    public static OptionalInt ofNullable(Integer val) {
+        if (val == null) {
+            return empty();
+        } else {
+            return OptionalInt.of(val);
+        }
     }
 
     public static OptionalInt from(java.util.OptionalInt optional) {
         return optional.isPresent() ? of(optional.getAsInt()) : OptionalInt.empty();
     }
 
-    /**
-     * If a value is present in this {@code OptionalInt}, returns the value,
-     * otherwise throws {@code NoSuchElementException}.
-     *
-     * @return the value held by this {@code OptionalInt}
-     * @throws NoSuchElementException if there is no value present
-     *
-     * @see OptionalInt#isPresent()
-     */
     public int get() throws NoSuchElementException {
         return orElseThrow();
     }
 
-    /**
-     * Return {@code true} if there is a value present, otherwise {@code false}.
-     *
-     * @return {@code true} if there is a value present, otherwise {@code false}
-     */
     public boolean isPresent() {
         return isPresent;
     }
 
-    /**
-     * Have the specified consumer accept the value if a value is present,
-     * otherwise do nothing.
-     *
-     * @param action block to be executed if a value is present
-     * @throws IllegalArgumentException {@code action} is null
-     */
     public <E extends Exception> void ifPresent(Try.IntConsumer<E> action) throws E {
-        N.checkArgNotNull(action);
+        Objects.requireNonNull(action);
 
-        if (isPresent()) {
+        if (isPresent) {
             action.accept(value);
         }
     }
 
-    /**
-     * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     *
-     * @param action
-     * @param emptyAction
-     * @throws IllegalArgumentException {@code action} or {@code emptyAction} is null
-     */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.IntConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
-        N.checkArgNotNull(action);
-        N.checkArgNotNull(emptyAction);
+        Objects.requireNonNull(action);
+        Objects.requireNonNull(emptyAction);
 
-        if (isPresent()) {
+        if (isPresent) {
             action.accept(value);
         } else {
             emptyAction.run();
@@ -178,9 +85,9 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt filter(Try.IntPredicate<E> predicate) throws E {
-        N.checkArgNotNull(predicate);
+        Objects.requireNonNull(predicate);
 
-        if (isPresent() && predicate.test(value)) {
+        if (isPresent && predicate.test(value)) {
             return this;
         } else {
             return empty();
@@ -188,9 +95,9 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt map(final Try.IntUnaryOperator<E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
-        if (isPresent()) {
+        if (isPresent) {
             return OptionalInt.of(mapper.applyAsInt(value));
         } else {
             return empty();
@@ -198,9 +105,9 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.IntFunction<T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
-        if (isPresent()) {
+        if (isPresent) {
             return Nullable.of(mapper.apply(value));
         } else {
             return Nullable.<T> empty();
@@ -208,89 +115,57 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public <E extends Exception> OptionalInt flatMap(Try.IntFunction<OptionalInt, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
-        if (isPresent()) {
-            return N.checkArgNotNull(mapper.apply(value));
+        if (isPresent) {
+            return Objects.requireNonNull(mapper.apply(value));
         } else {
             return empty();
         }
     }
 
-    /**
-     * Same as {@code orElseZero}.
-     * 
-     * @return.
-     */
-    public int orZero() {
-        return isPresent() ? value : 0;
+    public <E extends Exception> OptionalInt or(Try.Supplier<OptionalInt, E> supplier) throws E {
+        if (isPresent) {
+            return this;
+        } else {
+            return Objects.requireNonNull(supplier.get());
+        }
     }
 
-    //    /**
-    //     * Same as {@code orZero}.
-    //     * 
-    //     * @return.
-    //     */
+    public int orZero() {
+        return isPresent ? value : 0;
+    }
+
     //    public int orElseZero() {
-    //        return isPresent() ? value : 0;
+    //        return isPresent ? value : 0;
     //    }
 
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
     public int orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
+        if (isPresent) {
             return value;
         } else {
             throw new NoSuchElementException("No value present");
         }
     }
 
-    /**
-     * Return the value if present, otherwise return {@code other}.
-     *
-     * @param other the value to be returned if there is no value present
-     * @return the value, if present, otherwise {@code other}
-     */
     public int orElse(int other) {
-        return isPresent() ? value : other;
+        return isPresent ? value : other;
     }
 
-    /**
-     * Return the value if present, otherwise invoke {@code other} and return
-     * the result of that invocation.
-     *
-     * @param other a {@code IntSupplier} whose result is returned if no value
-     * is present
-     * @return the value if present otherwise the result of {@code other.getAsInt()}
-     * @throws NullPointerException if value is not present and {@code other} is
-     * null
-     */
     public <E extends Exception> int orElseGet(Try.IntSupplier<E> other) throws E {
-        return isPresent() ? value : other.getAsInt();
+        Objects.requireNonNull(other);
+
+        if (isPresent) {
+            return value;
+        } else {
+            return other.getAsInt();
+        }
     }
 
-    /**
-     * Return the contained value, if present, otherwise throw an exception
-     * to be created by the provided supplier.
-     *
-     * @apiNote A method reference to the exception constructor with an empty
-     * argument list can be used as the supplier. For example,
-     * {@code IllegalStateException::new}
-     *
-     * @param <X> Type of the exception to be thrown
-     * @param exceptionSupplier The supplier which will return the exception to
-     * be thrown
-     * @return the present value
-     * @throws X if there is no value present
-     * @throws NullPointerException if no value is present and
-     * {@code exceptionSupplier} is null
-     */
     public <X extends Throwable> int orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
-        if (isPresent()) {
+        Objects.requireNonNull(exceptionSupplier);
+
+        if (isPresent) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -299,42 +174,37 @@ public final class OptionalInt implements Comparable<OptionalInt> {
 
     @Override
     public int compareTo(OptionalInt optional) {
-        if (optional == null || optional.isPresent() == false) {
-            return isPresent() ? 1 : 0;
+        if (optional == null || optional.isPresent == false) {
+            return isPresent ? 1 : 0;
         }
 
-        if (isPresent() == false) {
-            return optional.isPresent() ? -1 : 0;
+        if (isPresent == false) {
+            return optional.isPresent ? -1 : 0;
         }
 
         return Integer.compare(this.get(), optional.get());
     }
 
     public IntStream stream() {
-        return isPresent() ? IntStream.of(value) : IntStream.empty();
+        if (isPresent) {
+            return IntStream.of(value);
+        } else {
+            return IntStream.empty();
+        }
     }
 
     public Optional<Integer> boxed() {
-        return isPresent() ? Optional.of(value) : Optional.<Integer> empty();
+        if (isPresent) {
+            return Optional.of(value);
+        } else {
+            return Optional.<Integer> empty();
+        }
     }
 
     public java.util.OptionalInt __() {
         return isPresent() ? java.util.OptionalInt.of(value) : java.util.OptionalInt.empty();
     }
 
-    /**
-     * Indicates whether some other object is "equal to" this OptionalInt. The
-     * other object is considered equal if:
-     * <ul>
-     * <li>it is also an {@code OptionalInt} and;
-     * <li>both instances have no value present or;
-     * <li>the present values are "equal to" each other via {@code ==}.
-     * </ul>
-     *
-     * @param obj an object to be tested for equality
-     * @return {code true} if the other object is "equal to" this object
-     * otherwise {@code false}
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -342,39 +212,25 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
 
         if (obj instanceof OptionalInt) {
-            OptionalInt other = (OptionalInt) obj;
+            final OptionalInt other = (OptionalInt) obj;
+
             return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
         return false;
     }
 
-    /**
-     * Returns the hash code value of the present value, if any, or 0 (zero) if
-     * no value is present.
-     *
-     * @return hash code value of the present value or 0 if no value is present
-     */
     @Override
     public int hashCode() {
-        return isPresent() ? Integer.valueOf(value).hashCode() : 0;
+        return N.hashCode(isPresent) * 31 + N.hashCode(value);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * Returns a non-empty string representation of this object suitable for
-     * debugging. The exact presentation format is unspecified and may vary
-     * between implementations and versions.
-     *
-     * @implSpec If a value is present the result must include its string
-     * representation in the result. Empty and present instances must be
-     * unambiguously differentiable.
-     *
-     * @return the string representation of this instance
-     */
     @Override
     public String toString() {
-        return isPresent() ? String.format("OptionalInt[%s]", value) : "OptionalInt.empty";
+        if (isPresent) {
+            return String.format("OptionalInt[%s]", value);
+        }
+
+        return "OptionalInt.empty";
     }
 }

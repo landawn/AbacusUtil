@@ -209,7 +209,7 @@ public final class MongoCollectionMapper<T> {
         return collExecutor.queryForDate(targetPropClass, propName, filter);
     }
 
-    public <P> Nullable<P> queryForSingleResult(final Class<P> targetPropClass, final String propName, final Bson filter) {
+    public <V> Nullable<V> queryForSingleResult(final Class<V> targetPropClass, final String propName, final Bson filter) {
         return collExecutor.queryForSingleResult(targetPropClass, propName, filter);
     }
 

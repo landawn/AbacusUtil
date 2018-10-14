@@ -1,26 +1,17 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (c) 2017, Haiyang Li.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.landawn.abacus.util;
 
@@ -28,157 +19,68 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
-/**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
- * <br />
- *
- * A container object which may or may not contain a non-null value.
- * If a value is present, {@code isPresent()} will return {@code true} and
- * {@code get()} will return the value.
- *
- * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #or(java.lang.Object) orElse()}
- * (return a default value if value not present) and
- * {@link #ifPresent(java.util.function.Consumers) ifPresent()} (execute a block
- * of code if the value is present).
- *
- * <p>This is a <a href="../lang/doc-files/ValueBased.html">value-based</a>
- * class; use of identity-sensitive operations (including reference equality
- * ({@code ==}), identity hash code, or synchronization) on instances of
- * {@code Optional} may have unpredictable results and should be avoided.
- *
- * @since 1.8
- */
 public final class Optional<T> {
-    /**
-     * Common instance for {@code empty()}.
-     */
     private static final Optional<?> EMPTY = new Optional<>();
 
-    /**
-     * If non-null, the value; if null, indicates no value is present
-     */
     private final T value;
 
-    /**
-     * Constructs an empty instance.
-     *
-     * @implNote Generally only one empty instance, {@link Optional#EMPTY},
-     * should exist per VM.
-     */
     private Optional() {
         this.value = null;
     }
 
-    /**
-     * Returns an empty {@code Optional} instance.  No value is present for this
-     * Optional.
-     *
-     * @apiNote Though it may be tempting to do so, avoid testing if an object
-     * is empty by comparing with {@code ==} against instances returned by
-     * {@code Optional.empty()}. There is no guarantee that it is a singleton.
-     * Instead, use {@link #isPresent()}.
-     *
-     * @param <T> Type of the non-existent value
-     * @return an empty {@code Optional}
-     */
-    public static <T> Optional<T> empty() {
-        @SuppressWarnings("unchecked")
-        Optional<T> t = (Optional<T>) EMPTY;
-        return t;
-    }
-
-    /**
-     * Constructs an instance with the value present.
-     *
-     * @param value the non-null value to be present
-     * @throws NullPointerException if value is null
-     */
     private Optional(T value) {
-        this.value = N.checkArgNotNull(value);
+        this.value = Objects.requireNonNull(value);
     }
 
-    /**
-     * Returns an {@code Optional} with the specified present non-null value.
-     *
-     * @param <T> the class of the value
-     * @param value the value to be present, which must be non-null
-     * @return an {@code Optional} with the value present
-     * @throws NullPointerException if value is null
-     */
+    public static <T> Optional<T> empty() {
+        return (Optional<T>) EMPTY;
+    }
+
     public static <T> Optional<T> of(T value) {
         return new Optional<>(value);
     }
 
-    /**
-     * Returns an {@code Optional} describing the specified value, if non-null,
-     * otherwise returns an empty {@code Optional}.
-     *
-     * @param <T> the class of the value
-     * @param value the possibly-null value to describe
-     * @return an {@code Optional} with a present value if the specified value
-     * is non-null, otherwise an empty {@code Optional}
-     */
     public static <T> Optional<T> ofNullable(T value) {
-        return value == null ? (Optional<T>) empty() : of(value);
+        if (value == null) {
+            return empty();
+        }
+
+        return new Optional<>(value);
     }
 
     public static <T> Optional<T> from(java.util.Optional<T> optional) {
         return optional.isPresent() ? of(optional.get()) : Optional.<T> empty();
     }
 
-    /**
-     * If a value is present in this {@code Optional}, returns the value,
-     * otherwise throws {@code NoSuchElementException}.
-     *
-     * @return the non-null value held by this {@code Optional}
-     * @throws NoSuchElementException if there is no value present
-     *
-     * @see Optional#isPresent()
-     */
     public T get() throws NoSuchElementException {
         return orElseThrow();
     }
 
-    /**
-     * Return {@code true} if there is a value present, otherwise {@code false}.
-     *
-     * @return {@code true} if there is a value present, otherwise {@code false}
-     */
     public boolean isPresent() {
         return value != null;
     }
 
-    /**
-     * If a value is present, invoke the specified consumer with the value,
-     * otherwise do nothing.
-     *
-     * @param action block to be executed if a value is present
-     * @throws IllegalArgumentException {@code action} is null
-     */
+    public boolean isEmpty() {
+        return value == null;
+    }
+
     public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
-        N.checkArgNotNull(action);
+        Objects.requireNonNull(action);
 
         if (isPresent()) {
             action.accept(value);
         }
     }
 
-    /**
-     * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     *
-     * @param action
-     * @param emptyAction
-     * @throws IllegalArgumentException {@code action} or {@code emptyAction} is null
-     */
     public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
-        N.checkArgNotNull(action);
-        N.checkArgNotNull(emptyAction);
+        Objects.requireNonNull(action);
+        Objects.requireNonNull(emptyAction);
 
         if (isPresent()) {
             action.accept(value);
@@ -187,19 +89,8 @@ public final class Optional<T> {
         }
     }
 
-    /**
-     * If a value is present, and the value matches the given predicate,
-     * return an {@code Optional} describing the value, otherwise return an
-     * empty {@code Optional}.
-     *
-     * @param predicate a predicate to apply to the value, if present
-     * @return an {@code Optional} describing the value of this {@code Optional}
-     * if a value is present and the value matches the given predicate,
-     * otherwise an empty {@code Optional}
-     * @throws IllegalArgumentException if the predicate is null
-     */
     public <E extends Exception> Optional<T> filter(Try.Predicate<? super T, E> predicate) throws E {
-        N.checkArgNotNull(predicate);
+        Objects.requireNonNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
             return this;
@@ -208,18 +99,8 @@ public final class Optional<T> {
         }
     }
 
-    /**
-     * If a value is present, apply the provided mapping function to it, 
-     *
-     * @param <U> The type of the result of the mapping function
-     * @param mapper a mapping function to apply to the value, if present
-     * @return an {@code Nullable} describing the result of applying a mapping
-     * function to the value of this {@code Optional}, if a value is present,
-     * otherwise an empty {@code Nullable}
-     * @throws IllegalArgumentException if the mapping function is null
-     */
     public <U, E extends Exception> Nullable<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return Nullable.<U> of(mapper.apply(value));
@@ -229,7 +110,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalBoolean mapToBoolean(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalBoolean.of(mapper.applyAsBoolean(value));
@@ -239,7 +120,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalChar mapToChar(final Try.ToCharFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalChar.of(mapper.applyAsChar(value));
@@ -249,7 +130,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalByte mapToByte(final Try.ToByteFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalByte.of(mapper.applyAsByte(value));
@@ -259,7 +140,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalShort mapToShort(final Try.ToShortFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalShort.of(mapper.applyAsShort(value));
@@ -269,7 +150,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalInt.of(mapper.applyAsInt(value));
@@ -279,7 +160,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalLong.of(mapper.applyAsLong(value));
@@ -289,7 +170,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalFloat mapToFloat(final Try.ToFloatFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalFloat.of(mapper.applyAsFloat(value));
@@ -299,7 +180,7 @@ public final class Optional<T> {
     }
 
     public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
             return OptionalDouble.of(mapper.applyAsDouble(value));
@@ -308,116 +189,54 @@ public final class Optional<T> {
         }
     }
 
-    /**
-     * If a value is present, apply the provided {@code Optional}-bearing
-     * mapping function to it, return that result, otherwise return an empty
-     * {@code Optional}.  This method is similar to {@link #map(Function)},
-     * but the provided mapper is one whose result is already an {@code Optional},
-     * and if invoked, {@code flatMap} does not wrap it with an additional
-     * {@code Optional}.
-     *
-     * @param <U> The type parameter to the {@code Optional} returned by
-     * @param mapper a mapping function to apply to the value, if present
-     *           the mapping function
-     * @return the result of applying an {@code Optional}-bearing mapping
-     * function to the value of this {@code Optional}, if a value is present,
-     * otherwise an empty {@code Optional}
-     * @throws IllegalArgumentException if the mapping function is null or returns a null result
-     */
     public <U, E extends Exception> Optional<U> flatMap(Try.Function<? super T, Optional<U>, E> mapper) throws E {
-        N.checkArgNotNull(mapper);
+        Objects.requireNonNull(mapper);
 
         if (isPresent()) {
-            return N.checkArgNotNull(mapper.apply(value));
+            return Objects.requireNonNull(mapper.apply(value));
         } else {
             return empty();
         }
     }
 
-    /**
-     * If a value is present, returns an Optional describing the value, otherwise returns an Optional produced by the supplying function.
-     * 
-     * @param supplier
-     * @return
-     * @throws E
-     */
-    public <E extends Exception> Optional<T> or(Try.Supplier<? extends Optional<T>, E> supplier) throws E {
-        return isPresent() ? this : N.checkArgNotNull(supplier.get());
+    public <E extends Exception> Optional<T> or(Try.Supplier<Optional<? extends T>, E> supplier) throws E {
+        Objects.requireNonNull(supplier);
+
+        if (isPresent()) {
+            return this;
+        } else {
+            return Objects.requireNonNull((Optional<T>) supplier.get());
+        }
     }
 
-    /**
-     * Same as {@code orElseNull}.
-     * 
-     * @return
-     */
     public T orNull() {
         return isPresent() ? value : null;
     }
 
-    //    /**
-    //     * Same as {@code orNull}.
-    //     * 
-    //     * @return
-    //     */
-    //    public T orElseNull() {
-    //        return isPresent() ? value : null;
-    //    }
-
-    /**
-     * If a value is present, returns the value, otherwise throws NoSuchElementException.
-     * 
-     * @return
-     * @throws NoSuchElementException - if no value is present
-     */
-    public T orElseThrow() throws NoSuchElementException {
-        if (isPresent()) {
-            return value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code other}.
-     *
-     * @param other the value to be returned if there is no value present, may
-     * be null
-     * @return the value, if present, otherwise {@code other}
-     */
     public T orElse(T other) {
         return isPresent() ? value : other;
     }
 
-    /**
-     * Return the value if present, otherwise invoke {@code other} and return
-     * the result of that invocation.
-     *
-     * @param other a {@code Supplier} whose result is returned if no value
-     * is present
-     * @return the value if present otherwise the result of {@code other.get()}
-     * @throws NullPointerException if value is not present and {@code other} is
-     * null
-     */
     public <E extends Exception> T orElseGet(Try.Supplier<? extends T, E> other) throws E {
-        return isPresent() ? value : other.get();
+        if (isPresent()) {
+            return value;
+        } else {
+            return other.get();
+        }
     }
 
-    /**
-     * Return the contained value, if present, otherwise throw an exception
-     * to be created by the provided supplier.
-     *
-     * @apiNote A method reference to the exception constructor with an empty
-     * argument list can be used as the supplier. For example,
-     * {@code IllegalStateException::new}
-     *
-     * @param <X> Type of the exception to be thrown
-     * @param exceptionSupplier The supplier which will return the exception to
-     * be thrown
-     * @return the present value
-     * @throws X if there is no value present
-     * @throws NullPointerException if no value is present and
-     * {@code exceptionSupplier} is null
-     */
+    //    public T orElseNull() {
+    //        return isPresent() ? value : null;
+    //    }
+
+    public T orElseThrow() throws NoSuchElementException {
+        if (isPresent()) {
+            return value;
+        } else {
+            throw new NoSuchElementException("No value is present");
+        }
+    }
+
     public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
@@ -427,62 +246,49 @@ public final class Optional<T> {
     }
 
     public Stream<T> stream() {
-        return isPresent() ? Stream.of(value) : Stream.<T> empty();
+        if (isPresent()) {
+            return Stream.of(value);
+        } else {
+            return Stream.<T> empty();
+        }
     }
 
     public java.util.Optional<T> __() {
         return isPresent() ? java.util.Optional.of(value) : java.util.Optional.<T> empty();
     }
 
-    /**
-     * Returns a {@code List} with the value if it presents, otherwise an empty {@code List}.
-     * 
-     * @return
-     */
     public List<T> toList() {
-        return isPresent() ? N.asList(value) : new ArrayList<T>();
+        if (isPresent()) {
+            return N.asList(value);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
-    /**
-     * Returns a {@code Set} with the value if it presents, otherwise an empty {@code Set}.
-     * 
-     * @return
-     */
     public Set<T> toSet() {
-        return isPresent() ? N.asSet(value) : new HashSet<T>();
+        if (isPresent()) {
+            return N.asSet(value);
+        } else {
+            return new HashSet<>();
+        }
     }
 
-    /**
-     * Returns a {@code ImmutableList} with the value if it presents, otherwise an empty {@code List}.
-     * 
-     * @return
-     */
     public ImmutableList<T> toImmutableList() {
-        return isPresent() ? ImmutableList.of(value) : ImmutableList.<T> empty();
+        if (isPresent()) {
+            return ImmutableList.of(value);
+        } else {
+            return ImmutableList.<T> empty();
+        }
     }
 
-    /**
-     * Returns a {@code ImmutableSet} with the value if it presents, otherwise an empty {@code Set}.
-     * 
-     * @return
-     */
     public ImmutableSet<T> toImmutableSet() {
-        return isPresent() ? ImmutableSet.of(value) : ImmutableSet.<T> empty();
+        if (isPresent()) {
+            return ImmutableSet.of(value);
+        } else {
+            return ImmutableSet.<T> empty();
+        }
     }
 
-    /**
-     * Indicates whether some other object is "equal to" this Optional. The
-     * other object is considered equal if:
-     * <ul>
-     * <li>it is also an {@code Optional} and;
-     * <li>both instances have no value present or;
-     * <li>the present values are "equal to" each other via {@code equals()}.
-     * </ul>
-     *
-     * @param obj an object to be tested for equality
-     * @return {code true} if the other object is "equal to" this object
-     * otherwise {@code false}
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -490,37 +296,25 @@ public final class Optional<T> {
         }
 
         if (obj instanceof Optional) {
-            Optional<?> other = (Optional<?>) obj;
+            final Optional<?> other = (Optional<?>) obj;
+
             return N.equals(value, other.value);
         }
 
         return false;
     }
 
-    /**
-     * Returns the hash code value of the present value, if any, or 0 (zero) if
-     * no value is present.
-     *
-     * @return hash code value of the present value or 0 if no value is present
-     */
     @Override
     public int hashCode() {
-        return N.hashCode(value);
+        return N.hashCode(isPresent()) * 31 + N.hashCode(value);
     }
 
-    /**
-     * Returns a non-empty string representation of this Optional suitable for
-     * debugging. The exact presentation format is unspecified and may vary
-     * between implementations and versions.
-     *
-     * @implSpec If a value is present the result must include its string
-     * representation in the result. Empty and present Optionals must be
-     * unambiguously differentiable.
-     *
-     * @return the string representation of this instance
-     */
     @Override
     public String toString() {
-        return value != null ? String.format("Optional[%s]", value) : "Optional.empty";
+        if (isPresent()) {
+            return String.format("Optional[%s]", value);
+        }
+
+        return "Optional.empty";
     }
 }

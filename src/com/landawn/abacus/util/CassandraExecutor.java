@@ -968,7 +968,7 @@ public final class CassandraExecutor implements Closeable {
         return this.queryForSingleResult(targetClass, valueClass, propName, whereCause);
     }
 
-    public <T, E> Nullable<E> queryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName, final Condition whereCause) {
+    public <T, V> Nullable<V> queryForSingleResult(final Class<T> targetClass, final Class<V> valueClass, final String propName, final Condition whereCause) {
         final CP pair = prepareQuery(targetClass, Arrays.asList(propName), whereCause, 1);
 
         return queryForSingleResult(valueClass, pair.cql, pair.parameters.toArray());
@@ -1652,11 +1652,11 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T, E> ContinuableFuture<Nullable<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+    public <T, V> ContinuableFuture<Nullable<V>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<V> valueClass, final String propName,
             final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<Nullable<E>>() {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
             @Override
-            public Nullable<E> call() throws Exception {
+            public Nullable<V> call() throws Exception {
                 return queryForSingleResult(targetClass, valueClass, propName, whereCause);
             }
         });
@@ -1671,8 +1671,7 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final Collection<String> selectPropName,
-            final Condition whereCause) {
+    public <T> ContinuableFuture<Optional<T>> asyncFindFirst(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {

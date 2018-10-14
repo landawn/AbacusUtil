@@ -304,12 +304,12 @@ public final class MongoCollectionExecutor {
         return queryForSingleResult(targetClass, propName, filter);
     }
 
-    public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
+    public <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final String propName, final Bson filter) {
         final FindIterable<Document> findIterable = query(N.asList(propName), filter, null, 0, 1);
 
         Document doc = findIterable.first();
 
-        return N.isNullOrEmpty(doc) ? (Nullable<T>) Nullable.empty() : Nullable.of(N.as(targetClass, doc.get(propName)));
+        return N.isNullOrEmpty(doc) ? (Nullable<V>) Nullable.empty() : Nullable.of(N.as(targetClass, doc.get(propName)));
     }
 
     private <T> T toEntity(final Class<T> targetClass, final FindIterable<Document> findIterable) {

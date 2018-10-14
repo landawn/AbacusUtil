@@ -1105,6 +1105,26 @@ public class Joiner {
         return this;
     }
 
+    public Joiner repeat(final String str, final int n) {
+        N.checkArgNotNegative(n, "n");
+
+        final String newString = toString(str);
+
+        if (n < 10) {
+            for (int i = 0; i < n; i++) {
+                append(newString);
+            }
+        } else {
+            append(StringUtil.repeat(newString, n, delimiter));
+        }
+
+        return this;
+    }
+
+    public Joiner repeat(final Object obj, final int n) {
+        return repeat(toString(obj), n);
+    }
+
     /**
      * Adds the contents of the given {@code StringJoiner} without prefix and
      * suffix as the next element if it is non-empty. If the given {@code

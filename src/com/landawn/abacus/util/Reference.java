@@ -1,28 +1,26 @@
 /*
- * Copyright (C) 2015 HaiYang Li
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Copyright (c) 2017, Haiyang Li.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.landawn.abacus.util;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
-/**
- * 
- * @since 0.8
- * 
- * @author Haiyang Li
- */
 abstract class Reference<T, R extends Reference<T, R>> {
     private T value;
 
@@ -118,13 +116,18 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return value != null;
     }
 
-    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
+    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> action) throws E {
+        Objects.requireNonNull(action);
+
         if (isNotNull()) {
-            consumer.accept(value);
+            action.accept(value);
         }
     }
 
     public <E extends Exception, E2 extends Exception> void ifNotNullOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+        Objects.requireNonNull(action);
+        Objects.requireNonNull(emptyAction);
+
         if (isNotNull()) {
             action.accept(value);
         } else {
@@ -136,89 +139,76 @@ abstract class Reference<T, R extends Reference<T, R>> {
         action.accept(value);
     }
 
-    /**
-     * 
-     * @param action
-     * @throws E
-     * @deprecated replaced with {@code #ifNotNull(com.landawn.abacus.util.Try.Consumer)}.
-     */
     @Deprecated
     public <E extends Exception> void acceptIfNotNull(final Try.Consumer<? super T, E> action) throws E {
+        Objects.requireNonNull(action);
+
         if (isNotNull()) {
             action.accept(value);
         }
     }
 
-    public <U, E extends Exception> U map(final Try.Function<? super T, U, E> mapper) throws E {
+    public <U, E extends Exception> U map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
         return mapper.apply(value);
     }
 
-    /**
-     * Execute the specified action if value is not null, otherwise return null directly.
-     * 
-     * @param mapper
-     * @return
-     */
-    public <U, E extends Exception> Nullable<U> mapIfNotNull(final Try.Function<? super T, U, E> mapper) throws E {
-        return isNotNull() ? Nullable.of(mapper.apply(value)) : Nullable.<U> empty();
+    public <U, E extends Exception> Nullable<U> mapIfNotNull(final Try.Function<? super T, ? extends U, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isNotNull()) {
+            return Nullable.of((U) mapper.apply(value));
+        } else {
+            return Nullable.<U> empty();
+        }
     }
 
     public <E extends Exception> Nullable<T> filter(final Try.Predicate<? super T, E> predicate) throws E {
-        return predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
+        if (predicate.test(value)) {
+            return Nullable.of(value);
+        } else {
+            return Nullable.<T> empty();
+        }
     }
 
     public <E extends Exception> Optional<T> filterIfNotNull(final Try.Predicate<? super T, E> predicate) throws E {
-        return isNotNull() && predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
+        Objects.requireNonNull(predicate);
+
+        if (isNotNull() && predicate.test(value)) {
+            return Optional.of(value);
+        } else {
+            return Optional.<T> empty();
+        }
     }
 
     public Stream<T> stream() {
         return Stream.of(value);
     }
 
-    /**
-     * 
-     * @return an empty Stream if the value is null.
-     */
     public Stream<T> streamIfNotNull() {
-        return isNotNull() ? Stream.of(value) : Stream.<T> empty();
+        if (isNotNull()) {
+            return Stream.of(value);
+        } else {
+            return Stream.<T> empty();
+        }
     }
 
-    /**
-     * Return the value is not null, otherwise return {@code other}.
-     *
-     * @param other the value to be returned if not present or null, may be null
-     * @return the value, if not present or null, otherwise {@code other}
-     */
-    public T orIfNull(T other) {
+    public T orElseIfNull(T other) {
         return isNotNull() ? value : other;
     }
 
-    /**
-     * Return the value is not null, otherwise invoke {@code other} and return the result of that invocation.
-     *
-     * @param other a {@code Supplier} whose result is returned if not present or null
-     * @return the value if not present or null otherwise the result of {@code other.get()}
-     * @throws IllegalArgumentException if value is not present and {@code other} is null
-     */
-    public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
-        return isNotNull() ? value : other.get();
+    public <E extends Exception> T orElseGetIfNull(Try.Supplier<? extends T, E> other) throws E {
+        Objects.requireNonNull(other);
+
+        if (isNotNull()) {
+            return value;
+        } else {
+            return other.get();
+        }
     }
 
-    /**
-     * Return the value is not null, otherwise throw an exception to be created by the provided supplier.
-     *
-     * @apiNote A method reference to the exception constructor with an empty
-     * argument list can be used as the supplier. For example,
-     * {@code IllegalStateException::new}
-     *
-     * @param <X> Type of the exception to be thrown
-     * @param exceptionSupplier The supplier which will return the exception to be thrown
-     * @return the present value
-     * @throws X if not present or null
-     * @throws IllegalArgumentException if not present or null and
-     * {@code exceptionSupplier} is null
-     */
-    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable> T orElseThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+        Objects.requireNonNull(exceptionSupplier);
+
         if (isNotNull()) {
             return value;
         } else {
