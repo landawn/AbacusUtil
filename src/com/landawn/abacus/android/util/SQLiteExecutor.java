@@ -496,7 +496,7 @@ public final class SQLiteExecutor {
         return toContentValues(obj, ignoredPropNames, namingPolicy, false);
     }
 
-    public <T> T get(Class<T> targetClass, long id) {
+    public <T> Optional<T> get(Class<T> targetClass, long id) {
         return get(targetClass, id, null);
     }
 
@@ -509,18 +509,11 @@ public final class SQLiteExecutor {
      * @return
      * @throws NonUniqueResultException if more than one records are found.
      */
-    public <T> T get(Class<T> targetClass, long id, Collection<String> selectPropNames) {
-        final Condition whereClause = L.eq(ID, id);
-        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
-
-        if (entities.size() > 1) {
-            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
-        }
-
-        return (entities.size() > 0) ? entities.get(0) : null;
+    public <T> Optional<T> get(Class<T> targetClass, long id, Collection<String> selectPropNames) {
+        return Optional.ofNullable(gett(targetClass, id, selectPropNames));
     }
 
-    public <T> Optional<T> gett(Class<T> targetClass, long id) {
+    public <T> T gett(Class<T> targetClass, long id) {
         return gett(targetClass, id, null);
     }
 
@@ -533,8 +526,15 @@ public final class SQLiteExecutor {
      * @return
      * @throws NonUniqueResultException if more than one records are found.
      */
-    public <T> Optional<T> gett(Class<T> targetClass, long id, Collection<String> selectPropNames) {
-        return Optional.ofNullable(get(targetClass, id, selectPropNames));
+    public <T> T gett(Class<T> targetClass, long id, Collection<String> selectPropNames) {
+        final Condition whereClause = L.eq(ID, id);
+        final List<T> entities = list(targetClass, selectPropNames, whereClause, null, 0, 2);
+
+        if (entities.size() > 1) {
+            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
+        }
+
+        return (entities.size() > 0) ? entities.get(0) : null;
     }
 
     @SuppressWarnings("deprecation")
@@ -1290,34 +1290,6 @@ public final class SQLiteExecutor {
         }
     }
 
-    //    // mess up
-    //    @Deprecated
-    //    <T> T get(Class<T> targetClass, EntityId entityId, String... selectPropNames) {
-    //        return get(targetClass, entityId, N.asList(selectPropNames));
-    //    }
-    //
-    //    /**
-    //     * Find the entity from table specified by entityName in <code>entityId</code> by the id values in <code>entityId</code>
-    //     * 
-    //     * @param targetClass
-    //     * @param entityId
-    //     * @param selectPropNames
-    //     * @return
-    //     * @throws NonUniqueResultException if more than one records are found.
-    //     */
-    //    // mess up
-    //    @Deprecated
-    //    <T> T get(Class<T> targetClass, EntityId entityId, Collection<String> selectPropNames) {
-    //        final Condition whereClause = EntityManagerUtil.entityId2Condition(entityId);
-    //        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
-    //
-    //        if (entities.size() > 1) {
-    //            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
-    //        }
-    //
-    //        return (entities.size() > 0) ? entities.get(0) : null;
-    //    }
-
     /**
      * @see SQLiteExecutor#queryForSingleResult(Class, String, Object...).
      */
@@ -1522,7 +1494,7 @@ public final class SQLiteExecutor {
      * @return
      */
     public <T> Optional<T> findFirst(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
-        final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
+        final List<T> resultList = list(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
 
         return N.isNullOrEmpty(resultList) ? (Optional<T>) Optional.empty() : Optional.of(resultList.get(0));
     }
@@ -1549,71 +1521,21 @@ public final class SQLiteExecutor {
         return N.isNullOrEmpty(rs) ? (Optional<T>) Optional.empty() : Optional.of(rs.getRow(targetClass, 0));
     }
 
-    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
-    //        return queryForEntity2(targetClass, selectColumnNames, whereClause, null);
-    //    }
-    //
-    //    /**
-    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
-    //     * convert the column values to the type of mapping entity property if the mapping entity property is not assignable
-    //     * from column value.
-    //     *
-    //     * @param targetClass an entity class with getter/setter methods.
-    //     * @param selectColumnNames
-    //     * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
-    //     * @param orderby How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
-    //     * @return
-    //     */
-    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
-    //        final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
-    //
-    //        return Optional.ofNullable(N.isNullOrEmpty(resultList) ? null : resultList.get(0));
-    //    }
-    //
-    //    /**
-    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
-    //     * convert the column values to the type of mapping entity property if the mapping entity property is not assignable
-    //     * from the column value.
-    //     *
-    //     * Remember to add {@code limit} condition if big result will be returned by the query.
-    //     *
-    //     * @param targetClass an entity class with getter/setter methods.
-    //     * @param sql set <code>offset</code> and <code>limit</code> in sql with format: 
-    //     * <li><code>SELECT * FROM account where id = ? LIMIT <i>offsetValue</i>, <i>limitValue</i></code></li>
-    //     * <br>or limit only:</br>
-    //     * <li><code>SELECT * FROM account where id = ? LIMIT <i>limitValue</i></code></li>
-    //     * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
-    //     * @return
-    //     */
-    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, final String sql, Object... parameters) {
-    //        final DataSet rs = query(targetClass, sql, 0, 1, parameters);
-    //
-    //        return Optional.ofNullable(N.isNullOrEmpty(rs) ? null : rs.getRow(targetClass, 0));
-    //    }
-
-    //    <T> List<T> find(final Class<T> targetClass, String... selectColumnNames) {
-    //        return find(targetClass, N.asList(selectColumnNames));
-    //    }
-    //
-    //    <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames) {
-    //        return find(targetClass, selectColumnNames, null);
-    //    }
-
-    public <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
-        return find(targetClass, selectColumnNames, whereClause, null);
+    public <T> List<T> list(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
+        return list(targetClass, selectColumnNames, whereClause, null);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
-        return find(targetClass, selectColumnNames, whereClause, orderBy, 0, Integer.MAX_VALUE);
+    public <T> List<T> list(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
+        return list(targetClass, selectColumnNames, whereClause, orderBy, 0, Integer.MAX_VALUE);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy, int offset, int count) {
-        return find(targetClass, selectColumnNames, whereClause, null, null, orderBy, offset, count);
+    public <T> List<T> list(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy, int offset, int count) {
+        return list(targetClass, selectColumnNames, whereClause, null, null, orderBy, offset, count);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having,
+    public <T> List<T> list(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having,
             String orderBy) {
-        return find(targetClass, selectColumnNames, whereClause, groupBy, having, orderBy, 0, Integer.MAX_VALUE);
+        return list(targetClass, selectColumnNames, whereClause, groupBy, having, orderBy, 0, Integer.MAX_VALUE);
     }
 
     /**
@@ -1630,7 +1552,7 @@ public final class SQLiteExecutor {
      * @param count
      * @return
      */
-    public <T> List<T> find(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having,
+    public <T> List<T> list(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having,
             String orderBy, int offset, int count) {
         final DataSet rs = query(targetClass, selectColumnNames, whereClause, groupBy, having, orderBy, offset, count);
 
@@ -1654,7 +1576,7 @@ public final class SQLiteExecutor {
      * @return
      */
     @SafeVarargs
-    public final <T> List<T> find(final Class<T> targetClass, final String sql, Object... parameters) {
+    public final <T> List<T> list(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, Integer.MAX_VALUE, parameters);
 
         if (N.isNullOrEmpty(rs)) {

@@ -111,109 +111,109 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    public ContinuableFuture<Document> get(final String objectId) {
-        return asyncExecutor.execute(new Callable<Document>() {
+    public ContinuableFuture<Optional<Document>> get(final String objectId) {
+        return asyncExecutor.execute(new Callable<Optional<Document>>() {
             @Override
-            public Document call() throws Exception {
+            public Optional<Document> call() throws Exception {
                 return collExecutor.get(objectId);
             }
         });
     }
 
-    public ContinuableFuture<Document> get(final ObjectId objectId) {
-        return asyncExecutor.execute(new Callable<Document>() {
+    public ContinuableFuture<Optional<Document>> get(final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<Optional<Document>>() {
             @Override
-            public Document call() throws Exception {
+            public Optional<Document> call() throws Exception {
                 return collExecutor.get(objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String objectId) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> get(final Class<T> targetClass, final String objectId) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return collExecutor.get(targetClass, objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final ObjectId objectId) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> get(final Class<T> targetClass, final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return collExecutor.get(targetClass, objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> get(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return collExecutor.get(targetClass, objectId, selectPropNames);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> get(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> get(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return collExecutor.get(targetClass, objectId, selectPropNames);
             }
         });
     }
 
-    public ContinuableFuture<Optional<Document>> gett(final String objectId) {
-        return asyncExecutor.execute(new Callable<Optional<Document>>() {
+    public ContinuableFuture<Document> gett(final String objectId) {
+        return asyncExecutor.execute(new Callable<Document>() {
             @Override
-            public Optional<Document> call() throws Exception {
+            public Document call() throws Exception {
                 return collExecutor.gett(objectId);
             }
         });
     }
 
-    public ContinuableFuture<Optional<Document>> gett(final ObjectId objectId) {
-        return asyncExecutor.execute(new Callable<Optional<Document>>() {
+    public ContinuableFuture<Document> gett(final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<Document>() {
             @Override
-            public Optional<Document> call() throws Exception {
+            public Document call() throws Exception {
                 return collExecutor.gett(objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String objectId) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> gett(final Class<T> targetClass, final String objectId) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return collExecutor.gett(targetClass, objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final ObjectId objectId) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> gett(final Class<T> targetClass, final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return collExecutor.gett(targetClass, objectId);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> gett(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return collExecutor.gett(targetClass, objectId, selectPropNames);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return collExecutor.gett(targetClass, objectId, selectPropNames);
             }
         });
@@ -265,77 +265,77 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    public ContinuableFuture<List<Document>> find(final Bson filter) {
+    public ContinuableFuture<List<Document>> list(final Bson filter) {
         return asyncExecutor.execute(new Callable<List<Document>>() {
             @Override
             public List<Document> call() throws Exception {
-                return collExecutor.find(filter);
+                return collExecutor.list(filter);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter) {
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Bson filter) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter);
+                return collExecutor.list(targetClass, filter);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter);
+                return collExecutor.list(targetClass, selectPropNames, filter);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset,
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset,
             final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, offset, count);
+                return collExecutor.list(targetClass, selectPropNames, filter, offset, count);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, sort);
+                return collExecutor.list(targetClass, selectPropNames, filter, sort);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort,
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort,
             final int offset, final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, selectPropNames, filter, sort, offset, count);
+                return collExecutor.list(targetClass, selectPropNames, filter, sort, offset, count);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter, sort, projection);
+                return collExecutor.list(targetClass, filter, sort, projection);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset,
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset,
             final int count) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return collExecutor.find(targetClass, filter, sort, projection, offset, count);
+                return collExecutor.list(targetClass, filter, sort, projection, offset, count);
             }
         });
     }

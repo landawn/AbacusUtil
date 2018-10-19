@@ -179,7 +179,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         }
 
         if (isPresent == false) {
-            return optional.isPresent ? -1 : 0;
+            return -1;
         }
 
         return Long.compare(this.get(), optional.get());

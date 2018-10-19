@@ -175,7 +175,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         }
 
         if (isPresent == false) {
-            return optional.isPresent ? -1 : 0;
+            return -1;
         }
 
         return Short.compare(this.get(), optional.get());

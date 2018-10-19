@@ -179,7 +179,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
 
         if (isPresent == false) {
-            return optional.isPresent ? -1 : 0;
+            return -1;
         }
 
         return Integer.compare(this.get(), optional.get());

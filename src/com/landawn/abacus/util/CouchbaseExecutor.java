@@ -607,8 +607,8 @@ public final class CouchbaseExecutor implements Closeable {
      * 
      * @see com.couchbase.client.java.Bucket#get(String)
      */
-    public JsonDocument get(final String id) {
-        return bucket.get(id);
+    public Optional<JsonDocument> get(final String id) {
+        return Optional.ofNullable(gett(id));
     }
 
     /**
@@ -620,8 +620,8 @@ public final class CouchbaseExecutor implements Closeable {
      * 
      * @see com.couchbase.client.java.Bucket#get(String, long, TimeUnit)
      */
-    public JsonDocument get(final String id, final long timeout, final TimeUnit timeUnit) {
-        return bucket.get(id, timeout, timeUnit);
+    public Optional<JsonDocument> get(final String id, final long timeout, final TimeUnit timeUnit) {
+        return Optional.ofNullable(gett(id, timeout, timeUnit));
     }
 
     /**
@@ -632,8 +632,8 @@ public final class CouchbaseExecutor implements Closeable {
      * 
      * @see com.couchbase.client.java.Bucket#get(String, Class)
      */
-    public <T> T get(final Class<T> targetClass, final String id) {
-        return toEntityForGet(targetClass, get(id));
+    public <T> Optional<T> get(final Class<T> targetClass, final String id) {
+        return Optional.ofNullable(gett(targetClass, id));
     }
 
     /**
@@ -646,8 +646,58 @@ public final class CouchbaseExecutor implements Closeable {
      * 
      * @see com.couchbase.client.java.Bucket#get(String, Class, long, TimeUnit)
      */
-    public <T> T get(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
-        return toEntityForGet(targetClass, get(id, timeout, timeUnit));
+    public <T> Optional<T> get(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+        return Optional.ofNullable(gett(targetClass, id, timeout, timeUnit));
+    }
+
+    /**
+     * 
+     * @param id
+     * @return
+     * 
+     * @see com.couchbase.client.java.Bucket#get(String)
+     */
+    public JsonDocument gett(final String id) {
+        return bucket.get(id);
+    }
+
+    /**
+     * 
+     * @param id
+     * @param timeout
+     * @param timeUnit
+     * @return
+     * 
+     * @see com.couchbase.client.java.Bucket#get(String, long, TimeUnit)
+     */
+    public JsonDocument gett(final String id, final long timeout, final TimeUnit timeUnit) {
+        return bucket.get(id, timeout, timeUnit);
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param id
+     * @return
+     * 
+     * @see com.couchbase.client.java.Bucket#get(String, Class)
+     */
+    public <T> T gett(final Class<T> targetClass, final String id) {
+        return toEntityForGet(targetClass, gett(id));
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param id
+     * @param timeout
+     * @param timeUnit
+     * @return
+     * 
+     * @see com.couchbase.client.java.Bucket#get(String, Class, long, TimeUnit)
+     */
+    public <T> T gett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+        return toEntityForGet(targetClass, gett(id, timeout, timeUnit));
     }
 
     private <T> T toEntityForGet(final Class<T> targetClass, final JsonDocument doc) {
@@ -662,62 +712,12 @@ public final class CouchbaseExecutor implements Closeable {
         return toEntity(targetClass, doc);
     }
 
-    /**
-     * 
-     * @param id
-     * @return
-     * 
-     * @see com.couchbase.client.java.Bucket#get(String)
-     */
-    public Optional<JsonDocument> gett(final String id) {
-        return Optional.ofNullable(get(id));
-    }
-
-    /**
-     * 
-     * @param id
-     * @param timeout
-     * @param timeUnit
-     * @return
-     * 
-     * @see com.couchbase.client.java.Bucket#get(String, long, TimeUnit)
-     */
-    public Optional<JsonDocument> gett(final String id, final long timeout, final TimeUnit timeUnit) {
-        return Optional.ofNullable(get(id, timeout, timeUnit));
-    }
-
-    /**
-     * 
-     * @param targetClass
-     * @param id
-     * @return
-     * 
-     * @see com.couchbase.client.java.Bucket#get(String, Class)
-     */
-    public <T> Optional<T> gett(final Class<T> targetClass, final String id) {
-        return Optional.ofNullable(get(targetClass, id));
-    }
-
-    /**
-     * 
-     * @param targetClass
-     * @param id
-     * @param timeout
-     * @param timeUnit
-     * @return
-     * 
-     * @see com.couchbase.client.java.Bucket#get(String, Class, long, TimeUnit)
-     */
-    public <T> Optional<T> gett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
-        return Optional.ofNullable(get(targetClass, id, timeout, timeUnit));
-    }
-
     @SafeVarargs
     public final <T> Optional<T> findFirst(final Class<T> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
         final Iterator<QueryRow> it = resultSet.rows();
         final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
-    
+
         if (jsonObject == null || jsonObject.size() == 0) {
             return Optional.empty();
         } else {
@@ -733,9 +733,9 @@ public final class CouchbaseExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> List<T> find(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> List<T> list(final Class<T> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
-    
+
         return toList(targetClass, resultSet);
     }
 
@@ -1109,73 +1109,73 @@ public final class CouchbaseExecutor implements Closeable {
         return resultSet;
     }
 
-    public ContinuableFuture<JsonDocument> asyncGet(final String id) {
-        return asyncExecutor.execute(new Callable<JsonDocument>() {
+    public ContinuableFuture<Optional<JsonDocument>> asyncGet(final String id) {
+        return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
             @Override
-            public JsonDocument call() throws Exception {
+            public Optional<JsonDocument> call() throws Exception {
                 return get(id);
             }
         });
     }
 
-    public ContinuableFuture<JsonDocument> asyncGet(final String id, final long timeout, final TimeUnit timeUnit) {
-        return asyncExecutor.execute(new Callable<JsonDocument>() {
+    public ContinuableFuture<Optional<JsonDocument>> asyncGet(final String id, final long timeout, final TimeUnit timeUnit) {
+        return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
             @Override
-            public JsonDocument call() throws Exception {
+            public Optional<JsonDocument> call() throws Exception {
                 return get(id, timeout, timeUnit);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final String id) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final String id) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, id);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, id, timeout, timeUnit);
             }
         });
     }
 
-    public ContinuableFuture<Optional<JsonDocument>> asyncGett(final String id) {
-        return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
+    public ContinuableFuture<JsonDocument> asyncGett(final String id) {
+        return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
-            public Optional<JsonDocument> call() throws Exception {
+            public JsonDocument call() throws Exception {
                 return gett(id);
             }
         });
     }
 
-    public ContinuableFuture<Optional<JsonDocument>> asyncGett(final String id, final long timeout, final TimeUnit timeUnit) {
-        return asyncExecutor.execute(new Callable<Optional<JsonDocument>>() {
+    public ContinuableFuture<JsonDocument> asyncGett(final String id, final long timeout, final TimeUnit timeUnit) {
+        return asyncExecutor.execute(new Callable<JsonDocument>() {
             @Override
-            public Optional<JsonDocument> call() throws Exception {
+            public JsonDocument call() throws Exception {
                 return gett(id, timeout, timeUnit);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final String id) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, id);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final String id, final long timeout, final TimeUnit timeUnit) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, id, timeout, timeUnit);
             }
         });
@@ -1339,11 +1339,11 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> asyncList(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return find(targetClass, query, parameters);
+                return list(targetClass, query, parameters);
             }
         });
     }

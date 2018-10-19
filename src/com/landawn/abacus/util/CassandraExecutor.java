@@ -511,16 +511,17 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> T get(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
+    public final <T> Optional<T> get(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
         return get(targetClass, null, ids);
     }
 
     @SafeVarargs
-    public final <T> T get(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids) throws NonUniqueResultException {
+    public final <T> Optional<T> get(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+            throws NonUniqueResultException {
         return get(targetClass, selectPropNames, ids2Cond(targetClass, ids));
     }
 
-    public <T> T get(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
+    public <T> Optional<T> get(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
         return get(targetClass, null, whereCause);
     }
 
@@ -532,32 +533,22 @@ public final class CassandraExecutor implements Closeable {
      * @return
      * @throws NonUniqueResultException if more than one record found.
      */
-    public <T> T get(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) throws NonUniqueResultException {
-        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause, 2);
-        final ResultSet resultSet = execute(pair.cql, pair.parameters.toArray());
-        final Row row = resultSet.one();
-
-        if (row == null) {
-            return null;
-        } else if (resultSet.isExhausted()) {
-            return toEntity(targetClass, row);
-        } else {
-            throw new NonUniqueResultException();
-        }
+    public <T> Optional<T> get(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause)
+            throws NonUniqueResultException {
+        return Optional.ofNullable(gett(targetClass, selectPropNames, whereCause));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> gett(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
+    public final <T> T gett(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
         return gett(targetClass, null, ids);
     }
 
     @SafeVarargs
-    public final <T> Optional<T> gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
-            throws NonUniqueResultException {
+    public final <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids) throws NonUniqueResultException {
         return gett(targetClass, selectPropNames, ids2Cond(targetClass, ids));
     }
 
-    public <T> Optional<T> gett(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
+    public <T> T gett(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
         return gett(targetClass, null, whereCause);
     }
 
@@ -569,9 +560,18 @@ public final class CassandraExecutor implements Closeable {
      * @return
      * @throws NonUniqueResultException if more than one record found.
      */
-    public <T> Optional<T> gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause)
-            throws NonUniqueResultException {
-        return Optional.ofNullable(get(targetClass, selectPropNames, whereCause));
+    public <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) throws NonUniqueResultException {
+        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause, 2);
+        final ResultSet resultSet = execute(pair.cql, pair.parameters.toArray());
+        final Row row = resultSet.one();
+
+        if (row == null) {
+            return null;
+        } else if (resultSet.isExhausted()) {
+            return toEntity(targetClass, row);
+        } else {
+            throw new NonUniqueResultException();
+        }
     }
 
     public ResultSet insert(final Object entity) {
@@ -892,14 +892,14 @@ public final class CassandraExecutor implements Closeable {
         return findFirst(targetClass, pair.cql, pair.parameters.toArray());
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Condition whereCause) {
-        return find(targetClass, null, whereCause);
+    public <T> List<T> list(final Class<T> targetClass, final Condition whereCause) {
+        return list(targetClass, null, whereCause);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+    public <T> List<T> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
         final CP pair = prepareQuery(targetClass, selectPropNames, whereCause);
 
-        return find(targetClass, pair.cql, pair.parameters.toArray());
+        return list(targetClass, pair.cql, pair.parameters.toArray());
     }
 
     public <T> DataSet query(final Class<T> targetClass, final Condition whereCause) {
@@ -1092,8 +1092,8 @@ public final class CassandraExecutor implements Closeable {
 
     @SuppressWarnings("rawtypes")
     @SafeVarargs
-    public final List<Map<String, Object>> find(final String query, final Object... parameters) {
-        return (List) find(Map.class, query, parameters);
+    public final List<Map<String, Object>> list(final String query, final Object... parameters) {
+        return (List) list(Map.class, query, parameters);
     }
 
     /**
@@ -1104,7 +1104,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> List<T> find(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> List<T> list(final Class<T> targetClass, final String query, final Object... parameters) {
         return toList(targetClass, execute(query, parameters));
     }
 
@@ -1232,30 +1232,30 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Object... ids) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public final <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final Object... ids) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, ids);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+    public final <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
             throws NonUniqueResultException {
-        return asyncExecutor.execute(new Callable<T>() {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, selectPropNames, ids);
             }
         });
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, whereCause);
             }
         });
@@ -1268,40 +1268,40 @@ public final class CassandraExecutor implements Closeable {
      * @param idNameVal
      * @return
      */
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<T>() {
+    public <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
-            public T call() throws Exception {
+            public Optional<T> call() throws Exception {
                 return get(targetClass, selectPropNames, whereCause);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Object... ids) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public final <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final Object... ids) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, ids);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+    public final <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
             throws NonUniqueResultException {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, selectPropNames, ids);
             }
         });
     }
 
-    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, whereCause);
             }
         });
@@ -1314,10 +1314,10 @@ public final class CassandraExecutor implements Closeable {
      * @param idNameVal
      * @return
      */
-    public <T> ContinuableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<Optional<T>>() {
+    public <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public Optional<T> call() throws Exception {
+            public T call() throws Exception {
                 return gett(targetClass, selectPropNames, whereCause);
             }
         });
@@ -1516,20 +1516,20 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final Condition whereCause) {
+    public <T> ContinuableFuture<List<T>> asyncList(final Class<T> targetClass, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return find(targetClass, whereCause);
+                return list(targetClass, whereCause);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
+    public <T> ContinuableFuture<List<T>> asyncList(final Class<T> targetClass, final Collection<String> selectPropName, final Condition whereCause) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return find(targetClass, selectPropName, whereCause);
+                return list(targetClass, selectPropName, whereCause);
             }
         });
     }
@@ -1855,21 +1855,21 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final ContinuableFuture<List<Map<String, Object>>> asyncFind(final String query, final Object... parameters) {
+    public final ContinuableFuture<List<Map<String, Object>>> asyncList(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<Map<String, Object>>>() {
             @Override
             public List<Map<String, Object>> call() throws Exception {
-                return find(query, parameters);
+                return list(query, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> asyncList(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return find(targetClass, query, parameters);
+                return list(targetClass, query, parameters);
             }
         });
     }

@@ -292,20 +292,20 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public ContinuableFuture<List<Map<String, Object>>> find(final QueryRequest queryRequest) {
+    public ContinuableFuture<List<Map<String, Object>>> list(final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<List<Map<String, Object>>>() {
             @Override
             public List<Map<String, Object>> call() throws Exception {
-                return dbExecutor.find(queryRequest);
+                return dbExecutor.list(queryRequest);
             }
         });
     }
 
-    public <T> ContinuableFuture<List<T>> find(final Class<T> targetClass, final QueryRequest queryRequest) {
+    public <T> ContinuableFuture<List<T>> list(final Class<T> targetClass, final QueryRequest queryRequest) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
-                return dbExecutor.find(targetClass, queryRequest);
+                return dbExecutor.list(targetClass, queryRequest);
             }
         });
     }

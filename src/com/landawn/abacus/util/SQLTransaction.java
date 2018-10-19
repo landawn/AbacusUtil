@@ -35,6 +35,7 @@ import com.landawn.abacus.logging.LoggerFactory;
 public final class SQLTransaction implements Transaction {
     private static final Logger logger = LoggerFactory.getLogger(SQLTransaction.class);
 
+    private final SQLExecutor sqlExecutor;
     private final String id;
     private Connection conn;
     private final int originalIsolationLevel;
@@ -46,11 +47,10 @@ public final class SQLTransaction implements Transaction {
     private final Stack<Boolean> isForUpdateOnlyStack = new Stack<>();
     private IsolationLevel isolationLevel;
     private boolean isForUpdateOnly;
-    private SQLExecutor sqlExecutor;
 
-    public SQLTransaction(SQLExecutor sqlExecutor, IsolationLevel isolationLevel) {
+    SQLTransaction(SQLExecutor sqlExecutor, IsolationLevel isolationLevel) {
         this.sqlExecutor = sqlExecutor;
-        this.id = N.uuid();
+        this.id = SQLExecutor.getTransactionThreadId() + "_" + System.currentTimeMillis();
         this.isolationLevel = isolationLevel;
         this.conn = sqlExecutor.getConnection();
         status = Status.ACTIVE;
@@ -58,13 +58,8 @@ public final class SQLTransaction implements Transaction {
         try {
             originalIsolationLevel = conn.getTransactionIsolation();
             originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false);
 
-            if ((isolationLevel == null) || (isolationLevel == IsolationLevel.DEFAULT)) {
-                // ignore. by default
-            } else {
-                conn.setTransactionIsolation(isolationLevel.intValue());
-            }
+            conn.setAutoCommit(false);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         }
@@ -73,6 +68,15 @@ public final class SQLTransaction implements Transaction {
     @Override
     public String id() {
         return id;
+    }
+
+    /**
+     * DO NOT CLOSE the connection manually. It will be automatically closed after the transaction is committed or rolled back.
+     * 
+     * @return
+     */
+    public Connection connection() {
+        return conn;
     }
 
     @Override
@@ -90,15 +94,6 @@ public final class SQLTransaction implements Transaction {
         return status == Status.ACTIVE;
     }
 
-    /**
-     * DO NOT CLOSE the connection manually. It will be automatically closed after the transaction is committed or rolled back.
-     * 
-     * @return
-     */
-    public Connection connection() {
-        return conn;
-    }
-
     @Override
     public void commit() throws UncheckedSQLException {
         if (decrementAndGetRef() > 0) {
@@ -106,40 +101,34 @@ public final class SQLTransaction implements Transaction {
         }
 
         if (status.equals(Status.MARKED_ROLLBACK)) {
-            try {
-                throw new IllegalStateException("Transaction will be rolled back because it's marked for roll back only");
-            } finally {
-                rollback();
-            }
-        } else if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("transaction is already " + status);
-        } else {
-            if (logger.isInfoEnabled()) {
-                logger.info("Committing transaction with id: " + id);
-            }
+            logger.warn("Transaction(id={}) be rolled back because it's marked for roll back only", id);
 
-            status = Status.FAILED_COMMIT;
+            executeRollback();
+        }
 
-            try {
-                conn.commit();
+        if (!status.equals(Status.ACTIVE)) {
+            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+        }
 
-                status = Status.COMMITTED;
-            } catch (SQLException e) {
-                boolean rollback = false;
+        logger.info("Committing transaction(id={})", id);
 
-                try {
-                    rollback();
+        status = Status.FAILED_COMMIT;
 
-                    rollback = true;
-                } catch (Exception e2) {
-                    // ignore;
-                    logger.error("Failed to roll back after error happened during committing", e2);
-                }
+        try {
+            conn.commit();
 
-                throw new UncheckedSQLException(
-                        "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to roll back"), e);
-            } finally {
-                closeConnection();
+            status = Status.COMMITTED;
+        } catch (SQLException e) {
+            throw new UncheckedSQLException("Failed to commit transaction(id=" + id + ")", e);
+        } finally {
+            if (status == Status.COMMITTED) {
+                logger.info("Transaction(id={}) is committed sucessfully", id);
+
+                resetAndCloseConnection();
+            } else {
+                logger.warn("Failed to commit transaction(id={}). It will be automatically rolled back ", id);
+
+                executeRollback();
             }
         }
     }
@@ -152,12 +141,14 @@ public final class SQLTransaction implements Transaction {
         }
 
         if (!(status.equals(Status.ACTIVE) || status.equals(Status.MARKED_ROLLBACK) || status == Status.FAILED_COMMIT)) {
-            throw new IllegalStateException("transaction is already " + status);
+            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Rolling back transaction with id: " + id);
-        }
+        executeRollback();
+    }
+
+    private void executeRollback() throws UncheckedSQLException {
+        logger.warn("Rolling back transaction(id={})" + id);
 
         status = Status.FAILED_ROLLBACK;
 
@@ -166,9 +157,15 @@ public final class SQLTransaction implements Transaction {
 
             status = Status.ROLLED_BACK;
         } catch (SQLException e) {
-            throw new UncheckedSQLException("Failed to roll back transaction with id: " + id, e);
+            throw new UncheckedSQLException("Failed to roll back transaction(id=" + id + ")", e);
         } finally {
-            closeConnection();
+            if (status == Status.ROLLED_BACK) {
+                logger.warn("Transaction(id={}) is rolled back successfully", id);
+            } else {
+                logger.warn("Failed to roll back transaction(id={})", id);
+            }
+
+            resetAndCloseConnection();
         }
     }
 
@@ -177,7 +174,7 @@ public final class SQLTransaction implements Transaction {
      * 
      */
     public void attach() {
-        attach(Thread.currentThread().getId());
+        attach(SQLExecutor.getTransactionThreadId());
     }
 
     /**
@@ -185,16 +182,14 @@ public final class SQLTransaction implements Transaction {
      * 
      * @param threadId
      */
-    public void attach(long threadId) {
+    private void attach(String ttid) {
         if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("transaction is already " + status);
+            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
         }
 
-        sqlExecutor.threadIdTransactionMap.put(threadId, this);
+        logger.info("Attaching transaction(id={}) to thread={}", id, ttid);
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
-        }
+        sqlExecutor.threadTransactionMap.put(ttid, this);
     }
 
     /**
@@ -202,7 +197,7 @@ public final class SQLTransaction implements Transaction {
      * 
      */
     public void detach() {
-        detach(Thread.currentThread().getId());
+        detach(SQLExecutor.getTransactionThreadId());
     }
 
     /**
@@ -210,15 +205,13 @@ public final class SQLTransaction implements Transaction {
      * 
      * @param threadId
      */
-    public void detach(long threadId) {
-        sqlExecutor.threadIdTransactionMap.remove(threadId);
+    private void detach(String ttid) {
+        logger.info("Detaching transaction(id={}) from thread={}", id, ttid);
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
-        }
+        sqlExecutor.threadTransactionMap.remove(ttid);
     }
 
-    private void closeConnection() {
+    private void resetAndCloseConnection() {
         if (conn == null) {
             return;
         }
@@ -227,21 +220,16 @@ public final class SQLTransaction implements Transaction {
             conn.setAutoCommit(originalAutoCommit);
             conn.setTransactionIsolation(originalIsolationLevel);
         } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
+            logger.error("Failed to reset connection in transaction(id=" + id + ")", e);
         } finally {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-
+            JdbcUtil.closeQuietly(conn);
             conn = null;
         }
     }
 
-    synchronized int getAndIncrementRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
+    synchronized int incrementAndGetRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
         if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("transaction is already " + status);
+            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
         }
 
         if (conn != null) {
@@ -252,36 +240,38 @@ public final class SQLTransaction implements Transaction {
             }
         }
 
+        if (refCount.get() > 0) {
+            this.isolationLevelStack.push(this.isolationLevel);
+            this.isForUpdateOnlyStack.push(this.isForUpdateOnly);
+        }
+
         this.isolationLevel = isolationLevel;
         this.isForUpdateOnly = forUpdateOnly;
-        this.isolationLevelStack.push(isolationLevel);
-        this.isForUpdateOnlyStack.push(forUpdateOnly);
-        return refCount.getAndIncrement();
+
+        return refCount.incrementAndGet();
     }
 
     synchronized int decrementAndGetRef() throws UncheckedSQLException {
         final int res = refCount.decrementAndGet();
 
         if (res == 0) {
-            sqlExecutor.threadIdTransactionMap.remove(Thread.currentThread().getId());
+            sqlExecutor.threadTransactionMap.remove(SQLExecutor.getTransactionThreadId());
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Closing transaction: " + id);
-                logger.info("Active transactions: " + sqlExecutor.threadIdTransactionMap);
-            }
+            logger.info("Finishing transaction(id={})", id);
+
+            logger.debug("Remaining active transactions: {}" + sqlExecutor.threadTransactionMap.values());
         } else {
-            final IsolationLevel tmp = isolationLevelStack.pop();
+            this.isolationLevel = isolationLevelStack.pop();
+            this.isForUpdateOnly = isForUpdateOnlyStack.pop();
 
             if (conn != null) {
                 try {
-                    conn.setTransactionIsolation(tmp.intValue());
+                    conn.setTransactionIsolation(isolationLevel.intValue());
                 } catch (SQLException e) {
                     throw new UncheckedSQLException(e);
                 }
             }
 
-            this.isolationLevel = tmp;
-            this.isForUpdateOnly = isForUpdateOnlyStack.pop();
         }
 
         return res;
@@ -305,5 +295,4 @@ public final class SQLTransaction implements Transaction {
     public String toString() {
         return id;
     }
-
 }

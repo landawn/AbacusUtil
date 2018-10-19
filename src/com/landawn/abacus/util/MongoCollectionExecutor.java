@@ -117,52 +117,52 @@ public final class MongoCollectionExecutor {
         }
     }
 
-    public Document get(final String objectId) {
+    public Optional<Document> get(final String objectId) {
         return get(createObjectId(objectId));
     }
 
-    public Document get(final ObjectId objectId) {
+    public Optional<Document> get(final ObjectId objectId) {
         return get(Document.class, objectId);
     }
 
-    public <T> T get(final Class<T> targetClass, final String objectId) {
+    public <T> Optional<T> get(final Class<T> targetClass, final String objectId) {
         return get(targetClass, createObjectId(objectId));
     }
 
-    public <T> T get(final Class<T> targetClass, final ObjectId objectId) {
+    public <T> Optional<T> get(final Class<T> targetClass, final ObjectId objectId) {
         return get(targetClass, objectId, null);
     }
 
-    public <T> T get(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
+    public <T> Optional<T> get(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
         return get(targetClass, createObjectId(objectId), selectPropNames);
     }
 
-    public <T> T get(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return findFirst(targetClass, selectPropNames, createFilter(objectId), null).orElse(null);
+    public <T> Optional<T> get(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return findFirst(targetClass, selectPropNames, createFilter(objectId), null);
     }
 
-    public Optional<Document> gett(final String objectId) {
+    public Document gett(final String objectId) {
         return gett(createObjectId(objectId));
     }
 
-    public Optional<Document> gett(final ObjectId objectId) {
+    public Document gett(final ObjectId objectId) {
         return gett(Document.class, objectId);
     }
 
-    public <T> Optional<T> gett(final Class<T> targetClass, final String objectId) {
+    public <T> T gett(final Class<T> targetClass, final String objectId) {
         return gett(targetClass, createObjectId(objectId));
     }
 
-    public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId) {
+    public <T> T gett(final Class<T> targetClass, final ObjectId objectId) {
         return gett(targetClass, objectId, null);
     }
 
-    public <T> Optional<T> gett(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
+    public <T> T gett(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
         return gett(targetClass, createObjectId(objectId), selectPropNames);
     }
 
-    public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
-        return findFirst(targetClass, selectPropNames, createFilter(objectId), null);
+    public <T> T gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return findFirst(targetClass, selectPropNames, createFilter(objectId), null).orElse(null);
     }
 
     public Optional<Document> findFirst(final Bson filter) {
@@ -193,24 +193,24 @@ public final class MongoCollectionExecutor {
         return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
     }
 
-    public List<Document> find(final Bson filter) {
-        return find(Document.class, filter);
+    public List<Document> list(final Bson filter) {
+        return list(Document.class, filter);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter) {
-        return find(targetClass, null, filter);
+    public <T> List<T> list(final Class<T> targetClass, final Bson filter) {
+        return list(targetClass, null, filter);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
-        return find(targetClass, selectPropNames, filter, 0, Integer.MAX_VALUE);
+    public <T> List<T> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter) {
+        return list(targetClass, selectPropNames, filter, 0, Integer.MAX_VALUE);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
-        return find(targetClass, selectPropNames, filter, null, offset, count);
+    public <T> List<T> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final int offset, final int count) {
+        return list(targetClass, selectPropNames, filter, null, offset, count);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
-        return find(targetClass, selectPropNames, filter, sort, 0, Integer.MAX_VALUE);
+    public <T> List<T> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort) {
+        return list(targetClass, selectPropNames, filter, sort, 0, Integer.MAX_VALUE);
     }
 
     /**
@@ -223,15 +223,15 @@ public final class MongoCollectionExecutor {
      * @param count
      * @return
      */
-    public <T> List<T> find(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset,
+    public <T> List<T> list(final Class<T> targetClass, final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset,
             final int count) {
         final FindIterable<Document> findIterable = query(selectPropNames, filter, sort, offset, count);
 
         return MongoDB.toList(targetClass, findIterable);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
-        return find(targetClass, filter, sort, projection, 0, Integer.MAX_VALUE);
+    public <T> List<T> list(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection) {
+        return list(targetClass, filter, sort, projection, 0, Integer.MAX_VALUE);
     }
 
     /**
@@ -244,7 +244,7 @@ public final class MongoCollectionExecutor {
      * @param count
      * @return
      */
-    public <T> List<T> find(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
+    public <T> List<T> list(final Class<T> targetClass, final Bson filter, final Bson sort, final Bson projection, final int offset, final int count) {
         final FindIterable<Document> findIterable = query(filter, sort, projection, offset, count);
 
         return MongoDB.toList(targetClass, findIterable);

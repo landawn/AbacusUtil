@@ -171,11 +171,11 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     @Override
     public int compareTo(OptionalChar optional) {
         if (optional == null || optional.isPresent() == false) {
-            return isPresent() ? 1 : 0;
+            return isPresent ? 1 : 0;
         }
 
-        if (isPresent() == false) {
-            return optional.isPresent() ? -1 : 0;
+        if (isPresent == false) {
+            return -1;
         }
 
         return Character.compare(this.get(), optional.get());

@@ -175,7 +175,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         }
 
         if (isPresent == false) {
-            return optional.isPresent ? -1 : 0;
+            return -1;
         }
 
         return Byte.compare(this.get(), optional.get());

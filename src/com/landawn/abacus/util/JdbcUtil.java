@@ -53,7 +53,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
+import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -70,6 +73,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.SliceSelector;
 import com.landawn.abacus.Transaction;
+import com.landawn.abacus.Transaction.Status;
 import com.landawn.abacus.core.AbacusConfiguration;
 import com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration;
 import com.landawn.abacus.core.AbacusConfiguration.DataSourceManagerConfiguration;
@@ -85,8 +89,14 @@ import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.parser.ParserUtil;
+import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
+import com.landawn.abacus.util.Tuple.Tuple4;
+import com.landawn.abacus.util.Tuple.Tuple5;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -826,36 +836,225 @@ public final class JdbcUtil {
         return rs.getMetaData().getColumnCount();
     }
 
+    /**
+     * Here is the general code pattern to work with {@code SimpleTransaction}.
+     * The transaction will be shared in the same thread for the same {@code DataSource} or {@code Connection}.
+     * 
+     * <pre>
+     * <code>
+     * public void doSomethingA() {
+     *     ...
+     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
+     *     final Connection conn = tranA.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         doSomethingB(); // Share the same transaction 'tranA' because they're in the same thread and start transaction with same DataSource 'dataSource1'.
+     *         ...
+     *         doSomethingC(); // won't share the same transaction 'tranA' although they're in the same thread but start transaction with different DataSources.
+     *         ...
+     *         tranA.commit();
+     *     } finally {
+     *         tranA.rollbackIfNotCommitted();
+     *     }
+     * }
+     * 
+     * public void doSomethingB() {
+     *     ...
+     *     final SimpleTransaction tranB = JdbcUtil.beginTransacion(dataSource1, isolation);
+     *     final Connection conn = tranB.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         tranB.commit();
+     *     } finally {
+     *         tranB.rollbackIfNotCommitted();
+     *     }
+     * }
+     * 
+     * public void doSomethingC() {
+     *     ...
+     *     final SimpleTransaction tranC = JdbcUtil.beginTransacion(dataSource2, isolation);
+     *     final Connection conn = tranC.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         tranC.commit();
+     *     } finally {
+     *         tranC.rollbackIfNotCommitted();
+     *     }
+     * }
+     * </pre>
+     * </code>
+     * 
+     * It's incorrect to use flag to identity the transaction should be committed or rolled back.
+     * Don't write below code:
+     * <pre>
+     * <code>
+     * public void doSomethingA() {
+     *     ...
+     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
+     *     final Connection conn = tranA.connection();
+     *     boolean flagToCommit = false;
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         flagToCommit = true;
+     *     } finally {
+     *         if (flagToCommit) {
+     *             tranA.commit();
+     *         } else {
+     *             tranA.rollbackIfNotCommitted();
+     *         }
+     *     }
+     * }
+     * </code>
+     * </pre>
+     * 
+     * @param dataSource
+     * @param isolationLevel
+     * @return
+     * @throws SQLException
+     */
     public static SimpleTransaction beginTransaction(javax.sql.DataSource dataSource, IsolationLevel isolationLevel) throws SQLException {
         N.checkArgNotNull(dataSource);
         N.checkArgNotNull(isolationLevel);
 
-        final Connection conn = dataSource.getConnection();
-        SimpleTransaction result = null;
-        boolean isOk = false;
+        final String ttid = SimpleTransaction.getTransactionThreadId(dataSource);
+        SimpleTransaction tran = SimpleTransaction.threadTransacionMap.get(ttid);
 
-        try {
-            result = new SimpleTransaction(conn, isolationLevel, true);
+        if (tran == null) {
+            final Connection conn = dataSource.getConnection();
+            boolean isOk = false;
 
-            isOk = true;
-        } finally {
-            if (isOk == false) {
-                closeQuietly(conn);
+            try {
+                tran = new SimpleTransaction(ttid, conn, isolationLevel, true);
+
+                isOk = true;
+            } finally {
+                if (isOk == false) {
+                    closeQuietly(conn);
+                }
             }
+
+            SimpleTransaction.threadTransacionMap.put(ttid, tran);
+
+            logger.info("Create a new transaction(id={})", tran.id());
+        } else {
+            logger.info("Reusing the existing transaction(id={})", tran.id());
         }
 
-        return result;
+        logger.debug("Current active transaction: {}", SimpleTransaction.threadTransacionMap.values());
+
+        return tran;
     }
 
+    /**
+     * Here is the general code pattern to work with {@code SimpleTransaction}.
+     * The transaction will be shared in the same thread for the same {@code DataSource} or {@code Connection}.
+     * 
+     * <pre>
+     * <code>
+     * public void doSomethingA() {
+     *     ...
+     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(conn1, isolation);
+     *     final Connection conn = tranA.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         doSomethingB(); // Share the same transaction 'tranA' because they're in the same thread and start transaction with same Connection 'conn1'.
+     *         ...
+     *         doSomethingC(); // won't share the same transaction 'tranA' although they're in the same thread but start transaction with different Connections.
+     *         ...
+     *         tranA.commit();
+     *     } finally {
+     *         tranA.rollbackIfNotCommitted();
+     *     }
+     * }
+     * 
+     * public void doSomethingB() {
+     *     ...
+     *     final SimpleTransaction tranB = JdbcUtil.beginTransacion(conn1, isolation);
+     *     final Connection conn = tranB.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         tranB.commit();
+     *     } finally {
+     *         tranB.rollbackIfNotCommitted();
+     *     }
+     * }
+     * 
+     * public void doSomethingC() {
+     *     ...
+     *     final SimpleTransaction tranC = JdbcUtil.beginTransacion(conn2, isolation);
+     *     final Connection conn = tranC.connection();
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         tranC.commit();
+     *     } finally {
+     *         tranC.rollbackIfNotCommitted();
+     *     }
+     * }
+     * </pre>
+     * </code>
+     * 
+     * It's incorrect to use flag to identity the transaction should be committed or rolled back.
+     * Don't write below code:
+     * <pre>
+     * <code>
+     * public void doSomethingA() {
+     *     ...
+     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(conn1, isolation);
+     *     final Connection conn = tranA.connection();
+     *     boolean flagToCommit = false;
+     *     try {
+     *         // do your work with the conn...
+     *         ...
+     *         flagToCommit = true;
+     *     } finally {
+     *         if (flagToCommit) {
+     *             tranA.commit();
+     *         } else {
+     *             tranA.rollbackIfNotCommitted();
+     *         }
+     *     }
+     * }
+     * </code>
+     * </pre>
+     * 
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.beginTransaction(dataSource.getConnection(), isolationLevel);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after the created transaction is committed or rolled back.
+     * @param isolationLevel
+     * @return
+     * @throws SQLException
+     */
     public static SimpleTransaction beginTransaction(Connection conn, IsolationLevel isolationLevel) throws SQLException {
-        return beginTransaction(conn, isolationLevel, false);
-    }
-
-    public static SimpleTransaction beginTransaction(Connection conn, IsolationLevel isolationLevel, boolean closeConnection) throws SQLException {
         N.checkArgNotNull(conn);
         N.checkArgNotNull(isolationLevel);
 
-        return new SimpleTransaction(conn, isolationLevel, closeConnection);
+        final String ttid = SimpleTransaction.getTransactionThreadId(conn);
+        SimpleTransaction tran = SimpleTransaction.threadTransacionMap.get(ttid);
+
+        if (tran == null) {
+            tran = new SimpleTransaction(ttid, conn, isolationLevel, false);
+            SimpleTransaction.threadTransacionMap.put(ttid, tran);
+
+            logger.info("Create a new transaction(id={})", tran.id());
+        } else {
+            logger.info("Reusing the existing transaction(id={})", tran.id());
+        }
+
+        logger.debug("Current active transaction: {}", SimpleTransaction.threadTransacionMap.values());
+
+        return tran;
     }
 
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
@@ -915,7 +1114,7 @@ public final class JdbcUtil {
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
      * <code>
-     * JdbcUtil.prepareQuery(dataSource.getConnection(), sql);
+     * JdbcUtil.prepareQuery(dataSource.getConnection(), sql, autoGeneratedKeys);
      * </code>
      * </pre>
      * 
@@ -929,8 +1128,43 @@ public final class JdbcUtil {
         return new PreparedQuery(conn.prepareStatement(sql, autoGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS));
     }
 
+    /** 
+     * 
+     * @param ds
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * @return
+     * @throws SQLException
+     */
+    @SuppressWarnings("resource")
+    public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
+            throws SQLException {
+        final Connection conn = ds.getConnection();
+        PreparedQuery result = null;
+        boolean isOk = false;
+
+        try {
+            result = new PreparedQuery(stmtCreator.apply(conn)).onClose(conn);
+
+            isOk = true;
+        } finally {
+            if (isOk == false) {
+                closeQuietly(conn);
+            }
+        }
+
+        return result;
+    }
+
     /**
-     * @param conn
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareQuery(dataSource.getConnection(), stmtCreator);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
      * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
      * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
      * @return
@@ -988,7 +1222,41 @@ public final class JdbcUtil {
     }
 
     /**
-     * @param conn
+     * @param ds
+     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * @return
+     * @throws SQLException
+     */
+    @SuppressWarnings("resource")
+    public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds,
+            final Try.Function<Connection, CallableStatement, SQLException> stmtCreator) throws SQLException {
+        final Connection conn = ds.getConnection();
+        PreparedCallableQuery result = null;
+        boolean isOk = false;
+
+        try {
+            result = new PreparedCallableQuery(stmtCreator.apply(conn)).onClose(conn);
+
+            isOk = true;
+        } finally {
+            if (isOk == false) {
+                closeQuietly(conn);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareCallableQuery(dataSource.getConnection(), stmtCreator);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
      * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
      * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
      * @return
@@ -1016,7 +1284,7 @@ public final class JdbcUtil {
         final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
 
         if (N.notNullOrEmpty(parameters)) {
-            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
         }
 
         return stmt;
@@ -1028,7 +1296,7 @@ public final class JdbcUtil {
         final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
 
         if (N.notNullOrEmpty(parameters)) {
-            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
         }
 
         return stmt;
@@ -1039,7 +1307,7 @@ public final class JdbcUtil {
         final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
 
         for (Object parameters : parametersList) {
-            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
             stmt.addBatch();
         }
 
@@ -1051,7 +1319,7 @@ public final class JdbcUtil {
         final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
 
         for (Object parameters : parametersList) {
-            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
             stmt.addBatch();
         }
 
@@ -1153,7 +1421,7 @@ public final class JdbcUtil {
             int idx = 0;
 
             for (Object parameters : parametersListList) {
-                SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+                SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
                 stmt.addBatch();
 
                 if (++idx % batchSize == 0) {
@@ -1261,6 +1529,112 @@ public final class JdbcUtil {
                 closeQuietly(rs);
             }
         }
+    }
+
+    static <T> BiRecordGetter<T, RuntimeException> createBiRecordGetterByTargetClass(final Class<T> targetClass) {
+        return new BiRecordGetter<T, RuntimeException>() {
+            private final boolean isArray = Object[].class.isAssignableFrom(targetClass);
+            private final boolean isList = List.class.isAssignableFrom(targetClass);
+            private final boolean isListOrArrayList = targetClass.equals(List.class) || targetClass.equals(ArrayList.class);
+            private final boolean isMap = Map.class.isAssignableFrom(targetClass);
+            private final boolean isMapOrHashMap = targetClass.equals(Map.class) || targetClass.equals(HashMap.class);
+            private final boolean isLinkedHashMap = targetClass.equals(LinkedHashMap.class);
+            private final boolean isEntity = !isList && !isMap && N.isEntity(targetClass);
+            private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+
+            private String[] columnLabels = null;
+            private Method[] propSetters;
+            private Type<?>[] columnTypes = null;
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                String[] columnLabels = this.columnLabels;
+                Method[] propSetters = this.propSetters;
+                Type<?>[] columnTypes = this.columnTypes;
+
+                if (columnLabels == null) {
+                    columnLabels = columnLabelList.toArray(new String[columnLabelList.size()]);
+                    this.columnLabels = columnLabels;
+                }
+
+                final int columnCount = columnLabels.length;
+
+                if (isEntity && (columnTypes == null || propSetters == null)) {
+                    final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
+
+                    propSetters = new Method[columnCount];
+                    columnTypes = new Type[columnCount];
+
+                    for (int i = 0; i < columnCount; i++) {
+                        propSetters[i] = ClassUtil.getPropSetMethod(targetClass, columnLabels[i]);
+
+                        if (propSetters[i] == null) {
+                            columnLabels[i] = null;
+                        } else {
+                            columnTypes[i] = entityInfo.getPropInfo(columnLabels[i]).type;
+                        }
+                    }
+
+                    this.propSetters = propSetters;
+                    this.columnTypes = columnTypes;
+                }
+
+                if (isArray) {
+                    final Object[] a = Array.newInstance(targetClass.getComponentType(), columnCount);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        a[i] = rs.getObject(i + 1);
+                    }
+
+                    return (T) a;
+                } else if (isList) {
+                    final List<Object> c = isListOrArrayList ? new ArrayList<Object>(columnCount) : (List<Object>) N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        c.add(rs.getObject(i + 1));
+                    }
+
+                    return (T) c;
+                } else if (isMap) {
+                    final Map<String, Object> m = isMapOrHashMap ? new HashMap<String, Object>(columnCount)
+                            : (isLinkedHashMap ? new LinkedHashMap<String, Object>(columnCount) : (Map<String, Object>) N.newInstance(targetClass));
+
+                    for (int i = 0; i < columnCount; i++) {
+                        m.put(columnLabels[i], rs.getObject(i + 1));
+                    }
+
+                    return (T) m;
+                } else {
+                    final Object entity = N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        if (columnLabels[i] == null) {
+                            continue;
+                        }
+
+                        ClassUtil.setPropValue(entity, propSetters[i], columnTypes[i].get(rs, i + 1));
+                    }
+
+                    if (isDirtyMarker) {
+                        ((DirtyMarker) entity).markDirty(false);
+                    }
+
+                    return (T) entity;
+                }
+            }
+        };
+    }
+
+    static <T> Try.BiFunction<ResultSet, List<String>, T, SQLException> createBiRecordGetterFuncByTargetClass(final Class<T> targetClass) {
+        return new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
+            private final BiRecordGetter<T, RuntimeException> biRecordGetter = createBiRecordGetterByTargetClass(targetClass);
+
+            @Override
+            public T apply(ResultSet rs, List<String> columnLabels) throws SQLException {
+                return biRecordGetter.apply(rs, columnLabels);
+            }
+        };
     }
 
     /**
@@ -3204,6 +3578,48 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setBytes(int parameterIndex, byte[] x) throws SQLException {
+            stmt.setBytes(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setBinaryStream(int parameterIndex, InputStream inputStream) throws SQLException {
+            stmt.setBinaryStream(parameterIndex, inputStream);
+
+            return (Q) this;
+        }
+
+        public Q setBinaryStream(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+            stmt.setBinaryStream(parameterIndex, inputStream, length);
+
+            return (Q) this;
+        }
+
+        public Q setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+            stmt.setCharacterStream(parameterIndex, reader);
+
+            return (Q) this;
+        }
+
+        public Q setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+            stmt.setCharacterStream(parameterIndex, reader, length);
+
+            return (Q) this;
+        }
+
+        public Q setNCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+            stmt.setNCharacterStream(parameterIndex, reader);
+
+            return (Q) this;
+        }
+
+        public Q setNCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+            stmt.setNCharacterStream(parameterIndex, reader, length);
+
+            return (Q) this;
+        }
+
         public Q setBlob(int parameterIndex, java.sql.Blob x) throws SQLException {
             stmt.setBlob(parameterIndex, x);
 
@@ -3240,6 +3656,24 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setNClob(int parameterIndex, java.sql.NClob x) throws SQLException {
+            stmt.setNClob(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setNClob(int parameterIndex, Reader reader) throws SQLException {
+            stmt.setNClob(parameterIndex, reader);
+
+            return (Q) this;
+        }
+
+        public Q setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
+            stmt.setNClob(parameterIndex, reader, length);
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -3248,7 +3682,11 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public Q setObject(int parameterIndex, Object x) throws SQLException {
-            stmt.setObject(parameterIndex, x);
+            if (x == null) {
+                stmt.setObject(parameterIndex, x);
+            } else {
+                N.typeOf(x.getClass()).set(stmt, parameterIndex, x);
+            }
 
             return (Q) this;
         }
@@ -3339,12 +3777,37 @@ public final class JdbcUtil {
          * @param startParameterIndex
          * @param param1
          * @param param2
+         * @param param3
+         * @param param4 
          * @return
          * @throws SQLException
          */
-        public Q setParameters(int startParameterIndex, Object param1, Object param2) throws SQLException {
-            stmt.setObject(startParameterIndex++, param1);
-            stmt.setObject(startParameterIndex++, param2);
+        public Q setParameters(int startParameterIndex, String param1, String param2, String param3, String param4) throws SQLException {
+            stmt.setString(startParameterIndex++, param1);
+            stmt.setString(startParameterIndex++, param2);
+            stmt.setString(startParameterIndex++, param3);
+            stmt.setString(startParameterIndex++, param4);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, String param1, String param2, String param3, String param4, String param5) throws SQLException {
+            stmt.setString(startParameterIndex++, param1);
+            stmt.setString(startParameterIndex++, param2);
+            stmt.setString(startParameterIndex++, param3);
+            stmt.setString(startParameterIndex++, param4);
+            stmt.setString(startParameterIndex++, param5);
 
             return (Q) this;
         }
@@ -3359,9 +3822,9 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3) throws SQLException {
-            stmt.setObject(startParameterIndex++, param1);
-            stmt.setObject(startParameterIndex++, param2);
-            stmt.setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
 
             return (Q) this;
         }
@@ -3372,15 +3835,15 @@ public final class JdbcUtil {
          * @param param1
          * @param param2
          * @param param3
-         * @param param4
+         * @param param4 
          * @return
          * @throws SQLException
          */
         public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4) throws SQLException {
-            stmt.setObject(startParameterIndex++, param1);
-            stmt.setObject(startParameterIndex++, param2);
-            stmt.setObject(startParameterIndex++, param3);
-            stmt.setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
 
             return (Q) this;
         }
@@ -3397,11 +3860,61 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5) throws SQLException {
-            stmt.setObject(startParameterIndex++, param1);
-            stmt.setObject(startParameterIndex++, param2);
-            stmt.setObject(startParameterIndex++, param3);
-            stmt.setObject(startParameterIndex++, param4);
-            stmt.setObject(startParameterIndex++, param5);
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param5);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @param param6 
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6)
+                throws SQLException {
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param5);
+            setObject(startParameterIndex++, param6);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @param param6
+         * @param param7
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Object param7)
+                throws SQLException {
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param5);
+            setObject(startParameterIndex++, param6);
+            setObject(startParameterIndex++, param7);
 
             return (Q) this;
         }
@@ -3410,36 +3923,25 @@ public final class JdbcUtil {
          * 
          * @param startParameterIndex
          * @param parameters
+         * @param type
          * @return
          * @throws SQLException
          */
-        public Q setParameters(int startParameterIndex, List<?> parameters) throws SQLException {
+        public <T> Q setParameters(int startParameterIndex, Collection<? extends T> parameters, Class<T> type) throws SQLException {
             N.checkArgNotNull(parameters);
+            N.checkArgNotNull(type);
 
-            for (int i = 0, len = parameters.size(); i < len; i++) {
-                stmt.setObject(startParameterIndex++, parameters.get(i));
+            final Type<T> setter = N.typeOf(type);
+
+            for (T param : parameters) {
+                setter.set(stmt, startParameterIndex++, param);
             }
 
             return (Q) this;
         }
 
-        public <E extends Exception> Q setParameters(StatementSetter<S, E> setter) throws SQLException, E {
-            setter.set((S) stmt);
-
-            return (Q) this;
-        }
-
-        /**
-         * 
-         * @param setter
-         * @return
-         * @throws SQLException
-         * @throws E
-         * @deprecated
-         */
-        @Deprecated
-        public <E extends Exception> Q setParameters(BiStatementSetter<S, Q, E> setter) throws SQLException, E {
-            setter.set((S) stmt, (Q) this);
+        public <E extends Exception> Q setParameters(Try.EE.Consumer<? super PreparedStatement, SQLException, E> paramSetter) throws SQLException, E {
+            paramSetter.accept(stmt);
 
             return (Q) this;
         }
@@ -3682,6 +4184,21 @@ public final class JdbcUtil {
             return (T) entity;
         }
 
+        public DataSet query() throws SQLException {
+            return query(ResultExtractor.DATA_SET);
+        }
+
+        public <R, E extends Exception> R query(final ResultExtractor<R, E> resultExtrator) throws SQLException, E {
+            N.checkArgNotNull(resultExtrator);
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return resultExtrator.apply(rs, getColumnLabelList(rs));
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
         /**
          * 
          * @param targetClass
@@ -3854,20 +4371,7 @@ public final class JdbcUtil {
         }
 
         public <T> List<T> list(final Class<T> targetClass) throws SQLException {
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                final List<T> result = new ArrayList<>();
-
-                while (rs.next()) {
-                    result.add(get(targetClass, rs, columnLabels));
-                }
-
-                return result;
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
+            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
         public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -3930,16 +4434,6 @@ public final class JdbcUtil {
                 }
 
                 return result;
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
-        }
-
-        public DataSet query() throws SQLException {
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return JdbcUtil.extractData(rs);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -4285,7 +4779,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> T executeThenApply(final StatementGetter<T, S, E> getter) throws SQLException, E {
+        public <R, E extends Exception> R executeThenApply(final Try.EE.Function<? super S, ? extends R, SQLException, E> getter) throws SQLException, E {
             N.checkArgNotNull(getter);
             assertNotClosed();
 
@@ -4298,7 +4792,21 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void executeThenAccept(final StatementConsumer<S, E> consumer) throws SQLException, E {
+        public <R, E extends Exception> R executeThenApply(final Try.EE.BiFunction<Boolean, ? super S, ? extends R, SQLException, E> getter)
+                throws SQLException, E {
+            N.checkArgNotNull(getter);
+            assertNotClosed();
+
+            try {
+                final boolean isFirstResultSet = stmt.execute();
+
+                return getter.apply(isFirstResultSet, (S) stmt);
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        public <E extends Exception> void executeThenAccept(final Try.EE.Consumer<? super S, SQLException, E> consumer) throws SQLException, E {
             N.checkArgNotNull(consumer);
             assertNotClosed();
 
@@ -4309,6 +4817,63 @@ public final class JdbcUtil {
             } finally {
                 closeAfterExecutionIfAllowed();
             }
+        }
+
+        public <E extends Exception> void executeThenAccept(final Try.EE.BiConsumer<Boolean, ? super S, SQLException, E> consumer) throws SQLException, E {
+            N.checkArgNotNull(consumer);
+            assertNotClosed();
+
+            try {
+                final boolean isFirstResultSet = stmt.execute();
+
+                consumer.accept(isFirstResultSet, (S) stmt);
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func) {
+            final Q q = (Q) this;
+
+            return ContinuableFuture.call(new Try.Callable<R, E>() {
+                @Override
+                public R call() throws E {
+                    return func.apply(q);
+                }
+            });
+        }
+
+        public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func, final Executor executor) {
+            final Q q = (Q) this;
+
+            return ContinuableFuture.call(new Try.Callable<R, E>() {
+                @Override
+                public R call() throws E {
+                    return func.apply(q);
+                }
+            }, executor);
+        }
+
+        public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action) {
+            final Q q = (Q) this;
+
+            return ContinuableFuture.run(new Try.Runnable<E>() {
+                @Override
+                public void run() throws E {
+                    action.accept(q);
+                }
+            });
+        }
+
+        public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action, final Executor executor) {
+            final Q q = (Q) this;
+
+            return ContinuableFuture.run(new Try.Runnable<E>() {
+                @Override
+                public void run() throws E {
+                    action.accept(q);
+                }
+            }, executor);
         }
 
         Q onClose(Connection conn) {
@@ -4345,13 +4910,13 @@ public final class JdbcUtil {
             }
         }
 
-        private void closeAfterExecutionIfAllowed() throws SQLException {
+        void closeAfterExecutionIfAllowed() throws SQLException {
             if (closeAfterExecution) {
                 close();
             }
         }
 
-        private void assertNotClosed() {
+        void assertNotClosed() {
             if (isClosed) {
                 throw new IllegalStateException();
             }
@@ -4486,6 +5051,48 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setBytes(String parameterName, byte[] x) throws SQLException {
+            stmt.setBytes(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
+            stmt.setBinaryStream(parameterName, inputStream);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+            stmt.setBinaryStream(parameterName, inputStream, length);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader) throws SQLException {
+            stmt.setCharacterStream(parameterName, reader);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+            stmt.setCharacterStream(parameterName, reader, length);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader) throws SQLException {
+            stmt.setNCharacterStream(parameterName, reader);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+            stmt.setNCharacterStream(parameterName, reader, length);
+
+            return this;
+        }
+
         public PreparedCallableQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
             stmt.setBlob(parameterName, x);
 
@@ -4522,8 +5129,30 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setNClob(String parameterName, java.sql.NClob x) throws SQLException {
+            stmt.setNClob(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setNClob(String parameterName, Reader reader) throws SQLException {
+            stmt.setNClob(parameterName, reader);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setNClob(String parameterName, Reader reader, long length) throws SQLException {
+            stmt.setNClob(parameterName, reader, length);
+
+            return this;
+        }
+
         public PreparedCallableQuery setObject(String parameterName, Object x) throws SQLException {
-            stmt.setObject(parameterName, x);
+            if (x == null) {
+                stmt.setObject(parameterName, x);
+            } else {
+                N.typeOf(x.getClass()).set(stmt, parameterName, x);
+            }
 
             return this;
         }
@@ -4556,7 +5185,7 @@ public final class JdbcUtil {
             N.checkArgNotNull(parameters);
 
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                stmt.setObject(entry.getKey(), entry.getValue());
+                setObject(entry.getKey(), entry.getValue());
             }
 
             return this;
@@ -4574,7 +5203,7 @@ public final class JdbcUtil {
             N.checkArgNotNull(entity);
 
             for (String parameterName : parameterNames) {
-                stmt.setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
+                setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
             }
 
             return this;
@@ -4698,42 +5327,233 @@ public final class JdbcUtil {
             return this;
         }
 
-        public <E extends Exception> PreparedCallableQuery registerOutParameters(final OutParameterRegister<E> register) throws SQLException, E {
-            register.register(stmt);
+        public <E extends Exception> PreparedCallableQuery registerOutParameters(final Try.EE.Consumer<? super CallableStatement, SQLException, E> register)
+                throws SQLException, E {
+            register.accept(stmt);
 
             return this;
         }
 
-        /**
-         * 
-         * @param register
-         * @return
-         * @throws SQLException
-         * @throws E
-         * @deprecated
-         */
-        @Deprecated
-        public <E extends Exception> PreparedCallableQuery registerOutParameters(final BiOutParameterRegister<E> register) throws SQLException, E {
-            register.register(stmt, this);
+        public <R1, E1 extends Exception> Optional<R1> call(final ResultExtractor<R1, E1> resultExtrator1) throws SQLException, E1 {
+            N.checkArgNotNull(resultExtrator1);
 
-            return this;
+            try {
+                if (stmt.execute()) {
+                    if (stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            return Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                        }
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return Optional.empty();
+        }
+
+        public <R1, R2, E1 extends Exception, E2 extends Exception> Tuple2<Optional<R1>, Optional<R2>> call(final ResultExtractor<R1, E1> resultExtrator1,
+                final ResultExtractor<R2, E2> resultExtrator2) throws SQLException, E1, E2 {
+            N.checkArgNotNull(resultExtrator1);
+            N.checkArgNotNull(resultExtrator2);
+
+            Optional<R1> result1 = Optional.empty();
+            Optional<R2> result2 = Optional.empty();
+
+            try {
+                if (stmt.execute()) {
+                    if (stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                        }
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return Tuple.of(result1, result2);
+        }
+
+        public <R1, R2, R3, E1 extends Exception, E2 extends Exception, E3 extends Exception> Tuple3<Optional<R1>, Optional<R2>, Optional<R3>> call(
+                final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3)
+                throws SQLException, E1, E2, E3 {
+            N.checkArgNotNull(resultExtrator1);
+            N.checkArgNotNull(resultExtrator2);
+            N.checkArgNotNull(resultExtrator3);
+
+            Optional<R1> result1 = Optional.empty();
+            Optional<R2> result2 = Optional.empty();
+            Optional<R3> result3 = Optional.empty();
+
+            try {
+                if (stmt.execute()) {
+                    if (stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                        }
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return Tuple.of(result1, result2, result3);
+        }
+
+        public <R1, R2, R3, R4, E1 extends Exception, E2 extends Exception, E3 extends Exception, E4 extends Exception> Tuple4<Optional<R1>, Optional<R2>, Optional<R3>, Optional<R4>> call(
+                final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3,
+                final ResultExtractor<R4, E4> resultExtrator4) throws SQLException, E1, E2, E3, E4 {
+            N.checkArgNotNull(resultExtrator1);
+            N.checkArgNotNull(resultExtrator2);
+            N.checkArgNotNull(resultExtrator3);
+            N.checkArgNotNull(resultExtrator4);
+
+            Optional<R1> result1 = Optional.empty();
+            Optional<R2> result2 = Optional.empty();
+            Optional<R3> result3 = Optional.empty();
+            Optional<R4> result4 = Optional.empty();
+
+            try {
+                if (stmt.execute()) {
+                    if (stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                        }
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result4 = Optional.of(resultExtrator4.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return Tuple.of(result1, result2, result3, result4);
+        }
+
+        public <R1, R2, R3, R4, R5, E1 extends Exception, E2 extends Exception, E3 extends Exception, E4 extends Exception, E5 extends Exception> Tuple5<Optional<R1>, Optional<R2>, Optional<R3>, Optional<R4>, Optional<R5>> call(
+                final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3,
+                final ResultExtractor<R4, E4> resultExtrator4, final ResultExtractor<R5, E5> resultExtrator5) throws SQLException, E1, E2, E3, E4, E5 {
+            N.checkArgNotNull(resultExtrator1);
+            N.checkArgNotNull(resultExtrator2);
+            N.checkArgNotNull(resultExtrator3);
+            N.checkArgNotNull(resultExtrator4);
+            N.checkArgNotNull(resultExtrator5);
+
+            Optional<R1> result1 = Optional.empty();
+            Optional<R2> result2 = Optional.empty();
+            Optional<R3> result3 = Optional.empty();
+            Optional<R4> result4 = Optional.empty();
+            Optional<R5> result5 = Optional.empty();
+
+            try {
+                if (stmt.execute()) {
+                    if (stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                        }
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result4 = Optional.of(resultExtrator4.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result5 = Optional.of(resultExtrator5.apply(rs, getColumnLabelList(rs)));
+                        }
+
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return Tuple.of(result1, result2, result3, result4, result5);
         }
     }
 
     public static class SimpleTransaction {
+        static final Map<String, SimpleTransaction> threadTransacionMap = new ConcurrentHashMap<>();
+
+        private final String ttid;
         private final String id;
         private final Connection conn;
-        private final IsolationLevel isolationLevel;
         private final boolean closeConnection;
         private final boolean originalAutoCommit;
         private final int originalIsolationLevel;
-        private Transaction.Status status = Transaction.Status.ACTIVE;
 
-        SimpleTransaction(Connection conn, IsolationLevel isolationLevel, boolean closeConnection) throws SQLException {
+        private IsolationLevel isolationLevel;
+        private Transaction.Status status = Status.ACTIVE;
+
+        private final AtomicInteger refCount = new AtomicInteger();
+        private final Stack<IsolationLevel> isolationLevelStack = new Stack<>();
+
+        private boolean isMarkedByCommitPreviously = false;
+
+        SimpleTransaction(String ttid, Connection conn, IsolationLevel isolationLevel, boolean closeConnection) throws SQLException {
             N.checkArgNotNull(conn);
             N.checkArgNotNull(isolationLevel);
 
-            this.id = UUID.randomUUID().toString();
+            this.ttid = ttid;
+            this.id = ttid + "_" + System.currentTimeMillis();
             this.conn = conn;
             this.isolationLevel = isolationLevel;
             this.closeConnection = closeConnection;
@@ -4765,41 +5585,128 @@ public final class JdbcUtil {
         }
 
         public boolean isActive() {
-            return status == Transaction.Status.ACTIVE;
+            return status == Status.ACTIVE;
         }
 
         public void commit() throws SQLException {
-            if (status != Transaction.Status.ACTIVE) {
+            final int refCount = decrementAndGetRef();
+
+            if (refCount > 0) {
+                isMarkedByCommitPreviously = true;
+                return;
+            } else if (refCount < 0) {
+                logger.warn("Transaction(id={}) is already: {}. This committing is ignored", id, status);
                 return;
             }
 
-            status = Transaction.Status.FAILED_COMMIT;
+            if (status == Status.MARKED_ROLLBACK) {
+                logger.warn("Transaction(id={}) will be rolled back because it's marked for roll back only", id);
+                rollback();
+                return;
+            }
+
+            if (status != Status.ACTIVE) {
+                throw new IllegalArgumentException("Transaction(id=" + id + ") is already: " + status + ". It can not be committed");
+            }
+
+            logger.info("Committing transaction(id={})", id);
+
+            status = Status.FAILED_COMMIT;
 
             try {
                 conn.commit();
 
-                status = Transaction.Status.COMMITTED;
+                status = Status.COMMITTED;
             } finally {
-                if (status == Transaction.Status.COMMITTED) {
+                if (status == Status.COMMITTED) {
+                    logger.info("Transaction(id={}) is committed successfully", id);
+
                     resetAndCloseConnection();
+                } else {
+                    logger.warn("Failed to commit transaction(id={}). It will automatically be rolled back ", id);
+                    rollback();
                 }
             }
         }
 
         public void rollbackIfNotCommitted() throws SQLException {
-            if (status == Transaction.Status.COMMITTED || status == Transaction.Status.ROLLED_BACK || status == Transaction.Status.FAILED_ROLLBACK) {
+            if (isMarkedByCommitPreviously) { // Do nothing. It happened in finally block.
+                isMarkedByCommitPreviously = false;
+            }
+
+            final int refCount = decrementAndGetRef();
+
+            if (refCount > 0) {
+                status = Status.MARKED_ROLLBACK;
+                return;
+            } else if (refCount < 0) {
+                if (refCount == -1
+                        && (status == Status.COMMITTED || status == Status.FAILED_COMMIT || status == Status.ROLLED_BACK || status == Status.FAILED_ROLLBACK)) {
+                    // Do nothing. It happened in finally block.
+                } else {
+                    logger.warn("Transaction(id={}) is already: {}. This rolling back is ignored", id, status);
+                }
+
                 return;
             }
 
-            status = Transaction.Status.FAILED_ROLLBACK;
+            if (!(status == Status.ACTIVE || status == Status.MARKED_ROLLBACK || status == Status.FAILED_COMMIT || status == Status.FAILED_ROLLBACK)) {
+                throw new IllegalArgumentException("Transaction(id=" + id + ") is already: " + status + ". It can not be rolled back");
+            }
+
+            rollback();
+        }
+
+        private void rollback() throws SQLException {
+            logger.warn("Rolling back transaction(id={})", id);
+
+            status = Status.FAILED_ROLLBACK;
 
             try {
                 conn.rollback();
 
-                status = Transaction.Status.ROLLED_BACK;
+                status = Status.ROLLED_BACK;
             } finally {
+                if (status == Status.ROLLED_BACK) {
+                    logger.warn("Transaction(id={}) is rolled back successfully", id);
+                } else {
+                    logger.warn("Failed to roll back transaction(id={})", id);
+                }
+
                 resetAndCloseConnection();
             }
+        }
+
+        synchronized int incrementAndGet(final IsolationLevel isolationLevel, final boolean forUpdateOnly) throws SQLException {
+            if (!status.equals(Status.ACTIVE)) {
+                throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+            }
+
+            isMarkedByCommitPreviously = false;
+
+            if (refCount.get() > 0) {
+                this.isolationLevelStack.push(this.isolationLevel);
+                this.isolationLevel = isolationLevel;
+                conn.setTransactionIsolation(isolationLevel == IsolationLevel.DEFAULT ? this.originalIsolationLevel : isolationLevel.intValue());
+            }
+
+            return refCount.incrementAndGet();
+        }
+
+        synchronized int decrementAndGetRef() throws SQLException {
+            final int res = refCount.decrementAndGet();
+
+            if (res == 0) {
+                threadTransacionMap.remove(ttid);
+                logger.info("Finishing transaction(id={})", id);
+
+                logger.debug("Remaining active transactions: {}", threadTransacionMap.values());
+            } else {
+                this.isolationLevel = isolationLevelStack.pop();
+                conn.setTransactionIsolation(isolationLevel == IsolationLevel.DEFAULT ? this.originalIsolationLevel : isolationLevel.intValue());
+            }
+
+            return res;
         }
 
         private void resetAndCloseConnection() throws SQLException {
@@ -4813,6 +5720,25 @@ public final class JdbcUtil {
                     closeQuietly(conn);
                 }
             }
+        }
+
+        static String getTransactionThreadId(Object dataSourceOrConnection) {
+            return Thread.currentThread().getName() + "_" + System.identityHashCode(dataSourceOrConnection);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof SimpleTransaction && id.equals(((SimpleTransaction) obj).id);
+        }
+
+        @Override
+        public String toString() {
+            return id;
         }
     }
 
@@ -4847,13 +5773,27 @@ public final class JdbcUtil {
         }
     }
 
-    public static interface RecordGetter<T, E extends Exception> {
-        public static final RecordGetter<Object, RuntimeException> SINGLE = new RecordGetter<Object, RuntimeException>() {
+    public static interface ResultExtractor<T, E extends Exception> {
+        public static final ResultExtractor<DataSet, RuntimeException> DATA_SET = new ResultExtractor<DataSet, RuntimeException>() {
             @Override
-            public Object apply(ResultSet rs) throws SQLException, RuntimeException {
-                return rs.getObject(1);
+            public DataSet apply(ResultSet rs, List<String> columnLabels) throws SQLException {
+                return JdbcUtil.extractData(rs);
             }
         };
+
+        T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+    }
+
+    /**
+     * Don't use {@code RecordGetter} in {@link PreparedQuery#list(RecordGetter)} or any place where multiple records will be retrieved by it, if column labels/count are used in {@link RecordGetter#apply(ResultSet)}.
+     * Consider using {@code BiRecordGetter} instead because it's more efficient to retrieve multiple records when column labels/count are used.
+     * 
+     * @author haiyangl
+     *
+     * @param <T>
+     * @param <E>
+     */
+    public static interface RecordGetter<T, E extends Exception> {
 
         public static final RecordGetter<Object[], RuntimeException> ARRAY = new RecordGetter<Object[], RuntimeException>() {
             @Override
@@ -4914,15 +5854,28 @@ public final class JdbcUtil {
         };
 
         T apply(ResultSet rs) throws SQLException, E;
+
+        public static <T> RecordGetter<T, RuntimeException> to(Class<T> targetClass) {
+            return new RecordGetter<T, RuntimeException>() {
+                private final BiRecordGetter<T, RuntimeException> biRecordGetter = JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
+                private List<String> columnLabels = null;
+
+                @Override
+                public T apply(ResultSet rs) throws SQLException {
+                    List<String> columnLabels = this.columnLabels;
+
+                    if (columnLabels == null) {
+                        columnLabels = JdbcUtil.getColumnLabelList(rs);
+                        this.columnLabels = columnLabels;
+                    }
+
+                    return biRecordGetter.apply(rs, columnLabels);
+                }
+            };
+        }
     }
 
     public static interface BiRecordGetter<T, E extends Exception> {
-        public static final BiRecordGetter<Object, RuntimeException> SINGLE = new BiRecordGetter<Object, RuntimeException>() {
-            @Override
-            public Object apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getObject(1);
-            }
-        };
 
         public static final BiRecordGetter<Object[], RuntimeException> ARRAY = new BiRecordGetter<Object[], RuntimeException>() {
             @Override
@@ -4981,8 +5934,20 @@ public final class JdbcUtil {
         };
 
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+
+        public static <T> BiRecordGetter<T, RuntimeException> to(Class<T> targetClass) {
+            return JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
+        }
     }
 
+    /**
+     * Don't use {@code RecordConsumer} in {@link PreparedQuery#forEach(RecordConsumer)} or any place where multiple records will be consumed by it, if column labels/count are used in {@link RecordConsumer#accept(ResultSet)}.
+     * Consider using {@code BiRecordConsumer} instead because it's more efficient to consume multiple records when column labels/count are used.
+     * 
+     * @author haiyangl
+     *
+     * @param <E>
+     */
     public static interface RecordConsumer<E extends Exception> {
         void accept(ResultSet rs) throws SQLException, E;
     }
@@ -4991,6 +5956,15 @@ public final class JdbcUtil {
         void accept(ResultSet rs, List<String> columnLabels) throws SQLException, E;
     }
 
+    /**
+     * Don't use {@code RecordPredicate} in {@link PreparedQuery#list(RecordPredicate, RecordGetter)}, {@link PreparedQuery#forEach(RecordPredicate, RecordConsumer)}  or any place where multiple records will be tested by it, if column labels/count are used in {@link RecordPredicate#test(ResultSet)}.
+     * Consider using {@code BiRecordConsumer} instead because it's more efficient to test multiple records when column labels/count are used.
+     * 
+     * 
+     * @author haiyangl
+     *
+     * @param <E>
+     */
     public static interface RecordPredicate<E extends Exception> {
         public static final RecordPredicate<RuntimeException> ALWAYS_TRUE = new RecordPredicate<RuntimeException>() {
             @Override
@@ -5026,47 +6000,4 @@ public final class JdbcUtil {
 
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
     }
-
-    public static interface StatementSetter<S extends PreparedStatement, E extends Exception> {
-        void set(S stmt) throws SQLException, E;
-    }
-
-    /**
-     * 
-     * @author haiyangl
-     *
-     * @param <S>
-     * @param <Q>
-     * @param <E>
-     * @deprecated
-     */
-    @Deprecated
-    public static interface BiStatementSetter<S extends PreparedStatement, Q extends AbstractPreparedQuery<?, ?>, E extends Exception> {
-        void set(S stmt, Q query) throws SQLException, E;
-    }
-
-    public static interface StatementGetter<T, S extends PreparedStatement, E extends Exception> {
-        T apply(S stmt) throws SQLException, E;
-    }
-
-    public static interface StatementConsumer<S extends PreparedStatement, E extends Exception> {
-        void accept(S stmt) throws SQLException, E;
-    }
-
-    public static interface OutParameterRegister<E extends Exception> {
-        void register(CallableStatement stmt) throws SQLException, E;
-    }
-
-    /**
-     * 
-     * @author haiyangl
-     *
-     * @param <E>
-     * @deprecated
-     */
-    @Deprecated
-    public static interface BiOutParameterRegister<E extends Exception> {
-        void register(CallableStatement stmt, PreparedCallableQuery query) throws SQLException, E;
-    }
-
 }

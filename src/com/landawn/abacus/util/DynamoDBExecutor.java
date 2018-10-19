@@ -986,8 +986,8 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     @SuppressWarnings("rawtypes")
-    public List<Map<String, Object>> find(final QueryRequest queryRequest) {
-        return (List) find(Map.class, queryRequest);
+    public List<Map<String, Object>> list(final QueryRequest queryRequest) {
+        return (List) list(Map.class, queryRequest);
     }
 
     /**
@@ -996,7 +996,7 @@ public final class DynamoDBExecutor implements Closeable {
      * @param queryRequest
      * @return
      */
-    public <T> List<T> find(final Class<T> targetClass, final QueryRequest queryRequest) {
+    public <T> List<T> list(final Class<T> targetClass, final QueryRequest queryRequest) {
         final QueryResult queryResult = dynamoDB.query(queryRequest);
         final List<T> res = toList(targetClass, queryResult);
 
@@ -1023,7 +1023,7 @@ public final class DynamoDBExecutor implements Closeable {
     //     * @return
     //     * @see <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination">Query.Pagination</a>
     //     */
-    //    public <T> List<T> find(final Class<T> targetClass, final QueryRequest queryRequest, int pageOffset, int pageCount) {
+    //    public <T> List<T> list(final Class<T> targetClass, final QueryRequest queryRequest, int pageOffset, int pageCount) {
     //        N.checkArgument(pageOffset >= 0 && pageCount >= 0, "'pageOffset' and 'pageCount' can't be negative");
     //
     //        final List<T> res = new ArrayList<>();
@@ -1065,7 +1065,7 @@ public final class DynamoDBExecutor implements Closeable {
      * 
      * @param queryRequest
      * @return
-     * @see #find(QueryRequest)
+     * @see #list(QueryRequest)
      */
     public DataSet query(final QueryRequest queryRequest) {
         return query(Map.class, queryRequest);
@@ -1076,7 +1076,7 @@ public final class DynamoDBExecutor implements Closeable {
      * @param targetClass
      * @param queryRequest
      * @return
-     * @see #find(Class, QueryRequest)
+     * @see #list(Class, QueryRequest)
      */
     public DataSet query(final Class<?> targetClass, final QueryRequest queryRequest) {
         if (targetClass == null || Map.class.isAssignableFrom(targetClass)) {
@@ -1096,7 +1096,7 @@ public final class DynamoDBExecutor implements Closeable {
 
             return extractData(items, 0, items.size());
         } else {
-            return N.newDataSet(find(targetClass, queryRequest));
+            return N.newDataSet(list(targetClass, queryRequest));
         }
     }
 

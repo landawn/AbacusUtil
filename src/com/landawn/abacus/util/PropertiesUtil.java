@@ -197,7 +197,7 @@ public final class PropertiesUtil {
                                     resultExtractor = CONFIG_ENTITY_RESULT_SET_EXTRACTOR;
                                 }
 
-                                ConfigEntity entity = sqlExecutor.query(sql, null, resultExtractor);
+                                ConfigEntity entity = sqlExecutor.query(sql, resultExtractor);
 
                                 if (entity == null || N.isNullOrEmpty(entity.getContent())) {
                                     throw new AbacusException("No record found or the content of properties is empty");
@@ -353,7 +353,7 @@ public final class PropertiesUtil {
 
     private static Properties<String, String> load(Properties<String, String> targetProperties, SQLExecutor sqlExecutor, String sql, boolean autoRefresh) {
 
-        ConfigEntity entity = sqlExecutor.query(sql, null, CONFIG_ENTITY_RESULT_SET_EXTRACTOR);
+        ConfigEntity entity = sqlExecutor.query(sql, CONFIG_ENTITY_RESULT_SET_EXTRACTOR);
 
         if (entity == null || N.isNullOrEmpty(entity.getContent())) {
             throw new AbacusException("No record found or the content of properties is empty");
@@ -477,7 +477,7 @@ public final class PropertiesUtil {
     }
 
     public static <T extends Properties<String, Object>> T loadFromXML(Class<T> targetClass, SQLExecutor sqlExecutor, String sql, boolean autoRefresh) {
-        ConfigEntity entity = sqlExecutor.query(sql, null, CONFIG_ENTITY_RESULT_SET_EXTRACTOR);
+        ConfigEntity entity = sqlExecutor.query(sql, CONFIG_ENTITY_RESULT_SET_EXTRACTOR);
 
         if (entity == null || N.isNullOrEmpty(entity.getContent())) {
             throw new AbacusException("No record found or the content of properties is empty");

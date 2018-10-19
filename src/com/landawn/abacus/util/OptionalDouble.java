@@ -179,7 +179,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         }
 
         if (isPresent == false) {
-            return optional.isPresent ? -1 : 0;
+            return -1;
         }
 
         return Double.compare(this.get(), optional.get());
