@@ -1,8 +1,13 @@
-### 1.3.12
+### 1.3.13
 
 * Add `SQLExecutor.list`.
 
 * Remove `SQLExcutor.queryForList`, replaced by `SQLExecutor.list`.
+
+* Improvements and bug fix.
+
+
+### 1.3.12
 
 * Improvements and bug fix.
 
