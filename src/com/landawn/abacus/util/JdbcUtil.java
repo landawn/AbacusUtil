@@ -410,7 +410,7 @@ public final class JdbcUtil {
         } else if (url.indexOf("db2") > 0 || StringUtil.indexOfIgnoreCase(url, "db2") > 0) {
             driverClass = ClassUtil.forClass("com.ibm.db2.jcc.DB2Driver");
         } else {
-            throw new UncheckedSQLException(
+            throw new IllegalArgumentException(
                     "Can not identity the driver class by url: " + url + ". Only mysql, postgresql, hsqldb, sqlserver, oracle and db2 are supported currently");
         }
         return driverClass;
@@ -4161,17 +4161,6 @@ public final class JdbcUtil {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(N.as(targetClass, rs.getObject(1))) : Nullable.<V> empty();
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
-        }
-
-        public <V, E extends Exception> Nullable<V> queryForSingleResult(RecordGetter<V, E> resultGetter) throws SQLException, E {
-            N.checkArgNotNull(resultGetter);
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Nullable.of(resultGetter.apply(rs)) : Nullable.<V> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }

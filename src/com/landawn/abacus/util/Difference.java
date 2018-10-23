@@ -71,7 +71,7 @@ public class Difference<L, R> {
         return of(DoubleList.of(a), DoubleList.of(b));
     }
 
-    public static <T1, T2, L extends List<? super T1>, R extends List<? super T2>> Difference<L, R> of(T1[] a, T2[] b) {
+    public static <T1, T2, L extends List<T1>, R extends List<T2>> Difference<L, R> of(T1[] a, T2[] b) {
         return of(Arrays.asList(a), Arrays.asList(b));
     }
 
@@ -81,7 +81,7 @@ public class Difference<L, R> {
      * @param b
      * @return
      */
-    public static <T1, T2, L extends List<? super T1>, R extends List<? super T2>> Difference<L, R> of(Collection<T1> a, Collection<T2> b) {
+    public static <T1, T2, L extends List<T1>, R extends List<T2>> Difference<L, R> of(Collection<? extends T1> a, Collection<? extends T2> b) {
         List<T1> common = new ArrayList<>();
         List<T1> leftOnly = new ArrayList<>();
         List<T2> rightOnly = new ArrayList<>();
@@ -500,8 +500,8 @@ public class Difference<L, R> {
          * @param map2
          * @return
          */
-        public static <K1, V1, K2, V2, L extends Map<? super K1, ? super V1>, R extends Map<? super K2, ? super V2>, D extends Map<?, Pair<V1, V2>>> MapDifference<L, R, D> of(
-                Map<K1, V1> map1, Map<K2, V2> map2) {
+        public static <K1, V1, K2, V2, L extends Map<K1, V1>, R extends Map<K2, V2>, D extends Map<?, Pair<V1, V2>>> MapDifference<L, R, D> of(
+                final Map<? extends K1, ? extends V1> map1, final Map<? extends K2, ? extends V2> map2) {
             final L common = (L) new LinkedHashMap<>();
             final L leftOnly = (L) new LinkedHashMap<>();
             final R rightOnly = (R) new LinkedHashMap<>();
@@ -518,7 +518,7 @@ public class Difference<L, R> {
             } else {
                 Object key1 = null;
                 V2 val2 = null;
-                for (Entry<K1, V1> entry1 : map1.entrySet()) {
+                for (Entry<K1, V1> entry1 : ((Map<K1, V1>) map1).entrySet()) {
                     key1 = entry1.getKey();
                     val2 = map2.get(key1);
 
@@ -539,7 +539,7 @@ public class Difference<L, R> {
                     }
                 }
 
-                for (Entry<K2, V2> entry2 : map2.entrySet()) {
+                for (Entry<K2, V2> entry2 : ((Map<K2, V2>) map2).entrySet()) {
                     if (common.containsKey(entry2.getKey()) || diff.containsKey(entry2.getKey())) {
                         continue;
                     }

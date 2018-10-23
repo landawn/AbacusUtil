@@ -2028,7 +2028,7 @@ public final class IOUtil {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new UncheckedIOException("Bytes to skip: " + toSkip + " actual: " + skipped);
+            throw new RuntimeException("Bytes to skip: " + toSkip + " actual: " + skipped);
         }
     }
 
@@ -2042,7 +2042,7 @@ public final class IOUtil {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new UncheckedIOException("Chars to skip: " + toSkip + " actual: " + skipped);
+            throw new RuntimeException("Chars to skip: " + toSkip + " actual: " + skipped);
         }
     }
 
@@ -2082,7 +2082,7 @@ public final class IOUtil {
         N.checkArgNotNull(mode);
 
         if (!file.exists()) {
-            throw new UncheckedIOException(file.toString() + " is not found");
+            throw new IllegalArgumentException(file.toString() + " is not found");
         }
 
         return map(file, mode, 0, file.length());
@@ -2490,21 +2490,21 @@ public final class IOUtil {
     public static <E extends Exception> void copy(File srcFile, File destDir, final boolean preserveFileDate,
             final Try.BiPredicate<? super File, ? super File, E> filter) throws UncheckedIOException, E {
         if (!srcFile.exists()) {
-            throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
+            throw new IllegalArgumentException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
 
         if (destDir.exists()) {
             if (destDir.isFile()) {
-                throw new UncheckedIOException("The destination file must be directory: " + destDir.getAbsolutePath());
+                throw new IllegalArgumentException("The destination file must be directory: " + destDir.getAbsolutePath());
             }
         } else {
             if (!destDir.mkdirs()) {
-                throw new UncheckedIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException(new IOException("Failed to create destination directory: " + destDir.getAbsolutePath()));
             }
         }
 
         if (destDir.canWrite() == false) {
-            throw new UncheckedIOException("Destination '" + destDir + "' cannot be written to");
+            throw new UncheckedIOException(new IOException("Destination '" + destDir + "' cannot be written to"));
         }
 
         String destCanonicalPath = null;
@@ -2521,7 +2521,7 @@ public final class IOUtil {
         if (srcFile.isDirectory()) {
             if (destCanonicalPath.startsWith(srcCanonicalPath) && (destCanonicalPath.length() == srcCanonicalPath.length()
                     || destCanonicalPath.charAt(srcCanonicalPath.length()) == '/' || destCanonicalPath.charAt(srcCanonicalPath.length()) == '\\')) {
-                throw new UncheckedIOException(
+                throw new IllegalArgumentException(
                         "Failed to copy due to the target directory: " + destCanonicalPath + " is in or same as the source directory: " + srcCanonicalPath);
             }
 
@@ -2619,7 +2619,7 @@ public final class IOUtil {
      */
     private static void doCopyFile(final File srcFile, final File destFile, final boolean preserveFileDate) {
         if (destFile.exists()) {
-            throw new UncheckedIOException("The destination file already existed: " + destFile.getAbsolutePath());
+            throw new IllegalArgumentException("The destination file already existed: " + destFile.getAbsolutePath());
         }
 
         FileInputStream fis = null;
@@ -2652,7 +2652,7 @@ public final class IOUtil {
 
         if (srcFile.length() != destFile.length()) {
             deleteAllIfExists(destFile);
-            throw new UncheckedIOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'");
+            throw new UncheckedIOException(new IOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'"));
         }
 
         if (preserveFileDate) {
@@ -2779,23 +2779,23 @@ public final class IOUtil {
 
     public static void move(final File srcFile, final File destDir) throws UncheckedIOException {
         if (!srcFile.exists()) {
-            throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
+            throw new IllegalArgumentException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
 
         if (destDir.exists()) {
             if (destDir.isFile()) {
-                throw new UncheckedIOException("The destination file must be directory: " + destDir.getAbsolutePath());
+                throw new IllegalArgumentException("The destination file must be directory: " + destDir.getAbsolutePath());
             }
         } else {
             if (!destDir.mkdirs()) {
-                throw new UncheckedIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException(new IOException("Failed to create destination directory: " + destDir.getAbsolutePath()));
             }
         }
 
         File destFile = new File(destDir, srcFile.getName());
 
         if (!srcFile.renameTo(destFile)) {
-            throw new UncheckedIOException("Failed to move file from: " + srcFile.getAbsolutePath() + " to: " + destDir.getAbsolutePath());
+            throw new UncheckedIOException(new IOException("Failed to move file from: " + srcFile.getAbsolutePath() + " to: " + destDir.getAbsolutePath()));
         }
     }
 

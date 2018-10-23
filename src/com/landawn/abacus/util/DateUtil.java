@@ -996,7 +996,7 @@ public final class DateUtil {
             try {
                 writer.write(str);
             } catch (IOException e) {
-                throw new UncheckedIOException();
+                throw new UncheckedIOException(e);
             }
         }
 

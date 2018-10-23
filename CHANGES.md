@@ -1,3 +1,10 @@
+### 1.3.14
+
+* Remove `SQLExcutor.queryForSingleResult(..., resultGet...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.13
 
 * Add `SQLExecutor.list`.
