@@ -1561,7 +1561,7 @@ public final class JdbcUtil {
         final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
         if (!(isArray || isList || isMap || isEntity)) {
-            throw new IllegalArgumentException(targetClass.getCanonicalName() + " is not a Array/List/Map/Entity class");
+            throw new IllegalArgumentException(targetClass.getCanonicalName() + " is not an Array/List/Map/Entity class");
         }
 
         return new BiRecordGetter<T, RuntimeException>() {
@@ -5545,6 +5545,7 @@ public final class JdbcUtil {
 
     public static class SimpleTransaction {
         static final Map<String, SimpleTransaction> threadTransacionMap = new ConcurrentHashMap<>();
+        static final Map<String, SimpleTransaction> attachedThreadTransacionMap = new ConcurrentHashMap<>();
 
         private final String ttid;
         private final String id;
@@ -5599,6 +5600,41 @@ public final class JdbcUtil {
 
         public boolean isActive() {
             return status == Status.ACTIVE;
+        }
+
+        /**
+         * Attaches this transaction to current thread.
+         * 
+         */
+        public void attach() {
+            final String currentThreadName = Thread.currentThread().getName();
+            final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+            final String targetTTID = currentThreadName + "_" + resourceId;
+
+            if (attachedThreadTransacionMap.containsKey(targetTTID)) {
+                throw new IllegalStateException("Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id()
+                        + ") has already been attached to current thread: " + currentThreadName);
+            } else if (threadTransacionMap.containsKey(targetTTID)) {
+                throw new IllegalStateException(
+                        "Transaction(id=" + threadTransacionMap.get(targetTTID).id() + ") has already been created in current thread: " + currentThreadName);
+            }
+
+            attachedThreadTransacionMap.put(targetTTID, this);
+            threadTransacionMap.put(targetTTID, this);
+        }
+
+        public void detach() {
+            final String currentThreadName = Thread.currentThread().getName();
+            final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+            final String targetTTID = currentThreadName + "_" + resourceId;
+
+            if (!attachedThreadTransacionMap.containsKey(targetTTID)) {
+                throw new IllegalStateException(
+                        "Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id() + ") is not attached to current thread: " + currentThreadName);
+            }
+
+            threadTransacionMap.remove(targetTTID);
+            attachedThreadTransacionMap.remove(targetTTID);
         }
 
         public void commit() throws UncheckedSQLException {
