@@ -1,3 +1,11 @@
+### 1.3.15
+
+* Refactoring:  switch the position of parameters: `id` and `selectPropNames` in get/gett/findFirst/...:
+`get/getter/findFirst(..., id, selectPropNames ...)` to `get/getter/findFirst(..., selectPropNames, id, ...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.14
 
 * Remove `SQLExcutor.queryForSingleResult(..., resultGet...)`.

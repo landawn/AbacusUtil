@@ -1077,6 +1077,17 @@ public final class CassandraExecutor implements Closeable {
 
     /**
      * 
+     * @param query
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final Optional<Map<String, Object>> findFirst(final String query, final Object... parameters) {
+        return findFirst(Clazz.PROPS_MAP, query, parameters);
+    }
+
+    /**
+     * 
      * @param targetClass an entity class with getter/setter method or <code>Map.class</code>
      * @param query
      * @param parameters
@@ -1090,10 +1101,15 @@ public final class CassandraExecutor implements Closeable {
         return row == null ? (Optional<T>) Optional.empty() : Optional.of(toEntity(targetClass, row));
     }
 
-    @SuppressWarnings("rawtypes")
+    /**
+     * 
+     * @param query
+     * @param parameters
+     * @return
+     */
     @SafeVarargs
     public final List<Map<String, Object>> list(final String query, final Object... parameters) {
-        return (List) list(Map.class, query, parameters);
+        return list(Clazz.PROPS_MAP, query, parameters);
     }
 
     /**
@@ -1840,6 +1856,16 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public Nullable<T> call() throws Exception {
                 return queryForSingleResult(valueClass, query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final ContinuableFuture<Optional<Map<String, Object>>> asyncFindFirst(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Optional<Map<String, Object>>>() {
+            @Override
+            public Optional<Map<String, Object>> call() throws Exception {
+                return findFirst(query, parameters);
             }
         });
     }
