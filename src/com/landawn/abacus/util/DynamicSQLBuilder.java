@@ -14,12 +14,12 @@
 package com.landawn.abacus.util;
 
 /**
- * Dynamic SQL builder. Must remember to call {@code sql()} to recycle resources.
+ * Dynamic SQL builder. Must remember to call {@code build()} to generate target sql and release resources.
  * 
  * @author haiyangl
  *
  */
-public final class DynamicSQLBuilder {
+public class DynamicSQLBuilder {
     private Select select = new Select(ObjectFactory.createStringBuilder());
     private From from = new From(ObjectFactory.createStringBuilder());
     private Where where;
@@ -27,6 +27,7 @@ public final class DynamicSQLBuilder {
     private Having having;
     private OrderBy orderBy;
     private String limitCond;
+    private StringBuilder moreParts = null;
 
     private DynamicSQLBuilder() {
 
@@ -82,11 +83,69 @@ public final class DynamicSQLBuilder {
         return this;
     }
 
-    public DynamicSQLBuilder limit(int offset, int limit) {
-        return limit("LIMIT " + offset + ", " + limit);
+    public DynamicSQLBuilder limit(int count) {
+        return limit("LIMIT " + count);
     }
 
-    public String sql() {
+    public DynamicSQLBuilder limit(int offset, int count) {
+        return limit("LIMIT " + offset + ", " + count);
+    }
+
+    public DynamicSQLBuilder limitByRowNum(int count) {
+        return limit("ROWNUM < " + count);
+    }
+
+    public DynamicSQLBuilder union(final String query) {
+        if (moreParts == null) {
+            moreParts = ObjectFactory.createStringBuilder();
+        }
+
+        moreParts.append(" UNION ").append(query);
+
+        return this;
+    }
+
+    public DynamicSQLBuilder unionAll(final String query) {
+        if (moreParts == null) {
+            moreParts = ObjectFactory.createStringBuilder();
+        }
+
+        moreParts.append(" UNION ALL ").append(query);
+
+        return this;
+    }
+
+    public DynamicSQLBuilder intersect(final String query) {
+        if (moreParts == null) {
+            moreParts = ObjectFactory.createStringBuilder();
+        }
+
+        moreParts.append(" INTERSECT ").append(query);
+
+        return this;
+    }
+
+    public DynamicSQLBuilder except(final String query) {
+        if (moreParts == null) {
+            moreParts = ObjectFactory.createStringBuilder();
+        }
+
+        moreParts.append(" EXCEPT ").append(query);
+
+        return this;
+    }
+
+    public DynamicSQLBuilder minus(final String query) {
+        if (moreParts == null) {
+            moreParts = ObjectFactory.createStringBuilder();
+        }
+
+        moreParts.append(" MINUS ").append(query);
+
+        return this;
+    }
+
+    public String build() {
         select.sb.append(" ").append(from.sb);
 
         if (where != null) {
@@ -115,6 +174,11 @@ public final class DynamicSQLBuilder {
 
         if (N.notNullOrEmpty(limitCond)) {
             select.sb.append(" ").append(limitCond);
+        }
+
+        if (moreParts != null) {
+            select.sb.append(moreParts);
+            ObjectFactory.recycle(moreParts);
         }
 
         final String sql = select.sb.toString();
@@ -322,6 +386,12 @@ public final class DynamicSQLBuilder {
             sb.append(column);
 
             return this;
+        }
+    }
+
+    public static final class DSB extends DynamicSQLBuilder {
+        private DSB() {
+            super();
         }
     }
 }

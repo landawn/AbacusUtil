@@ -5087,6 +5087,22 @@ public final class N {
         return Optional.empty();
     }
 
+    public static <K, V> Optional<Map.Entry<K, V>> firstEntry(final Map<K, V> map) {
+        if (map == null || map.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(map.entrySet().iterator().next());
+    }
+
+    public static <K, V> Optional<Map.Entry<K, V>> lastEntry(final Map<K, V> map) {
+        if (map == null || map.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Iterators.lastNonNull(map.entrySet().iterator());
+    }
+
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
      * 

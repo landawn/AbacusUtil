@@ -1281,6 +1281,14 @@ public abstract class SQLBuilder {
         return this;
     }
 
+    public SQLBuilder limitByRowNum(final int count) {
+        sb.append(" ROWNUM ");
+
+        sb.append(count);
+
+        return this;
+    }
+
     public SQLBuilder union(final SQLBuilder sqlBuilder) {
         final String sql = sqlBuilder.sql();
 
