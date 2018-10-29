@@ -5914,6 +5914,28 @@ public abstract class StringUtil {
         }
     }
 
+    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g,
+            final String h) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).append(h).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g, final String h,
+            final String i) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).append(h).append(i).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
     @SafeVarargs
     public static String concat(final String... a) {
         if (N.isNullOrEmpty(a)) {
@@ -6015,6 +6037,48 @@ public abstract class StringUtil {
      */
     public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
         return StringUtil.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g));
+    }
+
+    /**
+     * 
+     * Returns {@code N.toString(a) + N.toString(b) + N.toString(c) + N.toString(d) + N.toString(e) + N.toString(f) + N.toString(g) + N.toString(h)}.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @param e
+     * @param f
+     * @param g
+     * @param h
+     * @return
+     * @see #concat(Object, Object) 
+     */
+    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g,
+            final Object h) {
+        return StringUtil.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g), N.toString(h));
+    }
+
+    /**
+     * 
+     * Returns {@code N.toString(a) + N.toString(b) + N.toString(c) + N.toString(d) + N.toString(e) + N.toString(f) + N.toString(g) + N.toString(h) + N.toString(i)}.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @param e
+     * @param f
+     * @param g
+     * @param h
+     * @param i
+     * @return
+     * @see #concat(Object, Object) 
+     */
+    public static String concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g, final Object h,
+            final Object i) {
+        return StringUtil.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g), N.toString(h),
+                N.toString(i));
     }
 
     //    /**
@@ -6508,7 +6572,9 @@ public abstract class StringUtil {
     }
 
     /**
+     * Copied from Google Guava
      * 
+     * <br />
      * 
      * Returns the given {@code template} string with each occurrence of {@code "%s"} replaced with
      * the corresponding argument value from {@code args}; or, if the placeholder and argument counts

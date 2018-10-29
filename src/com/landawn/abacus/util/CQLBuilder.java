@@ -503,9 +503,9 @@ public abstract class CQLBuilder {
                     if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                         sb.append(columnName);
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                     }
                 }
             } else {
@@ -531,18 +531,18 @@ public abstract class CQLBuilder {
 
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                         sb.append(columnName.substring(idx2 > 0 ? idx2 + 4 : idx + 1).trim());
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                     } else {
                         sb.append(formalizeName(propColumnNameMap, columnName));
 
                         if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                             sb.append(_SPACE_AS_SPACE);
 
-                            sb.append(WD._QUOTATION_D);
+                            sb.append(WD._QUOTATION_S);
                             sb.append(columnName);
-                            sb.append(WD._QUOTATION_D);
+                            sb.append(WD._QUOTATION_S);
                         }
                     }
                 }
@@ -559,9 +559,9 @@ public abstract class CQLBuilder {
                 if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                     sb.append(columnName);
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                 }
             }
         } else {
@@ -576,9 +576,9 @@ public abstract class CQLBuilder {
                 if (N.notNullOrEmpty(entry.getValue())) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                     sb.append(entry.getValue());
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                 }
             }
         }

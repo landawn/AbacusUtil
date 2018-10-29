@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -37,9 +38,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.annotation.Column;
 import com.landawn.abacus.annotation.NonUpdatable;
 import com.landawn.abacus.annotation.ReadOnly;
 import com.landawn.abacus.annotation.ReadOnlyId;
+import com.landawn.abacus.annotation.Table;
 import com.landawn.abacus.annotation.Transient;
 import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
@@ -209,6 +212,69 @@ public abstract class SQLBuilder {
         entityTablePropColumnNameMap.put(entityTableName.toUpperCase(), m);
         entityTablePropColumnNameMap.put(ClassUtil.toLowerCaseWithUnderscore(entityTableName), m);
         entityTablePropColumnNameMap.put(ClassUtil.toUpperCaseWithUnderscore(entityTableName), m);
+    }
+
+    /**
+     * 
+     * @param entityClass annotated with @Table, @Column
+     */
+    public static void registerEntityPropColumnNameMap(final Class<?> entityClass) {
+        N.checkArgNotNull(entityClass);
+
+        String entityTableName = ClassUtil.getSimpleClassName(entityClass);
+
+        if (entityClass.isAnnotationPresent(Table.class)) {
+            entityTableName = entityClass.getAnnotation(Table.class).value();
+        } else {
+            try {
+                if (entityClass.isAnnotationPresent(javax.persistence.Table.class)) {
+                    entityTableName = entityClass.getAnnotation(javax.persistence.Table.class).name();
+                }
+            } catch (Throwable e) {
+                // ignore.
+            }
+        }
+
+        final Set<Field> allFields = new HashSet<>();
+
+        for (Class<?> superClass : ClassUtil.getAllSuperclasses(entityClass)) {
+            allFields.addAll(Array.asList(superClass.getDeclaredFields()));
+        }
+
+        allFields.addAll(Array.asList(entityClass.getDeclaredFields()));
+
+        final Map<String, String> propColumnNameMap = new HashMap<>();
+        Method getterMethod = null;
+
+        for (Field field : allFields) {
+            getterMethod = ClassUtil.getPropGetMethod(entityClass, field.getName());
+
+            if (getterMethod != null) {
+                String columnName = null;
+
+                if (field.isAnnotationPresent(Column.class)) {
+                    columnName = field.getAnnotation(Column.class).value();
+                } else {
+                    try {
+                        if (field.isAnnotationPresent(javax.persistence.Column.class)) {
+                            columnName = field.getAnnotation(javax.persistence.Column.class).name();
+                        }
+                    } catch (Throwable e) {
+                        // ignore
+                    }
+                }
+
+                if (N.notNullOrEmpty(columnName)) {
+                    propColumnNameMap.put(ClassUtil.getPropNameByMethod(getterMethod), columnName);
+                }
+            }
+        }
+
+        if (N.isNullOrEmpty(propColumnNameMap)) {
+            throw new IllegalArgumentException("Not found any field annotated with @column");
+        }
+
+        registerEntityPropColumnNameMap(entityTableName, propColumnNameMap);
     }
 
     /**
@@ -799,9 +865,9 @@ public abstract class SQLBuilder {
                     if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                         sb.append(columnName);
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                     }
                 }
             } else {
@@ -827,18 +893,18 @@ public abstract class SQLBuilder {
 
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                         sb.append(columnName.substring(idx2 > 0 ? idx2 + 4 : idx + 1).trim());
-                        sb.append(WD._QUOTATION_D);
+                        sb.append(WD._QUOTATION_S);
                     } else {
                         sb.append(formalizeName(propColumnNameMap, columnName));
 
                         if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                             sb.append(_SPACE_AS_SPACE);
 
-                            sb.append(WD._QUOTATION_D);
+                            sb.append(WD._QUOTATION_S);
                             sb.append(columnName);
-                            sb.append(WD._QUOTATION_D);
+                            sb.append(WD._QUOTATION_S);
                         }
                     }
                 }
@@ -855,9 +921,9 @@ public abstract class SQLBuilder {
                 if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                     sb.append(columnName);
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                 }
             }
         } else {
@@ -872,9 +938,9 @@ public abstract class SQLBuilder {
                 if (N.notNullOrEmpty(entry.getValue())) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                     sb.append(entry.getValue());
-                    sb.append(WD._QUOTATION_D);
+                    sb.append(WD._QUOTATION_S);
                 }
             }
         }
