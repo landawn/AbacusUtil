@@ -615,6 +615,8 @@ public final class SQLExecutor implements Closeable {
         if (mapper == null) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
+            SQLBuilder.registerEntityPropColumnNameMap(targetClass);
+
             mapper = new Mapper<T>(targetClass, this, this._namingPolicy);
             mapperPool.put(targetClass, mapper);
         }
@@ -3588,6 +3590,13 @@ public final class SQLExecutor implements Closeable {
      * @author haiyang li
      *
      * @param <T>
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column}
      */
     public static final class Mapper<T> {
 

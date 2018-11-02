@@ -69,6 +69,13 @@ import com.landawn.abacus.logging.LoggerFactory;
  * @since 0.8
  * 
  * @author Haiyang Li
+ * 
+ * @see {@link com.landawn.abacus.annotation.ReadOnly}
+ * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+ * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+ * @see {@link com.landawn.abacus.annotation.Transient}
+ * @see {@link com.landawn.abacus.annotation.Table}
+ * @see {@link com.landawn.abacus.annotation.Column}
  */
 @SuppressWarnings("deprecation")
 public abstract class SQLBuilder {
@@ -271,10 +278,16 @@ public abstract class SQLBuilder {
         }
 
         if (N.isNullOrEmpty(propColumnNameMap)) {
-            throw new IllegalArgumentException("Not found any field annotated with @column");
-        }
+            logger.warn("No field annotated with @column in class: " + ClassUtil.getCanonicalClassName(entityClass));
+        } else {
+            final Map<String, String> tmp = entityTablePropColumnNameMap.get(entityTableName);
 
-        registerEntityPropColumnNameMap(entityTableName, propColumnNameMap);
+            if (N.notNullOrEmpty(tmp)) {
+                propColumnNameMap.putAll(tmp);
+            }
+
+            registerEntityPropColumnNameMap(entityTableName, propColumnNameMap);
+        }
     }
 
     /**
