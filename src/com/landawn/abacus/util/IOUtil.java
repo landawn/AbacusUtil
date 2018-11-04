@@ -1064,7 +1064,7 @@ public final class IOUtil {
             if (obj == null) {
                 writer.write(N.NULL_CHAR_ARRAY);
             } else {
-                writer.write(obj.toString());
+                writer.write(N.toString(obj));
             }
 
             writer.write(IOUtil.LINE_SEPARATOR);
@@ -1138,7 +1138,7 @@ public final class IOUtil {
                     if (line == null) {
                         writer.write(N.NULL_CHAR_ARRAY);
                     } else {
-                        writer.write(line.toString());
+                        writer.write(N.toString(line));
                     }
 
                     writer.write(IOUtil.LINE_SEPARATOR);
@@ -1225,7 +1225,7 @@ public final class IOUtil {
                     if (line == null) {
                         writer.write(N.NULL_CHAR_ARRAY);
                     } else {
-                        writer.write(line.toString());
+                        writer.write(N.toString(line));
                     }
 
                     writer.write(IOUtil.LINE_SEPARATOR);
@@ -2028,7 +2028,7 @@ public final class IOUtil {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new RuntimeException("Bytes to skip: " + toSkip + " actual: " + skipped);
+            throw new UncheckedIOException(new IOException("Bytes to skip: " + toSkip + " actual: " + skipped));
         }
     }
 
@@ -2042,7 +2042,7 @@ public final class IOUtil {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new RuntimeException("Chars to skip: " + toSkip + " actual: " + skipped);
+            throw new RuntimeException(new IOException("Chars to skip: " + toSkip + " actual: " + skipped));
         }
     }
 

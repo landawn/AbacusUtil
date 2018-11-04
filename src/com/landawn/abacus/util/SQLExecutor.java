@@ -4431,7 +4431,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchAdd(Collection)}
         //         */
         //        @Deprecated
-        //        public <ID> List<ID> addAll(final Collection<T> entities) {
+        //        public <ID> List<ID> addAll(final Collection<? extends T> entities) {
         //            return addAll(entities, IsolationLevel.DEFAULT);
         //        }
         //
@@ -4444,7 +4444,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchAdd(Collection)}
         //         */
         //        @Deprecated
-        //        public <ID> List<ID> addAll(final Collection<T> entities, final IsolationLevel isolationLevel) {
+        //        public <ID> List<ID> addAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
         //            if (N.isNullOrEmpty(entities)) {
         //                return new ArrayList<>();
         //            }
@@ -4481,7 +4481,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchAdd(Collection)}
         //         */
         //        @Deprecated
-        //        public <ID> List<ID> addAll(final Connection conn, final Collection<T> entities) {
+        //        public <ID> List<ID> addAll(final Connection conn, final Collection<? extends T> entities) {
         //            if (N.isNullOrEmpty(entities)) {
         //                return new ArrayList<>();
         //            }
@@ -4505,19 +4505,19 @@ public final class SQLExecutor implements Closeable {
          * @param entities which must have the same updated properties set.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <ID> List<ID> batchAdd(final Collection<T> entities) {
+        public <ID> List<ID> batchAdd(final Collection<? extends T> entities) {
             return batchAdd(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public <ID> List<ID> batchAdd(final Collection<T> entities, final int batchSize) {
+        public <ID> List<ID> batchAdd(final Collection<? extends T> entities, final int batchSize) {
             return batchAdd(entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public <ID> List<ID> batchAdd(final Collection<T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public <ID> List<ID> batchAdd(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return batchAdd(null, entities, batchSize, isolationLevel);
         }
 
-        public <ID> List<ID> batchAdd(final Connection conn, final Collection<T> entities) {
+        public <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities) {
             return batchAdd(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
@@ -4528,11 +4528,12 @@ public final class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <ID> List<ID> batchAdd(final Connection conn, final Collection<T> entities, final int batchSize) {
+        public <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
             return batchAdd(conn, entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        private <ID> List<ID> batchAdd(final Connection conn, final Collection<T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        private <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize,
+                final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
 
             if (N.isNullOrEmpty(entities)) {
@@ -4778,7 +4779,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Collection<T> entities) {
+        //        public int updateAll(final Collection<? extends T> entities) {
         //            return updateAll(entities, (Collection<String>) null);
         //        }
         //
@@ -4790,7 +4791,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Collection<T> entities, final Collection<String> updatePropNames) {
+        //        public int updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames) {
         //            return updateAll(entities, updatePropNames, IsolationLevel.DEFAULT);
         //        }
         //
@@ -4802,7 +4803,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Collection<T> entities, final IsolationLevel isolationLevel) {
+        //        public int updateAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
         //            return updateAll(entities, (Collection<String>) null, isolationLevel);
         //        }
         //
@@ -4816,7 +4817,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Collection<T> entities, final Collection<String> updatePropNames, final IsolationLevel isolationLevel) {
+        //        public int updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames, final IsolationLevel isolationLevel) {
         //            if (N.isNullOrEmpty(entities)) {
         //                return 0;
         //            }
@@ -4852,7 +4853,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Connection conn, final Collection<T> entities) {
+        //        public int updateAll(final Connection conn, final Collection<? extends T> entities) {
         //            return updateAll(conn, entities, (Collection<String>) null);
         //        }
         //
@@ -4866,7 +4867,7 @@ public final class SQLExecutor implements Closeable {
         //         * @deprecated replaced by {@code #batchUpdate(Collection)}
         //         */
         //        @Deprecated
-        //        public int updateAll(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames) {
+        //        public int updateAll(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames) {
         //            if (N.isNullOrEmpty(entities)) {
         //                return 0;
         //            }
@@ -4890,7 +4891,7 @@ public final class SQLExecutor implements Closeable {
          * @param entities which must have the same updated properties set.
          * @return
          */
-        public int batchUpdate(final Collection<T> entities) {
+        public int batchUpdate(final Collection<? extends T> entities) {
             return batchUpdate(entities, (Collection<String>) null);
         }
 
@@ -4900,11 +4901,11 @@ public final class SQLExecutor implements Closeable {
          * @param updatePropNames
          * @return
          */
-        public int batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames) {
+        public int batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames) {
             return batchUpdate(entities, updatePropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public int batchUpdate(final Collection<T> entities, final int batchSize) {
+        public int batchUpdate(final Collection<? extends T> entities, final int batchSize) {
             return batchUpdate(entities, (Collection<String>) null, batchSize);
         }
 
@@ -4916,36 +4917,36 @@ public final class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return
          */
-        public int batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize) {
+        public int batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize) {
             return batchUpdate(entities, updatePropNames, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public int batchUpdate(final Collection<T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public int batchUpdate(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return batchUpdate(entities, (Collection<String>) null, batchSize, isolationLevel);
         }
 
-        public int batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize,
+        public int batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize,
                 final IsolationLevel isolationLevel) {
             return batchUpdate((Connection) null, entities, updatePropNames, batchSize, isolationLevel);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<T> entities) {
+        public int batchUpdate(final Connection conn, final Collection<? extends T> entities) {
             return batchUpdate(conn, entities, (Collection<String>) null);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames) {
+        public int batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames) {
             return batchUpdate(conn, entities, updatePropNames, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<T> entities, final int batchSize) {
+        public int batchUpdate(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
             return batchUpdate(conn, entities, (Collection<String>) null, batchSize);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize) {
+        public int batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize) {
             return batchUpdate(conn, entities, updatePropNames, batchSize, IsolationLevel.DEFAULT);
         }
 
-        private int batchUpdate(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize,
+        private int batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize,
                 final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
 
@@ -5909,7 +5910,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<T> entities) {
+        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
@@ -5919,7 +5920,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<T> entities, final IsolationLevel isolationLevel) {
+        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
@@ -5929,7 +5930,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Connection conn, final Collection<T> entities) {
+        //        public <ID> ContinuableFuture<List<ID>> addAll(final Connection conn, final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
@@ -5938,7 +5939,7 @@ public final class SQLExecutor implements Closeable {
         //            });
         //        }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<T> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5947,7 +5948,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<T> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5956,7 +5957,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5965,7 +5966,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<T> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -5974,7 +5975,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<T> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
@@ -6092,7 +6093,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Collection<T> entities) {
+        //        public ContinuableFuture<Integer> updateAll(final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
         //                public Integer call() throws Exception {
@@ -6102,7 +6103,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Collection<T> entities, final Collection<String> updatePropNames) {
+        //        public ContinuableFuture<Integer> updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
         //                public Integer call() throws Exception {
@@ -6112,7 +6113,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Collection<T> entities, final IsolationLevel isolationLevel) {
+        //        public ContinuableFuture<Integer> updateAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
         //                public Integer call() throws Exception {
@@ -6122,7 +6123,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Collection<T> entities, final Collection<String> updatePropNames,
+        //        public ContinuableFuture<Integer> updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames,
         //                final IsolationLevel isolationLevel) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
@@ -6133,7 +6134,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<T> entities) {
+        //        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
         //                public Integer call() throws Exception {
@@ -6143,7 +6144,7 @@ public final class SQLExecutor implements Closeable {
         //        }
         //
         //        @Deprecated
-        //        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames) {
+        //        public ContinuableFuture<Integer> updateAll(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames) {
         //            return asyncExecutor.execute(new Callable<Integer>() {
         //                @Override
         //                public Integer call() throws Exception {
@@ -6152,7 +6153,7 @@ public final class SQLExecutor implements Closeable {
         //            });
         //        }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6161,7 +6162,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6170,7 +6171,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6179,7 +6180,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6188,7 +6189,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6197,7 +6198,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Collection<T> entities, final Collection<String> updatePropNames, final int batchSize,
+        public ContinuableFuture<Integer> batchUpdate(final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize,
                 final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -6207,7 +6208,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<T> entities) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6216,7 +6217,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6225,7 +6226,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<T> entities, final int batchSize) {
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
@@ -6234,7 +6235,7 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<T> entities, final Collection<String> updatePropNames,
+        public ContinuableFuture<Integer> batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames,
                 final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
