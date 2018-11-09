@@ -82,351 +82,6 @@ public final class DateUtil {
      */
     public final static String RFC1123_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
-    private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
-    private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
-    private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    // ...
-    private static final Queue<char[]> utcTimestampFormatCharsPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    private static final DatatypeFactory dataTypeFactory;
-
-    static {
-        DatatypeFactory temp = null;
-
-        try {
-            temp = DatatypeFactory.newInstance();
-        } catch (Exception e) {
-            // ignore.
-            // logger.error("Failed to initialize XMLGregorianCalendarType: " +
-            // e.getMessage(), e);
-        }
-
-        dataTypeFactory = temp;
-    }
-
-    // ...
-    private static final char[][][] cbufOfSTDInt = new char[5][][];
-
-    static {
-        for (int i = 0, j = 1; i < 5; i++, j = j * 10) {
-            cbufOfSTDInt[i] = new char[j][];
-
-            for (int k = 0; k < j; k++) {
-                if (i == 1) {
-                    cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                } else if (i == 2) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                } else if (i == 3) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
-                    } else if (k < 100) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                } else if (i == 4) {
-                    if (k < 10) {
-                        cbufOfSTDInt[i][k] = ("000" + String.valueOf(k)).toCharArray();
-                    } else if (k < 100) {
-                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
-                    } else if (k < 1000) {
-                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
-                    } else {
-                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
-                    }
-                }
-            }
-        }
-    }
-
-    private DateUtil() {
-        // singleton
-    }
-
-    public static java.util.Date asJUDate(final Calendar c) {
-        return (c == null) ? null : asJUDate(c.getTimeInMillis());
-    }
-
-    public static java.util.Date asJUDate(final java.util.Date date) {
-        return (date == null) ? null : asJUDate(date.getTime());
-    }
-
-    public static java.util.Date asJUDate(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new java.util.Date(timeInMillis);
-    }
-
-    public static java.util.Date asJUDate(final String date) {
-        return asJUDate(date, null);
-    }
-
-    public static java.util.Date asJUDate(final String date, final String format) {
-        return asJUDate(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.util.Date.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     *
-     * @param date
-     * @param format
-     * @throws IllegalArgumentException
-     *             if the date given can't be parsed with specified format.
-     */
-    public static java.util.Date asJUDate(final String date, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asJUDate(parse(date, format, timeZone));
-    }
-
-    public static Date asDate(final Calendar c) {
-        return (c == null) ? null : asDate(c.getTimeInMillis());
-    }
-
-    public static Date asDate(final java.util.Date date) {
-        return (date == null) ? null : asDate(date.getTime());
-    }
-
-    public static Date asDate(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Date(timeInMillis);
-    }
-
-    public static Date asDate(final String date) {
-        return asDate(date, null);
-    }
-
-    public static Date asDate(final String date, final String format) {
-        return asDate(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.sql.Date.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Date asDate(final String date, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asDate(parse(date, format, timeZone));
-    }
-
-    public static Time asTime(final Calendar c) {
-        return (c == null) ? null : asTime(c.getTimeInMillis());
-    }
-
-    public static Time asTime(final java.util.Date date) {
-        return (date == null) ? null : asTime(date.getTime());
-    }
-
-    public static Time asTime(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Time(timeInMillis);
-    }
-
-    public static Time asTime(final String date) {
-        return asTime(date, null);
-    }
-
-    public static Time asTime(final String date, final String format) {
-        return asTime(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Time.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Time asTime(final String date, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asTime(parse(date, format, timeZone));
-    }
-
-    public static Timestamp asTimestamp(final Calendar c) {
-        return (c == null) ? null : asTimestamp(c.getTimeInMillis());
-    }
-
-    public static Timestamp asTimestamp(final java.util.Date date) {
-        return (date == null) ? null : asTimestamp(date.getTime());
-    }
-
-    public static Timestamp asTimestamp(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Timestamp(timeInMillis);
-    }
-
-    public static Timestamp asTimestamp(final String date) {
-        return asTimestamp(date, null);
-    }
-
-    public static Timestamp asTimestamp(final String date, final String format) {
-        return asTimestamp(date, format, null);
-    }
-
-    /**
-     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Timestamp.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param date
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Timestamp asTimestamp(final String date, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
-            return null;
-        }
-
-        return asTimestamp(parse(date, format, timeZone));
-    }
-
-    public static Calendar asCalendar(final Calendar c) {
-        return (c == null) ? null : asCalendar(c.getTimeInMillis());
-    }
-
-    public static Calendar asCalendar(final java.util.Date date) {
-        return (date == null) ? null : asCalendar(date.getTime());
-    }
-
-    public static Calendar asCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final Calendar c = Calendar.getInstance();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
-    }
-
-    public static Calendar asCalendar(final String calendar) {
-        return asCalendar(calendar, null);
-    }
-
-    public static Calendar asCalendar(final String calendar, final String format) {
-        return asCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of Calendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static Calendar asCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : asGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : asGregorianCalendar(date.getTime());
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final GregorianCalendar c = new GregorianCalendar();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final String calendar) {
-        return asGregorianCalendar(calendar, null);
-    }
-
-    public static GregorianCalendar asGregorianCalendar(final String calendar, final String format) {
-        return asGregorianCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of GregorianCalendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static GregorianCalendar asGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asGregorianCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : asXMLGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : asXMLGregorianCalendar(date.getTime());
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        return dataTypeFactory.newXMLGregorianCalendar(asGregorianCalendar(timeInMillis));
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar) {
-        return asXMLGregorianCalendar(calendar, null);
-    }
-
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar, final String format) {
-        return asXMLGregorianCalendar(calendar, format, null);
-    }
-
-    /**
-     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of XMLGregorianCalendar.
-     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
-     * 
-     * @param calendar
-     * @param format
-     * @param timeZone
-     * @return
-     */
-    public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
-            return null;
-        }
-
-        return asXMLGregorianCalendar(parse(calendar, format, timeZone));
-    }
-
     /**
      * @see System#currentTimeMillis()
      * @return
@@ -529,7 +184,7 @@ public final class DateUtil {
         switch (unit) {
             case MONTH:
             case YEAR:
-                final Calendar c = asCalendar(date);
+                final Calendar c = parseCalendar(date);
                 c.add(unit.intValue(), (int) amount);
 
                 return createDate(date.getClass(), c.getTimeInMillis());
@@ -579,6 +234,351 @@ public final class DateUtil {
         return result;
     }
 
+    private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
+    private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
+    private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    // ...
+    private static final Queue<char[]> utcTimestampFormatCharsPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    private static final DatatypeFactory dataTypeFactory;
+
+    static {
+        DatatypeFactory temp = null;
+
+        try {
+            temp = DatatypeFactory.newInstance();
+        } catch (Exception e) {
+            // ignore.
+            // logger.error("Failed to initialize XMLGregorianCalendarType: " +
+            // e.getMessage(), e);
+        }
+
+        dataTypeFactory = temp;
+    }
+
+    // ...
+    private static final char[][][] cbufOfSTDInt = new char[5][][];
+
+    static {
+        for (int i = 0, j = 1; i < 5; i++, j = j * 10) {
+            cbufOfSTDInt[i] = new char[j][];
+
+            for (int k = 0; k < j; k++) {
+                if (i == 1) {
+                    cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
+                } else if (i == 2) {
+                    if (k < 10) {
+                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
+                    } else {
+                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
+                    }
+                } else if (i == 3) {
+                    if (k < 10) {
+                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
+                    } else if (k < 100) {
+                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
+                    } else {
+                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
+                    }
+                } else if (i == 4) {
+                    if (k < 10) {
+                        cbufOfSTDInt[i][k] = ("000" + String.valueOf(k)).toCharArray();
+                    } else if (k < 100) {
+                        cbufOfSTDInt[i][k] = ("00" + String.valueOf(k)).toCharArray();
+                    } else if (k < 1000) {
+                        cbufOfSTDInt[i][k] = ("0" + String.valueOf(k)).toCharArray();
+                    } else {
+                        cbufOfSTDInt[i][k] = String.valueOf(k).toCharArray();
+                    }
+                }
+            }
+        }
+    }
+
+    private DateUtil() {
+        // singleton
+    }
+
+    public static java.util.Date parseJUDate(final Calendar c) {
+        return (c == null) ? null : parseJUDate(c.getTimeInMillis());
+    }
+
+    public static java.util.Date parseJUDate(final java.util.Date date) {
+        return (date == null) ? null : parseJUDate(date.getTime());
+    }
+
+    public static java.util.Date parseJUDate(final long timeInMillis) {
+        return (timeInMillis == 0) ? null : new java.util.Date(timeInMillis);
+    }
+
+    public static java.util.Date parseJUDate(final String date) {
+        return parseJUDate(date, null);
+    }
+
+    public static java.util.Date parseJUDate(final String date, final String format) {
+        return parseJUDate(date, format, null);
+    }
+
+    /**
+     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.util.Date.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     *
+     * @param date
+     * @param format
+     * @throws IllegalArgumentException
+     *             if the date given can't be parsed with specified format.
+     */
+    public static java.util.Date parseJUDate(final String date, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
+            return null;
+        }
+
+        return parseJUDate(parse(date, format, timeZone));
+    }
+
+    public static Date parseDate(final Calendar c) {
+        return (c == null) ? null : parseDate(c.getTimeInMillis());
+    }
+
+    public static Date parseDate(final java.util.Date date) {
+        return (date == null) ? null : parseDate(date.getTime());
+    }
+
+    public static Date parseDate(final long timeInMillis) {
+        return (timeInMillis == 0) ? null : new Date(timeInMillis);
+    }
+
+    public static Date parseDate(final String date) {
+        return parseDate(date, null);
+    }
+
+    public static Date parseDate(final String date, final String format) {
+        return parseDate(date, format, null);
+    }
+
+    /**
+     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of java.sql.Date.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param date
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static Date parseDate(final String date, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
+            return null;
+        }
+
+        return parseDate(parse(date, format, timeZone));
+    }
+
+    public static Time parseTime(final Calendar c) {
+        return (c == null) ? null : parseTime(c.getTimeInMillis());
+    }
+
+    public static Time parseTime(final java.util.Date date) {
+        return (date == null) ? null : parseTime(date.getTime());
+    }
+
+    public static Time parseTime(final long timeInMillis) {
+        return (timeInMillis == 0) ? null : new Time(timeInMillis);
+    }
+
+    public static Time parseTime(final String date) {
+        return parseTime(date, null);
+    }
+
+    public static Time parseTime(final String date, final String format) {
+        return parseTime(date, format, null);
+    }
+
+    /**
+     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Time.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param date
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static Time parseTime(final String date, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
+            return null;
+        }
+
+        return parseTime(parse(date, format, timeZone));
+    }
+
+    public static Timestamp parseTimestamp(final Calendar c) {
+        return (c == null) ? null : parseTimestamp(c.getTimeInMillis());
+    }
+
+    public static Timestamp parseTimestamp(final java.util.Date date) {
+        return (date == null) ? null : parseTimestamp(date.getTime());
+    }
+
+    public static Timestamp parseTimestamp(final long timeInMillis) {
+        return (timeInMillis == 0) ? null : new Timestamp(timeInMillis);
+    }
+
+    public static Timestamp parseTimestamp(final String date) {
+        return parseTimestamp(date, null);
+    }
+
+    public static Timestamp parseTimestamp(final String date, final String format) {
+        return parseTimestamp(date, format, null);
+    }
+
+    /**
+     * Converts the specified <code>date</code> with the specified {@code format} to a new instance of Timestamp.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param date
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static Timestamp parseTimestamp(final String date, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
+            return null;
+        }
+
+        return parseTimestamp(parse(date, format, timeZone));
+    }
+
+    public static Calendar parseCalendar(final Calendar c) {
+        return (c == null) ? null : parseCalendar(c.getTimeInMillis());
+    }
+
+    public static Calendar parseCalendar(final java.util.Date date) {
+        return (date == null) ? null : parseCalendar(date.getTime());
+    }
+
+    public static Calendar parseCalendar(final long timeInMillis) {
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final Calendar c = Calendar.getInstance();
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static Calendar parseCalendar(final String calendar) {
+        return parseCalendar(calendar, null);
+    }
+
+    public static Calendar parseCalendar(final String calendar, final String format) {
+        return parseCalendar(calendar, format, null);
+    }
+
+    /**
+     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of Calendar.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param calendar
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static Calendar parseCalendar(final String calendar, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
+            return null;
+        }
+
+        return parseCalendar(parse(calendar, format, timeZone));
+    }
+
+    public static GregorianCalendar parseGregorianCalendar(final Calendar c) {
+        return (c == null) ? null : parseGregorianCalendar(c.getTimeInMillis());
+    }
+
+    public static GregorianCalendar parseGregorianCalendar(final java.util.Date date) {
+        return (date == null) ? null : parseGregorianCalendar(date.getTime());
+    }
+
+    public static GregorianCalendar parseGregorianCalendar(final long timeInMillis) {
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final GregorianCalendar c = new GregorianCalendar();
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static GregorianCalendar parseGregorianCalendar(final String calendar) {
+        return parseGregorianCalendar(calendar, null);
+    }
+
+    public static GregorianCalendar parseGregorianCalendar(final String calendar, final String format) {
+        return parseGregorianCalendar(calendar, format, null);
+    }
+
+    /**
+     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of GregorianCalendar.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param calendar
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static GregorianCalendar parseGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
+            return null;
+        }
+
+        return parseGregorianCalendar(parse(calendar, format, timeZone));
+    }
+
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final Calendar c) {
+        return (c == null) ? null : parseXMLGregorianCalendar(c.getTimeInMillis());
+    }
+
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final java.util.Date date) {
+        return (date == null) ? null : parseXMLGregorianCalendar(date.getTime());
+    }
+
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final long timeInMillis) {
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        return dataTypeFactory.newXMLGregorianCalendar(parseGregorianCalendar(timeInMillis));
+    }
+
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final String calendar) {
+        return parseXMLGregorianCalendar(calendar, null);
+    }
+
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final String calendar, final String format) {
+        return parseXMLGregorianCalendar(calendar, format, null);
+    }
+
+    /**
+     * Converts the specified <code>calendar</code> with the specified {@code format} to a new instance of XMLGregorianCalendar.
+     * <code>null</code> is returned if the specified <code>date</code> is null or empty.
+     * 
+     * @param calendar
+     * @param format
+     * @param timeZone
+     * @return
+     */
+    public static XMLGregorianCalendar parseXMLGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
+        if (N.isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
+            return null;
+        }
+
+        return parseXMLGregorianCalendar(parse(calendar, format, timeZone));
+    }
+
     public static String format(final java.util.Date date) {
         return format(date, null, null);
     }
@@ -619,7 +619,7 @@ public final class DateUtil {
             return str;
         }
 
-        return format(asJUDate(c), format, timeZone);
+        return format(parseJUDate(c), format, timeZone);
     }
 
     public static void format(final Writer writer, final Calendar c) {
@@ -630,7 +630,7 @@ public final class DateUtil {
         if ((format == null) && (timeZone == null)) {
             fastDateFormat(writer, c.getTimeInMillis(), false);
         } else {
-            format(writer, asJUDate(c), format, timeZone);
+            format(writer, parseJUDate(c), format, timeZone);
         }
     }
 
@@ -655,7 +655,7 @@ public final class DateUtil {
             return str;
         }
 
-        return format(asJUDate(c.toGregorianCalendar()), format, timeZone);
+        return format(parseJUDate(c.toGregorianCalendar()), format, timeZone);
     }
 
     public static void format(final Writer writer, final XMLGregorianCalendar c) {
@@ -666,7 +666,7 @@ public final class DateUtil {
         if ((format == null) && (timeZone == null)) {
             fastDateFormat(writer, c.toGregorianCalendar().getTimeInMillis(), false);
         } else {
-            format(writer, asJUDate(c.toGregorianCalendar()), format, timeZone);
+            format(writer, parseJUDate(c.toGregorianCalendar()), format, timeZone);
         }
     }
 

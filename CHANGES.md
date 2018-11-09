@@ -1,3 +1,14 @@
+### 1.3.17
+
+* Rename `DateUtil.asXXX` to `DateUtil.parseXXX`.
+
+* Rename `N.asBoolean/Char/Byte/.../Double` to `N.parseBoolean/Char/Byte/.../Double`.
+
+* Rename `Fn.single` to `Fn.memoize`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.16
 
 * Improvements and bug fix.

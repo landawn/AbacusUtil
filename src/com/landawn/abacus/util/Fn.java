@@ -549,19 +549,66 @@ public final class Fn extends Comparators {
      * @param supplier
      * @return
      */
-    public static <T> Supplier<T> single(final Supplier<T> supplier) {
+    public static <T> Supplier<T> memoize(final Supplier<T> supplier) {
         return new Supplier<T>() {
-            private T instance = (T) NONE;
+            private volatile T instance = (T) NONE;
 
             @Override
             public T get() {
-                synchronized (this) {
-                    if (instance == NONE) {
-                        instance = supplier.get();
-                    }
+                T result = instance;
 
-                    return instance;
+                if (result == NONE) {
+                    synchronized (this) {
+                        if (instance == NONE) {
+                            instance = supplier.get();
+                        }
+
+                        result = instance;
+                    }
                 }
+
+                return result;
+            }
+        };
+    }
+
+    public static <T, R> Function<T, R> memoize(final Function<? super T, ? extends R> func) {
+        return new Function<T, R>() {
+            private volatile R resultForNull = (R) NONE;
+            private volatile Map<T, R> resultMap = null;
+
+            @Override
+            public R apply(T t) {
+                R result = null;
+
+                if (t == null) {
+                    result = resultForNull;
+
+                    if (result == NONE) {
+                        synchronized (this) {
+                            if (resultForNull == NONE) {
+                                resultForNull = func.apply(t);
+                            }
+
+                            result = resultForNull;
+                        }
+                    }
+                } else {
+                    synchronized (this) {
+                        if (resultMap == null) {
+                            resultMap = new HashMap<>();
+                        }
+
+                        result = resultMap.get(t);
+
+                        if (result == null && resultMap.containsKey(t) == false) {
+                            result = func.apply(t);
+                            resultMap.put(t, result);
+                        }
+                    }
+                }
+
+                return result;
             }
         };
     }
@@ -3671,6 +3718,19 @@ public final class Fn extends Comparators {
 
         private Suppliers() {
             // singleton.
+        }
+
+        /**
+         * Returns a supplier that always supplies {@code instance}.
+         * @param instance.
+         */
+        public static <T> Supplier<T> ofInstance(final T instance) {
+            return new Supplier<T>() {
+                @Override
+                public T get() {
+                    return instance;
+                }
+            };
         }
 
         public static Supplier<String> ofUUID() {

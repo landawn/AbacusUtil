@@ -213,7 +213,7 @@ public final class NamedCQL {
 
             for (int i = 0; i < countOfParameter; i++) {
                 try {
-                    if (N.asInt(couchbaseNamedParameters.get(i)) != i + 1) {
+                    if (N.parseInt(couchbaseNamedParameters.get(i)) != i + 1) {
                         isNamedParametersByNum = false;
                         break;
                     }

@@ -3712,20 +3712,12 @@ public final class N {
      *            a string.
      * @return the <code>Boolean</code> value represented by the string.
      */
-    public static boolean asBoolean(final String str) {
+    public static boolean parseBoolean(final String str) {
         return isNullOrEmpty(str) ? false : Boolean.valueOf(str);
     }
 
-    public static boolean asBoolean(final Boolean b) {
-        return b == null ? false : b.booleanValue();
-    }
-
-    public static char asChar(final String str) {
+    public static char parseChar(final String str) {
         return isNullOrEmpty(str) ? CHAR_0 : ((str.length() == 1) ? str.charAt(0) : (char) Integer.parseInt(str));
-    }
-
-    public static char asChar(final Character c) {
-        return c == null ? CHAR_0 : c.charValue();
     }
 
     /**
@@ -3738,7 +3730,7 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code byte}.
      */
-    public static byte asByte(final String str) {
+    public static byte parseByte(final String str) {
         if (N.isNullOrEmpty(str)) {
             return 0;
         }
@@ -3757,10 +3749,6 @@ public final class N {
         return Byte.parseByte(str);
     }
 
-    public static byte asByte(final Number num) {
-        return num == null ? 0 : num.byteValue();
-    }
-
     /**
      * Returns the value by calling {@code Short.valueOf(String)} if {@code str}
      * is not {@code null}, otherwise, the default value 0 for {@code short} is
@@ -3771,7 +3759,7 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code short}.
      */
-    public static short asShort(final String str) {
+    public static short parseShort(final String str) {
         if (N.isNullOrEmpty(str)) {
             return 0;
         }
@@ -3786,10 +3774,6 @@ public final class N {
         return Short.parseShort(str);
     }
 
-    public static short asShort(final Number num) {
-        return num == null ? 0 : num.shortValue();
-    }
-
     /**
      * Returns the value by calling {@code Integer.valueOf(String)} if
      * {@code str} is not {@code null}, otherwise, the default value 0 for
@@ -3800,7 +3784,7 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code int}.
      */
-    public static int asInt(final String str) {
+    public static int parseInt(final String str) {
         if (N.isNullOrEmpty(str)) {
             return 0;
         }
@@ -3815,10 +3799,6 @@ public final class N {
         return Integer.decode(str);
     }
 
-    public static int asInt(final Number num) {
-        return num == null ? 0 : num.intValue();
-    }
-
     /**
      * Returns the value by calling {@code Long.valueOf(String)} if {@code str}
      * is not {@code null}, otherwise, the default value 0 for {@code long} is
@@ -3829,7 +3809,7 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code long}.
      */
-    public static long asLong(final String str) {
+    public static long parseLong(final String str) {
         if (N.isNullOrEmpty(str)) {
             return 0;
         }
@@ -3844,10 +3824,6 @@ public final class N {
         return Long.decode(str);
     }
 
-    public static long asLong(final Number num) {
-        return num == null ? 0L : num.longValue();
-    }
-
     /**
      * Returns the value by calling {@code Float.valueOf(String)} if {@code str}
      * is not {@code null}, otherwise, the default value 0f for {@code float} is
@@ -3858,16 +3834,12 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code float}.
      */
-    public static float asFloat(final String str) {
+    public static float parseFloat(final String str) {
         if (isNullOrEmpty(str)) {
             return 0f;
         }
 
         return Float.parseFloat(str);
-    }
-
-    public static float asFloat(final Number num) {
-        return num == null ? 0f : num.floatValue();
     }
 
     /**
@@ -3880,12 +3852,8 @@ public final class N {
      * @throws  NumberFormatException If the string does not
      *          contain a parsable {@code double}.
      */
-    public static double asDouble(final String str) {
+    public static double parseDouble(final String str) {
         return isNullOrEmpty(str) ? 0d : Double.parseDouble(str);
-    }
-
-    public static double asDouble(final Number num) {
-        return num == null ? 0d : num.doubleValue();
     }
 
     /**

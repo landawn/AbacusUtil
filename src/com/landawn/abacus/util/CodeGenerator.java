@@ -3331,7 +3331,7 @@ public final class CodeGenerator {
             final List<Class<?>> implementsInterface, final String headSpace, final Writer fileWrite) throws IOException {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
-        boolean isAbstract = N.asBoolean(entityDef.getAttribute("abstract"));
+        boolean isAbstract = N.parseBoolean(entityDef.getAttribute("abstract"));
 
         if (isAbstract) {
             sb.append(headSpace + "public abstract class " + entityDef.getName());

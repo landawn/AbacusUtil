@@ -472,7 +472,7 @@ public final class Profiler {
         }
 
         protected String time2String(final long timeInMillis) {
-            final Timestamp timestamp = DateUtil.asTimestamp(timeInMillis);
+            final Timestamp timestamp = DateUtil.parseTimestamp(timeInMillis);
             return DateUtil.format(timestamp, DateUtil.LOCAL_TIMESTAMP_FORMAT); // + " " + N.LOCAL_TIME_ZONE.getID();
         }
     }

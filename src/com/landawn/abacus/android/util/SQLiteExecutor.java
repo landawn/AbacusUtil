@@ -2494,12 +2494,12 @@ public final class SQLiteExecutor {
         public static final Type<Date> DATE = new Type<Date>(Cursor.FIELD_TYPE_STRING, Date.class) {
             @Override
             public Date get(Cursor cursor, int columnIndex) {
-                return DateUtil.asDate(cursor.getString(columnIndex));
+                return DateUtil.parseDate(cursor.getString(columnIndex));
             }
 
             @Override
             public Date get(ContentValues contentValues, String key) {
-                return DateUtil.asDate(contentValues.getAsString(key));
+                return DateUtil.parseDate(contentValues.getAsString(key));
             }
 
             @Override
@@ -2511,12 +2511,12 @@ public final class SQLiteExecutor {
         public static final Type<Time> TIME = new Type<Time>(Cursor.FIELD_TYPE_STRING, Time.class) {
             @Override
             public Time get(Cursor cursor, int columnIndex) {
-                return DateUtil.asTime(cursor.getString(columnIndex));
+                return DateUtil.parseTime(cursor.getString(columnIndex));
             }
 
             @Override
             public Time get(ContentValues contentValues, String key) {
-                return DateUtil.asTime(contentValues.getAsString(key));
+                return DateUtil.parseTime(contentValues.getAsString(key));
             }
 
             @Override
@@ -2528,12 +2528,12 @@ public final class SQLiteExecutor {
         public static final Type<Timestamp> TIMESTAMP = new Type<Timestamp>(Cursor.FIELD_TYPE_STRING, Timestamp.class) {
             @Override
             public Timestamp get(Cursor cursor, int columnIndex) {
-                return DateUtil.asTimestamp(cursor.getString(columnIndex));
+                return DateUtil.parseTimestamp(cursor.getString(columnIndex));
             }
 
             @Override
             public Timestamp get(ContentValues contentValues, String key) {
-                return DateUtil.asTimestamp(contentValues.getAsString(key));
+                return DateUtil.parseTimestamp(contentValues.getAsString(key));
             }
 
             @Override
@@ -2545,12 +2545,12 @@ public final class SQLiteExecutor {
         public static final Type<java.util.Date> JU_DATE = new Type<java.util.Date>(Cursor.FIELD_TYPE_STRING, java.util.Date.class) {
             @Override
             public java.util.Date get(Cursor cursor, int columnIndex) {
-                return DateUtil.asJUDate(cursor.getString(columnIndex));
+                return DateUtil.parseJUDate(cursor.getString(columnIndex));
             }
 
             @Override
             public java.util.Date get(ContentValues contentValues, String key) {
-                return DateUtil.asJUDate(contentValues.getAsString(key));
+                return DateUtil.parseJUDate(contentValues.getAsString(key));
             }
 
             @Override
@@ -2562,12 +2562,12 @@ public final class SQLiteExecutor {
         public static final Type<Calendar> CALENDAR = new Type<Calendar>(Cursor.FIELD_TYPE_STRING, Calendar.class) {
             @Override
             public Calendar get(Cursor cursor, int columnIndex) {
-                return DateUtil.asCalendar(cursor.getString(columnIndex));
+                return DateUtil.parseCalendar(cursor.getString(columnIndex));
             }
 
             @Override
             public Calendar get(ContentValues contentValues, String key) {
-                return DateUtil.asCalendar(contentValues.getAsString(key));
+                return DateUtil.parseCalendar(contentValues.getAsString(key));
             }
 
             @Override

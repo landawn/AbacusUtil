@@ -102,7 +102,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
     //        final int[] elementData = new int[endIndex - startIndex];
     //
     //        for (int i = startIndex; i < endIndex; i++) {
-    //            elementData[i - startIndex] = N.asInt(a[i]);
+    //            elementData[i - startIndex] = N.parseInt(a[i]);
     //        }
     //
     //        return of(elementData);

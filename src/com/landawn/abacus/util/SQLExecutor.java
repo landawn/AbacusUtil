@@ -1988,55 +1988,15 @@ public final class SQLExecutor implements Closeable {
             final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         checkJdbcSettingsForAllQuery(jdbcSettings);
 
-        if (jdbcSettings == null || N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
-            return list(sql, statementSetter, recordGetter, jdbcSettings, parameters);
-        }
+        //    return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).call(new Function<Stream<T>, List<T>> () {
+        //        @Override
+        //        public List<T> apply(Stream<T> t) {
+        //            return t.toList();
+        //        }
+        //    });
 
-        final Collection<String> dss = jdbcSettings.getQueryWithDataSources();
-
-        if (jdbcSettings.isQueryInParallel()) {
-            final List<List<T>> resultList = Stream.of(dss).map(new Function<String, JdbcSettings>() {
-                @Override
-                public JdbcSettings apply(String ds) {
-                    final JdbcSettings newJdbcSettings = jdbcSettings.copy();
-                    newJdbcSettings.setQueryWithDataSources(null);
-                    newJdbcSettings.setQueryWithDataSource(ds);
-                    return newJdbcSettings;
-                }
-            }).parallel(dss.size()).map(new Function<JdbcSettings, List<T>>() {
-                @Override
-                public List<T> apply(JdbcSettings newJdbcSettings) {
-                    return list(sql, statementSetter, recordGetter, newJdbcSettings, parameters);
-                }
-            }).toList();
-
-            List<T> finalResult = null;
-
-            for (List<T> result : resultList) {
-                if (finalResult == null) {
-                    finalResult = result;
-                } else {
-                    finalResult.addAll(result);
-                }
-            }
-
-            return finalResult;
-        } else {
-            final JdbcSettings newJdbcSettings = jdbcSettings.copy();
-            newJdbcSettings.setQueryWithDataSources(null);
-            List<T> finalResult = null;
-
-            for (String ds : dss) {
-                newJdbcSettings.setQueryWithDataSource(ds);
-
-                if (finalResult == null) {
-                    finalResult = list(sql, statementSetter, recordGetter, newJdbcSettings, parameters);
-                } else {
-                    finalResult.addAll(list(sql, statementSetter, recordGetter, newJdbcSettings, parameters));
-                }
-            }
-
-            return finalResult;
+        try (Stream<T> s = streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).val()) {
+            return s.toList();
         }
     }
 
@@ -2055,41 +2015,8 @@ public final class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> listAll(final List<String> sqls, final StatementSetter statementSetter,
             final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        if (sqls.size() == 1) {
-            return listAll(sqls.get(0), statementSetter, recordGetter, jdbcSettings, parameters);
-        }
-
-        if (jdbcSettings != null && jdbcSettings.isQueryInParallel()) {
-            final List<List<T>> resultList = Stream.of(sqls).parallel(sqls.size()).map(new Function<String, List<T>>() {
-                @Override
-                public List<T> apply(String sql) {
-                    return listAll(sql, statementSetter, recordGetter, jdbcSettings, parameters);
-                }
-            }).toList();
-
-            List<T> finalResult = null;
-
-            for (List<T> result : resultList) {
-                if (finalResult == null) {
-                    finalResult = result;
-                } else {
-                    finalResult.addAll(result);
-                }
-            }
-
-            return finalResult;
-        } else {
-            List<T> finalResult = null;
-
-            for (String sql : sqls) {
-                if (finalResult == null) {
-                    finalResult = listAll(sql, statementSetter, recordGetter, jdbcSettings, parameters);
-                } else {
-                    finalResult.addAll(listAll(sql, statementSetter, recordGetter, jdbcSettings, parameters));
-                }
-            }
-
-            return finalResult;
+        try (Stream<T> s = streamAll(sqls, statementSetter, recordGetter, jdbcSettings, parameters).val()) {
+            return s.toList();
         }
     }
 
@@ -2870,17 +2797,15 @@ public final class SQLExecutor implements Closeable {
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT);
         PreparedQuery result = null;
-        boolean isOk = false;
 
         try {
             final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, StatementSetter.DEFAULT, jdbcSettings, false, false, N.EMPTY_OBJECT_ARRAY);
 
             result = new PreparedQuery(stmt).onClose(conn == null ? localConn : null);
-            isOk = true;
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            if (isOk == false && conn == null) {
+            if (result == null && conn == null) {
                 closeQuietly(localConn);
             }
         }
@@ -2908,7 +2833,6 @@ public final class SQLExecutor implements Closeable {
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), N.EMPTY_OBJECT_ARRAY, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT);
         PreparedCallableQuery result = null;
-        boolean isOk = false;
 
         try {
             final CallableStatement stmt = prepareCallableStatement(ds, localConn, namedSQL, StatementSetter.DEFAULT, jdbcSettings, false, false,
@@ -2918,7 +2842,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            if (isOk == false && conn == null) {
+            if (result == null && conn == null) {
                 closeQuietly(localConn);
             }
         }
@@ -3490,12 +3414,12 @@ public final class SQLExecutor implements Closeable {
 
             String attr = attrs.get(SQLMapper.BATCH_SIZE);
             if (attr != null) {
-                jdbcSettings.setBatchSize(N.asInt(attr));
+                jdbcSettings.setBatchSize(N.parseInt(attr));
             }
 
             attr = attrs.get(SQLMapper.FETCH_SIZE);
             if (attr != null) {
-                jdbcSettings.setFetchSize(N.asInt(attr));
+                jdbcSettings.setFetchSize(N.parseInt(attr));
             }
 
             attr = attrs.get(SQLMapper.RESULT_SET_TYPE);
@@ -3511,7 +3435,7 @@ public final class SQLExecutor implements Closeable {
 
             attr = attrs.get(SQLMapper.TIMEOUT);
             if (attr != null) {
-                jdbcSettings.setQueryTimeout(N.asInt(attr));
+                jdbcSettings.setQueryTimeout(N.parseInt(attr));
             }
 
             return jdbcSettings;
