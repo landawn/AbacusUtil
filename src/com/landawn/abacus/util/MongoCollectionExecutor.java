@@ -309,7 +309,7 @@ public final class MongoCollectionExecutor {
 
         Document doc = findIterable.first();
 
-        return N.isNullOrEmpty(doc) ? (Nullable<V>) Nullable.empty() : Nullable.of(N.as(targetClass, doc.get(propName)));
+        return N.isNullOrEmpty(doc) ? (Nullable<V>) Nullable.empty() : Nullable.of(N.convert(doc.get(propName), targetClass));
     }
 
     private <T> T toEntity(final Class<T> targetClass, final FindIterable<Document> findIterable) {
@@ -750,12 +750,12 @@ public final class MongoCollectionExecutor {
     //        String objectId = null;
     //
     //        try {
-    //            objectId = N.as(String.class, N.getPropValue(obj, "id"));
+    //            objectId = N.convert(String.class, N.getPropValue(obj, "id"));
     //        } catch (Exception e) {
     //            // ignore
     //
     //            try {
-    //                objectId = N.as(String.class, N.getPropValue(obj, "objectId"));
+    //                objectId = N.convert(String.class, N.getPropValue(obj, "objectId"));
     //            } catch (Exception e2) {
     //                // ignore
     //            }

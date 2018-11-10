@@ -267,7 +267,7 @@ public final class CouchbaseExecutor implements Closeable {
                     }
                 } else {
                     for (QueryRow row : rowList) {
-                        resultList.add(N.as(targetClass, row.value().get(propName)));
+                        resultList.add(N.convert(row.value().get(propName), targetClass));
                     }
                 }
             } else {
@@ -833,7 +833,7 @@ public final class CouchbaseExecutor implements Closeable {
         if (jsonObject == null || jsonObject.size() == 0) {
             return Nullable.empty();
         } else {
-            return Nullable.of(N.as(targetClass, jsonObject.get(jsonObject.getNames().iterator().next())));
+            return Nullable.of(N.convert(jsonObject.get(jsonObject.getNames().iterator().next()), targetClass));
         }
     }
 

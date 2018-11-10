@@ -3594,18 +3594,46 @@ public final class N {
     }
 
     /**
-     * Try to convert the specified {@code sourceObject} to the specified
-     * {@code cls}. Default value of {@code cls} is returned if
-     * {@code sourceObject} is null. An instance of {@code cls} is returned if
+     * Try to convert the specified {@code obj} to the specified
+     * {@code targetClass}. Default value of {@code targetClass} is returned if
+     * {@code src} is null. An instance of {@code targetClass} is returned if
      * convert successfully
      *
      * @param targetClass
      * @param obj
      * @return
      * @throws ClassCastException
+     * @Deprecated replaced by {@link N#convert(Object, Class)}.
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public static <T> T as(final Class<? extends T> targetClass, final Object obj) {
+        return convert(obj, targetClass);
+    }
+
+    /**
+     * 
+     * @param targetType
+     * @param obj
+     * @return
+     * @Deprecated replaced by {@link N#convert(Object, Type)}.
+     */
+    @Deprecated
+    public static <T> T as(final Type<? extends T> targetType, final Object obj) {
+        return convert(obj, targetType);
+    }
+
+    /**
+     * Try to convert the specified {@code obj} to the specified
+     * {@code targetClass}. Default value of {@code targetClass} is returned if
+     * {@code sourceObject} is null. An instance of {@code targetClass} is returned if
+     * convert successfully
+     * 
+     * @param obj
+     * @param targetClass
+     * @return
+     */
+    public static <T> T convert(final Object obj, final Class<? extends T> targetClass) {
         //        if (obj == null) {
         //            return defaultValueOf(targetClass);
         //        }
@@ -3643,7 +3671,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T as(final Type<? extends T> targetType, final Object obj) {
+    public static <T> T convert(final Object obj, final Type<? extends T> targetType) {
         if (obj == null) {
             return targetType.defaultValue();
         }

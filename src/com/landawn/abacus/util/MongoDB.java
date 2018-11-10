@@ -299,7 +299,7 @@ public final class MongoDB {
                         }
                     } else {
                         for (Object row : rowList) {
-                            resultList.add(N.as(targetClass, ((Map<String, Object>) row).get(propName)));
+                            resultList.add(N.convert(((Map<String, Object>) row).get(propName), targetClass));
                         }
                     }
                 } else {

@@ -4167,7 +4167,7 @@ public final class JdbcUtil {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Nullable.of(N.as(targetClass, rs.getObject(1))) : Nullable.<V> empty();
+                return rs.next() ? Nullable.of(N.convert(rs.getObject(1), targetClass)) : Nullable.<V> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }

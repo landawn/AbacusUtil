@@ -270,7 +270,7 @@ public final class CassandraExecutor implements Closeable {
                         || columnClasses[i].isAssignableFrom(propValue.getClass())) {
                     columnList.get(i).add(propValue);
                 } else {
-                    columnList.get(i).add(N.as(columnClasses[i], propValue));
+                    columnList.get(i).add(N.convert(propValue, columnClasses[i]));
                 }
             }
         }
@@ -364,7 +364,7 @@ public final class CassandraExecutor implements Closeable {
                     }
                 } else {
                     for (Row row : rowList) {
-                        resultList.add(N.as(targetClass, row.getObject(0)));
+                        resultList.add(N.convert(row.getObject(0), targetClass));
                     }
                 }
             }
@@ -1072,7 +1072,7 @@ public final class CassandraExecutor implements Closeable {
         final ResultSet resultSet = execute(query, parameters);
         final Row row = resultSet.one();
 
-        return row == null ? (Nullable<E>) Nullable.empty() : Nullable.of(N.as(valueClass, row.getObject(0)));
+        return row == null ? (Nullable<E>) Nullable.empty() : Nullable.of(N.convert(row.getObject(0), valueClass));
     }
 
     /**
@@ -2127,7 +2127,7 @@ public final class CassandraExecutor implements Closeable {
                 // continue;
             } else {
                 try {
-                    values[i] = N.as(javaClass, values[i]);
+                    values[i] = N.convert(values[i], javaClass);
                 } catch (Exception e) {
                     // ignore.
                 }

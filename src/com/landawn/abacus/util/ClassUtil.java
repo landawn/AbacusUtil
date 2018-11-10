@@ -1778,7 +1778,7 @@ public final class ClassUtil {
         try {
             propSetMethod.invoke(entity, propValue == null ? N.defaultValueOf(propSetMethod.getParameterTypes()[0]) : propValue);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            propValue = N.as(ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).type, propValue);
+            propValue = N.convert(propValue, ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).type);
 
             try {
                 propSetMethod.invoke(entity, propValue);

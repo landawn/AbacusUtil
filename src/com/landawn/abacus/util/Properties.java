@@ -59,7 +59,7 @@ public class Properties<K, V> implements Map<K, V> {
      */
     @SuppressWarnings("unchecked")
     public <T> T get(Class<T> targetClass, Object propName) {
-        return N.as(targetClass, values.get(propName));
+        return N.convert(values.get(propName), targetClass);
     }
 
     /**
@@ -96,7 +96,7 @@ public class Properties<K, V> implements Map<K, V> {
             return defaultValue;
         }
 
-        return N.as(targetClass, result);
+        return N.convert(result, targetClass);
     }
 
     /**

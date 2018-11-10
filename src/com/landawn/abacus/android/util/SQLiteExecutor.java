@@ -1439,7 +1439,7 @@ public final class SQLiteExecutor {
         if (N.isNullOrEmpty(rs)) {
             return Nullable.empty();
         } else {
-            return targetClass == null ? Nullable.of((V) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
+            return targetClass == null ? Nullable.of((V) rs.get(0, 0)) : Nullable.of(N.convert(rs.get(0, 0), targetClass));
         }
     }
 
@@ -1450,7 +1450,7 @@ public final class SQLiteExecutor {
         if (N.isNullOrEmpty(rs)) {
             return Nullable.empty();
         } else {
-            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
+            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.convert(rs.get(0, 0), targetClass));
         }
     }
 
@@ -1463,7 +1463,7 @@ public final class SQLiteExecutor {
         //        if (N.isNullOrEmpty(rs)) {
         //            return N.defaultValueOf(targetClass);
         //        } else {
-        //            return N.as(targetClass, rs.absolute(0).get(0));
+        //            return N.convert(targetClass, rs.absolute(0).get(0));
         //        }
 
         return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass),

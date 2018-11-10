@@ -932,7 +932,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
         Object newValue = null;
         for (int i = 0, len = size(); i < len; i++) {
-            newValue = N.as(targetType, column.get(i));
+            newValue = N.convert(column.get(i), targetType);
 
             column.set(i, newValue);
         }
