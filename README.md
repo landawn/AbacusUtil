@@ -104,9 +104,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [OptionalLong](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalLong_view.html), 
 [OptionalFloat](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalFloat_view.html), 
 [OptionalDouble](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OptionalDouble_view.html), 
-[Optional](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Optional_view.html), 
-[Nullable](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Nullable_view.html) and 
-[Any](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Any_view.html).
+[Optional](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Optional_view.html) and 
+[Nullable](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Nullable_view.html)
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
