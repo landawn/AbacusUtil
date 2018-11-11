@@ -163,17 +163,17 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
         return LongStream.of(this);
     }
 
-    @Override
-    @Deprecated
-    public void forEachRemaining(java.util.function.Consumer<? super Long> action) {
-        super.forEachRemaining(action);
-    }
-
-    public <E extends Exception> void forEachRemaining(Try.LongConsumer<E> action) throws E {
+    public <E extends Exception> void foreachRemaining(Try.LongConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextLong());
         }
+    }
+
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Long> action) {
+        super.forEachRemaining(action);
     }
 }

@@ -151,6 +151,14 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
         return row;
     }
 
+    public <E extends Exception> void foreachRemaining(Try.Consumer<? super Object[], E> action) throws E {
+        N.checkArgNotNull(action);
+
+        while (hasNext()) {
+            action.accept(next());
+        }
+    }
+
     @Override
     public synchronized void close() throws UncheckedSQLException {
         if (isClosed) {

@@ -217,4 +217,12 @@ public abstract class ObjIterator<T> extends ImmutableIterator<T> {
     public Stream<T> stream() {
         return Stream.of(this);
     }
+
+    public <E extends Exception> void foreachRemaining(Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
+        while (hasNext()) {
+            action.accept(next());
+        }
+    }
 }

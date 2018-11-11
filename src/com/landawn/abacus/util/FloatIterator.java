@@ -163,17 +163,17 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
         return FloatStream.of(this);
     }
 
-    @Override
-    @Deprecated
-    public void forEachRemaining(java.util.function.Consumer<? super Float> action) {
-        super.forEachRemaining(action);
-    }
-
-    public <E extends Exception> void forEachRemaining(Try.FloatConsumer<E> action) throws E {
+    public <E extends Exception> void foreachRemaining(Try.FloatConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextFloat());
         }
+    }
+
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Float> action) {
+        super.forEachRemaining(action);
     }
 }

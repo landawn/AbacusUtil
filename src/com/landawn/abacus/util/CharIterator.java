@@ -163,17 +163,17 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
         return CharStream.of(this);
     }
 
-    @Override
-    @Deprecated
-    public void forEachRemaining(java.util.function.Consumer<? super Character> action) {
-        super.forEachRemaining(action);
-    }
-
-    public <E extends Exception> void forEachRemaining(Try.CharConsumer<E> action) throws E {
+    public <E extends Exception> void foreachRemaining(Try.CharConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextChar());
         }
+    }
+
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Character> action) {
+        super.forEachRemaining(action);
     }
 }

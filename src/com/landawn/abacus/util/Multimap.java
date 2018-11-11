@@ -1251,6 +1251,26 @@ public class Multimap<K, E, V extends Collection<E>> {
         return valueMap.values();
     }
 
+    public List<E> flatValues() {
+        final List<E> result = new ArrayList<>(totalCountOfValues());
+
+        for (V v : valueMap.values()) {
+            result.addAll(v);
+        }
+
+        return result;
+    }
+
+    public <R extends Collection<E>> R flatValues(final IntFunction<R> supplier) {
+        final R result = supplier.apply(totalCountOfValues());
+
+        for (V v : valueMap.values()) {
+            result.addAll(v);
+        }
+
+        return result;
+    }
+
     public Set<Map.Entry<K, V>> entrySet() {
         return valueMap.entrySet();
     }

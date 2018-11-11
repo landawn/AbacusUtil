@@ -74,6 +74,7 @@ import com.landawn.abacus.util.CQLBuilder.CP;
 import com.landawn.abacus.util.CQLBuilder.NE;
 import com.landawn.abacus.util.CQLBuilder.NE2;
 import com.landawn.abacus.util.CQLBuilder.NE3;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ToBooleanFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -1188,6 +1189,24 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
+    @SafeVarargs
+    public final <T> Stream<T> stream(final String query, final BiFunction<ColumnDefinitions, Row, T> rowMapper, final Object... parameters) {
+        N.checkArgNotNull(rowMapper, "rowMapper");
+
+        return Stream.of(execute(query, parameters).iterator()).map(new Function<Row, T>() {
+            private volatile ColumnDefinitions cds = null;
+
+            @Override
+            public T apply(Row row) {
+                if (cds == null) {
+                    cds = row.getColumnDefinitions();
+                }
+
+                return rowMapper.apply(cds, row);
+            }
+        });
+    }
+
     private <T> CP prepareQuery(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
         return prepareQuery(targetClass, selectPropNames, whereCause, 0);
     }
@@ -1943,6 +1962,17 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public Stream<T> call() throws Exception {
                 return stream(targetClass, query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> ContinuableFuture<Stream<T>> asyncStream(final String query, final BiFunction<ColumnDefinitions, Row, T> rowMapper,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return stream(query, rowMapper, parameters);
             }
         });
     }

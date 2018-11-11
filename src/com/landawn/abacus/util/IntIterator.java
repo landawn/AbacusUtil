@@ -163,17 +163,17 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
         return IntStream.of(this);
     }
 
-    @Override
-    @Deprecated
-    public void forEachRemaining(java.util.function.Consumer<? super Integer> action) {
-        super.forEachRemaining(action);
-    }
-
-    public <E extends Exception> void forEachRemaining(Try.IntConsumer<E> action) throws E {
+    public <E extends Exception> void foreachRemaining(Try.IntConsumer<E> action) throws E {
         N.checkArgNotNull(action);
 
         while (hasNext()) {
             action.accept(nextInt());
         }
+    }
+
+    @Override
+    @Deprecated
+    public void forEachRemaining(java.util.function.Consumer<? super Integer> action) {
+        super.forEachRemaining(action);
     }
 }
