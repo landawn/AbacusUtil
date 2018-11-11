@@ -1,3 +1,8 @@
+### 1.3.18
+
+* Improvements and bug fix.
+
+
 ### 1.3.17
 
 * Rename `DateUtil.asXXX` to `DateUtil.parseXXX`.
