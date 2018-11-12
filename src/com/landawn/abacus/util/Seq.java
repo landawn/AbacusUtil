@@ -239,7 +239,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public List<T> symmetricDifference(Collection<T> b) {
+    public List<T> symmetricDifference(Collection<? extends T> b) {
         return N.symmetricDifference(coll, b);
     }
 
@@ -301,6 +301,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(N.kthLargest(coll, k, cmp));
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code sumInt(com.landawn.abacus.util.Try.ToIntFunction)}.
+     */
+    @Deprecated
     public int sumInt() {
         if (N.isNullOrEmpty(coll)) {
             return 0;
@@ -317,6 +323,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumInt(coll, mapper);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code sumLong(com.landawn.abacus.util.Try.ToLongFunction)}.
+     */
+    @Deprecated
     public long sumLong() {
         if (N.isNullOrEmpty(coll)) {
             return 0L;
@@ -333,6 +345,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumLong(coll, mapper);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code sumDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}.
+     */
+    @Deprecated
     public double sumDouble() {
         if (N.isNullOrEmpty(coll)) {
             return 0D;
@@ -349,6 +367,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumDouble(coll, mapper);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code averageInt(com.landawn.abacus.util.Try.ToIntFunction)}
+     */
+    @Deprecated
     public OptionalDouble averageInt() {
         if (N.isNullOrEmpty(coll)) {
             return OptionalDouble.empty();
@@ -361,6 +385,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.averageInt(coll, mapper);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code averageLong(com.landawn.abacus.util.Try.ToLongFunction)}
+     */
+    @Deprecated
     public OptionalDouble averageLong() {
         if (N.isNullOrEmpty(coll)) {
             return OptionalDouble.empty();
@@ -373,6 +403,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.averageLong(coll, mapper);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated replaced by {@code averageDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}
+     */
+    @Deprecated
     public OptionalDouble averageDouble() {
         if (N.isNullOrEmpty(coll)) {
             return OptionalDouble.empty();
@@ -385,7 +421,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.averageDouble(coll, mapper);
     }
 
-    @Deprecated
     public <E extends Exception> void foreach(final Try.Consumer<? super T, E> action) throws E {
         N.forEach(coll, action);
     }
@@ -1714,7 +1749,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <R, A> R collect(final Collector<? super T, A, R> collector) {
+    public <A, R, E extends Exception, E2 extends Exception> R collect(final Supplier<A> supplier, final Try.BiConsumer<A, ? super T, E> accumulator,
+            final Try.Function<A, R, E2> finisher) throws E, E2 {
+        N.checkArgNotNull(supplier);
+        N.checkArgNotNull(accumulator);
+        N.checkArgNotNull(finisher);
+
+        final A result = supplier.get();
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                accumulator.accept(result, e);
+            }
+        }
+
+        return finisher.apply(result);
+    }
+
+    public <A, R> R collect(final Collector<? super T, A, R> collector) {
         N.checkArgNotNull(collector);
 
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1729,8 +1781,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return collector.finisher().apply(result);
     }
 
-    public <R, A, RR, E extends Exception> RR collectAndThen(final Collector<T, A, R> downstream, final Try.Function<R, RR, E> finisher) throws E {
-        return finisher.apply(collect(downstream));
+    public <A, R, RR, E extends Exception> RR collectThenApply(final Collector<T, A, R> downstream, final Try.Function<? super R, ? extends RR, E> mapper)
+            throws E {
+        return mapper.apply(collect(downstream));
+    }
+
+    public <A, R, E extends Exception> void collectThenAccept(final Collector<T, A, R> downstream, final Try.Consumer<? super R, E> consumer) throws E {
+        consumer.accept(collect(downstream));
     }
 
     @SafeVarargs
@@ -2039,6 +2096,20 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return StringUtil.join(coll, delimiter);
     }
 
+    public <E extends Exception> String join(final Try.Function<? super T, String, E> toStringFunc, final String delimiter) throws E {
+        if (N.isNullOrEmpty(coll)) {
+            return N.EMPTY_STRING;
+        }
+
+        try (final Joiner joiner = Joiner.with(delimiter).reuseStringBuilder(true)) {
+            for (T e : coll) {
+                joiner.append(e);
+            }
+
+            return joiner.toString();
+        }
+    }
+
     @Override
     public boolean isEmpty() {
         return coll == null || coll.isEmpty();
@@ -2302,9 +2373,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param valueMapper
      * @return
      */
-    public <K, V, E extends Exception, E2 extends Exception> ListMultimap<K, V> toMultimap(Try.Function<? super T, ? extends K, E> keyExtractor,
-            Try.Function<? super T, ? extends V, E2> valueMapper) throws E, E2 {
-        final ListMultimap<K, V> result = N.newListMultimap();
+    public <K, U, E extends Exception, E2 extends Exception> ListMultimap<K, U> toMultimap(Try.Function<? super T, ? extends K, E> keyExtractor,
+            Try.Function<? super T, ? extends U, E2> valueMapper) throws E, E2 {
+        final ListMultimap<K, U> result = N.newListMultimap();
 
         if (N.isNullOrEmpty(coll)) {
             return result;

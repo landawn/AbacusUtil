@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
@@ -1487,22 +1488,16 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.parallel(maxThreadNum, splitor));
     }
 
-    /**
-     * Return the underlying <code>maxThreadNum</code> if the stream is parallel, otherwise <code>1</code> is returned.
-     * 
-     * @return
-     */
-    public int maxThreadNum() {
+    protected int maxThreadNum() {
         return s.maxThreadNum();
     }
 
-    /**
-     * Return the underlying <code>splitor</code> if the stream is parallel, otherwise the default value <code>splitor.ITERATOR</code> is returned.
-     * 
-     * @return
-     */
-    public Splitor splitor() {
+    protected Splitor splitor() {
         return s.splitor();
+    }
+
+    protected AsyncExecutor asyncExecutor() {
+        return s.asyncExecutor();
     }
 
     public boolean isParallel() {

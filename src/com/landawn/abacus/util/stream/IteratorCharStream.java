@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
@@ -1194,8 +1195,13 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitor splitor) {
-        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+    public CharStream parallel(int maxThreadNum, Splitor splitor) {
+        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public CharStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

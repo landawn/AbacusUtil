@@ -70,7 +70,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @see java.util.stream.Collectors#joining(CharSequence, CharSequence, CharSequence)
  * @since  1.8
 */
-public class Joiner {
+public class Joiner implements AutoCloseable {
     public static final String DEFAULT_DELIMITER = N.ELEMENT_SEPARATOR;
     public static final String DEFAULT_KEY_VALUE_DELIMITER = "=";
 
@@ -1276,6 +1276,7 @@ public class Joiner {
         return buffer == null ? Stream.<String> empty() : Stream.of(toString());
     }
 
+    @Override
     public void close() {
         if (buffer != null && reuseStringBuilder) {
             ObjectFactory.recycle(buffer);

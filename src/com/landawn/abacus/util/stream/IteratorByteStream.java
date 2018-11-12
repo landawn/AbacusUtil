@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
@@ -1196,7 +1197,12 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public ByteStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

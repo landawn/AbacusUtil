@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Holder;
@@ -64,25 +65,27 @@ import com.landawn.abacus.util.function.ToLongFunction;
 final class ParallelIteratorFloatStream extends IteratorFloatStream {
     private final int maxThreadNum;
     private final Splitor splitor;
+    private final AsyncExecutor asyncExecutor;
     private volatile IteratorFloatStream sequential;
     private volatile Stream<Float> boxed;
 
     ParallelIteratorFloatStream(final FloatIterator values, final boolean sorted, final int maxThreadNum, final Splitor splitor,
-            final Collection<Runnable> closeHandlers) {
+            final AsyncExecutor asyncExector, final Collection<Runnable> closeHandlers) {
         super(values, sorted, closeHandlers);
 
         this.maxThreadNum = checkMaxThreadNum(maxThreadNum);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
+        this.asyncExecutor = asyncExector == null ? DEFAULT_ASYNC_EXECUTOR : asyncExector;
     }
 
-    ParallelIteratorFloatStream(final FloatStream stream, final boolean sorted, final int maxThreadNum, final Splitor splitor,
+    ParallelIteratorFloatStream(final FloatStream stream, final boolean sorted, final int maxThreadNum, final Splitor splitor, final AsyncExecutor asyncExector,
             final Set<Runnable> closeHandlers) {
-        this(stream.iteratorEx(), sorted, maxThreadNum, splitor, mergeCloseHandlers(stream, closeHandlers));
+        this(stream.iteratorEx(), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
     ParallelIteratorFloatStream(final Stream<Float> stream, final boolean sorted, final int maxThreadNum, final Splitor splitor,
-            final Set<Runnable> closeHandlers) {
-        this(floatIterator(stream.iteratorEx()), sorted, maxThreadNum, splitor, mergeCloseHandlers(stream, closeHandlers));
+            final AsyncExecutor asyncExector, final Set<Runnable> closeHandlers) {
+        this(floatIterator(stream.iteratorEx()), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
     @Override
@@ -98,7 +101,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -114,7 +117,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -130,7 +133,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -146,7 +149,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -162,7 +165,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorIntStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorIntStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -178,7 +181,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorLongStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorLongStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -194,7 +197,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorDoubleStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorDoubleStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -214,7 +217,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     @Override
     public FloatStream flatMap(final FloatFunction<? extends FloatStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, null);
+            return new ParallelIteratorFloatStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
 
         final FloatStream stream = boxed().flatMapToFloat(new Function<Float, FloatStream>() {
@@ -224,13 +227,13 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, null);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, null);
     }
 
     @Override
     public IntStream flatMapToInt(final FloatFunction<? extends IntStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, null);
+            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
 
         final IntStream stream = boxed().flatMapToInt(new Function<Float, IntStream>() {
@@ -240,13 +243,13 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorIntStream(stream, false, maxThreadNum, splitor, null);
+        return new ParallelIteratorIntStream(stream, false, maxThreadNum, splitor, asyncExecutor, null);
     }
 
     @Override
     public LongStream flatMapToLong(final FloatFunction<? extends LongStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, null);
+            return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
 
         final LongStream stream = boxed().flatMapToLong(new Function<Float, LongStream>() {
@@ -256,13 +259,13 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorLongStream(stream, false, maxThreadNum, splitor, null);
+        return new ParallelIteratorLongStream(stream, false, maxThreadNum, splitor, asyncExecutor, null);
     }
 
     @Override
     public DoubleStream flatMapToDouble(final FloatFunction<? extends DoubleStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, null);
+            return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
 
         final DoubleStream stream = boxed().flatMapToDouble(new Function<Float, DoubleStream>() {
@@ -272,13 +275,13 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         });
 
-        return new ParallelIteratorDoubleStream(stream, false, maxThreadNum, splitor, null);
+        return new ParallelIteratorDoubleStream(stream, false, maxThreadNum, splitor, asyncExecutor, null);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final FloatFunction<? extends Stream<T>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, null);
+            return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, asyncExecutor, null);
         }
 
         return boxed().flatMap(new Function<Float, Stream<T>>() {
@@ -302,7 +305,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }
         }).sequential().mapToFloat(ToFloatFunction.UNBOX);
 
-        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(stream, false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -851,7 +854,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         Stream<Float> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, maxThreadNum, splitor, closeHandlers);
+            tmp = new ParallelIteratorStream<>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
             boxed = tmp;
         }
 
@@ -860,32 +863,32 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
 
     @Override
     public FloatStream append(FloatStream stream) {
-        return new ParallelIteratorFloatStream(FloatStream.concat(this, stream), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(FloatStream.concat(this, stream), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
     public FloatStream prepend(FloatStream stream) {
-        return new ParallelIteratorFloatStream(FloatStream.concat(stream, this), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(FloatStream.concat(stream, this), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
     public FloatStream merge(final FloatStream b, final FloatBiFunction<Nth> nextSelector) {
-        return new ParallelIteratorFloatStream(FloatStream.merge(this, b, nextSelector), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(FloatStream.merge(this, b, nextSelector), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
     public FloatStream zipWith(FloatStream b, FloatBiFunction<Float> zipFunction) {
-        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
     public FloatStream zipWith(FloatStream b, FloatStream c, FloatTriFunction<Float> zipFunction) {
-        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
     public FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBiFunction<Float> zipFunction) {
-        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor,
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
@@ -893,7 +896,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     public FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
             FloatTriFunction<Float> zipFunction) {
         return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
-                splitor, closeHandlers);
+                splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
@@ -915,40 +918,27 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
 
     @Override
     public FloatStream parallel(int maxThreadNum, Splitor splitor) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum) && this.splitor == splitor) {
+        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum) && this.splitor == checkSplitor(splitor)) {
             return this;
         }
 
-        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public int maxThreadNum() {
+    protected int maxThreadNum() {
         return maxThreadNum;
     }
 
-    //    @Override
-    //    public FloatStream maxThreadNum(int maxThreadNum) {
-    //        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
-    //            return this;
-    //        }
-    //
-    //        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    //    }
-
     @Override
-    public BaseStream.Splitor splitor() {
+    protected BaseStream.Splitor splitor() {
         return splitor;
     }
 
-    //    @Override
-    //    public FloatStream splitor(BaseStream.Splitor splitor) {
-    //        if (this.splitor == splitor) {
-    //            return this;
-    //        }
-    //
-    //        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
-    //    }
+    @Override
+    protected AsyncExecutor asyncExecutor() {
+        return asyncExecutor;
+    }
 
     @Override
     public FloatStream onClose(Runnable closeHandler) {
@@ -960,6 +950,6 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, newCloseHandlers);
+        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, asyncExecutor, newCloseHandlers);
     }
 }

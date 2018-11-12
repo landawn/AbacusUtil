@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.Fn;
@@ -1314,7 +1315,12 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public ShortStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

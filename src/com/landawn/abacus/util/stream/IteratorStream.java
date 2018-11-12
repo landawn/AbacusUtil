@@ -31,6 +31,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.Executor;
 import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -2380,7 +2381,12 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public Stream<T> parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

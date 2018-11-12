@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -2217,8 +2218,13 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    public IntStream parallel(final int maxThreadNum, final Splitor splitor) {
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public IntStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

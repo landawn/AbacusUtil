@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableSet;
@@ -1018,12 +1019,16 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     S parallel(int maxThreadNum, Splitor splitor);
 
-    /**
-     * Return the underlying <code>maxThreadNum</code> if the stream is parallel, otherwise <code>1</code> is returned.
-     * 
-     * @return
-     */
-    int maxThreadNum();
+    S parallel(int maxThreadNum, Executor executor);
+
+    S parallel(Executor executor);
+
+    //    /**
+    //     * Return the underlying <code>maxThreadNum</code> if the stream is parallel, otherwise <code>1</code> is returned.
+    //     * 
+    //     * @return
+    //     */
+    //    int maxThreadNum();
 
     //    /**
     //     * Returns a parallel stream with the specified <code>maxThreadNum</code> . Or return
@@ -1037,12 +1042,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     //    @Deprecated
     //    S maxThreadNum(int maxThreadNum);
 
-    /**
-     * Return the underlying <code>splitor</code> if the stream is parallel, otherwise the default value <code>splitor.ITERATOR</code> is returned.
-     * 
-     * @return
-     */
-    Splitor splitor();
+    //    /**
+    //     * Return the underlying <code>splitor</code> if the stream is parallel, otherwise the default value <code>splitor.ITERATOR</code> is returned.
+    //     * 
+    //     * @return
+    //     */
+    //    Splitor splitor();
 
     //    /**
     //     * Returns a parallel stream with the specified <code>splitor</code> . Or return

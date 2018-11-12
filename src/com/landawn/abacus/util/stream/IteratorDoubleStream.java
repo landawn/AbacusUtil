@@ -27,6 +27,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.Executor;
 import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.Array;
@@ -1476,7 +1477,12 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public DoubleStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

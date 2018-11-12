@@ -4251,7 +4251,7 @@ public abstract class Stream<T>
         final int threadNum = Math.min(c.size(), readThreadNum);
 
         for (int i = 0; i < threadNum; i++) {
-            asyncExecutor.execute(new Runnable() {
+            DEFAULT_ASYNC_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -7311,7 +7311,7 @@ public abstract class Stream<T>
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
+        readToQueue(a, b, DEFAULT_ASYNC_EXECUTOR, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -7413,7 +7413,7 @@ public abstract class Stream<T>
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
+        readToQueue(a, b, c, DEFAULT_ASYNC_EXECUTOR, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -7673,7 +7673,7 @@ public abstract class Stream<T>
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
+        readToQueue(c, queueSize, DEFAULT_ASYNC_EXECUTOR, counters, queues, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
@@ -7977,7 +7977,7 @@ public abstract class Stream<T>
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
+        readToQueue(a, b, DEFAULT_ASYNC_EXECUTOR, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -8096,7 +8096,7 @@ public abstract class Stream<T>
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
+        readToQueue(a, b, c, DEFAULT_ASYNC_EXECUTOR, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -8391,7 +8391,7 @@ public abstract class Stream<T>
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
 
-        readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
+        readToQueue(c, queueSize, DEFAULT_ASYNC_EXECUTOR, counters, queues, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
@@ -8870,7 +8870,7 @@ public abstract class Stream<T>
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     Iterator<? extends T> a = null;

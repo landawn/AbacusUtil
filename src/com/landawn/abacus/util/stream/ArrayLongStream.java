@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
@@ -1839,8 +1840,13 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    public LongStream parallel(final int maxThreadNum, final Splitor splitor) {
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public LongStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

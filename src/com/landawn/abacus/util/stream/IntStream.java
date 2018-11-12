@@ -2021,7 +2021,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     IntIterator a = null;

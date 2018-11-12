@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -61,7 +62,7 @@ public class AsyncExecutor {
     private final long keepAliveTime;
     private final TimeUnit unit;
 
-    private volatile ExecutorService executorService;
+    private volatile Executor executor;
 
     /**
      * Create an instance of with default values: maxConcurrentThreadNumber = 8, keepAliveTime = 300, unit = TimeUnit.SECONDS.
@@ -78,10 +79,11 @@ public class AsyncExecutor {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                if (executorService == null) {
+                if (executor == null || !(executor instanceof ExecutorService)) {
                     return;
                 }
 
+                final ExecutorService executorService = (ExecutorService) executor;
                 logger.warn("Starting to shutdown task in AsyncExecutor");
 
                 try {
@@ -101,10 +103,10 @@ public class AsyncExecutor {
      * 
      * @param asyncExecutor
      */
-    public AsyncExecutor(final ExecutorService executorService) {
+    public AsyncExecutor(final Executor executor) {
         this(8, 300, TimeUnit.SECONDS);
 
-        this.executorService = executorService;
+        this.executor = executor;
     }
 
     public ContinuableFuture<Void> execute(final Runnable command) {
@@ -116,7 +118,7 @@ public class AsyncExecutor {
     }
 
     public ContinuableFuture<Void> execute(final Runnable action, final long delay, final TimeUnit timeUnit) {
-        final ExecutorService executor = getExecutorService();
+        final Executor executor = getExecutor();
 
         final Callable<ContinuableFuture<Void>> scheduledAction = new Callable<ContinuableFuture<Void>>() {
             @Override
@@ -168,7 +170,7 @@ public class AsyncExecutor {
     }
 
     public <T> ContinuableFuture<T> execute(final Callable<T> action, final long delay, final TimeUnit timeUnit) {
-        final ExecutorService executor = getExecutorService();
+        final Executor executor = getExecutor();
 
         final Callable<ContinuableFuture<T>> scheduledAction = new Callable<ContinuableFuture<T>>() {
             @Override
@@ -234,7 +236,7 @@ public class AsyncExecutor {
     }
 
     private <T> ContinuableFuture<T> execute(final FutureTask<T> futureTask) {
-        final ExecutorService executor = getExecutorService();
+        final Executor executor = getExecutor();
 
         executor.execute(futureTask);
 
@@ -304,18 +306,18 @@ public class AsyncExecutor {
         };
     }
 
-    private ExecutorService getExecutorService() {
-        if (executorService == null) {
+    private Executor getExecutor() {
+        if (executor == null) {
             synchronized (this) {
-                if (executorService == null) {
+                if (executor == null) {
                     final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(Math.min(CORE_POOL_SIZE, maxConcurrentThreadNumber),
                             maxConcurrentThreadNumber, keepAliveTime, unit, new LinkedBlockingQueue<Runnable>());
                     threadPoolExecutor.allowCoreThreadTimeOut(true);
-                    executorService = threadPoolExecutor;
+                    executor = threadPoolExecutor;
                 }
             }
         }
 
-        return executorService;
+        return executor;
     }
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -1740,8 +1741,14 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    public DoubleStream parallel(final int maxThreadNum, final Splitor splitor) {
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public DoubleStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

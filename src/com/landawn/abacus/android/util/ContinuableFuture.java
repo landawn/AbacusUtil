@@ -195,58 +195,6 @@ public class ContinuableFuture<T> implements Future<T> {
         }
     }
 
-    /**
-     * 
-     * @param action
-     * @return
-     * @throws E
-     * @deprecated replaced by {@code getThenApply(com.landawn.abacus.util.Try.Function)}
-     */
-    @Deprecated
-    public <U, E extends Exception> U get(final Try.Function<? super T, ? extends U, E> action) throws E {
-        return getThenApply(action);
-    }
-
-    /**
-     * 
-     * @param timeout
-     * @param unit
-     * @param action
-     * @return
-     * @throws E
-     * @deprecated replaced by {@code getThenApply(long, TimeUnit, com.landawn.abacus.util.Try.Function)}
-     */
-    @Deprecated
-    public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.Function<? super T, ? extends U, E> action) throws E {
-        return getThenApply(timeout, unit, action);
-    }
-
-    /**
-     * 
-     * @param action
-     * @return
-     * @throws E
-     * @deprecated replaced by {@code getThenApply(com.landawn.abacus.util.Try.BiFunction)}
-     */
-    @Deprecated
-    public <U, E extends Exception> U get(final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
-        return getThenApply(action);
-    }
-
-    /**
-     * 
-     * @param timeout
-     * @param unit
-     * @param action
-     * @return
-     * @throws E
-     * @deprecated replaced by {@code getThenApply(long, TimeUnit, com.landawn.abacus.util.Try.BiFunction)}
-     */
-    @Deprecated
-    public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
-        return getThenApply(timeout, unit, action);
-    }
-
     public T getNow(T defaultValue) {
         try {
             return isDone() ? get() : defaultValue;
@@ -280,36 +228,6 @@ public class ContinuableFuture<T> implements Future<T> {
             throws E {
         final Pair<T, Exception> result = gett(timeout, unit);
         return action.apply(result.left, result.right);
-    }
-
-    /**
-     * 
-     * @param action
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws E
-     * @deprecated replaced by {@code getThenAccept(com.landawn.abacus.util.Try.Consumer)}
-     */
-    @Deprecated
-    public <E extends Exception> void getAndThen(final Try.Consumer<T, E> action) throws InterruptedException, ExecutionException, E {
-        action.accept(get());
-    }
-
-    /**
-     * 
-     * @param timeout
-     * @param unit
-     * @param action
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws TimeoutException
-     * @throws E
-     * @deprecated replaced by {@code getThenAccept(long, TimeUnit, com.landawn.abacus.util.Try.Consumer)}
-     */
-    @Deprecated
-    public <E extends Exception> void getAndThen(final long timeout, final TimeUnit unit, final Try.Consumer<T, E> action)
-            throws InterruptedException, ExecutionException, TimeoutException, E {
-        action.accept(get(timeout, unit));
     }
 
     public <E extends Exception> void getThenAccept(final Try.Consumer<T, E> action) throws InterruptedException, ExecutionException, E {

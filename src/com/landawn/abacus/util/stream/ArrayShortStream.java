@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -1550,8 +1551,13 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
+    public ShortStream parallel(final int maxThreadNum, final Splitor splitor) {
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public ShortStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

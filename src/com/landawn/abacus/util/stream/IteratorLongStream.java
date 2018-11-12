@@ -27,6 +27,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.Executor;
 import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.Array;
@@ -1553,7 +1554,12 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+    }
+
+    @Override
+    public LongStream parallel(final int maxThreadNum, final Executor executor) {
+        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override
