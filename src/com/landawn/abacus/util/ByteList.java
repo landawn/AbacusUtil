@@ -1364,6 +1364,11 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         return res;
     }
 
+    @Override
+    public byte[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public IntList toIntList() {
         final int[] a = new int[size];
 

@@ -255,6 +255,8 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
 
     public abstract int size();
 
+    public abstract A toArray();
+
     public List<B> toList() {
         return toList(0, size());
     }

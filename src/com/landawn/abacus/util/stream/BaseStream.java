@@ -1019,8 +1019,19 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     S parallel(int maxThreadNum, Splitor splitor);
 
+    /**
+     * 
+     * @param maxThreadNum
+     * @param executor should be able to execute sum of {@code maxThreadNum} operations in parallel.
+     * @return
+     */
     S parallel(int maxThreadNum, Executor executor);
 
+    /**
+     * 
+     * @param executor should be able to execute sum of {@code maxThreadNum} operations in parallel.
+     * @return
+     */
     S parallel(Executor executor);
 
     //    /**

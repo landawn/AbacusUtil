@@ -1382,6 +1382,11 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         return res;
     }
 
+    @Override
+    public short[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public IntList toIntList() {
         final int[] a = new int[size];
 

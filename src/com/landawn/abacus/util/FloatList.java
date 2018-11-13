@@ -1367,6 +1367,11 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
         return res;
     }
 
+    @Override
+    public float[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public DoubleList toDoubleList() {
         final double[] a = new double[size];
 

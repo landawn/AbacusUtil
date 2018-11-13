@@ -1394,6 +1394,11 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
         return res;
     }
 
+    @Override
+    public char[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public IntList toIntList() {
         final int[] a = new int[size];
 

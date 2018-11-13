@@ -1450,6 +1450,11 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
         return res;
     }
 
+    @Override
+    public int[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public LongList toLongList() {
         final long[] a = new long[size];
 

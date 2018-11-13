@@ -1226,11 +1226,11 @@ public final class N {
         return multiMap;
     }
 
-    public static <K, E> ListMultimap<K, E> newListSortedMultimap() {
+    public static <K extends Comparable<K>, E> ListMultimap<K, E> newListSortedMultimap() {
         return new ListMultimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
     }
 
-    public static <K, E> ListMultimap<K, E> newListSortedMultimap(final Map<? extends K, ? extends E> m) {
+    public static <K extends Comparable<K>, E> ListMultimap<K, E> newListSortedMultimap(final Map<? extends K, ? extends E> m) {
         final ListMultimap<K, E> multiMap = new ListMultimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
@@ -1285,11 +1285,11 @@ public final class N {
         return multiMap;
     }
 
-    public static <K, E> SetMultimap<K, E> newSetSortedMultimap() {
+    public static <K extends Comparable<K>, E> SetMultimap<K, E> newSetSortedMultimap() {
         return new SetMultimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
     }
 
-    public static <K, E> SetMultimap<K, E> newSetSortedMultimap(final Map<? extends K, ? extends E> m) {
+    public static <K extends Comparable<K>, E> SetMultimap<K, E> newSetSortedMultimap(final Map<? extends K, ? extends E> m) {
         final SetMultimap<K, E> multiMap = new SetMultimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);

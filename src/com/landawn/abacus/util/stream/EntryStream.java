@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.AsyncExecutor;
@@ -1480,12 +1481,20 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.parallel());
     }
 
-    public EntryStream<K, V> parallel(int threadNum) {
+    public EntryStream<K, V> parallel(final int threadNum) {
         return of(s.parallel(threadNum));
     }
 
-    public EntryStream<K, V> parallel(int maxThreadNum, Splitor splitor) {
+    public EntryStream<K, V> parallel(final int maxThreadNum, final Splitor splitor) {
         return of(s.parallel(maxThreadNum, splitor));
+    }
+
+    public EntryStream<K, V> parallel(final int maxThreadNum, final Executor executor) {
+        return of(s.parallel(maxThreadNum, executor));
+    }
+
+    public EntryStream<K, V> parallel(final Executor executor) {
+        return of(s.parallel(executor));
     }
 
     protected int maxThreadNum() {

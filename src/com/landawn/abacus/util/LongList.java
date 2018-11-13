@@ -1382,6 +1382,11 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         return res;
     }
 
+    @Override
+    public long[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
     public FloatList toFloatList() {
         final float[] a = new float[size];
 
