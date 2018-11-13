@@ -17,14 +17,12 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -377,13 +375,13 @@ public final class Futures {
             @Override
             public List<T> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final long timeoutInMillis = unit.toMillis(timeout);
-                final long now = DateUtil.currentMillis();
+                final long now = System.currentTimeMillis();
                 final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
 
                 final List<T> result = new ArrayList<>(cfs.size());
 
                 for (Future<? extends T> future : cfs) {
-                    result.add(future.get(N.max(0, endTime - DateUtil.currentMillis()), TimeUnit.MILLISECONDS));
+                    result.add(future.get(N.max(0, endTime - System.currentTimeMillis()), TimeUnit.MILLISECONDS));
                 }
 
                 return result;
@@ -507,23 +505,25 @@ public final class Futures {
         return iterate02(cfs);
     }
 
-    public static <T> ObjIterator<T> iterate(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach, final TimeUnit unit) {
-        return iterate(cfs, timeoutForEach, Long.MAX_VALUE, unit);
-    }
-
-    public static <T> ObjIterator<T> iterate(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach, final long totalTimeoutForAll,
-            final TimeUnit unit) {
-        return iterate02(cfs, timeoutForEach, totalTimeoutForAll, unit);
+    /**
+     * 
+     * @param cfs 
+     * @param totalTimeoutForAll
+     * @param unit
+     * @return
+     * @see {@code ExecutorCompletionService}
+     */
+    public static <T> ObjIterator<T> iterate(final Collection<? extends Future<? extends T>> cfs, final long totalTimeoutForAll, final TimeUnit unit) {
+        return iterate02(cfs, totalTimeoutForAll, unit);
     }
 
     private static <T> ObjIterator<T> iterate02(final Collection<? extends Future<? extends T>> cfs) {
-        return iterate02(cfs, Long.MAX_VALUE, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        return iterate02(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static <T> ObjIterator<T> iterate02(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach, final long totalTimeoutForAll,
-            final TimeUnit unit) {
+    private static <T> ObjIterator<T> iterate02(final Collection<? extends Future<? extends T>> cfs, final long totalTimeoutForAll, final TimeUnit unit) {
         return new ObjIterator<T>() {
-            private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeoutForEach, totalTimeoutForAll, unit);
+            private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, totalTimeoutForAll, unit);
 
             @Override
             public boolean hasNext() {
@@ -532,11 +532,13 @@ public final class Futures {
 
             @Override
             public T next() {
-                try {
-                    return handle(iter.next());
-                } catch (InterruptedException | ExecutionException e) {
-                    throw N.toRuntimeException(e);
+                final Pair<T, Exception> result = iter.next();
+
+                if (result.right != null) {
+                    throw N.toRuntimeException(result.right);
                 }
+
+                return result.left;
             }
         };
     }
@@ -550,75 +552,69 @@ public final class Futures {
         return iterate22(cfs);
     }
 
-    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach,
+    /**
+     * 
+     * @param cfs 
+     * @param totalTimeoutForAll
+     * @param unit
+     * @return
+     * @see {@code ExecutorCompletionService}
+     */
+    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final Collection<? extends Future<? extends T>> cfs, final long totalTimeoutForAll,
             final TimeUnit unit) {
-        return iteratte(cfs, timeoutForEach, Long.MAX_VALUE, unit);
-    }
-
-    public static <T> ObjIterator<Pair<T, Exception>> iteratte(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach,
-            final long totalTimeoutForAll, final TimeUnit unit) {
-        return iterate22(cfs, timeoutForEach, totalTimeoutForAll, unit);
+        return iterate22(cfs, totalTimeoutForAll, unit);
     }
 
     private static <T> ObjIterator<Pair<T, Exception>> iterate22(final Collection<? extends Future<? extends T>> cfs) {
-        return iterate22(cfs, Long.MAX_VALUE, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        return iterate22(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static <T> ObjIterator<Pair<T, Exception>> iterate22(final Collection<? extends Future<? extends T>> cfs, final long timeoutForEach,
-            final long totalTimeoutForAll, final TimeUnit unit) {
-        N.checkArgPositive(timeoutForEach, "timeoutForEach");
+    private static <T> ObjIterator<Pair<T, Exception>> iterate22(final Collection<? extends Future<? extends T>> cfs, final long totalTimeoutForAll,
+            final TimeUnit unit) {
         N.checkArgPositive(totalTimeoutForAll, "totalTimeoutForAll");
         N.checkArgNotNull(unit, "unit");
 
         final long now = System.currentTimeMillis();
-
-        final ExecutorService executor = Executors.newFixedThreadPool(cfs.size());
-        final BlockingQueue<Pair<T, Exception>> queue = new ArrayBlockingQueue<>(cfs.size());
-
-        for (Future<? extends T> e : cfs) {
-            final Future<T> future = (Future<T>) e;
-
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    queue.offer(gett(future,
-                            N.min(timeoutForEach, N.max(totalTimeoutForAll - unit.convert(System.currentTimeMillis() - now, TimeUnit.MILLISECONDS), 0)), unit));
-                }
-            });
-        }
+        final long totalTimeoutForAllInMillis = totalTimeoutForAll == Long.MAX_VALUE ? Long.MAX_VALUE : unit.toMillis(totalTimeoutForAll);
 
         return new ObjIterator<Pair<T, Exception>>() {
-            private final int end = cfs.size();
-            private int cursor = 0;
+            private final Set<Future<? extends T>> activeFutures = N.newSetFromMap(new IdentityHashMap<Future<? extends T>, Boolean>());
+            {
+                activeFutures.addAll(cfs);
+            }
 
             @Override
             public boolean hasNext() {
-                return cursor < end;
+                return activeFutures.size() > 0;
             }
 
             @Override
             public Pair<T, Exception> next() {
-                if (cursor >= end) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                cursor++;
+                while (true) {
+                    for (Future<? extends T> cf : activeFutures) {
+                        if (cf.isDone()) {
+                            try {
+                                return Pair.<T, Exception> of(cf.get(), null);
+                            } catch (Exception e) {
+                                return Pair.of(null, e);
+                            } finally {
+                                activeFutures.remove(cf);
+                            }
+                        }
+                    }
 
-                try {
-                    return queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    throw N.toRuntimeException(e);
+                    if (System.currentTimeMillis() - now >= totalTimeoutForAllInMillis) {
+                        return Pair.<T, Exception> of(null, new TimeoutException());
+                    }
+
+                    N.sleepUninterruptibly(1);
                 }
             }
         };
-    }
-
-    private static <T> Pair<T, Exception> gett(final Future<T> futuer, final long timeout, final TimeUnit unit) {
-        try {
-            return Pair.of(futuer.get(timeout, unit), null);
-        } catch (Exception e) {
-            return Pair.of(null, e);
-        }
     }
 
     private static <R> R handle(final Pair<R, Exception> result) throws InterruptedException, ExecutionException {
