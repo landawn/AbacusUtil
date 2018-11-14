@@ -297,11 +297,13 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
 
     public abstract Multiset<B> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<B>> supplier);
 
-    public abstract <R, E extends Exception> Optional<R> ifNotEmpty(Try.Function<? super L, R, E> func) throws E;
-
     public abstract <R, E extends Exception> R apply(Try.Function<? super L, R, E> func) throws E;
 
+    public abstract <R, E extends Exception> Optional<R> applyIfNotEmpty(Try.Function<? super L, R, E> func) throws E;
+
     public abstract <E extends Exception> void accept(Try.Consumer<? super L, E> action) throws E;
+
+    public abstract <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super L, E> action) throws E;
 
     public void println() {
         N.println(toString());

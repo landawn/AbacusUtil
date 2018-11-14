@@ -1487,18 +1487,25 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     @Override
-    public <R, E extends Exception> Optional<R> ifNotEmpty(Function<? super DoubleList, R, E> func) throws E {
-        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
-    }
-
-    @Override
     public <R, E extends Exception> R apply(Try.Function<? super DoubleList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
+    public <R, E extends Exception> Optional<R> applyIfNotEmpty(Function<? super DoubleList, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.ofNullable(func.apply(this));
+    }
+
+    @Override
     public <E extends Exception> void accept(Try.Consumer<? super DoubleList, E> action) throws E {
         action.accept(this);
+    }
+
+    @Override
+    public <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super DoubleList, E> action) throws E {
+        if (size > 0) {
+            action.accept(this);
+        }
     }
 
     @Override

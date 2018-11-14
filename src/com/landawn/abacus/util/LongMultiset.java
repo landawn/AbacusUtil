@@ -78,7 +78,7 @@ public final class LongMultiset<T> implements Iterable<T> {
 
     public LongMultiset(final Collection<? extends T> c) {
         this();
-    
+
         addAll(c);
     }
 
@@ -1414,16 +1414,22 @@ public final class LongMultiset<T> implements Iterable<T> {
         return stream().mapToEntry(Fn.<Map.Entry<T, Long>> identity());
     }
 
-    public <R, E extends Exception> Optional<R> ifNotEmpty(Try.Function<? super LongMultiset<T>, R, E> func) throws E {
-        return isEmpty() ? Optional.<R> empty() : Optional.of(func.apply(this));
-    }
-
     public <R, E extends Exception> R apply(Try.Function<? super LongMultiset<T>, R, E> func) throws E {
         return func.apply(this);
     }
 
+    public <R, E extends Exception> Optional<R> applyIfNotEmpty(Try.Function<? super LongMultiset<T>, R, E> func) throws E {
+        return isEmpty() ? Optional.<R> empty() : Optional.ofNullable(func.apply(this));
+    }
+
     public <E extends Exception> void accept(Try.Consumer<? super LongMultiset<T>, E> action) throws E {
         action.accept(this);
+    }
+
+    public <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super LongMultiset<T>, E> action) throws E {
+        if (size() > 0) {
+            action.accept(this);
+        }
     }
 
     @Override

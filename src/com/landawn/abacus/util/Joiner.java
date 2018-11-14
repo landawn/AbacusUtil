@@ -1248,8 +1248,10 @@ public class Joiner implements AutoCloseable {
      * @param mapper
      * @return
      */
-    public <T, E extends Exception> Optional<T> mapIfNotEmpty(Try.Function<? super String, T, E> mapper) throws E {
-        return buffer == null ? Optional.<T> empty() : Optional.of(mapper.apply(toString()));
+    public <T, E extends Exception> Nullable<T> mapIfNotEmpty(Try.Function<? super String, T, E> mapper) throws E {
+        N.checkArgNotNull(mapper);
+
+        return buffer == null ? Nullable.<T> empty() : Nullable.of(mapper.apply(toString()));
     }
 
     /**
