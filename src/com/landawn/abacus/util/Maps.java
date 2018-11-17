@@ -1368,6 +1368,29 @@ public final class Maps {
         return result;
     }
 
+    public static <K, V, E extends Exception> Map<V, K> invert(final Map<K, V> map, Try.BinaryOperator<K, E> mergeOp) throws E {
+        N.checkArgNotNull(mergeOp, "mergeOp");
+
+        if (map == null) {
+            return new HashMap<V, K>();
+        }
+
+        final Map<V, K> result = newOrderingMap(map);
+        K oldVal = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            oldVal = result.get(entry.getValue());
+
+            if (oldVal != null || result.containsKey(entry.getValue())) {
+                result.put(entry.getValue(), mergeOp.apply(oldVal, entry.getKey()));
+            } else {
+                result.put(entry.getValue(), entry.getKey());
+            }
+        }
+
+        return result;
+    }
+
     /**
      * 
      * @param map

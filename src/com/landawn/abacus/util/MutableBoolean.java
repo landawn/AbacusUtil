@@ -104,6 +104,17 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
         return this.value;
     }
 
+    public boolean getAndInvert() {
+        final boolean result = value;
+        value = !value;
+        return result;
+    }
+
+    public boolean invertAndGet() {
+        value = !value;
+        return this.value;
+    }
+
     /**
      * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
      * Otherwise just return <code>false</code> without setting the value to new value.
@@ -177,7 +188,7 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
         return value == false;
     }
 
-    public void inverse() {
+    public void invert() {
         this.value = !this.value;
     }
 

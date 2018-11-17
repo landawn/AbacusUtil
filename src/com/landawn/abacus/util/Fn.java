@@ -1857,6 +1857,18 @@ public final class Fn extends Comparators {
     }
 
     @Beta
+    public static <A, T, U> BiPredicate<T, U> p(final A a, final TriPredicate<A, T, U> triPredicate) {
+        N.checkArgNotNull(triPredicate);
+
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return triPredicate.test(a, t, u);
+            }
+        };
+    }
+
+    @Beta
     public static <T> Consumer<T> c(final Consumer<T> consumer) {
         return consumer;
     }
@@ -1872,6 +1884,18 @@ public final class Fn extends Comparators {
     }
 
     @Beta
+    public static <A, T, U> BiConsumer<T, U> c(final A a, final TriConsumer<A, T, U> triConsumer) {
+        N.checkArgNotNull(triConsumer);
+
+        return new BiConsumer<T, U>() {
+            @Override
+            public void accept(T t, U u) {
+                triConsumer.accept(a, t, u);
+            }
+        };
+    }
+
+    @Beta
     public static <T, R> Function<T, R> f(final Function<T, R> function) {
         return function;
     }
@@ -1884,6 +1908,18 @@ public final class Fn extends Comparators {
     @Beta
     public static <T, U, R> BiFunction<T, U, R> f(final BiFunction<T, U, R> biFunction) {
         return biFunction;
+    }
+
+    @Beta
+    public static <A, T, U, R> BiFunction<T, U, R> f(final A a, final TriFunction<A, T, U, R> triFunction) {
+        N.checkArgNotNull(triFunction);
+
+        return new BiFunction<T, U, R>() {
+            @Override
+            public R apply(T t, U u) {
+                return triFunction.apply(a, t, u);
+            }
+        };
     }
 
     @Beta
