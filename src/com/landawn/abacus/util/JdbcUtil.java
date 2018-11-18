@@ -1555,7 +1555,6 @@ public final class JdbcUtil {
         }
 
         return new BiRecordGetter<T, RuntimeException>() {
-
             private String[] columnLabels = null;
             private Method[] propSetters;
             private Type<?>[] columnTypes = null;

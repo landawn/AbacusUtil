@@ -3927,6 +3927,134 @@ public final class SQLExecutor implements Closeable {
             return entities;
         }
 
+        public Optional<T> findFirst(final Condition whereCause) {
+            return findFirst((Collection<String>) null, whereCause);
+        }
+
+        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
+            return findFirst(selectPropNames, whereCause, null);
+        }
+
+        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropNames, whereCause, jdbcSettings);
+        }
+
+        public Optional<T> findFirst(final Connection conn, final Condition whereCause) {
+            return findFirst(conn, null, whereCause);
+        }
+
+        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return findFirst(conn, selectPropNames, whereCause, null);
+        }
+
+        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.findFirst(targetClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <R> Optional<R> findFirst(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return findFirst(selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropName, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return findFirst(conn, selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return findFirst(conn, selectPropName, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return findFirst(selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropName, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return findFirst(conn, selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(N.asList(selectPropName), whereCause);
+
+            return sqlExecutor.findFirst(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return findFirst(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropNames, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return findFirst(conn, selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return findFirst(conn, selectPropNames, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return findFirst(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findFirst(null, selectPropNames, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return findFirst(conn, selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.findFirst(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
         public List<T> list(final Condition whereCause) {
             return list((Collection<String>) null, whereCause);
         }
@@ -3953,6 +4081,106 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.list(targetClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
         }
 
+        public <R> List<R> list(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return list(selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return list(null, selectPropName, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(final Connection conn, String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return list(conn, selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(final Connection conn, String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return list(conn, selectPropName, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return list(selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return list(null, selectPropName, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(final Connection conn, String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return list(conn, selectPropName, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(final Connection conn, String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(N.asList(selectPropName), whereCause);
+
+            return sqlExecutor.list(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <R> List<R> list(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return list(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return list(null, selectPropNames, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return list(conn, selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return list(conn, selectPropNames, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return list(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return list(null, selectPropNames, recordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return list(conn, selectPropNames, recordGetter, whereCause, null);
+        }
+
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.list(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
         /**
          * Query from multiple data sources specified in {@code JdbcSettings}.
          * 
@@ -3962,7 +4190,7 @@ public final class SQLExecutor implements Closeable {
          * @see SQLExecutor#listAll(Class, String, StatementSetter, JdbcSettings, Object...)
          */
         public List<T> listAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return listAll(propNameList(), whereCause, jdbcSettings);
+            return listAll(null, whereCause, jdbcSettings);
         }
 
         /**
@@ -3978,6 +4206,357 @@ public final class SQLExecutor implements Closeable {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.listAll(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <R> List<R> listAll(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return listAll(selectPropName, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> listAll(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(N.asList(selectPropName), whereCause);
+
+            return sqlExecutor.listAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <R> List<R> listAll(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return listAll(selectPropNames, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> listAll(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.listAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param whereCause
+         * @return
+         */
+        public Try<Stream<T>> stream(final Condition whereCause) {
+            return stream((Collection<String>) null, whereCause);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @return
+         */
+        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+            return stream(selectPropNames, whereCause, null);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.stream(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return stream(selectPropName, recordGetter, whereCause, null);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return stream(selectPropName, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return stream(selectPropName, recordGetter, whereCause, null);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(N.asList(selectPropName), whereCause);
+
+            return sqlExecutor.stream(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return stream(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return stream(selectPropNames, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return stream(selectPropNames, recordGetter, whereCause, null);
+        }
+
+        /**
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         * 
+         * 
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> stream(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.stream(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         * 
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public Try<Stream<T>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return streamAll(null, whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public Try<Stream<T>> streamAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.streamAll(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> streamAll(String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return streamAll(selectPropName, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         * 
+         * @param selectPropName
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> streamAll(String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(N.asList(selectPropName), whereCause);
+
+            return sqlExecutor.streamAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         * 
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> streamAll(Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            N.checkArgNotNull(recordGetter);
+
+            final Try.BiFunction<ResultSet, List<String>, R, SQLException> biRecordGetter = new Try.BiFunction<ResultSet, List<String>, R, SQLException>() {
+                @Override
+                public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    return recordGetter.apply(rs);
+                }
+            };
+
+            return streamAll(selectPropNames, biRecordGetter, whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
+         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
+         *  
+         *  
+         * @param selectPropNames
+         * @param recordGetter
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         */
+        public <R> Try<Stream<R>> streamAll(Collection<String> selectPropNames, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.streamAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
         }
 
         public DataSet query(final Condition whereCause) {
@@ -4015,7 +4594,7 @@ public final class SQLExecutor implements Closeable {
          * @see SQLExecutor#queryAll(String, StatementSetter, JdbcSettings, Object...)
          */
         public DataSet queryAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return queryAll(propNameList(), whereCause, jdbcSettings);
+            return queryAll(null, whereCause, jdbcSettings);
         }
 
         /**
@@ -4033,192 +4612,111 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.queryAll(pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
         }
 
-        public OptionalBoolean queryForBoolean(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalBoolean queryForBoolean(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForBoolean(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalChar queryForChar(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalChar queryForChar(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForChar(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalByte queryForByte(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalByte queryForByte(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForByte(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalShort queryForShort(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalShort queryForShort(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForShort(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalInt queryForInt(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalInt queryForInt(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForInt(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalLong queryForLong(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalLong queryForLong(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForLong(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalFloat queryForFloat(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalFloat queryForFloat(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForFloat(pair.sql, pair.parameters.toArray());
         }
 
-        public OptionalDouble queryForDouble(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public OptionalDouble queryForDouble(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForDouble(pair.sql, pair.parameters.toArray());
         }
 
-        public Nullable<BigDecimal> queryForBigDecimal(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public Nullable<BigDecimal> queryForBigDecimal(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForBigDecimal(pair.sql, pair.parameters.toArray());
         }
 
-        public Nullable<String> queryForString(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public Nullable<String> queryForString(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForString(pair.sql, pair.parameters.toArray());
         }
 
-        public Nullable<java.sql.Date> queryForDate(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public Nullable<java.sql.Date> queryForDate(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForDate(pair.sql, pair.parameters.toArray());
         }
 
-        public Nullable<java.sql.Time> queryForTime(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public Nullable<java.sql.Time> queryForTime(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForTime(pair.sql, pair.parameters.toArray());
         }
 
-        public Nullable<java.sql.Timestamp> queryForTimestamp(final String propName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public Nullable<java.sql.Timestamp> queryForTimestamp(final String selectPropName, final Condition whereCause) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForTimestamp(pair.sql, pair.parameters.toArray());
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Object id) {
-            return queryForSingleResult(targetValueClass, propName, id2Cond(id, false));
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Object id) {
+            return queryForSingleResult(targetValueClass, selectPropName, id2Cond(id, false));
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Condition whereCause) {
-            return queryForSingleResult(targetValueClass, propName, whereCause, null);
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause) {
+            return queryForSingleResult(targetValueClass, selectPropName, whereCause, null);
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Condition whereCause,
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            return queryForSingleResult(targetValueClass, null, propName, whereCause, jdbcSettings);
+            return queryForSingleResult(targetValueClass, null, selectPropName, whereCause, jdbcSettings);
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName, final Object id) {
-            return queryForSingleResult(targetValueClass, conn, propName, id2Cond(id, false));
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName, final Object id) {
+            return queryForSingleResult(targetValueClass, conn, selectPropName, id2Cond(id, false));
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName, final Condition whereCause) {
-            return queryForSingleResult(targetValueClass, conn, propName, whereCause, null);
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause) {
+            return queryForSingleResult(targetValueClass, conn, selectPropName, whereCause, null);
         }
 
-        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+        public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForSingleResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
-        }
-
-        public Optional<T> findFirst(final Condition whereCause) {
-            return findFirst((Collection<String>) null, whereCause);
-        }
-
-        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
-            return findFirst(selectPropNames, whereCause, null);
-        }
-
-        public Optional<T> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return findFirst(null, selectPropNames, whereCause, jdbcSettings);
-        }
-
-        public Optional<T> findFirst(final Connection conn, final Condition whereCause) {
-            return findFirst(conn, null, whereCause);
-        }
-
-        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return findFirst(conn, selectPropNames, whereCause, null);
-        }
-
-        public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause, 1);
-
-            return sqlExecutor.findFirst(targetClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
-        }
-
-        public Try<Stream<T>> stream(final Condition whereCause) {
-            return stream(null, whereCause);
-        }
-
-        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
-            return stream(selectPropNames, whereCause, null);
-        }
-
-        /**
-         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
-         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
-         * 
-         * 
-         * @param selectPropNames
-         * @param whereCause
-         * @param jdbcSettings
-         * @return
-         */
-        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
-
-            return sqlExecutor.stream(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
-        }
-
-        /**
-         * Query from multiple data sources specified in {@code JdbcSettings}.
-         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
-         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
-         * 
-         * @param whereCause
-         * @param jdbcSettings
-         * @return
-         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
-         */
-        public Try<Stream<T>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return streamAll(propNameList(), whereCause, jdbcSettings);
-        }
-
-        /**
-         * Query from multiple data sources specified in {@code JdbcSettings}.
-         * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
-         * {@code stream} operation won't be part of transaction or use the connection created by {@code Transaction} even it's in transaction block/range.
-         * 
-         * @param selectPropNames
-         * @param whereCause
-         * @param jdbcSettings
-         * @return
-         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
-         */
-        public Try<Stream<T>> streamAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
-
-            return sqlExecutor.streamAll(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
         }
 
         private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
@@ -5366,6 +5864,221 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public ContinuableFuture<Optional<T>> findFirst(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(conn, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<R>>() {
+                @Override
+                public Optional<R> call() throws Exception {
+                    return mapper.findFirst(conn, selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
         public ContinuableFuture<List<T>> list(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
@@ -5421,6 +6134,166 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.list(conn, selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
         public ContinuableFuture<List<T>> listAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
@@ -5435,6 +6308,212 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public List<T> call() throws Exception {
                     return mapper.listAll(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.listAll(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.listAll(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.listAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<R>>() {
+                @Override
+                public List<R> call() throws Exception {
+                    return mapper.listAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public ContinuableFuture<Try<Stream<T>>> stream(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.stream(whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.stream(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.stream(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropName, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropNames, recordGetter, whereCause);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> stream(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.stream(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public ContinuableFuture<Try<Stream<T>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.streamAll(whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public ContinuableFuture<Try<Stream<T>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.streamAll(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> streamAll(final String selectPropName, final Try.Function<ResultSet, R, SQLException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.streamAll(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> streamAll(final String selectPropName,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.streamAll(selectPropName, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> streamAll(final Collection<String> selectPropNames,
+                final Try.Function<ResultSet, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.streamAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <R> ContinuableFuture<Try<Stream<R>>> streamAll(final Collection<String> selectPropNames,
+                final Try.BiFunction<ResultSet, List<String>, R, SQLException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<R>>>() {
+                @Override
+                public Try<Stream<R>> call() throws Exception {
+                    return mapper.streamAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
@@ -5512,269 +6591,169 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<OptionalBoolean> queryForBoolean(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalBoolean> queryForBoolean(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalBoolean>() {
                 @Override
                 public OptionalBoolean call() throws Exception {
-                    return mapper.queryForBoolean(propName, whereCause);
+                    return mapper.queryForBoolean(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalByte> queryForByte(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalByte> queryForByte(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalByte>() {
                 @Override
                 public OptionalByte call() throws Exception {
-                    return mapper.queryForByte(propName, whereCause);
+                    return mapper.queryForByte(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalShort> queryForShort(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalShort> queryForShort(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalShort>() {
                 @Override
                 public OptionalShort call() throws Exception {
-                    return mapper.queryForShort(propName, whereCause);
+                    return mapper.queryForShort(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalInt> queryForInt(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalInt> queryForInt(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalInt>() {
                 @Override
                 public OptionalInt call() throws Exception {
-                    return mapper.queryForInt(propName, whereCause);
+                    return mapper.queryForInt(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalLong> queryForLong(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalLong> queryForLong(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalLong>() {
                 @Override
                 public OptionalLong call() throws Exception {
-                    return mapper.queryForLong(propName, whereCause);
+                    return mapper.queryForLong(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalFloat> queryForFloat(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalFloat> queryForFloat(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalFloat>() {
                 @Override
                 public OptionalFloat call() throws Exception {
-                    return mapper.queryForFloat(propName, whereCause);
+                    return mapper.queryForFloat(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<OptionalDouble> queryForDouble(final String propName, final Condition whereCause) {
+        public ContinuableFuture<OptionalDouble> queryForDouble(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<OptionalDouble>() {
                 @Override
                 public OptionalDouble call() throws Exception {
-                    return mapper.queryForDouble(propName, whereCause);
+                    return mapper.queryForDouble(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Nullable<BigDecimal>> queryForBigDecimal(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<BigDecimal>> queryForBigDecimal(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<BigDecimal>>() {
                 @Override
                 public Nullable<BigDecimal> call() throws Exception {
-                    return mapper.queryForBigDecimal(propName, whereCause);
+                    return mapper.queryForBigDecimal(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Nullable<String>> queryForString(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<String>> queryForString(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<String>>() {
                 @Override
                 public Nullable<String> call() throws Exception {
-                    return mapper.queryForString(propName, whereCause);
+                    return mapper.queryForString(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Nullable<java.sql.Date>> queryForDate(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<java.sql.Date>> queryForDate(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<java.sql.Date>>() {
                 @Override
                 public Nullable<java.sql.Date> call() throws Exception {
-                    return mapper.queryForDate(propName, whereCause);
+                    return mapper.queryForDate(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Nullable<java.sql.Time>> queryForTime(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<java.sql.Time>> queryForTime(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<java.sql.Time>>() {
                 @Override
                 public Nullable<java.sql.Time> call() throws Exception {
-                    return mapper.queryForTime(propName, whereCause);
+                    return mapper.queryForTime(selectPropName, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Nullable<java.sql.Timestamp>> queryForTimestamp(final String propName, final Condition whereCause) {
+        public ContinuableFuture<Nullable<java.sql.Timestamp>> queryForTimestamp(final String selectPropName, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<java.sql.Timestamp>>() {
                 @Override
                 public Nullable<java.sql.Timestamp> call() throws Exception {
-                    return mapper.queryForTimestamp(propName, whereCause);
+                    return mapper.queryForTimestamp(selectPropName, whereCause);
                 }
             });
         }
 
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Object id) {
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Object id) {
             return asyncExecutor.execute(new Callable<Nullable<V>>() {
                 @Override
                 public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, propName, id);
+                    return mapper.queryForSingleResult(targetValueClass, selectPropName, id);
                 }
             });
         }
 
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Nullable<V>>() {
-                @Override
-                public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, propName, whereCause);
-                }
-            });
-        }
-
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String propName, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Nullable<V>>() {
-                @Override
-                public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, propName, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName,
-                final Object id) {
-            return asyncExecutor.execute(new Callable<Nullable<V>>() {
-                @Override
-                public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, conn, propName, id);
-                }
-            });
-        }
-
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName,
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Nullable<V>>() {
                 @Override
                 public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, conn, propName, whereCause);
+                    return mapper.queryForSingleResult(targetValueClass, selectPropName, whereCause);
                 }
             });
         }
 
-        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String propName,
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForSingleResult(targetValueClass, selectPropName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Object id) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForSingleResult(targetValueClass, conn, selectPropName, id);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForSingleResult(targetValueClass, conn, selectPropName, whereCause);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Nullable<V>>() {
                 @Override
                 public Nullable<V> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, conn, propName, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(selectPropNames, whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(selectPropNames, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(conn, whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Optional<T>> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.findFirst(conn, selectPropNames, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Try<Stream<T>>> stream(final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.stream(whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.stream(selectPropNames, whereCause);
-                }
-            });
-        }
-
-        public ContinuableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.stream(selectPropNames, whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Try<Stream<T>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.streamAll(whereCause, jdbcSettings);
-                }
-            });
-        }
-
-        public ContinuableFuture<Try<Stream<T>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.streamAll(selectPropNames, whereCause, jdbcSettings);
+                    return mapper.queryForSingleResult(targetValueClass, conn, selectPropName, whereCause, jdbcSettings);
                 }
             });
         }

@@ -83,6 +83,17 @@ public final class DateUtil {
     public final static String RFC1123_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 
     /**
+     * This is half a month, so this represents whether a date is in the top
+     * or bottom half of the month.
+     */
+    public static final int SEMI_MONTH = 1001;
+
+    private static final int[][] fields = { { Calendar.MILLISECOND }, { Calendar.SECOND }, { Calendar.MINUTE }, { Calendar.HOUR_OF_DAY, Calendar.HOUR },
+            { Calendar.DATE, Calendar.DAY_OF_MONTH, Calendar.AM_PM
+            /* Calendar.DAY_OF_YEAR, Calendar.DAY_OF_WEEK, Calendar.DAY_OF_WEEK_IN_MONTH */
+            }, { Calendar.MONTH, SEMI_MONTH }, { Calendar.YEAR }, { Calendar.ERA } };
+
+    /**
      * @see System#currentTimeMillis()
      * @return
      */
@@ -146,92 +157,6 @@ public final class DateUtil {
 
     public static XMLGregorianCalendar currentXMLGregorianCalendar() {
         return dataTypeFactory.newXMLGregorianCalendar(currentGregorianCalendar());
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given time unit,
-     * based on the calendar's rules. For example, to subtract 5 days from the
-     * current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(date, -5, TimeUnit.DAYS)</code>.
-     *
-     * @param date
-     * @param amount
-     * @param unit
-     * @return a new instance of Date with the specified amount rolled.
-     */
-    public static <T extends java.util.Date> T roll(final T date, final long amount, final TimeUnit unit) {
-        return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given calendar
-     * unit, based on the calendar's rules. For example, to subtract 5 days from
-     * the current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(date, -5, CalendarUnit.DAY)</code>.
-     *
-     * @param date
-     * @param amount
-     * @param unit
-     * @return a new instance of Date with the specified amount rolled.
-     */
-    public static <T extends java.util.Date> T roll(final T date, final long amount, final CalendarUnit unit) {
-        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
-            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
-        }
-
-        switch (unit) {
-            case MONTH:
-            case YEAR:
-                final Calendar c = parseCalendar(date);
-                c.add(unit.intValue(), (int) amount);
-
-                return createDate(date.getClass(), c.getTimeInMillis());
-
-            default:
-                return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
-        }
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given time unit,
-     * based on the calendar's rules. For example, to subtract 5 days from the
-     * current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(c, -5, TimeUnit.DAYS)</code>.
-     *
-     * @param c
-     * @param amount
-     * @param unit
-     * @return a new instance of Calendar with the specified amount rolled.
-     */
-    public static <T extends Calendar> T roll(final T c, final long amount, final TimeUnit unit) {
-        return createCalendar(c, c.getTimeInMillis() + unit.toMillis(amount));
-    }
-
-    /**
-     * Adds or subtracts the specified amount of time to the given calendar
-     * unit, based on the calendar's rules. For example, to subtract 5 days from
-     * the current time of the calendar, you can achieve it by calling:
-     * <p>
-     * <code>N.roll(c, -5, CalendarUnit.DAY)</code>.
-     *
-     * @param c
-     * @param amount
-     * @param unit
-     * @return a new instance of Calendar with the specified amount rolled.
-     */
-    public static <T extends Calendar> T roll(final T c, final long amount, final CalendarUnit unit) {
-        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
-            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
-        }
-
-        final T result = createCalendar(c, c.getTimeInMillis());
-
-        result.add(unit.intValue(), (int) amount);
-
-        return result;
     }
 
     private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
@@ -300,16 +225,150 @@ public final class DateUtil {
         // singleton
     }
 
-    public static java.util.Date parseJUDate(final Calendar c) {
-        return (c == null) ? null : parseJUDate(c.getTimeInMillis());
+    public static java.util.Date createJUDate(final Calendar calendar) {
+        return (calendar == null) ? null : createJUDate(calendar.getTimeInMillis());
     }
 
-    public static java.util.Date parseJUDate(final java.util.Date date) {
-        return (date == null) ? null : parseJUDate(date.getTime());
+    public static java.util.Date createJUDate(final java.util.Date date) {
+        return (date == null) ? null : createJUDate(date.getTime());
     }
 
-    public static java.util.Date parseJUDate(final long timeInMillis) {
+    public static java.util.Date createJUDate(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
         return (timeInMillis == 0) ? null : new java.util.Date(timeInMillis);
+    }
+
+    public static Date createDate(final Calendar calendar) {
+        return (calendar == null) ? null : createDate(calendar.getTimeInMillis());
+    }
+
+    public static Date createDate(final java.util.Date date) {
+        return (date == null) ? null : createDate(date.getTime());
+    }
+
+    public static Date createDate(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        return (timeInMillis == 0) ? null : new Date(timeInMillis);
+    }
+
+    public static Time createTime(final Calendar calendar) {
+        return (calendar == null) ? null : createTime(calendar.getTimeInMillis());
+    }
+
+    public static Time createTime(final java.util.Date date) {
+        return (date == null) ? null : createTime(date.getTime());
+    }
+
+    public static Time createTime(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        return (timeInMillis == 0) ? null : new Time(timeInMillis);
+    }
+
+    public static Timestamp createTimestamp(final Calendar calendar) {
+        return (calendar == null) ? null : createTimestamp(calendar.getTimeInMillis());
+    }
+
+    public static Timestamp createTimestamp(final java.util.Date date) {
+        return (date == null) ? null : createTimestamp(date.getTime());
+    }
+
+    public static Timestamp createTimestamp(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        return (timeInMillis == 0) ? null : new Timestamp(timeInMillis);
+    }
+
+    public static Calendar createCalendar(final Calendar calendar) {
+        return (calendar == null) ? null : createCalendar(calendar.getTimeInMillis());
+    }
+
+    public static Calendar createCalendar(final java.util.Date date) {
+        return (date == null) ? null : createCalendar(date.getTime());
+    }
+
+    public static Calendar createCalendar(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final Calendar c = Calendar.getInstance();
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static Calendar createCalendar(final long timeInMillis, final TimeZone tz) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final Calendar c = Calendar.getInstance(tz);
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static GregorianCalendar createGregorianCalendar(final Calendar calendar) {
+        return (calendar == null) ? null : createGregorianCalendar(calendar.getTimeInMillis());
+    }
+
+    public static GregorianCalendar createGregorianCalendar(final java.util.Date date) {
+        return (date == null) ? null : createGregorianCalendar(date.getTime());
+    }
+
+    public static GregorianCalendar createGregorianCalendar(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final GregorianCalendar c = new GregorianCalendar();
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static GregorianCalendar createGregorianCalendar(final long timeInMillis, final TimeZone tz) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        final GregorianCalendar c = new GregorianCalendar(tz);
+
+        c.setTimeInMillis(timeInMillis);
+
+        return c;
+    }
+
+    public static XMLGregorianCalendar createXMLGregorianCalendar(final Calendar calendar) {
+        return (calendar == null) ? null : createXMLGregorianCalendar(calendar.getTimeInMillis());
+    }
+
+    public static XMLGregorianCalendar createXMLGregorianCalendar(final java.util.Date date) {
+        return (date == null) ? null : createXMLGregorianCalendar(date.getTime());
+    }
+
+    public static XMLGregorianCalendar createXMLGregorianCalendar(final long timeInMillis) {
+        N.checkArgPositive(timeInMillis, "timeInMillis");
+
+        if (timeInMillis == 0) {
+            return null;
+        }
+
+        return dataTypeFactory.newXMLGregorianCalendar(createGregorianCalendar(timeInMillis));
     }
 
     public static java.util.Date parseJUDate(final String date) {
@@ -334,19 +393,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseJUDate(parse(date, format, timeZone));
-    }
-
-    public static Date parseDate(final Calendar c) {
-        return (c == null) ? null : parseDate(c.getTimeInMillis());
-    }
-
-    public static Date parseDate(final java.util.Date date) {
-        return (date == null) ? null : parseDate(date.getTime());
-    }
-
-    public static Date parseDate(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Date(timeInMillis);
+        return createJUDate(parse(date, format, timeZone));
     }
 
     public static Date parseDate(final String date) {
@@ -371,19 +418,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseDate(parse(date, format, timeZone));
-    }
-
-    public static Time parseTime(final Calendar c) {
-        return (c == null) ? null : parseTime(c.getTimeInMillis());
-    }
-
-    public static Time parseTime(final java.util.Date date) {
-        return (date == null) ? null : parseTime(date.getTime());
-    }
-
-    public static Time parseTime(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Time(timeInMillis);
+        return createDate(parse(date, format, timeZone));
     }
 
     public static Time parseTime(final String date) {
@@ -408,19 +443,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseTime(parse(date, format, timeZone));
-    }
-
-    public static Timestamp parseTimestamp(final Calendar c) {
-        return (c == null) ? null : parseTimestamp(c.getTimeInMillis());
-    }
-
-    public static Timestamp parseTimestamp(final java.util.Date date) {
-        return (date == null) ? null : parseTimestamp(date.getTime());
-    }
-
-    public static Timestamp parseTimestamp(final long timeInMillis) {
-        return (timeInMillis == 0) ? null : new Timestamp(timeInMillis);
+        return createTime(parse(date, format, timeZone));
     }
 
     public static Timestamp parseTimestamp(final String date) {
@@ -445,27 +468,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseTimestamp(parse(date, format, timeZone));
-    }
-
-    public static Calendar parseCalendar(final Calendar c) {
-        return (c == null) ? null : parseCalendar(c.getTimeInMillis());
-    }
-
-    public static Calendar parseCalendar(final java.util.Date date) {
-        return (date == null) ? null : parseCalendar(date.getTime());
-    }
-
-    public static Calendar parseCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final Calendar c = Calendar.getInstance();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
+        return createTimestamp(parse(date, format, timeZone));
     }
 
     public static Calendar parseCalendar(final String calendar) {
@@ -490,27 +493,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static GregorianCalendar parseGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : parseGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static GregorianCalendar parseGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : parseGregorianCalendar(date.getTime());
-    }
-
-    public static GregorianCalendar parseGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        final GregorianCalendar c = new GregorianCalendar();
-
-        c.setTimeInMillis(timeInMillis);
-
-        return c;
+        return createCalendar(parse(calendar, format, timeZone));
     }
 
     public static GregorianCalendar parseGregorianCalendar(final String calendar) {
@@ -535,23 +518,7 @@ public final class DateUtil {
             return null;
         }
 
-        return parseGregorianCalendar(parse(calendar, format, timeZone));
-    }
-
-    public static XMLGregorianCalendar parseXMLGregorianCalendar(final Calendar c) {
-        return (c == null) ? null : parseXMLGregorianCalendar(c.getTimeInMillis());
-    }
-
-    public static XMLGregorianCalendar parseXMLGregorianCalendar(final java.util.Date date) {
-        return (date == null) ? null : parseXMLGregorianCalendar(date.getTime());
-    }
-
-    public static XMLGregorianCalendar parseXMLGregorianCalendar(final long timeInMillis) {
-        if (timeInMillis == 0) {
-            return null;
-        }
-
-        return dataTypeFactory.newXMLGregorianCalendar(parseGregorianCalendar(timeInMillis));
+        return createGregorianCalendar(parse(calendar, format, timeZone));
     }
 
     public static XMLGregorianCalendar parseXMLGregorianCalendar(final String calendar) {
@@ -576,7 +543,45 @@ public final class DateUtil {
             return null;
         }
 
-        return parseXMLGregorianCalendar(parse(calendar, format, timeZone));
+        return createXMLGregorianCalendar(parse(calendar, format, timeZone));
+    }
+
+    private static long parse(final String date, String format, TimeZone timeZone) {
+        if ((format == null) && date.length() > 4 && (date.charAt(2) >= '0' && date.charAt(2) <= '9' && date.charAt(4) >= '0' && date.charAt(4) <= '9')) {
+            try {
+                return Long.parseLong(date);
+            } catch (NumberFormatException e) {
+                // ignore.
+            }
+        }
+
+        format = checkDateFormat(date, format);
+
+        if (N.isNullOrEmpty(format)) {
+            if (timeZone == null) {
+                return ISO8601Util.parse(date).getTime();
+            } else {
+                throw new RuntimeException("Unsupported date format: " + format + " with time zone: " + timeZone);
+            }
+        }
+
+        timeZone = checkTimeZone(format, timeZone);
+
+        long timeInMillis = fastDateParse(date, format, timeZone);
+
+        if (timeInMillis > 0) {
+            return timeInMillis;
+        }
+
+        DateFormat sdf = getSDF(format, timeZone);
+
+        try {
+            return sdf.parse(date).getTime();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(e);
+        } finally {
+            recycleSDF(format, timeZone, sdf);
+        }
     }
 
     public static String format(final java.util.Date date) {
@@ -619,7 +624,7 @@ public final class DateUtil {
             return str;
         }
 
-        return format(parseJUDate(c), format, timeZone);
+        return format(createJUDate(c), format, timeZone);
     }
 
     public static void format(final Writer writer, final Calendar c) {
@@ -630,7 +635,7 @@ public final class DateUtil {
         if ((format == null) && (timeZone == null)) {
             fastDateFormat(writer, c.getTimeInMillis(), false);
         } else {
-            format(writer, parseJUDate(c), format, timeZone);
+            format(writer, createJUDate(c), format, timeZone);
         }
     }
 
@@ -655,7 +660,7 @@ public final class DateUtil {
             return str;
         }
 
-        return format(parseJUDate(c.toGregorianCalendar()), format, timeZone);
+        return format(createJUDate(c.toGregorianCalendar()), format, timeZone);
     }
 
     public static void format(final Writer writer, final XMLGregorianCalendar c) {
@@ -666,46 +671,699 @@ public final class DateUtil {
         if ((format == null) && (timeZone == null)) {
             fastDateFormat(writer, c.toGregorianCalendar().getTimeInMillis(), false);
         } else {
-            format(writer, parseJUDate(c.toGregorianCalendar()), format, timeZone);
+            format(writer, createJUDate(c.toGregorianCalendar()), format, timeZone);
         }
     }
 
-    private static long parse(final String date, String format, TimeZone timeZone) {
-        if ((format == null) && date.length() > 4 && (date.charAt(2) >= '0' && date.charAt(2) <= '9' && date.charAt(4) >= '0' && date.charAt(4) <= '9')) {
-            try {
-                return Long.parseLong(date);
-            } catch (NumberFormatException e) {
-                // ignore.
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the years field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setYears(final T date, final int amount) {
+        return set(date, Calendar.YEAR, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the months field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setMonths(final T date, final int amount) {
+        return set(date, Calendar.MONTH, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the day of month field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setDays(final T date, final int amount) {
+        return set(date, Calendar.DAY_OF_MONTH, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the hours field to a date returning a new object.  Hours range
+     * from  0-23.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setHours(final T date, final int amount) {
+        return set(date, Calendar.HOUR_OF_DAY, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the minute field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setMinutes(final T date, final int amount) {
+        return set(date, Calendar.MINUTE, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the seconds field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setSeconds(final T date, final int amount) {
+        return set(date, Calendar.SECOND, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the milliseconds field to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    public static <T extends java.util.Date> T setMilliseconds(final T date, final int amount) {
+        return set(date, Calendar.MILLISECOND, amount);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Sets the specified field to a date returning a new object.
+     * This does not use a lenient calendar.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param calendarField  the {@code Calendar} field to set the amount to
+     * @param amount the amount to set
+     * @return a new {@code Date} set with the specified value
+     * @throws IllegalArgumentException if the date is null
+     * @since 2.4
+     */
+    private static <T extends java.util.Date> T set(final T date, final int calendarField, final int amount) {
+        N.checkArgNotNull(date, "date");
+
+        // getInstance() returns a new object, so this method is thread safe.
+        final Calendar c = Calendar.getInstance();
+        c.setLenient(false);
+        c.setTime(date);
+        c.set(calendarField, amount);
+
+        return createDate(date.getClass(), c.getTimeInMillis());
+    }
+
+    /**
+     * Adds or subtracts the specified amount of time to the given time unit,
+     * based on the calendar's rules. For example, to subtract 5 days from the
+     * current time of the calendar, you can achieve it by calling:
+     * <p>
+     * <code>N.roll(date, -5, TimeUnit.DAYS)</code>.
+     *
+     * @param date
+     * @param amount
+     * @param unit
+     * @return a new instance of Date with the specified amount rolled.
+     */
+    public static <T extends java.util.Date> T roll(final T date, final long amount, final TimeUnit unit) {
+        N.checkArgNotNull(date, "date");
+
+        return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
+    }
+
+    /**
+     * Adds or subtracts the specified amount of time to the given calendar
+     * unit, based on the calendar's rules. For example, to subtract 5 days from
+     * the current time of the calendar, you can achieve it by calling:
+     * <p>
+     * <code>N.roll(date, -5, CalendarUnit.DAY)</code>.
+     *
+     * @param date
+     * @param amount
+     * @param unit
+     * @return a new instance of Date with the specified amount rolled.
+     */
+    public static <T extends java.util.Date> T roll(final T date, final long amount, final CalendarUnit unit) {
+        N.checkArgNotNull(date, "date");
+
+        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
+            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
+        }
+
+        switch (unit) {
+            case MONTH:
+            case YEAR:
+                final Calendar c = createCalendar(date);
+                c.add(unit.intValue(), (int) amount);
+
+                return createDate(date.getClass(), c.getTimeInMillis());
+
+            default:
+                return createDate(date.getClass(), date.getTime() + unit.toMillis(amount));
+        }
+    }
+
+    /**
+     * Adds or subtracts the specified amount of time to the given time unit,
+     * based on the calendar's rules. For example, to subtract 5 days from the
+     * current time of the calendar, you can achieve it by calling:
+     * <p>
+     * <code>N.roll(c, -5, TimeUnit.DAYS)</code>.
+     *
+     * @param calendar
+     * @param amount
+     * @param unit
+     * @return a new instance of Calendar with the specified amount rolled.
+     */
+    public static <T extends Calendar> T roll(final T calendar, final long amount, final TimeUnit unit) {
+        N.checkArgNotNull(calendar, "calendar");
+
+        return createCalendar(calendar, calendar.getTimeInMillis() + unit.toMillis(amount));
+    }
+
+    /**
+     * Adds or subtracts the specified amount of time to the given calendar
+     * unit, based on the calendar's rules. For example, to subtract 5 days from
+     * the current time of the calendar, you can achieve it by calling:
+     * <p>
+     * <code>N.roll(c, -5, CalendarUnit.DAY)</code>.
+     *
+     * @param calendar
+     * @param amount
+     * @param unit
+     * @return a new instance of Calendar with the specified amount rolled.
+     */
+    public static <T extends Calendar> T roll(final T calendar, final long amount, final CalendarUnit unit) {
+        N.checkArgNotNull(calendar, "calendar");
+
+        if (amount > Integer.MAX_VALUE || amount < Integer.MIN_VALUE) {
+            throw new IllegalArgumentException("The amount :" + amount + " is too big for unit: " + unit);
+        }
+
+        final T result = createCalendar(calendar, calendar.getTimeInMillis());
+
+        result.add(unit.intValue(), (int) amount);
+
+        return result;
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Rounds a date, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if this was passed with HOUR, it would return
+     * 28 Mar 2002 14:00:00.000. If this was passed with MONTH, it
+     * would return 1 April 2002 0:00:00.000.</p>
+     *
+     * <p>For a date in a timezone that handles the change to daylight
+     * saving time, rounding to Calendar.HOUR_OF_DAY will behave as follows.
+     * Suppose daylight saving time begins at 02:00 on March 30. Rounding a
+     * date that crosses this time would produce the following values:
+     * </p>
+     * <ul>
+     * <li>March 30, 2003 01:10 rounds to March 30, 2003 01:00</li>
+     * <li>March 30, 2003 01:40 rounds to March 30, 2003 03:00</li>
+     * <li>March 30, 2003 02:10 rounds to March 30, 2003 03:00</li>
+     * <li>March 30, 2003 02:40 rounds to March 30, 2003 04:00</li>
+     * </ul>
+     *
+     * @param date  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different rounded date, not null
+     * @throws ArithmeticException if the year is over 280 million
+     */
+    public static <T extends java.util.Date> T round(final T date, final int field) {
+        N.checkArgNotNull(date, "date");
+
+        final Calendar gval = Calendar.getInstance();
+        gval.setTime(date);
+        modify(gval, field, ModifyType.ROUND);
+
+        return createDate(date.getClass(), gval.getTimeInMillis());
+    }
+
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Rounds a date, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if this was passed with HOUR, it would return
+     * 28 Mar 2002 14:00:00.000. If this was passed with MONTH, it
+     * would return 1 April 2002 0:00:00.000.</p>
+     *
+     * <p>For a date in a timezone that handles the change to daylight
+     * saving time, rounding to Calendar.HOUR_OF_DAY will behave as follows.
+     * Suppose daylight saving time begins at 02:00 on March 30. Rounding a
+     * date that crosses this time would produce the following values:
+     * </p>
+     * <ul>
+     * <li>March 30, 2003 01:10 rounds to March 30, 2003 01:00</li>
+     * <li>March 30, 2003 01:40 rounds to March 30, 2003 03:00</li>
+     * <li>March 30, 2003 02:10 rounds to March 30, 2003 03:00</li>
+     * <li>March 30, 2003 02:40 rounds to March 30, 2003 04:00</li>
+     * </ul>
+     *
+     * @param calendar  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different rounded date, not null
+     * @throws IllegalArgumentException if the date is <code>null</code>
+     * @throws ArithmeticException if the year is over 280 million
+     */
+    public static <T extends Calendar> T round(final T calendar, final int field) {
+        N.checkArgNotNull(calendar, "calendar");
+
+        final Calendar rounded = (Calendar) calendar.clone();
+        modify(rounded, field, ModifyType.ROUND);
+
+        if (rounded.getClass().equals(calendar.getClass())) {
+            return (T) rounded;
+        }
+
+        return createCalendar(calendar, rounded.getTimeInMillis());
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Truncates a date, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 13:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Mar 2002 0:00:00.000.</p>
+     *
+     * @param date  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different truncated date, not null
+     * @throws IllegalArgumentException if the date is <code>null</code>
+     * @throws ArithmeticException if the year is over 280 million
+     */
+    public static <T extends java.util.Date> T truncate(final T date, final int field) {
+        N.checkArgNotNull(date, "date");
+
+        final Calendar gval = Calendar.getInstance();
+        gval.setTime(date);
+        modify(gval, field, ModifyType.TRUNCATE);
+
+        return createDate(date.getClass(), gval.getTimeInMillis());
+    }
+
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Truncates a date, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 13:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Mar 2002 0:00:00.000.</p>
+     *
+     * @param calendar  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different truncated date, not null
+     * @throws IllegalArgumentException if the date is <code>null</code>
+     * @throws ArithmeticException if the year is over 280 million
+     */
+    public static <T extends Calendar> T truncate(final T calendar, final int field) {
+        N.checkArgNotNull(calendar, "calendar");
+
+        final Calendar truncated = (Calendar) calendar.clone();
+        modify(truncated, field, ModifyType.TRUNCATE);
+
+        if (truncated.getClass().equals(calendar.getClass())) {
+            return (T) truncated;
+        }
+
+        return createCalendar(calendar, truncated.getTimeInMillis());
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Gets a date ceiling, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 14:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Apr 2002 0:00:00.000.</p>
+     *
+     * @param date  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different ceil date, not null
+     * @throws IllegalArgumentException if the date is <code>null</code>
+     * @throws ArithmeticException if the year is over 280 million
+     * @since 2.5
+     */
+    public static <T extends java.util.Date> T ceiling(final T date, final int field) {
+        N.checkArgNotNull(date, "date");
+
+        final Calendar gval = Calendar.getInstance();
+        gval.setTime(date);
+        modify(gval, field, ModifyType.CEILING);
+
+        return createDate(date.getClass(), gval.getTimeInMillis());
+    }
+
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Gets a date ceiling, leaving the field specified as the most
+     * significant field.</p>
+     *
+     * <p>For example, if you had the date-time of 28 Mar 2002
+     * 13:45:01.231, if you passed with HOUR, it would return 28 Mar
+     * 2002 14:00:00.000.  If this was passed with MONTH, it would
+     * return 1 Apr 2002 0:00:00.000.</p>
+     *
+     * @param calendar  the date to work with, not null
+     * @param field  the field from {@code Calendar} or <code>SEMI_MONTH</code>
+     * @return the different ceil date, not null
+     * @throws IllegalArgumentException if the date is <code>null</code>
+     * @throws ArithmeticException if the year is over 280 million
+     * @since 2.5
+     */
+    public static <T extends Calendar> T ceiling(final T calendar, final int field) {
+        N.checkArgNotNull(calendar, "calendar");
+
+        final Calendar ceiled = (Calendar) calendar.clone();
+
+        modify(ceiled, field, ModifyType.CEILING);
+
+        if (ceiled.getClass().equals(calendar.getClass())) {
+            return (T) ceiled;
+        }
+
+        return createCalendar(calendar, ceiled.getTimeInMillis());
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * <p>Internal calculation method.</p>
+     *
+     * @param val  the calendar, not null
+     * @param unit  the field constant
+     * @param modType  type to truncate, round or ceiling
+     * @throws ArithmeticException if the year is over 280 million
+     */
+    private static void modify(final Calendar val, final int field, final ModifyType modType) {
+        if (val.get(Calendar.YEAR) > 280000000) {
+            throw new ArithmeticException("Calendar value too large for accurate calculations");
+        }
+
+        if (field == Calendar.MILLISECOND) {
+            return;
+        }
+
+        // ----------------- Fix for LANG-59 ---------------------- START ---------------
+        // see http://issues.apache.org/jira/browse/LANG-59
+        //
+        // Manually truncate milliseconds, seconds and minutes, rather than using
+        // Calendar methods.
+
+        final java.util.Date date = val.getTime();
+        long time = date.getTime();
+        boolean done = false;
+
+        // truncate milliseconds
+        final int millisecs = val.get(Calendar.MILLISECOND);
+        if (ModifyType.TRUNCATE == modType || millisecs < 500) {
+            time = time - millisecs;
+        }
+
+        if (field == Calendar.SECOND) {
+            done = true;
+        }
+
+        // truncate seconds
+        final int seconds = val.get(Calendar.SECOND);
+        if (!done && (ModifyType.TRUNCATE == modType || seconds < 30)) {
+            time = time - (seconds * 1000L);
+        }
+
+        if (field == Calendar.MINUTE) {
+            done = true;
+        }
+
+        // truncate minutes
+        final int minutes = val.get(Calendar.MINUTE);
+        if (!done && (ModifyType.TRUNCATE == modType || minutes < 30)) {
+            time = time - (minutes * 60000L);
+        }
+
+        // reset time
+        if (date.getTime() != time) {
+            date.setTime(time);
+            val.setTime(date);
+        }
+        // ----------------- Fix for LANG-59 ----------------------- END ----------------
+
+        boolean roundUp = false;
+        for (final int[] aField : fields) {
+            for (final int element : aField) {
+                if (element == field) {
+                    //This is our field... we stop looping
+                    if (modType == ModifyType.CEILING || modType == ModifyType.ROUND && roundUp) {
+                        if (field == SEMI_MONTH) {
+                            //This is a special case that's hard to generalize
+                            //If the date is 1, we round up to 16, otherwise
+                            //  we subtract 15 days and add 1 month
+                            if (val.get(Calendar.DATE) == 1) {
+                                val.add(Calendar.DATE, 15);
+                            } else {
+                                val.add(Calendar.DATE, -15);
+                                val.add(Calendar.MONTH, 1);
+                            }
+                            // ----------------- Fix for LANG-440 ---------------------- START ---------------
+                        } else if (field == Calendar.AM_PM) {
+                            // This is a special case
+                            // If the time is 0, we round up to 12, otherwise
+                            //  we subtract 12 hours and add 1 day
+                            if (val.get(Calendar.HOUR_OF_DAY) == 0) {
+                                val.add(Calendar.HOUR_OF_DAY, 12);
+                            } else {
+                                val.add(Calendar.HOUR_OF_DAY, -12);
+                                val.add(Calendar.DATE, 1);
+                            }
+                            // ----------------- Fix for LANG-440 ---------------------- END ---------------
+                        } else {
+                            //We need at add one to this field since the
+                            //  last number causes us to round up
+                            val.add(aField[0], 1);
+                        }
+                    }
+                    return;
+                }
+            }
+            //We have various fields that are not easy roundings
+            int offset = 0;
+            boolean offsetSet = false;
+            //These are special types of fields that require different rounding rules
+            switch (field) {
+                case SEMI_MONTH:
+                    if (aField[0] == Calendar.DATE) {
+                        //If we're going to drop the DATE field's value,
+                        //  we want to do this our own way.
+                        //We need to subtrace 1 since the date has a minimum of 1
+                        offset = val.get(Calendar.DATE) - 1;
+                        //If we're above 15 days adjustment, that means we're in the
+                        //  bottom half of the month and should stay accordingly.
+                        if (offset >= 15) {
+                            offset -= 15;
+                        }
+                        //Record whether we're in the top or bottom half of that range
+                        roundUp = offset > 7;
+                        offsetSet = true;
+                    }
+                    break;
+                case Calendar.AM_PM:
+                    if (aField[0] == Calendar.HOUR_OF_DAY) {
+                        //If we're going to drop the HOUR field's value,
+                        //  we want to do this our own way.
+                        offset = val.get(Calendar.HOUR_OF_DAY);
+                        if (offset >= 12) {
+                            offset -= 12;
+                        }
+                        roundUp = offset >= 6;
+                        offsetSet = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if (!offsetSet) {
+                final int min = val.getActualMinimum(aField[0]);
+                final int max = val.getActualMaximum(aField[0]);
+                //Calculate the offset from the minimum allowed value
+                offset = val.get(aField[0]) - min;
+                //Set roundUp if this is more than half way between the minimum and maximum
+                roundUp = offset > ((max - min) / 2);
+            }
+            //We need to remove this field
+            if (offset != 0) {
+                val.set(aField[0], val.get(aField[0]) - offset);
             }
         }
+        throw new IllegalArgumentException("The field " + field + " is not supported");
 
-        format = checkDateFormat(date, format);
+    }
 
-        if (N.isNullOrEmpty(format)) {
-            if (timeZone == null) {
-                return ISO8601Util.parse(date).getTime();
-            } else {
-                throw new RuntimeException("Unsupported date format: " + format + " with time zone: " + timeZone);
-            }
-        }
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Determines if two calendars are equal up to no more than the specified
+     * most significant field.
+     *
+     * @param cal1 the first calendar, not <code>null</code>
+     * @param cal2 the second calendar, not <code>null</code>
+     * @param field the field from {@code Calendar}
+     * @return <code>true</code> if equal; otherwise <code>false</code>
+     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @see #truncate(Calendar, int)
+     * @see #truncatedEquals(Date, Date, int)
+     * @since 3.0
+     */
+    public static boolean truncatedEquals(final Calendar cal1, final Calendar cal2, final int field) {
+        return truncatedCompareTo(cal1, cal2, field) == 0;
+    }
 
-        timeZone = checkTimeZone(format, timeZone);
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Determines if two dates are equal up to no more than the specified
+     * most significant field.
+     *
+     * @param date1 the first date, not <code>null</code>
+     * @param date2 the second date, not <code>null</code>
+     * @param field the field from {@code Calendar}
+     * @return <code>true</code> if equal; otherwise <code>false</code>
+     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @see #truncate(Date, int)
+     * @see #truncatedEquals(Calendar, Calendar, int)
+     * @since 3.0
+     */
+    public static boolean truncatedEquals(final java.util.Date date1, final java.util.Date date2, final int field) {
+        return truncatedCompareTo(date1, date2, field) == 0;
+    }
 
-        long timeInMillis = fastDateParse(date, format, timeZone);
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Determines how two calendars compare up to no more than the specified
+     * most significant field.
+     *
+     * @param cal1 the first calendar, not <code>null</code>
+     * @param cal2 the second calendar, not <code>null</code>
+     * @param field the field from {@code Calendar}
+     * @return a negative integer, zero, or a positive integer as the first
+     * calendar is less than, equal to, or greater than the second.
+     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @see #truncate(Calendar, int)
+     * @see #truncatedCompareTo(Date, Date, int)
+     * @since 3.0
+     */
+    public static int truncatedCompareTo(final Calendar cal1, final Calendar cal2, final int field) {
+        return truncate(cal1, field).compareTo(truncate(cal2, field));
+    }
 
-        if (timeInMillis > 0) {
-            return timeInMillis;
-        }
-
-        DateFormat sdf = getSDF(format, timeZone);
-
-        try {
-            return sdf.parse(date).getTime();
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            recycleSDF(format, timeZone, sdf);
-        }
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * <br />
+     * 
+     * Determines how two dates compare up to no more than the specified
+     * most significant field.
+     *
+     * @param date1 the first date, not <code>null</code>
+     * @param date2 the second date, not <code>null</code>
+     * @param field the field from <code>Calendar</code>
+     * @return a negative integer, zero, or a positive integer as the first
+     * date is less than, equal to, or greater than the second.
+     * @throws IllegalArgumentException if any argument is <code>null</code>
+     * @see #truncate(Calendar, int)
+     * @see #truncatedCompareTo(Date, Date, int)
+     * @since 3.0
+     */
+    public static int truncatedCompareTo(final java.util.Date date1, final java.util.Date date2, final int field) {
+        return truncate(date1, field).compareTo(truncate(date2, field));
     }
 
     private static DateFormat getSDF(final String format, final TimeZone timeZone) {
@@ -1086,5 +1744,25 @@ public final class DateUtil {
             utcCalendarPool.add(c);
             utcTimestampFormatCharsPool.add(utcTimestamp);
         }
+    }
+
+    /**
+     * Calendar modification types.
+     */
+    private static enum ModifyType {
+        /**
+         * Truncation.
+         */
+        TRUNCATE,
+
+        /**
+         * Rounding.
+         */
+        ROUND,
+
+        /**
+         * Ceiling.
+         */
+        CEILING
     }
 }
