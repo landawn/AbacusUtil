@@ -39,16 +39,6 @@ public class BooleanPair {
         return new BooleanPair(_1, _2);
     }
 
-    public static BooleanPair from(final boolean[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return new BooleanPair();
-        } else if (a.length == 1) {
-            return new BooleanPair(a[0], false);
-        } else {
-            return new BooleanPair(a[0], a[1]);
-        }
-    }
-
     public BooleanPair reversed() {
         return new BooleanPair(_2, _1);
     }

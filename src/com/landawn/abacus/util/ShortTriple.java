@@ -41,18 +41,6 @@ public class ShortTriple {
         return new ShortTriple(_1, _2, _3);
     }
 
-    public static ShortTriple from(final short[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return new ShortTriple();
-        } else if (a.length == 1) {
-            return new ShortTriple(a[0], (short) 0, (short) 0);
-        } else if (a.length == 2) {
-            return new ShortTriple(a[0], a[1], (short) 0);
-        } else {
-            return new ShortTriple(a[0], a[1], a[2]);
-        }
-    }
-
     public short min() {
         return N.min(_1, _2, _3);
     }

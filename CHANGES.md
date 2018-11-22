@@ -1,3 +1,8 @@
+### 1.3.22
+
+* Improvements and bug fix.
+
+
 ### 1.3.21
 
 * Refactoring: `DateUtil`.

@@ -727,6 +727,10 @@ public final class N {
         return (T) N.typeOf(cls).defaultValue();
     }
 
+    public static <T> T defaultIfNull(final T obj, final T defaultForNull) {
+        return obj == null ? defaultForNull : obj;
+    }
+
     public static <E extends Enum<E>> List<E> enumListOf(final Class<E> enumClass) {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
 

@@ -39,16 +39,6 @@ public final class LongPair {
         return new LongPair(_1, _2);
     }
 
-    public static LongPair from(final long[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return new LongPair();
-        } else if (a.length == 1) {
-            return new LongPair(a[0], 0);
-        } else {
-            return new LongPair(a[0], a[1]);
-        }
-    }
-
     public long min() {
         return N.min(_1, _2);
     }
