@@ -5878,64 +5878,6 @@ public final class JdbcUtil {
      */
     public static interface RecordGetter<T, E extends Exception> {
 
-        public static final RecordGetter<Object[], RuntimeException> TO_ARRAY = new RecordGetter<Object[], RuntimeException>() {
-            @Override
-            public Object[] apply(ResultSet rs) throws SQLException, RuntimeException {
-                final int columnCount = rs.getMetaData().getColumnCount();
-                final Object[] result = new Object[columnCount];
-
-                for (int i = 1; i <= columnCount; i++) {
-                    result[i - 1] = rs.getObject(i);
-                }
-
-                return result;
-            }
-        };
-
-        public static final RecordGetter<List<Object>, RuntimeException> TO_LIST = new RecordGetter<List<Object>, RuntimeException>() {
-            @Override
-            public List<Object> apply(ResultSet rs) throws SQLException, RuntimeException {
-                final int columnCount = rs.getMetaData().getColumnCount();
-                final List<Object> result = new ArrayList<>(columnCount);
-
-                for (int i = 1; i <= columnCount; i++) {
-                    result.add(rs.getObject(i));
-                }
-
-                return result;
-            }
-        };
-
-        public static final RecordGetter<Map<String, Object>, RuntimeException> TO_MAP = new RecordGetter<Map<String, Object>, RuntimeException>() {
-            @Override
-            public Map<String, Object> apply(final ResultSet rs) throws SQLException, RuntimeException {
-                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                final int columnCount = columnLabels.size();
-                final Map<String, Object> result = new HashMap<>(columnCount);
-
-                for (int i = 1; i <= columnCount; i++) {
-                    result.put(columnLabels.get(i - 1), rs.getObject(i));
-                }
-
-                return result;
-            }
-        };
-
-        public static final RecordGetter<Map<String, Object>, RuntimeException> TO_LINKED_HASH_MAP = new RecordGetter<Map<String, Object>, RuntimeException>() {
-            @Override
-            public Map<String, Object> apply(final ResultSet rs) throws SQLException, RuntimeException {
-                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                final int columnCount = columnLabels.size();
-                final Map<String, Object> result = new LinkedHashMap<>(columnCount);
-
-                for (int i = 1; i <= columnCount; i++) {
-                    result.put(columnLabels.get(i - 1), rs.getObject(i));
-                }
-
-                return result;
-            }
-        };
-
         public static final RecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new RecordGetter<Boolean, RuntimeException>() {
             @Override
             public Boolean apply(ResultSet rs) throws SQLException, RuntimeException {
@@ -5982,6 +5924,13 @@ public final class JdbcUtil {
             @Override
             public Double apply(ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getDouble(1);
+            }
+        };
+
+        public static final RecordGetter<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new RecordGetter<BigDecimal, RuntimeException>() {
+            @Override
+            public BigDecimal apply(ResultSet rs) throws SQLException, RuntimeException {
+                return rs.getBigDecimal(1);
             }
         };
 
@@ -6090,83 +6039,6 @@ public final class JdbcUtil {
                 }
 
                 return result;
-            }
-        };
-
-        public static final BiRecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new BiRecordGetter<Boolean, RuntimeException>() {
-            @Override
-            public Boolean apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getBoolean(1);
-            }
-        };
-
-        public static final BiRecordGetter<Byte, RuntimeException> GET_BYTE = new BiRecordGetter<Byte, RuntimeException>() {
-            @Override
-            public Byte apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getByte(1);
-            }
-        };
-
-        public static final BiRecordGetter<Short, RuntimeException> GET_SHORT = new BiRecordGetter<Short, RuntimeException>() {
-            @Override
-            public Short apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getShort(1);
-            }
-        };
-
-        public static final BiRecordGetter<Integer, RuntimeException> GET_INT = new BiRecordGetter<Integer, RuntimeException>() {
-            @Override
-            public Integer apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getInt(1);
-            }
-        };
-
-        public static final BiRecordGetter<Long, RuntimeException> GET_LONG = new BiRecordGetter<Long, RuntimeException>() {
-            @Override
-            public Long apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getLong(1);
-            }
-        };
-
-        public static final BiRecordGetter<Float, RuntimeException> GET_FLOAT = new BiRecordGetter<Float, RuntimeException>() {
-            @Override
-            public Float apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getFloat(1);
-            }
-        };
-
-        public static final BiRecordGetter<Double, RuntimeException> GET_DOUBLE = new BiRecordGetter<Double, RuntimeException>() {
-            @Override
-            public Double apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getDouble(1);
-            }
-        };
-
-        public static final BiRecordGetter<String, RuntimeException> GET_STRING = new BiRecordGetter<String, RuntimeException>() {
-            @Override
-            public String apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getString(1);
-            }
-        };
-
-        public static final BiRecordGetter<Date, RuntimeException> GET_DATE = new BiRecordGetter<Date, RuntimeException>() {
-            @Override
-            public Date apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getDate(1);
-            }
-        };
-
-        public static final BiRecordGetter<Time, RuntimeException> GET_TIME = new BiRecordGetter<Time, RuntimeException>() {
-            @Override
-            public Time apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getTime(1);
-            }
-        };
-
-        public static final BiRecordGetter<Timestamp, RuntimeException> GET_TIMESTAMP = new BiRecordGetter<Timestamp, RuntimeException>() {
-            @Override
-            public Timestamp apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
-                return rs.getTimestamp(1);
             }
         };
 

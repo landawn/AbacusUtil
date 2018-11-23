@@ -8014,79 +8014,86 @@ public final class SQLExecutor implements Closeable {
             // Singleton: Utility class
         }
 
-        public static final Try.Function<ResultSet, Boolean, SQLException> GET_BOOLEAN = new Try.Function<ResultSet, Boolean, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Boolean, SQLException> GET_BOOLEAN = new Try.BiFunction<ResultSet, List<String>, Boolean, SQLException>() {
             @Override
-            public Boolean apply(final ResultSet rs) throws SQLException {
+            public Boolean apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getBoolean(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Byte, SQLException> GET_BYTE = new Try.Function<ResultSet, Byte, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Byte, SQLException> GET_BYTE = new Try.BiFunction<ResultSet, List<String>, Byte, SQLException>() {
             @Override
-            public Byte apply(final ResultSet rs) throws SQLException {
+            public Byte apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getByte(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Short, SQLException> GET_SHORT = new Try.Function<ResultSet, Short, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Short, SQLException> GET_SHORT = new Try.BiFunction<ResultSet, List<String>, Short, SQLException>() {
             @Override
-            public Short apply(final ResultSet rs) throws SQLException {
+            public Short apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getShort(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Integer, SQLException> GET_INT = new Try.Function<ResultSet, Integer, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Integer, SQLException> GET_INT = new Try.BiFunction<ResultSet, List<String>, Integer, SQLException>() {
             @Override
-            public Integer apply(final ResultSet rs) throws SQLException {
+            public Integer apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getInt(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Long, SQLException> GET_LONG = new Try.Function<ResultSet, Long, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Long, SQLException> GET_LONG = new Try.BiFunction<ResultSet, List<String>, Long, SQLException>() {
             @Override
-            public Long apply(final ResultSet rs) throws SQLException {
+            public Long apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getLong(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Float, SQLException> GET_FLOAT = new Try.Function<ResultSet, Float, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Float, SQLException> GET_FLOAT = new Try.BiFunction<ResultSet, List<String>, Float, SQLException>() {
             @Override
-            public Float apply(final ResultSet rs) throws SQLException {
+            public Float apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getFloat(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Double, SQLException> GET_DOUBLE = new Try.Function<ResultSet, Double, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Double, SQLException> GET_DOUBLE = new Try.BiFunction<ResultSet, List<String>, Double, SQLException>() {
             @Override
-            public Double apply(final ResultSet rs) throws SQLException {
+            public Double apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getDouble(1);
             }
         };
 
-        public static final Try.Function<ResultSet, String, SQLException> GET_STRING = new Try.Function<ResultSet, String, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, BigDecimal, SQLException> GET_BIG_DECIMAL = new Try.BiFunction<ResultSet, List<String>, BigDecimal, SQLException>() {
             @Override
-            public String apply(final ResultSet rs) throws SQLException {
+            public BigDecimal apply(final ResultSet rs, final List<String> cls) throws SQLException {
+                return rs.getBigDecimal(1);
+            }
+        };
+
+        public static final Try.BiFunction<ResultSet, List<String>, String, SQLException> GET_STRING = new Try.BiFunction<ResultSet, List<String>, String, SQLException>() {
+            @Override
+            public String apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getString(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Date, SQLException> GET_DATE = new Try.Function<ResultSet, Date, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Date, SQLException> GET_DATE = new Try.BiFunction<ResultSet, List<String>, Date, SQLException>() {
             @Override
-            public Date apply(final ResultSet rs) throws SQLException {
+            public Date apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getDate(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Time, SQLException> GET_TIME = new Try.Function<ResultSet, Time, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Time, SQLException> GET_TIME = new Try.BiFunction<ResultSet, List<String>, Time, SQLException>() {
             @Override
-            public Time apply(final ResultSet rs) throws SQLException {
+            public Time apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getTime(1);
             }
         };
 
-        public static final Try.Function<ResultSet, Timestamp, SQLException> GET_TIMESTAMP = new Try.Function<ResultSet, Timestamp, SQLException>() {
+        public static final Try.BiFunction<ResultSet, List<String>, Timestamp, SQLException> GET_TIMESTAMP = new Try.BiFunction<ResultSet, List<String>, Timestamp, SQLException>() {
             @Override
-            public Timestamp apply(final ResultSet rs) throws SQLException {
+            public Timestamp apply(final ResultSet rs, final List<String> cls) throws SQLException {
                 return rs.getTimestamp(1);
             }
         };
