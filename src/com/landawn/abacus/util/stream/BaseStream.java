@@ -48,19 +48,6 @@ import com.landawn.abacus.util.function.Supplier;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
- * Base interface for streams, which are sequences of elements supporting
- * sequential and parallel aggregate operations.  The following example
- * illustrates an aggregate operation using the stream types {@link Stream}
- * and {@link IntStream}, computing the sum of the weights of the red widgets:
- *
- * <pre>{@code
- *     int sum = widgets.stream()
- *                      .filter(w -> w.getColor() == RED)
- *                      .mapToInt(w -> w.getWeight())
- *                      .sum();
- * }</pre>
- * 
  *
  * @param <T> the type of the stream elements
  * @param <A> the type of array
@@ -1035,6 +1022,56 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     S parallel(Executor executor);
 
     //    /**
+    //     * Returns a new sequential {@code SS} by apply {@code thisStream.parallel()} to the specified {@code func}.
+    //     * It's equal to:
+    //     * <pre>
+    //     * <code>
+    //     * thisStream.parallel().(action by func).sequential();
+    //     * </code>
+    //     * </pre>
+    //     *  
+    //     * @param func
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(Function<? super S, SS> func);
+    //
+    //    /**
+    //     * Returns a new sequential {@code SS} by apply {@code thisStream.parallel(maxThreadNum)} to the specified {@code func}.
+    //     * It's equal to:
+    //     * <pre>
+    //     * <code>
+    //     * thisStream.parallel(maxThreadNum).(action by func).sequential();
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * @param maxThreadNum
+    //     * @param func
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(int maxThreadNum, Function<? super S, SS> func);
+    //
+    //    /**
+    //     * Returns a new sequential {@code S} by apply {@code thisStream.parallel(maxThreadNum, executor)} to the specified {@code func}.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * thisStream.parallel(maxThreadNum, executor).(action by func).sequential();
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * @param maxThreadNum
+    //     * @param executor should be able to execute sum of {@code maxThreadNum} operations in parallel.
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(int maxThreadNum, Executor executor, Function<? super S, SS> func);
+
+    //    /**
     //     * Return the underlying <code>maxThreadNum</code> if the stream is parallel, otherwise <code>1</code> is returned.
     //     * 
     //     * @return
@@ -1071,26 +1108,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     //     */
     //    @Deprecated
     //    S splitor(Splitor splitor);
-
-    //    /**
-    //     * Short-cut for s.parallel().__(op).sequential().
-    //     * 
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
-    //
-    //    /**
-    //     * 
-    //     * Short-cut for s.parallel(maxThreadNum).__(op).sequential().
-    //     * 
-    //     * @param maxThreadNum
-    //     * @param op
-    //     * @return
-    //     */
-    //    @SuppressWarnings("rawtypes")
-    //    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
 
     public static enum Splitor {
         ARRAY, ITERATOR;

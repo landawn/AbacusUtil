@@ -2,6 +2,8 @@
 
 * Improvements and bug fix.
 
+* Rename `EntryStream.flatMap/flattMap/flatMapp`.
+
 
 ### 1.3.21
 

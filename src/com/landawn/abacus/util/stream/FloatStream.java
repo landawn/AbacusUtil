@@ -76,22 +76,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A sequence of primitive float-valued elements supporting sequential and parallel
- * aggregate operations.  This is the {@code float} primitive specialization of
- * {@link Stream}.
- *
- * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link FloatStream}, computing the sum of the weights of the
- * red widgets:
- *
- * <pre>{@code
- *     float sum = widgets.stream()
- *                         .filter(w -> w.getColor() == RED)
- *                         .mapToFloat(w -> w.getWeight())
- *                         .sum();
- * }</pre>
- * 
- * 
  * @see Stream
  */
 public abstract class FloatStream

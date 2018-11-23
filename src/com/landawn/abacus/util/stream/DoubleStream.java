@@ -76,22 +76,6 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A sequence of primitive double-valued elements supporting sequential and parallel
- * aggregate operations.  This is the {@code double} primitive specialization of
- * {@link Stream}.
- *
- * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link DoubleStream}, computing the sum of the weights of the
- * red widgets:
- *
- * <pre>{@code
- *     double sum = widgets.stream()
- *                         .filter(w -> w.getColor() == RED)
- *                         .mapToDouble(w -> w.getWeight())
- *                         .sum();
- * }</pre>
- * 
- * 
  * @see Stream 
  */
 public abstract class DoubleStream

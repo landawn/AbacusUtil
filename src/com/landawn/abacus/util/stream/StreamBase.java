@@ -672,6 +672,24 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return parallel(DEFAULT_MAX_THREAD_NUM, exector);
     }
 
+    //    @Deprecated
+    //    @Override
+    //    public <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(final Function<? super S, SS> func) {
+    //        return (SS) parallel().__(func).sequential();
+    //    }
+    //
+    //    @Deprecated
+    //    @Override
+    //    public <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(int maxThreadNum, final Function<? super S, SS> func) {
+    //        return (SS) parallel(maxThreadNum).__(func).sequential();
+    //    }
+    //
+    //    @Deprecated
+    //    @Override
+    //    public <SS extends BaseStream<?, ?, ?, ?, ?, ?, ?, ?, ?>> SS parallelOnly(int maxThreadNum, final Executor exector, final Function<? super S, SS> func) {
+    //        return (SS) parallel(maxThreadNum, exector).__(func).sequential();
+    //    }
+
     protected int maxThreadNum() {
         // throw new UnsupportedOperationException();
 

@@ -80,22 +80,6 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A sequence of primitive int-valued elements supporting sequential and parallel
- * aggregate operations.  This is the {@code int} primitive specialization of
- * {@link Stream}.
- *
- * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link IntStream}, computing the sum of the weights of the
- * red widgets:
- *
- * <pre>{@code
- *     int sum = widgets.stream()
- *                      .filter(w -> w.getColor() == RED)
- *                      .mapToInt(w -> w.getWeight())
- *                      .sum();
- * }</pre>
- * 
- * 
  * @see Stream 
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntIterator, IntStream> {

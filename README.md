@@ -187,6 +187,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/ArrayHashMap.html),
 [ClassUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/ClassUtil.html),
 [EscapeUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/EscapeUtil.html),
+[RegExUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/RegExUtil.html),
 [FilenameUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/FilenameUtil.html),
 [AWSJSONUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/AWSJSONUtil.html),
 [AddrUtil](https://static.javadoc.io/com.landawn/abacus-util/1.3.21/com/landawn/abacus/util/AddrUtil.html),

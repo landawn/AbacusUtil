@@ -80,22 +80,6 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A sequence of primitive long-valued elements supporting sequential and parallel
- * aggregate operations.  This is the {@code long} primitive specialization of
- * {@link Stream}.
- *
- * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link LongStream}, computing the sum of the weights of the
- * red widgets:
- *
- * <pre>{@code
- *     long sum = widgets.stream()
- *                       .filter(w -> w.getColor() == RED)
- *                       .mapToLong(w -> w.getWeight())
- *                       .sum();
- * }</pre>
- * 
- * 
  * @see Stream 
  */
 public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongIterator, LongStream> {

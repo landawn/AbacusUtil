@@ -73,22 +73,6 @@ import com.landawn.abacus.util.function.ToByteFunction;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A sequence of primitive int-valued elements supporting sequential and parallel
- * aggregate operations.  This is the {@code int} primitive specialization of
- * {@link Stream}.
- *
- * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link ByteStream}, computing the sum of the weights of the
- * red widgets:
- *
- * <pre>{@code
- *     int sum = widgets.stream()
- *                      .filter(w -> w.getColor() == RED)
- *                      .mapToByte(w -> w.getWeight())
- *                      .sum();
- * }</pre>
- * 
- * 
  * @see Stream 
  */
 public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteIterator, ByteStream> {
