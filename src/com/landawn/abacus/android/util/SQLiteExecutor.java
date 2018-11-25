@@ -73,6 +73,7 @@ import com.landawn.abacus.util.SQLBuilder.RE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
 import com.landawn.abacus.util.StringUtil;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.WD;
 
 import android.content.ContentValues;
@@ -1404,7 +1405,7 @@ public final class SQLiteExecutor {
     }
 
     /**
-     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}
+     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
      *
      * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
      * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
@@ -1423,48 +1424,18 @@ public final class SQLiteExecutor {
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public final <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final String sql, Object... parameters) {
-        DataSet rs = null;
+        N.checkArgNotNull(targetClass, "targetClass");
 
         final Cursor cursor = rawQuery(sql, parameters);
+        DataSet ds = null;
 
         try {
-            rs = extractData(cursor, Type.arrayOf(targetClass), 0, 1);
+            ds = extractData(cursor, Type.arrayOf(targetClass), 0, 1);
         } finally {
             cursor.close();
         }
 
-        if (N.isNullOrEmpty(rs)) {
-            return Nullable.empty();
-        } else {
-            return targetClass == null ? Nullable.of((V) rs.get(0, 0)) : Nullable.of(N.convert(rs.get(0, 0), targetClass));
-        }
-    }
-
-    @Deprecated
-    <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
-        final DataSet rs = query(tableName, N.asArray(columnName), N.asArray(targetClass), whereClause, null, null, null, 0, 1);
-
-        if (N.isNullOrEmpty(rs)) {
-            return Nullable.empty();
-        } else {
-            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.convert(rs.get(0, 0), targetClass));
-        }
-    }
-
-    @Deprecated
-    <T> Nullable<T> queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
-        //        final Method propGetMethod = N.getPropGetMethod(entityClass, columnName);
-        //        final Class<T> targetClass = (Class) propGetMethod.getReturnType();
-        //        final DataSet rs = query(getTableNameByEntity(entityClass), Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
-        //
-        //        if (N.isNullOrEmpty(rs)) {
-        //            return N.defaultValueOf(targetClass);
-        //        } else {
-        //            return N.convert(targetClass, rs.absolute(0).get(0));
-        //        }
-
-        return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass),
-                columnName, whereClause);
+        return N.isNullOrEmpty(ds) ? Nullable.<V> empty() : Nullable.of(N.convert(ds.get(0, 0), targetClass));
     }
 
     /**
@@ -1477,30 +1448,93 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final <V> Optional<V> queryForSingleNonNull(final Class<V> targetClass, final String sql, Object... parameters) {
-        DataSet rs = null;
+        N.checkArgNotNull(targetClass, "targetClass");
 
         final Cursor cursor = rawQuery(sql, parameters);
+        DataSet ds = null;
 
         try {
-            rs = extractData(cursor, Type.arrayOf(targetClass), 0, 1);
+            ds = extractData(cursor, Type.arrayOf(targetClass), 0, 1);
         } finally {
             cursor.close();
         }
 
-        if (N.isNullOrEmpty(rs)) {
-            return Optional.empty();
+        return N.isNullOrEmpty(ds) ? Optional.<V> empty() : Optional.of(N.convert(ds.get(0, 0), targetClass));
+    }
+
+    /**
+     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}. 
+     * And throws {@code NonUniqueResultException} if more than one record found.
+     *
+     * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
+     * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
+     * Otherwise, {@code false} is returned.
+     *
+     * Remember to add {@code limit} condition if big result will be returned by the query.
+     *
+     * @param targetClass set result type to avoid the NullPointerException if result is null and T is primitive type
+     *            "int, long. short ... char, boolean..".
+     * @param sql set <code>offset</code> and <code>limit</code> in sql with format: 
+     * <li><code>SELECT * FROM account where id = ? LIMIT <i>offsetValue</i>, <i>limitValue</i></code></li>
+     * <br>or limit only:</br>
+     * <li><code>SELECT * FROM account where id = ? LIMIT <i>limitValue</i></code></li>
+     * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters 
+     * @throws NonUniqueResultException if more than one record found.
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, Object... parameters) throws NonUniqueResultException {
+        N.checkArgNotNull(targetClass, "targetClass");
+
+        final Cursor cursor = rawQuery(sql, parameters);
+        DataSet ds = null;
+
+        try {
+            ds = extractData(cursor, Type.arrayOf(targetClass), 0, 2);
+        } finally {
+            cursor.close();
+        }
+
+        if (N.isNullOrEmpty(ds)) {
+            return Nullable.empty();
+        } else if (ds.size() == 1) {
+            return Nullable.of(N.convert(ds.get(0, 0), targetClass));
         } else {
-            return targetClass == null ? Optional.of((V) rs.get(0, 0)) : Optional.of(N.convert(rs.get(0, 0), targetClass));
+            throw new NonUniqueResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
         }
     }
 
-    //    <T> T findFirst(final Class<T> targetClass, String... selectColumnNames) {
-    //        return findFirst(targetClass, N.asList(selectColumnNames));
-    //    }
-    //
-    //    <T> T findFirst(final Class<T> targetClass, Collection<String> selectColumnNames) {
-    //        return findFirst(targetClass, selectColumnNames, null);
-    //    }
+    /**
+     * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}. 
+     * And throws {@code NonUniqueResultException} if more than one record found.
+     * 
+     * @param targetClass
+     * @param sql
+     * @param parameters
+     * @return
+     * @throws NonUniqueResultException if more than one record found.
+     */
+    @SafeVarargs
+    public final <V> Optional<V> queryForUniqueNonNull(final Class<V> targetClass, final String sql, Object... parameters) throws NonUniqueResultException {
+        N.checkArgNotNull(targetClass, "targetClass");
+
+        final Cursor cursor = rawQuery(sql, parameters);
+        DataSet ds = null;
+
+        try {
+            ds = extractData(cursor, Type.arrayOf(targetClass), 0, 2);
+        } finally {
+            cursor.close();
+        }
+
+        if (N.isNullOrEmpty(ds)) {
+            return Optional.empty();
+        } else if (ds.size() == 1) {
+            return Optional.of(N.convert(ds.get(0, 0), targetClass));
+        } else {
+            throw new NonUniqueResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
+        }
+    }
 
     public <T> Optional<T> findFirst(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
         return findFirst(targetClass, selectColumnNames, whereClause, null);

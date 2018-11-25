@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
@@ -38,6 +39,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -390,6 +392,19 @@ abstract class AbstractIntStream extends IntStream {
         }
 
         return OptionalInt.of(next);
+    }
+
+    @Override
+    public OptionalInt onlyOne() throws NonUniqueResultException {
+        final IntIterator iter = this.iteratorEx();
+
+        final OptionalInt result = iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
+
+        if (result.isPresent() && iter.hasNext()) {
+            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextInt()));
+        }
+
+        return result;
     }
 
     @Override

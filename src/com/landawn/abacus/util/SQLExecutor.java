@@ -2301,7 +2301,7 @@ public class SQLExecutor implements Closeable {
                     if (rs.next()) {
                         final Nullable<V> result = Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass));
 
-                        if (rs.next()) {
+                        if (result.isPresent() && rs.next()) {
                             throw new NonUniqueResultException("At least two results found: "
                                     + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
                         }

@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
@@ -33,6 +34,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1121,6 +1123,19 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public OptionalChar last() {
         return fromIndex < toIndex ? OptionalChar.of(elements[toIndex - 1]) : OptionalChar.empty();
+    }
+
+    @Override
+    public OptionalChar onlyOne() throws NonUniqueResultException {
+        final int size = toIndex - fromIndex;
+
+        if (size == 0) {
+            return OptionalChar.empty();
+        } else if (size == 1) {
+            return OptionalChar.of(elements[fromIndex]);
+        } else {
+            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+        }
     }
 
     @Override

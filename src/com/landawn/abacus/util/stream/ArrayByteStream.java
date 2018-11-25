@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
@@ -33,6 +34,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1121,6 +1123,19 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public OptionalByte last() {
         return fromIndex < toIndex ? OptionalByte.of(elements[toIndex - 1]) : OptionalByte.empty();
+    }
+
+    @Override
+    public OptionalByte onlyOne() throws NonUniqueResultException {
+        final int size = toIndex - fromIndex;
+
+        if (size == 0) {
+            return OptionalByte.empty();
+        } else if (size == 1) {
+            return OptionalByte.of(elements[fromIndex]);
+        } else {
+            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+        }
     }
 
     @Override

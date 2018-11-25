@@ -2111,7 +2111,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    public Nullable<T> onlyOne() {
+    /**
+     * 
+     * @return
+     * @throws NonUniqueResultException if there are more than one element in this {@code Seq}.
+     */
+    public Nullable<T> onlyOne() throws NonUniqueResultException {
         if (isEmpty()) {
             return Nullable.empty();
         } else if (size() == 1) {

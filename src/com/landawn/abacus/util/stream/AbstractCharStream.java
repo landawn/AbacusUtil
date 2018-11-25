@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
@@ -38,6 +39,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -385,6 +387,19 @@ abstract class AbstractCharStream extends CharStream {
         }
 
         return OptionalChar.of(next);
+    }
+
+    @Override
+    public OptionalChar onlyOne() throws NonUniqueResultException {
+        final CharIterator iter = this.iteratorEx();
+
+        final OptionalChar result = iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
+
+        if (result.isPresent() && iter.hasNext()) {
+            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextChar()));
+        }
+
+        return result;
     }
 
     @Override

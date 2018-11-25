@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.type.Type;
@@ -68,6 +69,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1602,6 +1604,19 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         return Optional.of(next);
+    }
+
+    @Override
+    public Optional<T> onlyOne() throws NonUniqueResultException {
+        final Iterator<T> iter = this.iteratorEx();
+
+        final Optional<T> result = iter.hasNext() ? Optional.of(iter.next()) : Optional.<T> empty();
+
+        if (result.isPresent() && iter.hasNext()) {
+            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.next()));
+        }
+
+        return result;
     }
 
     @Override
