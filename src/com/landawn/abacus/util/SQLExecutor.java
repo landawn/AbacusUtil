@@ -71,6 +71,7 @@ import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -165,7 +166,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html</a>
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html</a>
  */
-public final class SQLExecutor implements Closeable {
+public class SQLExecutor implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(SQLExecutor.class);
 
     static final String ID = "id";
@@ -744,7 +745,8 @@ public final class SQLExecutor implements Closeable {
             logger.error(msg);
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt, localConn, conn);
+            closeQuietly(stmt);
+            closeQuietly(localConn, conn, ds, jdbcSettings);
         }
 
         if ((result != null) && isEntityOrMapParameter(namedSQL, parameters)) {
@@ -877,7 +879,7 @@ public final class SQLExecutor implements Closeable {
                 originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
-                closeQuietly(null, localConn, conn);
+                closeQuietly(localConn, conn, ds, jdbcSettings);
                 throw new UncheckedSQLException(e);
             }
 
@@ -914,12 +916,11 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            if ((conn == null) && (len > batchSize)) {
+            if ((conn == null) && (len > batchSize) && autoCommit == true) {
                 localConn.commit();
             }
         } catch (SQLException e) {
-            if ((conn == null) && (len > batchSize)) {
-
+            if ((conn == null) && (len > batchSize) && autoCommit == true) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Trying to roll back ...");
                 }
@@ -948,7 +949,8 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            closeQuietly(stmt, localConn, conn);
+            closeQuietly(stmt);
+            closeQuietly(localConn, conn, ds, jdbcSettings);
         }
 
         if (N.notNullOrEmpty(resultIdList)) {
@@ -1113,7 +1115,8 @@ public final class SQLExecutor implements Closeable {
             logger.error(msg);
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt, localConn, conn);
+            closeQuietly(stmt);
+            closeQuietly(localConn, conn, ds, jdbcSettings);
         }
     }
 
@@ -1179,7 +1182,7 @@ public final class SQLExecutor implements Closeable {
                 originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
-                closeQuietly(null, localConn, conn);
+                closeQuietly(localConn, conn, ds, jdbcSettings);
                 throw new UncheckedSQLException(e);
             }
 
@@ -1218,14 +1221,13 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            if ((conn == null) && (len > batchSize)) {
+            if ((conn == null) && (len > batchSize) && autoCommit == true) {
                 localConn.commit();
             }
 
             return result;
         } catch (SQLException e) {
-            if ((conn == null) && (len > batchSize)) {
-
+            if ((conn == null) && (len > batchSize) && autoCommit == true) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Trying to roll back ...");
                 }
@@ -1254,7 +1256,8 @@ public final class SQLExecutor implements Closeable {
                 }
             }
 
-            closeQuietly(stmt, localConn, conn);
+            closeQuietly(stmt);
+            closeQuietly(localConn, conn, ds, jdbcSettings);
         }
     }
 
@@ -2164,9 +2167,8 @@ public final class SQLExecutor implements Closeable {
     }
 
     /**
-     * Just fetch the result in the 1st row and 1st column. {@code null} is returned if no result is found. And this
-     * method will try to convert the result to the specified {@code targetClass} if {@code targetClass} is not null and it's not
-     * assignable from the result.
+     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
+     * <br />
      *
      * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
      * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
@@ -2182,31 +2184,139 @@ public final class SQLExecutor implements Closeable {
      * @param statementSetter
      * @param jdbcSettings
      * @param parameters
-     * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public final <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final Connection conn, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        final Nullable<?> result = query(conn, sql, statementSetter, createSingleResultExtractor(targetClass), jdbcSettings, parameters);
-
-        return result.isNotNull() && !targetClass.isAssignableFrom(result.get().getClass()) ? Nullable.of(N.convert(result.get(), targetClass))
-                : (Nullable<V>) result;
+        return query(conn, sql, statementSetter, createSingleResultExtractor(targetClass), jdbcSettings, parameters);
     }
 
+    private final ObjectPool<Class<?>, ResultExtractor<Nullable<?>>> singleResultExtractorPool = new ObjectPool<>(64);
+
     private <V> ResultExtractor<Nullable<V>> createSingleResultExtractor(final Class<V> targetClass) {
-        return new ResultExtractor<Nullable<V>>() {
-            @Override
-            public Nullable<V> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-                JdbcUtil.skip(rs, jdbcSettings.getOffset());
+        @SuppressWarnings("rawtypes")
+        ResultExtractor result = singleResultExtractorPool.get(targetClass);
 
-                if (rs.next()) {
-                    return Nullable.of(N.<V> typeOf(targetClass).get(rs, 1));
+        if (result == null) {
+            result = new ResultExtractor<Nullable<V>>() {
+                @Override
+                public Nullable<V> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+                    JdbcUtil.skip(rs, jdbcSettings.getOffset());
+
+                    if (rs.next()) {
+                        return Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass));
+                    }
+
+                    return Nullable.empty();
                 }
+            };
 
-                return Nullable.empty();
-            }
-        };
+            singleResultExtractorPool.put(targetClass, result);
+        }
+
+        return result;
+    }
+
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final Object... parameters)
+            throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, sql, StatementSetter.DEFAULT, parameters);
+    }
+
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
+            final Object... parameters) throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, sql, statementSetter, null, parameters);
+    }
+
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters)
+            throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql, final Object... parameters)
+            throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, conn, sql, StatementSetter.DEFAULT, parameters);
+    }
+
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final StatementSetter statementSetter, final Object... parameters) throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, conn, sql, statementSetter, null, parameters);
+    }
+
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql, final JdbcSettings jdbcSettings,
+            final Object... parameters) throws NonUniqueResultException {
+        return queryForUniqueResult(targetClass, conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
+    }
+
+    /**
+     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
+     * And throws {@code NonUniqueResultException} if more than one record found.
+     * <br />
+     *
+     * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
+     * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
+     * Otherwise, {@code false} is returned.
+     *
+     * Remember to add {@code limit} condition if big result will be returned by the query.
+     *
+     * @param targetClass
+     *            set result type to avoid the NullPointerException if result is null and T is primitive type
+     *            "int, long. short ... char, boolean..".
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @throws NonUniqueResultException if more than one record found.
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) throws NonUniqueResultException {
+        return query(conn, sql, statementSetter, createUniqueResultExtractor(targetClass), jdbcSettings, parameters);
+    }
+
+    private final ObjectPool<Class<?>, ResultExtractor<Nullable<?>>> uniqueResultExtractorPool = new ObjectPool<>(64);
+
+    private <V> ResultExtractor<Nullable<V>> createUniqueResultExtractor(final Class<V> targetClass) {
+        @SuppressWarnings("rawtypes")
+        ResultExtractor result = uniqueResultExtractorPool.get(targetClass);
+
+        if (result == null) {
+            result = new ResultExtractor<Nullable<V>>() {
+                @Override
+                public Nullable<V> extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+                    JdbcUtil.skip(rs, jdbcSettings.getOffset());
+
+                    if (rs.next()) {
+                        final Nullable<V> result = Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass));
+
+                        if (rs.next()) {
+                            throw new NonUniqueResultException("At least two results found: "
+                                    + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
+                        }
+
+                        return result;
+                    }
+
+                    return Nullable.empty();
+                }
+            };
+
+            uniqueResultExtractorPool.put(targetClass, result);
+        }
+
+        return result;
     }
 
     @SafeVarargs
@@ -2393,7 +2503,8 @@ public final class SQLExecutor implements Closeable {
             if (result instanceof ResultSet || result instanceof RowIterator) {
                 // delay.
             } else {
-                closeQuietly(rs, stmt, localConn, conn);
+                closeQuietly(rs, stmt);
+                closeQuietly(localConn, conn, ds, jdbcSettings);
             }
         }
 
@@ -2806,7 +2917,7 @@ public final class SQLExecutor implements Closeable {
             throw new UncheckedSQLException(e);
         } finally {
             if (result == null && conn == null) {
-                closeQuietly(localConn);
+                closeQuietly(localConn, conn, ds, jdbcSettings);
             }
         }
 
@@ -2843,7 +2954,7 @@ public final class SQLExecutor implements Closeable {
             throw new UncheckedSQLException(e);
         } finally {
             if (result == null && conn == null) {
-                closeQuietly(localConn);
+                closeQuietly(localConn, conn, ds, jdbcSettings);
             }
         }
 
@@ -2887,7 +2998,8 @@ public final class SQLExecutor implements Closeable {
             logger.error(msg);
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt, localConn, conn);
+            closeQuietly(stmt);
+            closeQuietly(localConn, conn, ds, jdbcSettings);
         }
     }
 
@@ -2923,8 +3035,6 @@ public final class SQLExecutor implements Closeable {
         return beginTransaction(IsolationLevel.DEFAULT, forUpdateOnly);
     }
 
-    final Map<String, SQLTransaction> threadTransactionMap = new ConcurrentHashMap<>();
-
     /**
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
@@ -2957,6 +3067,8 @@ public final class SQLExecutor implements Closeable {
 
         return transaction;
     }
+
+    final Map<String, SQLTransaction> threadTransactionMap = new ConcurrentHashMap<>();
 
     static String getTransactionThreadId() {
         final Thread currentThread = Thread.currentThread();
@@ -3099,16 +3211,22 @@ public final class SQLExecutor implements Closeable {
     protected Connection getConnection(final Connection conn, final DataSource ds, final JdbcSettings jdbcSettings, final SQLOperation op) {
         if (conn != null) {
             return conn;
-        } else if (jdbcSettings.getQueryWithDataSource() != null) {
-            return ds.getConnection();
         }
 
         final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId());
 
         if (tran != null && (tran.isForUpdateOnly() == false || op != SQLOperation.SELECT)) {
+            if (jdbcSettings.getQueryWithDataSource() != null && ds != _ds) {
+                throw new IllegalArgumentException("Can't specified a different Data Source: " + jdbcSettings.getQueryWithDataSource() + " in transaction");
+            }
+
             return tran.connection();
         }
 
+        return getConnection(ds);
+    }
+
+    protected Connection getConnection(final DataSource ds) {
         return ds.getConnection();
     }
 
@@ -3265,90 +3383,30 @@ public final class SQLExecutor implements Closeable {
         return stmt;
     }
 
-    /**
-     * Unconditionally close an <code>ResultSet</code>.
-     * <p>
-     * Equivalent to {@link ResultSet#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param rs
-     */
-    void closeQuietly(final ResultSet rs) {
-        closeQuietly(rs, null, null);
+    protected void closeQuietly(final ResultSet rs) {
+        JdbcUtil.closeQuietly(rs);
     }
 
-    /**
-     * Unconditionally close an <code>Statement</code>.
-     * <p>
-     * Equivalent to {@link Statement#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param stmt
-     */
-    void closeQuietly(final PreparedStatement stmt) {
-        closeQuietly(null, stmt, null);
+    protected void closeQuietly(final PreparedStatement stmt) {
+        JdbcUtil.closeQuietly(stmt);
     }
 
-    /**
-     * Unconditionally close an <code>Connection</code>.
-     * <p>
-     * Equivalent to {@link Connection#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param conn
-     */
-    public void closeQuietly(final Connection conn) {
-        closeQuietly(null, (PreparedStatement) null, conn);
+    protected void closeQuietly(final Connection conn) {
+        JdbcUtil.closeQuietly(conn);
     }
 
-    /**
-     * Unconditionally close the <code>ResultSet, Statement</code>.
-     * <p>
-     * Equivalent to {@link ResultSet#close()}, {@link Statement#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param rs
-     * @param stmt
-     * @param conn
-     */
-    void closeQuietly(final ResultSet rs, final PreparedStatement stmt) {
-        closeQuietly(rs, stmt, null);
+    protected void closeQuietly(final ResultSet rs, final PreparedStatement stmt) {
+        JdbcUtil.closeQuietly(rs, stmt);
     }
 
-    /**
-     * Unconditionally close the <code>Statement, Connection</code>.
-     * <p>
-     * Equivalent to {@link Statement#close()}, {@link Connection#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param rs
-     * @param stmt
-     * @param conn
-     */
-    void closeQuietly(final PreparedStatement stmt, final Connection conn) {
-        closeQuietly(null, stmt, conn);
+    protected void closeQuietly(final Connection localConn, final Connection inputConn, final DataSource ds, final JdbcSettings jdbcSettings) {
+        if (inputConn == null) {
+            closeQuietly(localConn, ds);
+        }
     }
 
-    /**
-     * Unconditionally close the <code>ResultSet, Statement, Connection</code>.
-     * <p>
-     * Equivalent to {@link ResultSet#close()}, {@link Statement#close()}, {@link Connection#close()}, except any exceptions will be ignored.
-     * This is typically used in finally blocks.
-     * 
-     * @param rs
-     * @param stmt
-     * @param conn
-     */
-    void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection conn) {
-        closeQuietly(rs, stmt, conn, null);
-    }
-
-    protected void closeQuietly(final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
-        closeQuietly(null, stmt, localConn, inputConn);
-    }
-
-    protected void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
-        JdbcUtil.closeQuietly(rs, stmt, inputConn == null ? localConn : null);
+    protected void closeQuietly(final Connection conn, final DataSource ds) {
+        JdbcUtil.closeQuietly(conn);
     }
 
     /**
@@ -4612,111 +4670,288 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.queryAll(pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalBoolean queryForBoolean(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForBoolean(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalChar queryForChar(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForChar(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalByte queryForByte(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForByte(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalShort queryForShort(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForShort(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalInt queryForInt(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForInt(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalLong queryForLong(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForLong(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalFloat queryForFloat(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForFloat(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public OptionalDouble queryForDouble(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForDouble(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public Nullable<BigDecimal> queryForBigDecimal(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForBigDecimal(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public Nullable<String> queryForString(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForString(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public Nullable<java.sql.Date> queryForDate(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForDate(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public Nullable<java.sql.Time> queryForTime(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForTime(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public Nullable<java.sql.Timestamp> queryForTimestamp(final String selectPropName, final Condition whereCause) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForTimestamp(pair.sql, pair.parameters.toArray());
         }
 
+        /**
+         * 
+         * @param targetValueClass
+         * @param selectPropName
+         * @param id
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Object id) {
             return queryForSingleResult(targetValueClass, selectPropName, id2Cond(id, false));
         }
 
+        /**
+         * 
+         * @param targetValueClass
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause) {
             return queryForSingleResult(targetValueClass, selectPropName, whereCause, null);
         }
 
+        /**
+         * 
+         * @param targetValueClass
+         * @param selectPropName
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return queryForSingleResult(targetValueClass, null, selectPropName, whereCause, jdbcSettings);
         }
 
+        /**
+         * 
+         * @param targetValueClass
+         * @param conn
+         * @param selectPropName
+         * @param id
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName, final Object id) {
             return queryForSingleResult(targetValueClass, conn, selectPropName, id2Cond(id, false));
         }
 
+        /**
+         * 
+         * @param targetValueClass
+         * @param conn
+         * @param selectPropName
+         * @param whereCause
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
                 final Condition whereCause) {
             return queryForSingleResult(targetValueClass, conn, selectPropName, whereCause, null);
         }
 
+        /**
+         * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
+         * 
+         * @param targetValueClass
+         * @param conn
+         * @param selectPropName
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
+         */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForSingleResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Object id)
+                throws NonUniqueResultException {
+            return queryForUniqueResult(targetValueClass, selectPropName, id2Cond(id, false));
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause)
+                throws NonUniqueResultException {
+            return queryForUniqueResult(targetValueClass, selectPropName, whereCause, null);
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) throws NonUniqueResultException {
+            return queryForUniqueResult(targetValueClass, null, selectPropName, whereCause, jdbcSettings);
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName, final Object id)
+                throws NonUniqueResultException {
+            return queryForUniqueResult(targetValueClass, conn, selectPropName, id2Cond(id, false));
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause) throws NonUniqueResultException {
+            return queryForUniqueResult(targetValueClass, conn, selectPropName, whereCause, null);
+        }
+
+        public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause, final JdbcSettings jdbcSettings) throws NonUniqueResultException {
+            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+
+            return sqlExecutor.queryForUniqueResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
         }
 
         private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
@@ -6754,6 +6989,65 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Nullable<V> call() throws Exception {
                     return mapper.queryForSingleResult(targetValueClass, conn, selectPropName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Object id) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, selectPropName, id);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, selectPropName, whereCause);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, selectPropName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Object id) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, conn, selectPropName, id);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, conn, selectPropName, whereCause);
+                }
+            });
+        }
+
+        public <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Nullable<V>>() {
+                @Override
+                public Nullable<V> call() throws Exception {
+                    return mapper.queryForUniqueResult(targetValueClass, conn, selectPropName, whereCause, jdbcSettings);
                 }
             });
         }

@@ -1410,6 +1410,93 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, sql, statementSetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final String sql, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, sql, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, conn, sql, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final StatementSetter statementSetter, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, conn, sql, statementSetter, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, conn, sql, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <V> ContinuableFuture<Nullable<V>> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<V>>() {
+            @Override
+            public Nullable<V> call() throws Exception {
+                return sqlExecutor.queryForUniqueResult(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
     public final ContinuableFuture<DataSet> query(final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override

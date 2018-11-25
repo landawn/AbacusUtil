@@ -96,6 +96,7 @@ import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
@@ -745,45 +746,47 @@ public final class JdbcUtil {
      * 
      * @param rs
      * @param n the count of row to move ahead.
+     * @return the number skipped.
      * @throws SQLException
      */
-    public static void skip(final ResultSet rs, int n) throws SQLException {
-        skip(rs, (long) n);
+    public static int skip(final ResultSet rs, int n) throws SQLException {
+        return skip(rs, (long) n);
     }
 
     /**
      * 
      * @param rs
      * @param n the count of row to move ahead.
+     * @return the number skipped.
      * @throws SQLException
      * @see {@link ResultSet#absolute(int)}
      */
-    public static void skip(final ResultSet rs, long n) throws SQLException {
-        //    N.checkArgument(offset >= 0, "'offset' can't be negative: %s", offset);
-        //
-        //    if (offset == 0) {
-        //        return;
-        //    }
-
+    public static int skip(final ResultSet rs, long n) throws SQLException {
         if (n <= 0) {
-            return;
+            return 0;
         } else if (n == 1) {
-            rs.next();
-        } else if (n <= Integer.MAX_VALUE) {
-            try {
-                if (n > Integer.MAX_VALUE - rs.getRow()) {
+            return rs.next() == true ? 1 : 0;
+        } else {
+            final int currentRow = rs.getRow();
+
+            if (n <= Integer.MAX_VALUE) {
+                try {
+                    if (n > Integer.MAX_VALUE - rs.getRow()) {
+                        while (n-- > 0L && rs.next()) {
+                        }
+                    } else {
+                        rs.absolute((int) n + rs.getRow());
+                    }
+                } catch (SQLException e) {
                     while (n-- > 0L && rs.next()) {
                     }
-                } else {
-                    rs.absolute((int) n + rs.getRow());
                 }
-            } catch (SQLException e) {
+            } else {
                 while (n-- > 0L && rs.next()) {
                 }
             }
-        } else {
-            while (n-- > 0L && rs.next()) {
-            }
+
+            return rs.getRow() - currentRow;
         }
     }
 
@@ -4082,11 +4085,91 @@ public final class JdbcUtil {
             }
         }
 
+        /**
+         * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
+         * 
+         * @param targetClass
+         * @return
+         * @throws SQLException
+         */
         public <V> Nullable<V> queryForSingleResult(Class<V> targetClass) throws SQLException {
+            N.checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}.
+         * 
+         * @param targetClass
+         * @return
+         * @throws SQLException
+         */
+        public <V> Optional<V> queryForSingleNonNull(Class<V> targetClass) throws SQLException {
+            N.checkArgNotNull(targetClass, "targetClass");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? Optional.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Optional.<V> empty();
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
+         * And throws {@code NonUniqueResultException} if more than one record found.
+         * 
+         * @param targetClass
+         * @return
+         * @throws NonUniqueResultException if more than one record found.
+         * @throws SQLException
+         */
+        public <V> Nullable<V> queryForUniqueResult(Class<V> targetClass) throws NonUniqueResultException, SQLException {
+            N.checkArgNotNull(targetClass, "targetClass");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                final Nullable<V> result = rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
+
+                if (rs.next()) {
+                    throw new NonUniqueResultException(
+                            "At least two results found: " + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
+                }
+
+                return result;
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}.
+         * And throws {@code NonUniqueResultException} if more than one record found.
+         * 
+         * @param targetClass
+         * @return
+         * @throws NonUniqueResultException if more than one record found.
+         * @throws SQLException
+         */
+        public <V> Optional<V> queryForUniqueNonNull(Class<V> targetClass) throws NonUniqueResultException, SQLException {
+            N.checkArgNotNull(targetClass, "targetClass");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                final Optional<V> result = rs.next() ? Optional.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Optional.<V> empty();
+
+                if (rs.next()) {
+                    throw new NonUniqueResultException(
+                            "At least two results found: " + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
+                }
+
+                return result;
             } finally {
                 closeAfterExecutionIfAllowed();
             }

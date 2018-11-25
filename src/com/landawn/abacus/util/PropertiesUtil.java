@@ -80,10 +80,7 @@ public final class PropertiesUtil {
             long offset = jdbcSettings.getOffset();
             long count = jdbcSettings.getCount();
 
-            while ((offset-- > 0) && rs.next()) {
-            }
-
-            if (offset <= 0) {
+            if (JdbcUtil.skip(rs, offset) >= offset) {
                 while ((count-- > 0) && rs.next()) {
                     ConfigEntity entity = new ConfigEntity();
                     List<String> columnLabelList = JdbcUtil.getColumnLabelList(rs);

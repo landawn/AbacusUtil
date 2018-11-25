@@ -1404,9 +1404,7 @@ public final class SQLiteExecutor {
     }
 
     /**
-     * Just fetch the result in the 1st row and 1st column. {@code null} is returned if no result is found. And this
-     * method will try to convert the result to the specified {@code targetClass} if {@code targetClass} is not null and it's not
-     * assignable from the result.
+     * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}
      *
      * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
      * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
@@ -1420,8 +1418,7 @@ public final class SQLiteExecutor {
      * <li><code>SELECT * FROM account where id = ? LIMIT <i>offsetValue</i>, <i>limitValue</i></code></li>
      * <br>or limit only:</br>
      * <li><code>SELECT * FROM account where id = ? LIMIT <i>limitValue</i></code></li>
-     * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
-     * @throws ClassCastException
+     * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters 
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
@@ -1468,6 +1465,33 @@ public final class SQLiteExecutor {
 
         return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass),
                 columnName, whereClause);
+    }
+
+    /**
+     * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}.
+     * 
+     * @param targetClass
+     * @param sql
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final <V> Optional<V> queryForSingleNonNull(final Class<V> targetClass, final String sql, Object... parameters) {
+        DataSet rs = null;
+
+        final Cursor cursor = rawQuery(sql, parameters);
+
+        try {
+            rs = extractData(cursor, Type.arrayOf(targetClass), 0, 1);
+        } finally {
+            cursor.close();
+        }
+
+        if (N.isNullOrEmpty(rs)) {
+            return Optional.empty();
+        } else {
+            return targetClass == null ? Optional.of((V) rs.get(0, 0)) : Optional.of(N.convert(rs.get(0, 0), targetClass));
+        }
     }
 
     //    <T> T findFirst(final Class<T> targetClass, String... selectColumnNames) {
