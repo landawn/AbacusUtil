@@ -100,6 +100,8 @@ import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -787,6 +789,10 @@ public final class JdbcUtil {
         }
     }
 
+    public static int getColumnCount(ResultSet rs) throws SQLException {
+        return rs.getMetaData().getColumnCount();
+    }
+
     /**
      * 
      * @param conn
@@ -829,14 +835,106 @@ public final class JdbcUtil {
         final List<String> labelList = new ArrayList<>(columnCount);
 
         for (int i = 1, n = columnCount + 1; i < n; i++) {
-            labelList.add(metaData.getColumnLabel(i));
+            labelList.add(getColumnLabel(metaData, i));
         }
 
         return labelList;
     }
 
-    public static int getColumnCount(ResultSet rs) throws SQLException {
-        return rs.getMetaData().getColumnCount();
+    public static String getColumnLabel(final ResultSetMetaData rsmd, final int columnIndex) throws SQLException {
+        final String result = rsmd.getColumnLabel(columnIndex);
+
+        return N.isNullOrEmpty(result) ? rsmd.getColumnName(columnIndex) : result;
+    }
+
+    public static Object getColumnValue(final ResultSet rs, final int columnIndex) throws SQLException {
+        // Copied from JdbcUtils#getResultSetValue(ResultSet, int) in SpringJdbc under Apache License, Version 2.0.
+        //    final Object obj = rs.getObject(columnIndex);
+        //
+        //    if (obj == null) {
+        //        return obj;
+        //    }
+        //
+        //    final String className = obj.getClass().getName();
+        //
+        //    if (obj instanceof Blob) {
+        //        final Blob blob = (Blob) obj;
+        //        return blob.getBytes(1, (int) blob.length());
+        //    } else if (obj instanceof Clob) {
+        //        final Clob clob = (Clob) obj;
+        //        return clob.getSubString(1, (int) clob.length());
+        //    } else if ("oracle.sql.TIMESTAMP".equals(className) || "oracle.sql.TIMESTAMPTZ".equals(className)) {
+        //        return rs.getTimestamp(columnIndex);
+        //    } else if (className.startsWith("oracle.sql.DATE")) {
+        //        final String columnClassName = rs.getMetaData().getColumnClassName(columnIndex);
+        //
+        //        if ("java.sql.Timestamp".equals(columnClassName) || "oracle.sql.TIMESTAMP".equals(columnClassName)) {
+        //            return rs.getTimestamp(columnIndex);
+        //        } else {
+        //            return rs.getDate(columnIndex);
+        //        }
+        //    } else if (obj instanceof java.sql.Date) {
+        //        if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
+        //            return rs.getTimestamp(columnIndex);
+        //        }
+        //    }
+        //
+        //    return obj;
+
+        return rs.getObject(columnIndex);
+    }
+
+    public static Object getColumnValue(final ResultSet rs, final String columnLabel) throws SQLException {
+        // Copied from JdbcUtils#getResultSetValue(ResultSet, int) in SpringJdbc under Apache License, Version 2.0.
+        //    final Object obj = rs.getObject(columnLabel);
+        //
+        //    if (obj == null) {
+        //        return obj;
+        //    }
+        //
+        //    final String className = obj.getClass().getName();
+        //
+        //    if (obj instanceof Blob) {
+        //        final Blob blob = (Blob) obj;
+        //        return blob.getBytes(1, (int) blob.length());
+        //    } else if (obj instanceof Clob) {
+        //        final Clob clob = (Clob) obj;
+        //        return clob.getSubString(1, (int) clob.length());
+        //    } else if ("oracle.sql.TIMESTAMP".equals(className) || "oracle.sql.TIMESTAMPTZ".equals(className)) {
+        //        return rs.getTimestamp(columnLabel);
+        //    } else if (className.startsWith("oracle.sql.DATE")) {
+        //        final int columnIndex = JdbcUtil.getColumnLabelList(rs).indexOf(columnLabel);
+        //
+        //        if (columnIndex >= 0) {
+        //            final String columnClassName = rs.getMetaData().getColumnClassName(columnIndex + 1);
+        //
+        //            if ("java.sql.Timestamp".equals(columnClassName) || "oracle.sql.TIMESTAMP".equals(columnClassName)) {
+        //                return rs.getTimestamp(columnLabel);
+        //            } else {
+        //                return rs.getDate(columnLabel);
+        //            }
+        //        }
+        //    } else if (obj instanceof java.sql.Date) {
+        //        final int columnIndex = JdbcUtil.getColumnLabelList(rs).indexOf(columnLabel);
+        //
+        //        if (columnIndex >= 0) {
+        //            if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex + 1))) {
+        //                return rs.getTimestamp(columnLabel);
+        //            }
+        //        }
+        //    }
+        //
+        //    return obj;
+
+        return rs.getObject(columnLabel);
+    }
+
+    public static <T> T getColumnValue(final Class<T> targetClass, final ResultSet rs, final int columnIndex) throws SQLException {
+        return N.<T> typeOf(targetClass).get(rs, columnIndex);
+    }
+
+    public static <T> T getColumnValue(final Class<T> targetClass, final ResultSet rs, final String columnLabel) throws SQLException {
+        return N.<T> typeOf(targetClass).get(rs, columnLabel);
     }
 
     /**
@@ -1144,7 +1242,7 @@ public final class JdbcUtil {
      * 
      * @param ds
      * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1178,7 +1276,7 @@ public final class JdbcUtil {
      * 
      * @param conn the specified {@code conn} won't be close after this query is executed.
      * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1190,7 +1288,7 @@ public final class JdbcUtil {
     /**
      * 
      * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1236,7 +1334,7 @@ public final class JdbcUtil {
     /**
      * @param ds
      * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1270,7 +1368,7 @@ public final class JdbcUtil {
      * 
      * @param conn the specified {@code conn} won't be close after this query is executed.
      * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1282,7 +1380,7 @@ public final class JdbcUtil {
     /**
      * 
      * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which doesn't return the instance of {@code PreparedQuery/PreparedCallableQuery}.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
      */
@@ -1504,13 +1602,13 @@ public final class JdbcUtil {
             final boolean closeResultSet) throws UncheckedSQLException, E {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
-            final ResultSetMetaData metaData = rs.getMetaData();
-            final int columnCount = metaData.getColumnCount();
+            final ResultSetMetaData rsmd = rs.getMetaData();
+            final int columnCount = rsmd.getColumnCount();
             final List<String> columnNameList = new ArrayList<>(columnCount);
             final List<List<Object>> columnList = new ArrayList<>(columnCount);
 
             for (int i = 0; i < columnCount;) {
-                columnNameList.add(metaData.getColumnLabel(++i));
+                columnNameList.add(JdbcUtil.getColumnLabel(rsmd, ++i));
                 columnList.add(new ArrayList<>());
             }
 
@@ -1520,7 +1618,7 @@ public final class JdbcUtil {
 
             while (count > 0 && rs.next()) {
                 for (int i = 0; i < columnCount;) {
-                    row[i] = rs.getObject(++i);
+                    row[i] = JdbcUtil.getColumnValue(rs, ++i);
                 }
 
                 if (filter == null || filter.test(row)) {
@@ -1600,7 +1698,7 @@ public final class JdbcUtil {
                     final Object[] a = Array.newInstance(targetClass.getComponentType(), columnCount);
 
                     for (int i = 0; i < columnCount; i++) {
-                        a[i] = rs.getObject(i + 1);
+                        a[i] = JdbcUtil.getColumnValue(rs, i + 1);
                     }
 
                     return (T) a;
@@ -1608,7 +1706,7 @@ public final class JdbcUtil {
                     final List<Object> c = isListOrArrayList ? new ArrayList<Object>(columnCount) : (List<Object>) N.newInstance(targetClass);
 
                     for (int i = 0; i < columnCount; i++) {
-                        c.add(rs.getObject(i + 1));
+                        c.add(JdbcUtil.getColumnValue(rs, i + 1));
                     }
 
                     return (T) c;
@@ -1617,7 +1715,7 @@ public final class JdbcUtil {
                             : (isLinkedHashMap ? new LinkedHashMap<String, Object>(columnCount) : (Map<String, Object>) N.newInstance(targetClass));
 
                     for (int i = 0; i < columnCount; i++) {
-                        m.put(columnLabels[i], rs.getObject(i + 1));
+                        m.put(columnLabels[i], JdbcUtil.getColumnValue(rs, i + 1));
                     }
 
                     return (T) m;
@@ -3170,193 +3268,9 @@ public final class JdbcUtil {
         return false;
     }
 
-    static class SimpleDataSource implements DataSource {
-        static final String PRIMARY = "primary";
-
-        private final javax.sql.DataSource sqlDataSource;
-        private final Properties<String, String> props = new Properties<>();
-        private final SliceSelector sliceSelector = new NonSliceSelector();
-
-        private final Method closeMethod;
-        private boolean isClosed = false;
-
-        public SimpleDataSource(final javax.sql.DataSource sqlDataSource) {
-            this.sqlDataSource = sqlDataSource;
-
-            Method method = null;
-
-            try {
-                method = ClassUtil.getDeclaredMethod(sqlDataSource.getClass(), "close");
-            } catch (Exception e) {
-
-            }
-
-            closeMethod = method != null && Modifier.isPublic(method.getModifiers()) ? method : null;
-        }
-
-        @Override
-        public Connection getConnection(final String username, final String password) throws SQLException {
-            return sqlDataSource.getConnection(username, password);
-        }
-
-        @Override
-        public PrintWriter getLogWriter() throws SQLException {
-            return sqlDataSource.getLogWriter();
-        }
-
-        @Override
-        public void setLogWriter(final PrintWriter out) throws SQLException {
-            sqlDataSource.setLogWriter(out);
-        }
-
-        @Override
-        public void setLoginTimeout(final int seconds) throws SQLException {
-            sqlDataSource.setLoginTimeout(seconds);
-        }
-
-        @Override
-        public int getLoginTimeout() throws SQLException {
-            return sqlDataSource.getLoginTimeout();
-        }
-
-        @Override
-        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
-            return sqlDataSource.getParentLogger();
-        }
-
-        @Override
-        public <T> T unwrap(final Class<T> iface) throws SQLException {
-            return sqlDataSource.unwrap(iface);
-        }
-
-        @Override
-        public boolean isWrapperFor(final Class<?> iface) throws SQLException {
-            return sqlDataSource.isWrapperFor(iface);
-        }
-
-        @Override
-        public Connection getConnection() {
-            try {
-                return sqlDataSource.getConnection();
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-        }
-
-        @Override
-        public Connection getReadOnlyConnection() {
-            try {
-                return sqlDataSource.getConnection();
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-        }
-
-        @Override
-        public SliceSelector getSliceSelector() {
-            return sliceSelector;
-        }
-
-        @Override
-        public String getName() {
-            return PRIMARY;
-        }
-
-        @Override
-        public Properties<String, String> getProperties() {
-            return props;
-        }
-
-        @Override
-        public int getMaxActive() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int getCurrentActive() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void close() {
-            if (isClosed) {
-                return;
-            }
-
-            if (closeMethod != null) {
-                try {
-                    ClassUtil.invokeMethod(sqlDataSource, closeMethod);
-                } catch (Exception e) {
-                    // ignore.
-                }
-            }
-
-            isClosed = true;
-        }
-
-        @Override
-        public boolean isClosed() {
-            return isClosed;
-        }
-    }
-
-    static class SimpleDataSourceManager implements DataSourceManager {
-        private final DataSource primaryDataSource;
-        private final Map<String, DataSource> activeDataSources;
-        private final Properties<String, String> props = new Properties<>();
-        private final DataSourceSelector dataSourceSelector = new SimpleSourceSelector();
-        private boolean isClosed = false;
-
-        public SimpleDataSourceManager(final DataSource ds) {
-            this.primaryDataSource = ds;
-
-            if (N.isNullOrEmpty(ds.getName())) {
-                this.activeDataSources = N.asMap(SimpleDataSource.PRIMARY, ds);
-            } else {
-                this.activeDataSources = N.asMap(ds.getName(), ds);
-            }
-        }
-
-        @Override
-        public DataSource getPrimaryDataSource() {
-            return primaryDataSource;
-        }
-
-        @Override
-        public Map<String, DataSource> getActiveDataSources() {
-            return activeDataSources;
-        }
-
-        @Override
-        public DataSourceSelector getDataSourceSelector() {
-            return dataSourceSelector;
-        }
-
-        @Override
-        public Properties<String, String> getProperties() {
-            return props;
-        }
-
-        @Override
-        public void close() {
-            if (isClosed) {
-                return;
-            }
-
-            primaryDataSource.close();
-
-            isClosed = true;
-        }
-
-        @Override
-        public boolean isClosed() {
-            return isClosed;
-        }
-    }
-
     /**
      * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
      * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
      * <br />
@@ -3371,7 +3285,7 @@ public final class JdbcUtil {
      * @param <S>
      * @param <Q>
      */
-    public static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
+    static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
         final PreparedStatement stmt;
         Connection conn;
         boolean isBatch = false;
@@ -3390,10 +3304,14 @@ public final class JdbcUtil {
          * @return 
          */
         public Try<Q> tried() {
+            assertNotClosed();
+
             return Try.of((Q) this);
         }
 
         public Q closeAfterExecution(boolean closeAfterExecution) {
+            assertNotClosed();
+
             this.closeAfterExecution = closeAfterExecution;
 
             return (Q) this;
@@ -3406,6 +3324,7 @@ public final class JdbcUtil {
          */
         public Q onClose(final Try.Runnable<SQLException> closeHandler) {
             N.checkArgNotNull(closeHandler);
+            assertNotClosed();
 
             if (this.closeHandler == null) {
                 this.closeHandler = closeHandler;
@@ -4169,7 +4088,7 @@ public final class JdbcUtil {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Nullable.of(N.convert(rs.getObject(1), targetClass)) : Nullable.<V> empty();
+                return rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -4185,17 +4104,17 @@ public final class JdbcUtil {
                 final List<Object> list = (List<Object>) entity;
 
                 for (int i = 0; i < columnCount; i++) {
-                    list.add(rs.getObject(i + 1));
+                    list.add(JdbcUtil.getColumnValue(rs, i + 1));
                 }
             } else if (Map.class.isAssignableFrom(targetClass)) {
                 final Map<String, Object> m = (Map<String, Object>) entity;
 
                 for (int i = 0; i < columnCount; i++) {
-                    m.put(columnLabelList.get(i), rs.getObject(i + 1));
+                    m.put(columnLabelList.get(i), JdbcUtil.getColumnValue(rs, i + 1));
                 }
             } else {
                 for (int i = 0; i < columnCount; i++) {
-                    ClassUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                    ClassUtil.setPropValue(entity, columnLabelList.get(i), JdbcUtil.getColumnValue(rs, i + 1), true);
                 }
 
                 if (N.isDirtyMarker(targetClass)) {
@@ -4341,7 +4260,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
@@ -4371,7 +4290,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
@@ -4400,12 +4319,12 @@ public final class JdbcUtil {
             return list(RecordPredicate.ALWAYS_TRUE, recordGetter);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             return list(recordFilter, recordGetter, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter, int count)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter, int count)
                 throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
@@ -4432,13 +4351,13 @@ public final class JdbcUtil {
             return list(BiRecordPredicate.ALWAYS_TRUE, recordGetter);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
             return list(recordFilter, recordGetter, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter, int count)
-                throws SQLException, E, E2 {
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
+                int count) throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
             N.checkArgNotNegative(count, "count");
@@ -4461,6 +4380,68 @@ public final class JdbcUtil {
             }
         }
 
+        public <T, A, R> R collect(final Class<T> targetClass, final Collector<? super T, A, R> collector) throws SQLException {
+            return collect(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), collector);
+        }
+
+        public <T, A, R, E extends Exception> R collect(final RecordGetter<T, E> recordGetter, final Collector<? super T, A, R> collector)
+                throws SQLException, E {
+            return collect(RecordPredicate.ALWAYS_TRUE, recordGetter, collector);
+        }
+
+        public <T, A, R, E extends Exception, E2 extends Exception> R collect(final RecordPredicate<E> recordFilter, final RecordGetter<T, E2> recordGetter,
+                final Collector<? super T, A, R> collector) throws SQLException, E, E2 {
+            N.checkArgNotNull(recordFilter);
+            N.checkArgNotNull(recordGetter);
+            N.checkArgNotNull(collector);
+            assertNotClosed();
+
+            final A container = collector.supplier().get();
+            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    if (recordFilter.test(rs)) {
+                        accumulator.accept(container, recordGetter.apply(rs));
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return collector.finisher().apply(container);
+        }
+
+        public <T, A, R, E extends Exception> R collect(final BiRecordGetter<T, E> recordGetter, final Collector<? super T, A, R> collector)
+                throws SQLException, E {
+            return collect(BiRecordPredicate.ALWAYS_TRUE, recordGetter, collector);
+        }
+
+        public <T, A, R, E extends Exception, E2 extends Exception> R collect(final BiRecordPredicate<E> recordFilter, final BiRecordGetter<T, E2> recordGetter,
+                final Collector<? super T, A, R> collector) throws SQLException, E, E2 {
+            N.checkArgNotNull(recordFilter);
+            N.checkArgNotNull(recordGetter);
+            N.checkArgNotNull(collector);
+            assertNotClosed();
+
+            final A container = collector.supplier().get();
+            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+
+                while (rs.next()) {
+                    if (recordFilter.test(rs, columnLabels)) {
+                        accumulator.accept(container, recordGetter.apply(rs, columnLabels));
+                    }
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return collector.finisher().apply(container);
+        }
+
         public boolean exists() throws SQLException {
             assertNotClosed();
 
@@ -4471,7 +4452,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void ifExists(RecordConsumer<E> recordConsumer) throws SQLException, E {
+        public <E extends Exception> void ifExists(final RecordConsumer<E> recordConsumer) throws SQLException, E {
             N.checkArgNotNull(recordConsumer);
             assertNotClosed();
 
@@ -4484,7 +4465,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void ifExists(BiRecordConsumer<E> recordConsumer) throws SQLException, E {
+        public <E extends Exception> void ifExists(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
             N.checkArgNotNull(recordConsumer);
             assertNotClosed();
 
@@ -4513,7 +4494,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> int count(RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> int count(final RecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4532,7 +4513,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> int count(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> int count(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4552,7 +4533,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean anyMatch(RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean anyMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4569,7 +4550,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean anyMatch(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean anyMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4588,7 +4569,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean allMatch(RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean allMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4605,7 +4586,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean allMatch(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean allMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
             N.checkArgNotNull(recordFilter);
             assertNotClosed();
 
@@ -4624,15 +4605,15 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean noneMatch(RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean noneMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
             return anyMatch(recordFilter) == false;
         }
 
-        public <E extends Exception> boolean noneMatch(BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean noneMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
             return anyMatch(recordFilter) == false;
         }
 
-        public <E extends Exception> void forEach(RecordConsumer<E> recordConsumer) throws SQLException, E {
+        public <E extends Exception> void forEach(final RecordConsumer<E> recordConsumer) throws SQLException, E {
             N.checkArgNotNull(recordConsumer);
             assertNotClosed();
 
@@ -4647,7 +4628,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception, E2 extends Exception> void forEach(RecordPredicate<E> recordFilter, RecordConsumer<E2> recordConsumer)
+        public <E extends Exception, E2 extends Exception> void forEach(final RecordPredicate<E> recordFilter, final RecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordConsumer);
@@ -4665,7 +4646,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void forEach(BiRecordConsumer<E> recordConsumer) throws SQLException, E {
+        public <E extends Exception> void forEach(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
             N.checkArgNotNull(recordConsumer);
             assertNotClosed();
 
@@ -4681,7 +4662,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception, E2 extends Exception> void forEach(BiRecordPredicate<E> recordFilter, BiRecordConsumer<E2> recordConsumer)
+        public <E extends Exception, E2 extends Exception> void forEach(final BiRecordPredicate<E> recordFilter, final BiRecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordConsumer);
@@ -4713,7 +4694,7 @@ public final class JdbcUtil {
                 stmt.executeUpdate();
 
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
-                    return rs.next() ? Optional.of((T) rs.getObject(1)) : Optional.<T> empty();
+                    return rs.next() ? Optional.of((T) JdbcUtil.getColumnValue(rs, 1)) : Optional.<T> empty();
                 }
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4735,7 +4716,7 @@ public final class JdbcUtil {
                     final List<T> result = new ArrayList<>();
 
                     while (rs.next()) {
-                        result.add((T) rs.getObject(1));
+                        result.add((T) JdbcUtil.getColumnValue(rs, 1));
                     }
 
                     return result;
@@ -4855,6 +4836,9 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func) {
+            N.checkArgNotNull(func);
+            assertNotClosed();
+
             final Q q = (Q) this;
 
             return ContinuableFuture.call(new Try.Callable<R, E>() {
@@ -4866,6 +4850,10 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func, final Executor executor) {
+            N.checkArgNotNull(func);
+            N.checkArgNotNull(executor);
+            assertNotClosed();
+
             final Q q = (Q) this;
 
             return ContinuableFuture.call(new Try.Callable<R, E>() {
@@ -4877,6 +4865,9 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action) {
+            N.checkArgNotNull(action);
+            assertNotClosed();
+
             final Q q = (Q) this;
 
             return ContinuableFuture.run(new Try.Runnable<E>() {
@@ -4888,6 +4879,10 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action, final Executor executor) {
+            N.checkArgNotNull(action);
+            N.checkArgNotNull(executor);
+            assertNotClosed();
+
             final Q q = (Q) this;
 
             return ContinuableFuture.run(new Try.Runnable<E>() {
@@ -4952,7 +4947,7 @@ public final class JdbcUtil {
 
     /**
      * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...). 
      * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
      * <br />
@@ -4976,7 +4971,7 @@ public final class JdbcUtil {
 
     /**
      * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which not return the instance of {@code PreparedQuery/PreparedCallableQuery}, except {@code #tried()}) is called, 
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
      * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
      * 
      * <br />
@@ -5369,6 +5364,7 @@ public final class JdbcUtil {
 
         public <R1, E1 extends Exception> Optional<R1> call(final ResultExtractor<R1, E1> resultExtrator1) throws SQLException, E1 {
             N.checkArgNotNull(resultExtrator1);
+            assertNotClosed();
 
             try {
                 if (stmt.execute()) {
@@ -5389,6 +5385,7 @@ public final class JdbcUtil {
                 final ResultExtractor<R2, E2> resultExtrator2) throws SQLException, E1, E2 {
             N.checkArgNotNull(resultExtrator1);
             N.checkArgNotNull(resultExtrator2);
+            assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
             Optional<R2> result2 = Optional.empty();
@@ -5421,6 +5418,7 @@ public final class JdbcUtil {
             N.checkArgNotNull(resultExtrator1);
             N.checkArgNotNull(resultExtrator2);
             N.checkArgNotNull(resultExtrator3);
+            assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
             Optional<R2> result2 = Optional.empty();
@@ -5462,6 +5460,7 @@ public final class JdbcUtil {
             N.checkArgNotNull(resultExtrator2);
             N.checkArgNotNull(resultExtrator3);
             N.checkArgNotNull(resultExtrator4);
+            assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
             Optional<R2> result2 = Optional.empty();
@@ -5512,6 +5511,7 @@ public final class JdbcUtil {
             N.checkArgNotNull(resultExtrator3);
             N.checkArgNotNull(resultExtrator4);
             N.checkArgNotNull(resultExtrator5);
+            assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
             Optional<R2> result2 = Optional.empty();
@@ -5825,37 +5825,6 @@ public final class JdbcUtil {
         }
     }
 
-    public static enum FetchDirection {
-        FORWARD(ResultSet.FETCH_FORWARD), REVERSE(ResultSet.FETCH_REVERSE), UNKNOWN(ResultSet.FETCH_UNKNOWN);
-
-        private final int intValue;
-
-        FetchDirection(int intValue) {
-            this.intValue = intValue;
-        }
-
-        public static FetchDirection valueOf(int intValue) {
-            switch (intValue) {
-                case ResultSet.FETCH_FORWARD:
-                    return FORWARD;
-
-                case ResultSet.FETCH_REVERSE:
-                    return REVERSE;
-
-                case ResultSet.FETCH_UNKNOWN:
-                    return UNKNOWN;
-
-                default:
-                    throw new IllegalArgumentException("No FetchDirection mapping to int value: " + intValue);
-
-            }
-        }
-
-        public int intValue() {
-            return intValue;
-        }
-    }
-
     public static interface ResultExtractor<T, E extends Exception> {
         public static final ResultExtractor<DataSet, RuntimeException> TO_DATA_SET = new ResultExtractor<DataSet, RuntimeException>() {
             @Override
@@ -5963,25 +5932,6 @@ public final class JdbcUtil {
         };
 
         T apply(ResultSet rs) throws SQLException, E;
-
-        public static <T> RecordGetter<T, RuntimeException> to(Class<T> targetClass) {
-            return new RecordGetter<T, RuntimeException>() {
-                private final BiRecordGetter<T, RuntimeException> biRecordGetter = JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
-                private List<String> columnLabels = null;
-
-                @Override
-                public T apply(ResultSet rs) throws SQLException {
-                    List<String> columnLabels = this.columnLabels;
-
-                    if (columnLabels == null) {
-                        columnLabels = JdbcUtil.getColumnLabelList(rs);
-                        this.columnLabels = columnLabels;
-                    }
-
-                    return biRecordGetter.apply(rs, columnLabels);
-                }
-            };
-        }
     }
 
     public static interface BiRecordGetter<T, E extends Exception> {
@@ -5993,7 +5943,7 @@ public final class JdbcUtil {
                 final Object[] result = new Object[columnCount];
 
                 for (int i = 1; i <= columnCount; i++) {
-                    result[i - 1] = rs.getObject(i);
+                    result[i - 1] = JdbcUtil.getColumnValue(rs, i);
                 }
 
                 return result;
@@ -6007,7 +5957,7 @@ public final class JdbcUtil {
                 final List<Object> result = new ArrayList<>(columnCount);
 
                 for (int i = 1; i <= columnCount; i++) {
-                    result.add(rs.getObject(i));
+                    result.add(JdbcUtil.getColumnValue(rs, i));
                 }
 
                 return result;
@@ -6021,7 +5971,7 @@ public final class JdbcUtil {
                 final Map<String, Object> result = new HashMap<>(columnCount);
 
                 for (int i = 1; i <= columnCount; i++) {
-                    result.put(columnLabels.get(i - 1), rs.getObject(i));
+                    result.put(columnLabels.get(i - 1), JdbcUtil.getColumnValue(rs, i));
                 }
 
                 return result;
@@ -6035,7 +5985,7 @@ public final class JdbcUtil {
                 final Map<String, Object> result = new LinkedHashMap<>(columnCount);
 
                 for (int i = 1; i <= columnCount; i++) {
-                    result.put(columnLabels.get(i - 1), rs.getObject(i));
+                    result.put(columnLabels.get(i - 1), JdbcUtil.getColumnValue(rs, i));
                 }
 
                 return result;
@@ -6044,6 +5994,11 @@ public final class JdbcUtil {
 
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
 
+        /**
+         * 
+         * @param targetClass can be Array/List/Map or Entity classes with getter/setter methods.
+         * @return
+         */
         public static <T> BiRecordGetter<T, RuntimeException> to(Class<T> targetClass) {
             return JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
         }
@@ -6108,5 +6063,220 @@ public final class JdbcUtil {
         };
 
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+    }
+
+    public static enum FetchDirection {
+        FORWARD(ResultSet.FETCH_FORWARD), REVERSE(ResultSet.FETCH_REVERSE), UNKNOWN(ResultSet.FETCH_UNKNOWN);
+
+        private final int intValue;
+
+        FetchDirection(int intValue) {
+            this.intValue = intValue;
+        }
+
+        public static FetchDirection valueOf(int intValue) {
+            switch (intValue) {
+                case ResultSet.FETCH_FORWARD:
+                    return FORWARD;
+
+                case ResultSet.FETCH_REVERSE:
+                    return REVERSE;
+
+                case ResultSet.FETCH_UNKNOWN:
+                    return UNKNOWN;
+
+                default:
+                    throw new IllegalArgumentException("No FetchDirection mapping to int value: " + intValue);
+
+            }
+        }
+
+        public int intValue() {
+            return intValue;
+        }
+    }
+
+    static class SimpleDataSource implements DataSource {
+        static final String PRIMARY = "primary";
+
+        private final javax.sql.DataSource sqlDataSource;
+        private final Properties<String, String> props = new Properties<>();
+        private final SliceSelector sliceSelector = new NonSliceSelector();
+
+        private final Method closeMethod;
+        private boolean isClosed = false;
+
+        public SimpleDataSource(final javax.sql.DataSource sqlDataSource) {
+            this.sqlDataSource = sqlDataSource;
+
+            Method method = null;
+
+            try {
+                method = ClassUtil.getDeclaredMethod(sqlDataSource.getClass(), "close");
+            } catch (Exception e) {
+
+            }
+
+            closeMethod = method != null && Modifier.isPublic(method.getModifiers()) ? method : null;
+        }
+
+        @Override
+        public Connection getConnection(final String username, final String password) throws SQLException {
+            return sqlDataSource.getConnection(username, password);
+        }
+
+        @Override
+        public PrintWriter getLogWriter() throws SQLException {
+            return sqlDataSource.getLogWriter();
+        }
+
+        @Override
+        public void setLogWriter(final PrintWriter out) throws SQLException {
+            sqlDataSource.setLogWriter(out);
+        }
+
+        @Override
+        public void setLoginTimeout(final int seconds) throws SQLException {
+            sqlDataSource.setLoginTimeout(seconds);
+        }
+
+        @Override
+        public int getLoginTimeout() throws SQLException {
+            return sqlDataSource.getLoginTimeout();
+        }
+
+        @Override
+        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            return sqlDataSource.getParentLogger();
+        }
+
+        @Override
+        public <T> T unwrap(final Class<T> iface) throws SQLException {
+            return sqlDataSource.unwrap(iface);
+        }
+
+        @Override
+        public boolean isWrapperFor(final Class<?> iface) throws SQLException {
+            return sqlDataSource.isWrapperFor(iface);
+        }
+
+        @Override
+        public Connection getConnection() {
+            try {
+                return sqlDataSource.getConnection();
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            }
+        }
+
+        @Override
+        public Connection getReadOnlyConnection() {
+            try {
+                return sqlDataSource.getConnection();
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            }
+        }
+
+        @Override
+        public SliceSelector getSliceSelector() {
+            return sliceSelector;
+        }
+
+        @Override
+        public String getName() {
+            return PRIMARY;
+        }
+
+        @Override
+        public Properties<String, String> getProperties() {
+            return props;
+        }
+
+        @Override
+        public int getMaxActive() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int getCurrentActive() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() {
+            if (isClosed) {
+                return;
+            }
+
+            if (closeMethod != null) {
+                try {
+                    ClassUtil.invokeMethod(sqlDataSource, closeMethod);
+                } catch (Exception e) {
+                    // ignore.
+                }
+            }
+
+            isClosed = true;
+        }
+
+        @Override
+        public boolean isClosed() {
+            return isClosed;
+        }
+    }
+
+    static class SimpleDataSourceManager implements DataSourceManager {
+        private final DataSource primaryDataSource;
+        private final Map<String, DataSource> activeDataSources;
+        private final Properties<String, String> props = new Properties<>();
+        private final DataSourceSelector dataSourceSelector = new SimpleSourceSelector();
+        private boolean isClosed = false;
+
+        public SimpleDataSourceManager(final DataSource ds) {
+            this.primaryDataSource = ds;
+
+            if (N.isNullOrEmpty(ds.getName())) {
+                this.activeDataSources = N.asMap(SimpleDataSource.PRIMARY, ds);
+            } else {
+                this.activeDataSources = N.asMap(ds.getName(), ds);
+            }
+        }
+
+        @Override
+        public DataSource getPrimaryDataSource() {
+            return primaryDataSource;
+        }
+
+        @Override
+        public Map<String, DataSource> getActiveDataSources() {
+            return activeDataSources;
+        }
+
+        @Override
+        public DataSourceSelector getDataSourceSelector() {
+            return dataSourceSelector;
+        }
+
+        @Override
+        public Properties<String, String> getProperties() {
+            return props;
+        }
+
+        @Override
+        public void close() {
+            if (isClosed) {
+                return;
+            }
+
+            primaryDataSource.close();
+
+            isClosed = true;
+        }
+
+        @Override
+        public boolean isClosed() {
+            return isClosed;
+        }
     }
 }

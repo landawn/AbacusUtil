@@ -805,7 +805,7 @@ public final class SQLExecutor implements Closeable {
             rs = stmt.getGeneratedKeys();
 
             if (rs.next()) {
-                id = rs.getObject(1);
+                id = JdbcUtil.getColumnValue(rs, 1);
             }
         } catch (SQLException e) {
             logger.error("Failed to retrieve the auto-generated Ids", e);
@@ -1041,7 +1041,7 @@ public final class SQLExecutor implements Closeable {
             rs = stmt.getGeneratedKeys();
 
             while (rs.next()) {
-                resultIdList.add((T) rs.getObject(1));
+                resultIdList.add((T) JdbcUtil.getColumnValue(rs, 1));
             }
         } catch (SQLException e) {
             logger.error("Failed to retrieve the auto-generated Ids", e);
@@ -7397,7 +7397,7 @@ public final class SQLExecutor implements Closeable {
 
             while ((count-- > 0) && rs.next()) {
                 for (int i = 0; i < columnCount;) {
-                    columnList.get(i).add(rs.getObject(++i));
+                    columnList.get(i).add(JdbcUtil.getColumnValue(rs, ++i));
                 }
             }
 
@@ -7433,7 +7433,7 @@ public final class SQLExecutor implements Closeable {
 
             while ((count-- > 0) && rs.next()) {
                 for (int i = 0; i < columnCount;) {
-                    columnList.get(i).add(rs.getObject(++i));
+                    columnList.get(i).add(JdbcUtil.getColumnValue(rs, ++i));
                 }
             }
 

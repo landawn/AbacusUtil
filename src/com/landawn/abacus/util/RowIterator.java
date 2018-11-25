@@ -139,7 +139,7 @@ public final class RowIterator extends ImmutableIterator<Object[]> implements Cl
 
         try {
             for (int i = 0; i < columnCount; i++) {
-                row[i] = rs.getObject(i + 1);
+                row[i] = JdbcUtil.getColumnValue(rs, i + 1);
             }
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);

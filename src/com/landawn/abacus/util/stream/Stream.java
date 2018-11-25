@@ -74,6 +74,7 @@ import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.Keyed;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
@@ -2573,11 +2574,11 @@ public abstract class Stream<T>
     /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
-     * @param resultSet
+     * @param rs
      * @param columnIndex starts from 0, not 1.
      * @return
      */
-    public static <T> Stream<T> of(final ResultSet resultSet, final int columnIndex) {
+    public static <T> Stream<T> of(final ResultSet rs, final int columnIndex) {
         N.checkArgNotNegative(columnIndex, "columnIndex");
 
         final ObjIterator<T> iter = new ObjIterator<T>() {
@@ -2588,7 +2589,7 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 if (hasNext == false) {
                     try {
-                        hasNext = resultSet.next();
+                        hasNext = rs.next();
                     } catch (SQLException e) {
                         throw new UncheckedSQLException(e);
                     }
@@ -2606,7 +2607,7 @@ public abstract class Stream<T>
                 T next = null;
 
                 try {
-                    next = (T) resultSet.getObject(newColumnIndex);
+                    next = (T) JdbcUtil.getColumnValue(rs, newColumnIndex);
                 } catch (SQLException e) {
                     throw new UncheckedSQLException(e);
                 }
@@ -2652,11 +2653,11 @@ public abstract class Stream<T>
         int columnIndex = -1;
 
         try {
-            final ResultSetMetaData metaData = resultSet.getMetaData();
-            final int columnCount = metaData.getColumnCount();
+            final ResultSetMetaData rsmd = resultSet.getMetaData();
+            final int columnCount = rsmd.getColumnCount();
 
             for (int i = 1; i <= columnCount; i++) {
-                if (metaData.getColumnLabel(i).equals(columnName)) {
+                if (JdbcUtil.getColumnLabel(rsmd, i).equals(columnName)) {
                     columnIndex = i - 1;
                     break;
                 }

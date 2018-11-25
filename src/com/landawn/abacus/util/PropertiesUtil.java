@@ -93,7 +93,7 @@ public final class PropertiesUtil {
 
                     for (int i = 0; i < columnCount; i++) {
                         method = ClassUtil.getPropSetMethod(ConfigEntity.class, columnLabelList.get(i));
-                        propValue = rs.getObject(i + 1);
+                        propValue = JdbcUtil.getColumnValue(rs, i + 1);
 
                         if (method != null) {
                             if (method.getName().equals("setIncludedServers") || method.getName().equals("setExcludedServers")) {

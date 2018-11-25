@@ -957,14 +957,14 @@ public final class CSVUtil {
         final BufferedJSONWriter bw = out instanceof BufferedJSONWriter ? (BufferedJSONWriter) out : ObjectFactory.createBufferedJSONWriter(out);
 
         try {
-            final ResultSetMetaData metaData = rs.getMetaData();
-            final int columnCount = metaData.getColumnCount();
+            final ResultSetMetaData rsmd = rs.getMetaData();
+            final int columnCount = rsmd.getColumnCount();
             final String[] columnNames = new String[columnCount];
             final Set<String> columnNameSet = selectColumnNames == null ? null : new HashSet<>(selectColumnNames);
             String label = null;
 
             for (int i = 0; i < columnCount; i++) {
-                label = metaData.getColumnLabel(i + 1);
+                label = JdbcUtil.getColumnLabel(rsmd, i + 1);
 
                 if (columnNameSet == null || columnNameSet.remove(label)) {
                     columnNames[i] = label;
@@ -1015,7 +1015,7 @@ public final class CSVUtil {
                     type = typeArray[i];
 
                     if (type == null) {
-                        value = rs.getObject(i + 1);
+                        value = JdbcUtil.getColumnValue(rs, i + 1);
 
                         if (value == null) {
                             bw.write(N.NULL_CHAR_ARRAY);
