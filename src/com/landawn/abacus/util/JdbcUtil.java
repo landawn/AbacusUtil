@@ -100,8 +100,6 @@ import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -4315,8 +4313,16 @@ public final class JdbcUtil {
             return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
+        public <T> List<T> list(final Class<T> targetClass, int maxResult) throws SQLException {
+            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
+        }
+
         public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
-            return list(RecordPredicate.ALWAYS_TRUE, recordGetter);
+            return list(recordGetter, Integer.MAX_VALUE);
+        }
+
+        public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
+            return list(RecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
         }
 
         public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
@@ -4324,20 +4330,20 @@ public final class JdbcUtil {
             return list(recordFilter, recordGetter, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter, int count)
-                throws SQLException, E, E2 {
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
+                int maxResult) throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(count, "count");
+            N.checkArgNotNegative(maxResult, "maxResult");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<T> result = new ArrayList<>();
 
-                while (count > 0 && rs.next()) {
+                while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs)) {
                         result.add(recordGetter.apply(rs));
-                        count--;
+                        maxResult--;
                     }
                 }
 
@@ -4348,7 +4354,11 @@ public final class JdbcUtil {
         }
 
         public <T, E extends Exception> List<T> list(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
-            return list(BiRecordPredicate.ALWAYS_TRUE, recordGetter);
+            return list(recordGetter, Integer.MAX_VALUE);
+        }
+
+        public <T, E extends Exception> List<T> list(BiRecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
+            return list(BiRecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
         }
 
         public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
@@ -4357,20 +4367,20 @@ public final class JdbcUtil {
         }
 
         public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
-                int count) throws SQLException, E, E2 {
+                int maxResult) throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(count, "count");
+            N.checkArgNotNegative(maxResult, "maxResult");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 final List<T> result = new ArrayList<>();
 
-                while (count > 0 && rs.next()) {
+                while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs, columnLabels)) {
                         result.add(recordGetter.apply(rs, columnLabels));
-                        count--;
+                        maxResult--;
                     }
                 }
 
@@ -4380,66 +4390,85 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, A, R> R collect(final Class<T> targetClass, final Collector<? super T, A, R> collector) throws SQLException {
-            return collect(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), collector);
+        public <T> Stream<T> stream(final Class<T> targetClass) throws SQLException {
+            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
-        public <T, A, R, E extends Exception> R collect(final RecordGetter<T, E> recordGetter, final Collector<? super T, A, R> collector)
-                throws SQLException, E {
-            return collect(RecordPredicate.ALWAYS_TRUE, recordGetter, collector);
+        public <T> Stream<T> stream(final Class<T> targetClass, int maxResult) throws SQLException {
+            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
         }
 
-        public <T, A, R, E extends Exception, E2 extends Exception> R collect(final RecordPredicate<E> recordFilter, final RecordGetter<T, E2> recordGetter,
-                final Collector<? super T, A, R> collector) throws SQLException, E, E2 {
+        public <T, E extends Exception> Stream<T> stream(RecordGetter<T, E> recordGetter) throws SQLException, E {
+            return stream(recordGetter, Integer.MAX_VALUE);
+        }
+
+        public <T, E extends Exception> Stream<T> stream(RecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
+            return stream(RecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
+        }
+
+        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+                throws SQLException, E, E2 {
+            return stream(recordFilter, recordGetter, Integer.MAX_VALUE);
+        }
+
+        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
+                int maxResult) throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
-            N.checkArgNotNull(collector);
+            N.checkArgNotNegative(maxResult, "maxResult");
             assertNotClosed();
 
-            final A container = collector.supplier().get();
-            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
+                final List<T> result = new ArrayList<>();
+
+                while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs)) {
-                        accumulator.accept(container, recordGetter.apply(rs));
+                        result.add(recordGetter.apply(rs));
+                        maxResult--;
                     }
                 }
+
+                return Stream.of(result);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
-
-            return collector.finisher().apply(container);
         }
 
-        public <T, A, R, E extends Exception> R collect(final BiRecordGetter<T, E> recordGetter, final Collector<? super T, A, R> collector)
-                throws SQLException, E {
-            return collect(BiRecordPredicate.ALWAYS_TRUE, recordGetter, collector);
+        public <T, E extends Exception> Stream<T> stream(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
+            return stream(recordGetter, Integer.MAX_VALUE);
         }
 
-        public <T, A, R, E extends Exception, E2 extends Exception> R collect(final BiRecordPredicate<E> recordFilter, final BiRecordGetter<T, E2> recordGetter,
-                final Collector<? super T, A, R> collector) throws SQLException, E, E2 {
+        public <T, E extends Exception> Stream<T> stream(BiRecordGetter<T, E> recordGetter, final int maxResult) throws SQLException, E {
+            return stream(BiRecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
+        }
+
+        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+                throws SQLException, E, E2 {
+            return stream(recordFilter, recordGetter, Integer.MAX_VALUE);
+        }
+
+        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
+                int maxResult) throws SQLException, E, E2 {
             N.checkArgNotNull(recordFilter);
             N.checkArgNotNull(recordGetter);
-            N.checkArgNotNull(collector);
+            N.checkArgNotNegative(maxResult, "maxResult");
             assertNotClosed();
-
-            final A container = collector.supplier().get();
-            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+                final List<T> result = new ArrayList<>();
 
-                while (rs.next()) {
+                while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs, columnLabels)) {
-                        accumulator.accept(container, recordGetter.apply(rs, columnLabels));
+                        result.add(recordGetter.apply(rs, columnLabels));
+                        maxResult--;
                     }
                 }
+
+                return Stream.of(result);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
-
-            return collector.finisher().apply(container);
         }
 
         public boolean exists() throws SQLException {

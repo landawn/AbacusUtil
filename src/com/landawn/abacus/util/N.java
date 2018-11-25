@@ -3671,7 +3671,7 @@ public final class N {
         //        return (T) targetPropType.valueOf(srcPropType.stringOf(obj));
 
         final Type<T> type = typeOf(targetClass);
-        return as(type, obj);
+        return convert(obj, type);
     }
 
     @SuppressWarnings("unchecked")
@@ -3731,7 +3731,7 @@ public final class N {
             }
         }
 
-        return targetType.valueOf(srcPropType.stringOf(obj));
+        return targetType.valueOf(obj);
     }
 
     /**
