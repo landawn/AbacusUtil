@@ -105,6 +105,33 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     static final Splitor DEFAULT_SPLITOR = Splitor.ITERATOR;
     static final Random RAND = new SecureRandom();
 
+    static final AsyncExecutor DEFAULT_ASYNC_EXECUTOR;
+
+    static {
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 0L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(1));
+
+        DEFAULT_ASYNC_EXECUTOR = new AsyncExecutor(threadPoolExecutor) {
+            @Override
+            public ContinuableFuture<Void> execute(final Runnable command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+
+            @Override
+            public <T> ContinuableFuture<T> execute(final Callable<T> command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+        };
+    }
+
     @SuppressWarnings("rawtypes")
     static final Comparator NATURAL_COMPARATOR = Comparators.naturalOrder();
 
@@ -251,32 +278,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         clsNum.put(DoubleList.class, idx++); // 15
     }
 
-    static final AsyncExecutor DEFAULT_ASYNC_EXECUTOR;
-
-    static {
-        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 0L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(1));
-
-        DEFAULT_ASYNC_EXECUTOR = new AsyncExecutor(threadPoolExecutor) {
-            @Override
-            public ContinuableFuture<Void> execute(final Runnable command) {
-                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
-                //    }
-
-                return super.execute(command);
-            }
-
-            @Override
-            public <T> ContinuableFuture<T> execute(final Callable<T> command) {
-                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
-                //    }
-
-                return super.execute(command);
-            }
-        };
-    }
     @SuppressWarnings("rawtypes")
     static final BinaryOperator reducingCombiner = new BinaryOperator() {
         @Override

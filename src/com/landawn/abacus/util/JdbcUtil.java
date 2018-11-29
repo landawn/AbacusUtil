@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -3287,14 +3288,14 @@ public final class JdbcUtil {
      * @param <Q>
      */
     static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
-        final PreparedStatement stmt;
+        final S stmt;
         Connection conn;
         boolean isBatch = false;
         boolean closeAfterExecution = true;
         boolean isClosed = false;
         Try.Runnable<SQLException> closeHandler;
 
-        AbstractPreparedQuery(java.sql.PreparedStatement stmt) {
+        AbstractPreparedQuery(S stmt) {
             this.stmt = stmt;
         }
 
@@ -3536,6 +3537,18 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setAsciiStream(int parameterIndex, InputStream inputStream) throws SQLException {
+            stmt.setAsciiStream(parameterIndex, inputStream);
+
+            return (Q) this;
+        }
+
+        public Q setAsciiStream(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+            stmt.setAsciiStream(parameterIndex, inputStream, length);
+
+            return (Q) this;
+        }
+
         public Q setBinaryStream(int parameterIndex, InputStream inputStream) throws SQLException {
             stmt.setBinaryStream(parameterIndex, inputStream);
 
@@ -3622,6 +3635,76 @@ public final class JdbcUtil {
 
         public Q setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
             stmt.setNClob(parameterIndex, reader, length);
+
+            return (Q) this;
+        }
+
+        /**
+         * @param parameterIndex starts from 1, not 0.
+         * 
+         * @param parameterIndex
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setURL(int parameterIndex, URL x) throws SQLException {
+            stmt.setURL(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * @param parameterIndex starts from 1, not 0.
+         * 
+         * @param parameterIndex
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setArray(int parameterIndex, java.sql.Array x) throws SQLException {
+            stmt.setArray(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * @param parameterIndex starts from 1, not 0.
+         * 
+         * @param parameterIndex
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setSQLXML(int parameterIndex, java.sql.SQLXML x) throws SQLException {
+            stmt.setSQLXML(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * @param parameterIndex starts from 1, not 0.
+         * 
+         * @param parameterIndex
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setRef(int parameterIndex, java.sql.Ref x) throws SQLException {
+            stmt.setRef(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * @param parameterIndex starts from 1, not 0.
+         * 
+         * @param parameterIndex
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setRowId(int parameterIndex, java.sql.RowId x) throws SQLException {
+            stmt.setRowId(parameterIndex, x);
 
             return (Q) this;
         }
@@ -3892,7 +3975,7 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
-        public <E extends Exception> Q setParameters(Try.EE.Consumer<? super PreparedStatement, SQLException, E> paramSetter) throws SQLException, E {
+        public <E extends Exception> Q setParameters(Try.EE.Consumer<? super S, SQLException, E> paramSetter) throws SQLException, E {
             paramSetter.accept(stmt);
 
             return (Q) this;
@@ -4496,25 +4579,7 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
                 int maxResult) throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(maxResult, "maxResult");
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                final List<T> result = new ArrayList<>();
-
-                while (maxResult > 0 && rs.next()) {
-                    if (recordFilter.test(rs)) {
-                        result.add(recordGetter.apply(rs));
-                        maxResult--;
-                    }
-                }
-
-                return Stream.of(result);
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
+            return Stream.of(list(recordFilter, recordGetter, maxResult));
         }
 
         public <T, E extends Exception> Stream<T> stream(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -4532,26 +4597,7 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
                 int maxResult) throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(maxResult, "maxResult");
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                final List<T> result = new ArrayList<>();
-
-                while (maxResult > 0 && rs.next()) {
-                    if (recordFilter.test(rs, columnLabels)) {
-                        result.add(recordGetter.apply(rs, columnLabels));
-                        maxResult--;
-                    }
-                }
-
-                return Stream.of(result);
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
+            return Stream.of(list(recordFilter, recordGetter, maxResult));
         }
 
         public boolean exists() throws SQLException {
@@ -4901,7 +4947,7 @@ public final class JdbcUtil {
             try {
                 stmt.execute();
 
-                return getter.apply((S) stmt);
+                return getter.apply(stmt);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -4915,7 +4961,7 @@ public final class JdbcUtil {
             try {
                 final boolean isFirstResultSet = stmt.execute();
 
-                return getter.apply(isFirstResultSet, (S) stmt);
+                return getter.apply(isFirstResultSet, stmt);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -4928,7 +4974,7 @@ public final class JdbcUtil {
             try {
                 stmt.execute();
 
-                consumer.accept((S) stmt);
+                consumer.accept(stmt);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -4941,7 +4987,7 @@ public final class JdbcUtil {
             try {
                 final boolean isFirstResultSet = stmt.execute();
 
-                consumer.accept(isFirstResultSet, (S) stmt);
+                consumer.accept(isFirstResultSet, stmt);
             } finally {
                 closeAfterExecutionIfAllowed();
             }
@@ -5197,6 +5243,18 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream) throws SQLException {
+            stmt.setAsciiStream(parameterName, inputStream);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+            stmt.setAsciiStream(parameterName, inputStream, length);
+
+            return this;
+        }
+
         public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setBinaryStream(parameterName, inputStream);
 
@@ -5287,6 +5345,45 @@ public final class JdbcUtil {
             return this;
         }
 
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public PreparedCallableQuery setURL(String parameterName, URL x) throws SQLException {
+            stmt.setURL(parameterName, x);
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public PreparedCallableQuery setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
+            stmt.setSQLXML(parameterName, x);
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public PreparedCallableQuery setRowId(String parameterName, java.sql.RowId x) throws SQLException {
+            stmt.setRowId(parameterName, x);
+
+            return this;
+        }
+
         public PreparedCallableQuery setObject(String parameterName, Object x) throws SQLException {
             if (x == null) {
                 stmt.setObject(parameterName, x);
@@ -5337,6 +5434,9 @@ public final class JdbcUtil {
          * @param entity
          * @return
          * @throws SQLException
+         * @see {@link ClassUtil#getPropNameList(Class)}
+         * @see {@link ClassUtil#getPropNameListExclusively(Class, Set)}
+         * @see {@link ClassUtil#getPropNameListExclusively(Class, Collection)}
          */
         public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
             N.checkArgNotNull(parameterNames);

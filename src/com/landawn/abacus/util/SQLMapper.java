@@ -33,8 +33,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.ParseException;
+import com.landawn.abacus.exception.UncheckedIOException;
 
 /**
  * the sql scripts are configured in xml file and mapped to short ids referenced in program. for example: <br>
@@ -59,6 +59,9 @@ public final class SQLMapper {
             ResultSet.TYPE_SCROLL_INSENSITIVE, "SCROLL_SENSITIVE", ResultSet.TYPE_SCROLL_SENSITIVE);
 
     public static final String TIMEOUT = "timeout";
+
+    public static final int MAX_ID_LENGTH = 64;
+
     private final Map<String, NamedSQL> sqlMap = new LinkedHashMap<>();
 
     public SQLMapper() {
@@ -116,22 +119,42 @@ public final class SQLMapper {
     }
 
     public NamedSQL get(String id) {
+        if (N.isNullOrEmpty(id) || id.length() > MAX_ID_LENGTH) {
+            return null;
+        }
+
         return sqlMap.get(id);
     }
 
     public NamedSQL add(String id, NamedSQL namedSQL) {
+        checkId(id);
+
         return sqlMap.put(id, namedSQL);
     }
 
     public void add(String id, String sql, Map<String, String> attrs) {
-        if (sqlMap.containsKey(id)) {
-            throw new IllegalArgumentException(id + " already exists with sql: " + sqlMap.get(id));
-        }
+        checkId(id);
 
         sqlMap.put(id, NamedSQL.parse(sql, attrs));
     }
 
+    private void checkId(String id) {
+        N.checkArgNotNullOrEmpty(id, "id");
+
+        if (id.length() > MAX_ID_LENGTH) {
+            throw new IllegalArgumentException("Id: " + id + " is too long. The maximum length for id is: " + MAX_ID_LENGTH);
+        }
+
+        if (sqlMap.containsKey(id)) {
+            throw new IllegalArgumentException(id + " already exists with sql: " + sqlMap.get(id));
+        }
+    }
+
     public void remove(String id) {
+        if (N.isNullOrEmpty(id) || id.length() > MAX_ID_LENGTH) {
+            return;
+        }
+
         sqlMap.remove(id);
     }
 

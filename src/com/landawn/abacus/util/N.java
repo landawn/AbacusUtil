@@ -3893,6 +3893,10 @@ public final class N {
      * @return
      */
     public static String base64Encode(final byte[] src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_STRING;
+        }
+
         return Base64.getEncoder().encodeToString(src);
     }
 
@@ -3901,6 +3905,10 @@ public final class N {
      * @return
      */
     public static byte[] base64Decode(final String src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return Base64.getDecoder().decode(src);
     }
 
@@ -3908,7 +3916,23 @@ public final class N {
      * @param src
      * @return
      */
+    public static String base64DecodeToString(final String src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_STRING;
+        }
+
+        return new String(Base64.getDecoder().decode(src));
+    }
+
+    /**
+     * @param src
+     * @return
+     */
     public static String base64UrlEncode(final byte[] src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_STRING;
+        }
+
         return Base64.getUrlEncoder().encodeToString(src);
     }
 
@@ -3917,6 +3941,10 @@ public final class N {
      * @return
      */
     public static byte[] base64UrlDecode(final String src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return Base64.getUrlDecoder().decode(src);
     }
 
@@ -3925,6 +3953,10 @@ public final class N {
      * @return
      */
     public static String base64MimeEncode(final byte[] src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_STRING;
+        }
+
         return Base64.getMimeEncoder().encodeToString(src);
     }
 
@@ -3933,30 +3965,58 @@ public final class N {
      * @return
      */
     public static byte[] base64MimeDecode(final String src) {
+        if (N.isNullOrEmpty(src)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return Base64.getMimeDecoder().decode(src);
     }
 
     public static String urlEncode(final Object parameters) {
+        if (parameters == null) {
+            return N.EMPTY_STRING;
+        }
+
         return URLEncodedUtil.encode(parameters);
     }
 
     public static String urlEncode(final Object parameters, final Charset charset) {
+        if (parameters == null) {
+            return N.EMPTY_STRING;
+        }
+
         return URLEncodedUtil.encode(parameters, charset);
     }
 
     public static Map<String, String> urlDecode(final String urlQuery) {
+        if (N.isNullOrEmpty(urlQuery)) {
+            return new LinkedHashMap<>();
+        }
+
         return URLEncodedUtil.decode(urlQuery);
     }
 
     public static Map<String, String> urlDecode(final String urlQuery, final Charset charset) {
+        if (N.isNullErrorMsg(urlQuery)) {
+            return new LinkedHashMap<>();
+        }
+
         return URLEncodedUtil.decode(urlQuery, charset);
     }
 
     public static <T> T urlDecode(final Class<? extends T> targetClass, final String urlQuery) {
+        if (N.isNullErrorMsg(urlQuery)) {
+            return N.newInstance(targetClass);
+        }
+
         return URLEncodedUtil.decode(targetClass, urlQuery);
     }
 
     public static <T> T urlDecode(final Class<? extends T> targetClass, final String urlQuery, final Charset charset) {
+        if (N.isNullOrEmpty(urlQuery)) {
+            return N.newInstance(targetClass);
+        }
+
         return URLEncodedUtil.decode(targetClass, urlQuery, charset);
     }
 

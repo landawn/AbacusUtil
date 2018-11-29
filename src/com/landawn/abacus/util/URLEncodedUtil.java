@@ -342,6 +342,10 @@ public final class URLEncodedUtil {
     }
 
     public static void encode(final StringBuilder output, final Object parameters, final Charset charset) {
+        if (parameters == null) {
+            return;
+        }
+
         if (parameters instanceof Map) {
             final Map<String, Object> map = (Map<String, Object>) parameters;
             int i = 0;
