@@ -4295,6 +4295,17 @@ public final class JdbcUtil {
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
+                return resultExtrator.apply(rs);
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        public <R, E extends Exception> R query(final BiResultExtractor<R, E> resultExtrator) throws SQLException, E {
+            N.checkArgNotNull(resultExtrator);
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
                 return resultExtrator.apply(rs, getColumnLabelList(rs));
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -5572,7 +5583,7 @@ public final class JdbcUtil {
                 if (stmt.execute()) {
                     if (stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            return Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                            return Optional.of(resultExtrator1.apply(rs));
                         }
                     }
                 }
@@ -5596,13 +5607,13 @@ public final class JdbcUtil {
                 if (stmt.execute()) {
                     if (stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                            result1 = Optional.of(resultExtrator1.apply(rs));
                         }
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                            result2 = Optional.of(resultExtrator2.apply(rs));
                         }
 
                     }
@@ -5630,20 +5641,20 @@ public final class JdbcUtil {
                 if (stmt.execute()) {
                     if (stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                            result1 = Optional.of(resultExtrator1.apply(rs));
                         }
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
+                            result2 = Optional.of(resultExtrator2.apply(rs));
                         }
 
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                            result3 = Optional.of(resultExtrator3.apply(rs));
                         }
 
                     }
@@ -5673,27 +5684,27 @@ public final class JdbcUtil {
                 if (stmt.execute()) {
                     if (stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                            result1 = Optional.of(resultExtrator1.apply(rs));
                         }
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
-                        }
-
-                    }
-
-                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
-                        try (ResultSet rs = stmt.getResultSet()) {
-                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                            result2 = Optional.of(resultExtrator2.apply(rs));
                         }
 
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result4 = Optional.of(resultExtrator4.apply(rs, getColumnLabelList(rs)));
+                            result3 = Optional.of(resultExtrator3.apply(rs));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result4 = Optional.of(resultExtrator4.apply(rs));
                         }
 
                     }
@@ -5725,34 +5736,34 @@ public final class JdbcUtil {
                 if (stmt.execute()) {
                     if (stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result1 = Optional.of(resultExtrator1.apply(rs, getColumnLabelList(rs)));
+                            result1 = Optional.of(resultExtrator1.apply(rs));
                         }
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result2 = Optional.of(resultExtrator2.apply(rs, getColumnLabelList(rs)));
-                        }
-
-                    }
-
-                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
-                        try (ResultSet rs = stmt.getResultSet()) {
-                            result3 = Optional.of(resultExtrator3.apply(rs, getColumnLabelList(rs)));
+                            result2 = Optional.of(resultExtrator2.apply(rs));
                         }
 
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result4 = Optional.of(resultExtrator4.apply(rs, getColumnLabelList(rs)));
+                            result3 = Optional.of(resultExtrator3.apply(rs));
                         }
 
                     }
 
                     if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
                         try (ResultSet rs = stmt.getResultSet()) {
-                            result5 = Optional.of(resultExtrator5.apply(rs, getColumnLabelList(rs)));
+                            result4 = Optional.of(resultExtrator4.apply(rs));
+                        }
+
+                    }
+
+                    if (stmt.getMoreResults() && stmt.getUpdateCount() == -1) {
+                        try (ResultSet rs = stmt.getResultSet()) {
+                            result5 = Optional.of(resultExtrator5.apply(rs));
                         }
 
                     }
@@ -6061,11 +6072,38 @@ public final class JdbcUtil {
     public static interface ResultExtractor<T, E extends Exception> {
         public static final ResultExtractor<DataSet, RuntimeException> TO_DATA_SET = new ResultExtractor<DataSet, RuntimeException>() {
             @Override
-            public DataSet apply(ResultSet rs, List<String> columnLabels) throws SQLException {
+            public DataSet apply(final ResultSet rs) throws SQLException {
                 return JdbcUtil.extractData(rs);
             }
         };
 
+        T apply(ResultSet rs) throws SQLException, E;
+
+        //    /**
+        //     * Don't cache or reuse the returned {@code ResultExtractor} instance.
+        //     * 
+        //     * @param biResultExtractor
+        //     * @return
+        //     * @deprecated unnecessary!
+        //     */
+        //    @Deprecated
+        //    public static <T, E extends Exception> ResultExtractor<T, E> from(BiResultExtractor<? extends T, E> biResultExtractor) {
+        //        return new ResultExtractor<T, E>() {
+        //            private volatile List<String> columnLabels = null;
+        //
+        //            @Override
+        //            public T apply(ResultSet rs) throws SQLException, E {
+        //                if (columnLabels == null) {
+        //                    columnLabels = JdbcUtil.getColumnLabelList(rs);
+        //                }
+        //
+        //                return biResultExtractor.apply(rs, columnLabels);
+        //            }
+        //        };
+        //    }
+    }
+
+    public static interface BiResultExtractor<T, E extends Exception> {
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
     }
 
@@ -6165,6 +6203,252 @@ public final class JdbcUtil {
         };
 
         T apply(ResultSet rs) throws SQLException, E;
+
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param leftType
+        // * @param rightType
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <L, R> RecordGetter<Pair<L, R>, RuntimeException> toPair(final Class<L> leftType, final Class<R> rightType) {
+        //    N.checkArgNotNull(leftType, "leftType");
+        //    N.checkArgNotNull(rightType, "rightType");
+        //
+        //    return new RecordGetter<Pair<L, R>, RuntimeException>() {
+        //        private final Type<L> leftT = N.typeOf(leftType);
+        //        private final Type<R> rightT = N.typeOf(rightType);
+        //
+        //        @Override
+        //        public Pair<L, R> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Pair.of(leftT.get(rs, 1), rightT.get(rs, 2));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param leftType
+        // * @param middleType
+        // * @param rightType
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <L, M, R> RecordGetter<Triple<L, M, R>, RuntimeException> toTriple(final Class<L> leftType, final Class<M> middleType,
+        //        final Class<R> rightType) {
+        //    N.checkArgNotNull(leftType, "leftType");
+        //    N.checkArgNotNull(middleType, "middleType");
+        //    N.checkArgNotNull(rightType, "rightType");
+        //
+        //    return new RecordGetter<Triple<L, M, R>, RuntimeException>() {
+        //        private final Type<L> leftT = N.typeOf(leftType);
+        //        private final Type<M> middleT = N.typeOf(middleType);
+        //        private final Type<R> rightT = N.typeOf(rightType);
+        //
+        //        @Override
+        //        public Triple<L, M, R> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Triple.of(leftT.get(rs, 1), middleT.get(rs, 2), rightT.get(rs, 3));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2> RecordGetter<Tuple2<T1, T2>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //
+        //    return new RecordGetter<Tuple2<T1, T2>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //
+        //        @Override
+        //        public Tuple2<T1, T2> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @param type3
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2, T3> RecordGetter<Tuple3<T1, T2, T3>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //        final Class<T3> type3) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //    N.checkArgNotNull(type3, "type3");
+        //
+        //    return new RecordGetter<Tuple3<T1, T2, T3>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //        private final Type<T3> t3 = N.typeOf(type3);
+        //
+        //        @Override
+        //        public Tuple3<T1, T2, T3> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2), t3.get(rs, 3));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @param type3
+        // * @param type4
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2, T3, T4> RecordGetter<Tuple4<T1, T2, T3, T4>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //        final Class<T3> type3, final Class<T4> type4) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //    N.checkArgNotNull(type3, "type3");
+        //    N.checkArgNotNull(type4, "type4");
+        //
+        //    return new RecordGetter<Tuple4<T1, T2, T3, T4>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //        private final Type<T3> t3 = N.typeOf(type3);
+        //        private final Type<T4> t4 = N.typeOf(type4);
+        //
+        //        @Override
+        //        public Tuple4<T1, T2, T3, T4> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2), t3.get(rs, 3), t4.get(rs, 4));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @param type3
+        // * @param type4
+        // * @param type5
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2, T3, T4, T5> RecordGetter<Tuple5<T1, T2, T3, T4, T5>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //        final Class<T3> type3, final Class<T4> type4, final Class<T5> type5) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //    N.checkArgNotNull(type3, "type3");
+        //    N.checkArgNotNull(type4, "type4");
+        //    N.checkArgNotNull(type5, "type5");
+        //
+        //    return new RecordGetter<Tuple5<T1, T2, T3, T4, T5>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //        private final Type<T3> t3 = N.typeOf(type3);
+        //        private final Type<T4> t4 = N.typeOf(type4);
+        //        private final Type<T5> t5 = N.typeOf(type5);
+        //
+        //        @Override
+        //        public Tuple5<T1, T2, T3, T4, T5> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2), t3.get(rs, 3), t4.get(rs, 4), t5.get(rs, 5));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @param type3
+        // * @param type4
+        // * @param type5
+        // * @param type6
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2, T3, T4, T5, T6> RecordGetter<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException> toTuple(final Class<T1> type1,
+        //        final Class<T2> type2, final Class<T3> type3, final Class<T4> type4, final Class<T5> type5, final Class<T6> type6) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //    N.checkArgNotNull(type3, "type3");
+        //    N.checkArgNotNull(type4, "type4");
+        //    N.checkArgNotNull(type5, "type5");
+        //    N.checkArgNotNull(type6, "type6");
+        //
+        //    return new RecordGetter<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //        private final Type<T3> t3 = N.typeOf(type3);
+        //        private final Type<T4> t4 = N.typeOf(type4);
+        //        private final Type<T5> t5 = N.typeOf(type5);
+        //        private final Type<T6> t6 = N.typeOf(type6);
+        //
+        //        @Override
+        //        public Tuple6<T1, T2, T3, T4, T5, T6> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2), t3.get(rs, 3), t4.get(rs, 4), t5.get(rs, 5), t6.get(rs, 6));
+        //        }
+        //    };
+        //}
+        //
+        ///**
+        // * Totally unnecessary. It's more efficient by direct call.
+        // * 
+        // * @param type1
+        // * @param type2
+        // * @param type3
+        // * @param type4
+        // * @param type5
+        // * @param type6
+        // * @param type7
+        // * @return
+        // * @deprecated
+        // */
+        //@Deprecated
+        //public static <T1, T2, T3, T4, T5, T6, T7> RecordGetter<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException> toTuple(final Class<T1> type1,
+        //        final Class<T2> type2, final Class<T3> type3, final Class<T4> type4, final Class<T5> type5, final Class<T6> type6, final Class<T7> type7) {
+        //    N.checkArgNotNull(type1, "type1");
+        //    N.checkArgNotNull(type2, "type2");
+        //    N.checkArgNotNull(type3, "type3");
+        //    N.checkArgNotNull(type4, "type4");
+        //    N.checkArgNotNull(type5, "type5");
+        //    N.checkArgNotNull(type6, "type6");
+        //    N.checkArgNotNull(type7, "type7");
+        //
+        //    return new RecordGetter<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException>() {
+        //        private final Type<T1> t1 = N.typeOf(type1);
+        //        private final Type<T2> t2 = N.typeOf(type2);
+        //        private final Type<T3> t3 = N.typeOf(type3);
+        //        private final Type<T4> t4 = N.typeOf(type4);
+        //        private final Type<T5> t5 = N.typeOf(type5);
+        //        private final Type<T6> t6 = N.typeOf(type6);
+        //        private final Type<T7> t7 = N.typeOf(type7);
+        //
+        //        @Override
+        //        public Tuple7<T1, T2, T3, T4, T5, T6, T7> apply(ResultSet rs) throws SQLException, RuntimeException {
+        //            return Tuple.of(t1.get(rs, 1), t2.get(rs, 2), t3.get(rs, 3), t4.get(rs, 4), t5.get(rs, 5), t6.get(rs, 6), t7.get(rs, 7));
+        //        }
+        //    };
+        //}
     }
 
     public static interface BiRecordGetter<T, E extends Exception> {
