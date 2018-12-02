@@ -919,60 +919,60 @@ public final class SQLiteExecutor {
         return ret;
     }
 
-    /**
-     * Insert multiple records into data store.
-     *
-     * @param records
-     * @param withTransaction
-     * @return
-     * 
-     * @since 0.8.10
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public <T> List<Long> insert(Collection<T> records, boolean withTransaction) {
-        return insert(this.getTableNameByEntity(records.iterator().next()), records, withTransaction);
-    }
-
-    /**
-     * Insert multiple records into data store.
-     *
-     * @param table
-     * @param records
-     * @param withTransaction
-     * @return
-     * @deprecated replaced with {@code insertAll}.
-     */
-    @Deprecated
-    public <T> List<Long> insert(String table, Collection<T> records, boolean withTransaction) {
-        if (N.isNullOrEmpty(records)) {
-            return new ArrayList<>();
-        }
-
-        final List<Long> ret = new ArrayList<>(records.size());
-
-        table = formatName(table);
-
-        if (withTransaction) {
-            beginTransaction();
-        }
-
-        try {
-            for (Object e : records) {
-                ret.add(insert(table, e));
-            }
-
-            if (withTransaction) {
-                sqliteDB.setTransactionSuccessful();
-            }
-        } finally {
-            if (withTransaction) {
-                endTransaction();
-            }
-        }
-
-        return ret;
-    }
+    //    /**
+    //     * Insert multiple records into data store.
+    //     *
+    //     * @param records
+    //     * @param withTransaction
+    //     * @return
+    //     * 
+    //     * @since 0.8.10
+    //     * @deprecated replaced with {@code insertAll}.
+    //     */
+    //    @Deprecated
+    //    public <T> List<Long> insert(Collection<T> records, boolean withTransaction) {
+    //        return insert(this.getTableNameByEntity(records.iterator().next()), records, withTransaction);
+    //    }
+    //
+    //    /**
+    //     * Insert multiple records into data store.
+    //     *
+    //     * @param table
+    //     * @param records
+    //     * @param withTransaction
+    //     * @return
+    //     * @deprecated replaced with {@code insertAll}.
+    //     */
+    //    @Deprecated
+    //    public <T> List<Long> insert(String table, Collection<T> records, boolean withTransaction) {
+    //        if (N.isNullOrEmpty(records)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<Long> ret = new ArrayList<>(records.size());
+    //
+    //        table = formatName(table);
+    //
+    //        if (withTransaction) {
+    //            beginTransaction();
+    //        }
+    //
+    //        try {
+    //            for (Object e : records) {
+    //                ret.add(insert(table, e));
+    //            }
+    //
+    //            if (withTransaction) {
+    //                sqliteDB.setTransactionSuccessful();
+    //            }
+    //        } finally {
+    //            if (withTransaction) {
+    //                endTransaction();
+    //            }
+    //        }
+    //
+    //        return ret;
+    //    }
 
     public <T> List<Long> insertAll(Collection<T> records, boolean withTransaction) {
         return insertAll(this.getTableNameByEntity(records.iterator().next()), records, withTransaction);
@@ -2101,7 +2101,7 @@ public final class SQLiteExecutor {
             throw new IllegalArgumentException("Null or empty parameters for parameterized query: " + namedSQL.getNamedSQL());
         }
 
-        final Map<Integer, String> namedParameters = namedSQL.getNamedParameters();
+        final List<String> namedParameters = namedSQL.getNamedParameters();
         Object[] result = parameters;
 
         if (N.notNullOrEmpty(namedParameters) && parameters.length == 1 && (parameters[0] instanceof Map || N.isEntity(parameters[0].getClass()))) {

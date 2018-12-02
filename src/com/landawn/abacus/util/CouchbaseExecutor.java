@@ -1650,7 +1650,7 @@ public final class CouchbaseExecutor implements Closeable {
         final NamedSQL namedSQL = getNamedSQL(query);
         final String sql = namedSQL.getPureSQL(true);
         final int parameterCount = namedSQL.getParameterCount(true);
-        final Map<Integer, String> namedParameters = namedSQL.getNamedParameters(true);
+        final List<String> namedParameters = namedSQL.getNamedParameters(true);
 
         // Prepared query plan doens't work in Couchbase 4.0 Beta version?
 

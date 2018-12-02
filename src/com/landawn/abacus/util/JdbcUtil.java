@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -940,6 +941,127 @@ public final class JdbcUtil {
     }
 
     /**
+     * Don't cache or reuse the returned {@code BiRecordGetter} instance.
+     * 
+     * @param targetType Array/List/Map or Entity with getter/setter methods.
+     * @return
+     * @deprecated replaced by {@code BiRecordGetter#to(Class)} in JDK 1.8 or above.
+     */
+    @Deprecated
+    public static <T> BiRecordGetter<T, RuntimeException> createBiRecordGetterByTargetClass(final Class<? extends T> targetClass) {
+        if (Object[].class.isAssignableFrom(targetClass)) {
+            return new BiRecordGetter<T, RuntimeException>() {
+                @Override
+                public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                    final int columnCount = columnLabelList.size();
+                    final Object[] a = Array.newInstance(targetClass.getComponentType(), columnCount);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        a[i] = JdbcUtil.getColumnValue(rs, i + 1);
+                    }
+
+                    return (T) a;
+                }
+            };
+        } else if (List.class.isAssignableFrom(targetClass)) {
+            return new BiRecordGetter<T, RuntimeException>() {
+                private final boolean isListOrArrayList = targetClass.equals(List.class) || targetClass.equals(ArrayList.class);
+
+                @Override
+                public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                    final int columnCount = columnLabelList.size();
+                    final List<Object> c = isListOrArrayList ? new ArrayList<Object>(columnCount) : (List<Object>) N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        c.add(JdbcUtil.getColumnValue(rs, i + 1));
+                    }
+
+                    return (T) c;
+                }
+            };
+        } else if (Map.class.isAssignableFrom(targetClass)) {
+            return new BiRecordGetter<T, RuntimeException>() {
+                private final boolean isMapOrHashMap = targetClass.equals(Map.class) || targetClass.equals(HashMap.class);
+                private final boolean isLinkedHashMap = targetClass.equals(LinkedHashMap.class);
+
+                @Override
+                public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                    final int columnCount = columnLabelList.size();
+                    final Map<String, Object> m = isMapOrHashMap ? new HashMap<String, Object>(columnCount)
+                            : (isLinkedHashMap ? new LinkedHashMap<String, Object>(columnCount) : (Map<String, Object>) N.newInstance(targetClass));
+
+                    for (int i = 0; i < columnCount; i++) {
+                        m.put(columnLabelList.get(i), JdbcUtil.getColumnValue(rs, i + 1));
+                    }
+
+                    return (T) m;
+                }
+            };
+        } else if (N.isEntity(targetClass)) {
+            return new BiRecordGetter<T, RuntimeException>() {
+                private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+                private volatile String[] columnLabels = null;
+                private volatile Method[] propSetters;
+                private volatile Type<?>[] columnTypes = null;
+
+                @Override
+                public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                    final int columnCount = columnLabelList.size();
+
+                    String[] columnLabels = this.columnLabels;
+                    Method[] propSetters = this.propSetters;
+                    Type<?>[] columnTypes = this.columnTypes;
+
+                    if (columnLabels == null) {
+                        columnLabels = columnLabelList.toArray(new String[columnLabelList.size()]);
+                        this.columnLabels = columnLabels;
+                    }
+
+                    if (columnTypes == null || propSetters == null) {
+                        final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
+
+                        propSetters = new Method[columnCount];
+                        columnTypes = new Type[columnCount];
+
+                        for (int i = 0; i < columnCount; i++) {
+                            propSetters[i] = ClassUtil.getPropSetMethod(targetClass, columnLabels[i]);
+
+                            if (propSetters[i] == null) {
+                                columnLabels[i] = null;
+                                throw new IllegalArgumentException(
+                                        "No property in class: " + ClassUtil.getCanonicalClassName(targetClass) + " mapping to column: " + columnLabels[i]);
+                            } else {
+                                columnTypes[i] = entityInfo.getPropInfo(columnLabels[i]).type;
+                            }
+                        }
+
+                        this.propSetters = propSetters;
+                        this.columnTypes = columnTypes;
+                    }
+
+                    final Object entity = N.newInstance(targetClass);
+
+                    for (int i = 0; i < columnCount; i++) {
+                        if (columnLabels[i] == null) {
+                            continue;
+                        }
+
+                        ClassUtil.setPropValue(entity, propSetters[i], columnTypes[i].get(rs, i + 1));
+                    }
+
+                    if (isDirtyMarker) {
+                        ((DirtyMarker) entity).markDirty(false);
+                    }
+
+                    return (T) entity;
+                }
+            };
+        } else {
+            throw new IllegalArgumentException(targetClass.getCanonicalName() + " is not an Array/List/Map/Entity class");
+        }
+    }
+
+    /**
      * Here is the general code pattern to work with {@code SimpleTransaction}.
      * The transaction will be shared in the same thread for the same {@code DataSource} or {@code Connection}.
      * 
@@ -1287,16 +1409,16 @@ public final class JdbcUtil {
         return new PreparedQuery(stmtCreator.apply(conn));
     }
 
-    /**
-     * 
-     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     */
-    public static PreparedQuery prepareQuery(final Try.Supplier<PreparedStatement, SQLException> stmtCreator) throws SQLException {
-        return new PreparedQuery(stmtCreator.get());
-    }
+    //    /**
+    //     * 
+    //     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+    //     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+    //     * @return
+    //     * @throws SQLException
+    //     */
+    //    public static PreparedQuery prepareQuery(final Try.Supplier<PreparedStatement, SQLException> stmtCreator) throws SQLException {
+    //        return new PreparedQuery(stmtCreator.get());
+    //    }
 
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql) throws UncheckedSQLException {
         PreparedCallableQuery result = null;
@@ -1379,16 +1501,16 @@ public final class JdbcUtil {
         return new PreparedCallableQuery(stmtCreator.apply(conn));
     }
 
-    /**
-     * 
-     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     */
-    public static PreparedCallableQuery prepareCallableQuery(final Try.Supplier<CallableStatement, SQLException> stmtCreator) throws SQLException {
-        return new PreparedCallableQuery(stmtCreator.get());
-    }
+    //    /**
+    //     * 
+    //     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+    //     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+    //     * @return
+    //     * @throws SQLException
+    //     */
+    //    public static PreparedCallableQuery prepareCallableQuery(final Try.Supplier<CallableStatement, SQLException> stmtCreator) throws SQLException {
+    //        return new PreparedCallableQuery(stmtCreator.get());
+    //    }
 
     @SafeVarargs
     public static PreparedStatement prepareStatement(final Connection conn, final String sql, final Object... parameters) throws SQLException {
@@ -1436,6 +1558,10 @@ public final class JdbcUtil {
         }
 
         return stmt;
+    }
+
+    public static List<String> getNamedParameters(String sql) {
+        return NamedSQL.parse(sql).getNamedParameters();
     }
 
     @SafeVarargs
@@ -1600,8 +1726,13 @@ public final class JdbcUtil {
         return extractData(rs, offset, count, Fn.alwaysTrue(), closeResultSet);
     }
 
-    public static <E extends Exception> DataSet extractData(final ResultSet rs, int offset, int count, final Try.Predicate<? super Object[], E> filter,
+    public static <E extends Exception> DataSet extractData(final ResultSet rs, int offset, int count, final Try.Predicate<? super ResultSet, E> filter,
             final boolean closeResultSet) throws UncheckedSQLException, E {
+        N.checkArgNotNull(rs, "ResultSet");
+        N.checkArgNotNegative(offset, "offset");
+        N.checkArgNotNegative(count, "count");
+        N.checkArgNotNull(filter, "filter");
+
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData rsmd = rs.getMetaData();
@@ -1616,16 +1747,10 @@ public final class JdbcUtil {
 
             JdbcUtil.skip(rs, offset);
 
-            final Object[] row = new Object[columnCount];
-
             while (count > 0 && rs.next()) {
-                for (int i = 0; i < columnCount;) {
-                    row[i] = JdbcUtil.getColumnValue(rs, ++i);
-                }
-
-                if (filter == null || filter.test(row)) {
-                    for (int i = 0; i < columnCount; i++) {
-                        columnList.get(i).add(row[i]);
+                if (filter == null || filter.test(rs)) {
+                    for (int i = 0; i < columnCount;) {
+                        columnList.get(i).add(JdbcUtil.getColumnValue(rs, ++i));
                     }
 
                     count--;
@@ -1643,116 +1768,6 @@ public final class JdbcUtil {
         }
     }
 
-    static <T> BiRecordGetter<T, RuntimeException> createBiRecordGetterByTargetClass(final Class<T> targetClass) {
-        final boolean isArray = Object[].class.isAssignableFrom(targetClass);
-        final boolean isList = List.class.isAssignableFrom(targetClass);
-        final boolean isListOrArrayList = targetClass.equals(List.class) || targetClass.equals(ArrayList.class);
-        final boolean isMap = Map.class.isAssignableFrom(targetClass);
-        final boolean isMapOrHashMap = targetClass.equals(Map.class) || targetClass.equals(HashMap.class);
-        final boolean isLinkedHashMap = targetClass.equals(LinkedHashMap.class);
-        final boolean isEntity = !isList && !isMap && N.isEntity(targetClass);
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-
-        if (!(isArray || isList || isMap || isEntity)) {
-            throw new IllegalArgumentException(targetClass.getCanonicalName() + " is not an Array/List/Map/Entity class");
-        }
-
-        return new BiRecordGetter<T, RuntimeException>() {
-            private String[] columnLabels = null;
-            private Method[] propSetters;
-            private Type<?>[] columnTypes = null;
-
-            @SuppressWarnings("deprecation")
-            @Override
-            public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
-                String[] columnLabels = this.columnLabels;
-                Method[] propSetters = this.propSetters;
-                Type<?>[] columnTypes = this.columnTypes;
-
-                if (columnLabels == null) {
-                    columnLabels = columnLabelList.toArray(new String[columnLabelList.size()]);
-                    this.columnLabels = columnLabels;
-                }
-
-                final int columnCount = columnLabels.length;
-
-                if (isEntity && (columnTypes == null || propSetters == null)) {
-                    final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
-
-                    propSetters = new Method[columnCount];
-                    columnTypes = new Type[columnCount];
-
-                    for (int i = 0; i < columnCount; i++) {
-                        propSetters[i] = ClassUtil.getPropSetMethod(targetClass, columnLabels[i]);
-
-                        if (propSetters[i] == null) {
-                            columnLabels[i] = null;
-                        } else {
-                            columnTypes[i] = entityInfo.getPropInfo(columnLabels[i]).type;
-                        }
-                    }
-
-                    this.propSetters = propSetters;
-                    this.columnTypes = columnTypes;
-                }
-
-                if (isArray) {
-                    final Object[] a = Array.newInstance(targetClass.getComponentType(), columnCount);
-
-                    for (int i = 0; i < columnCount; i++) {
-                        a[i] = JdbcUtil.getColumnValue(rs, i + 1);
-                    }
-
-                    return (T) a;
-                } else if (isList) {
-                    final List<Object> c = isListOrArrayList ? new ArrayList<Object>(columnCount) : (List<Object>) N.newInstance(targetClass);
-
-                    for (int i = 0; i < columnCount; i++) {
-                        c.add(JdbcUtil.getColumnValue(rs, i + 1));
-                    }
-
-                    return (T) c;
-                } else if (isMap) {
-                    final Map<String, Object> m = isMapOrHashMap ? new HashMap<String, Object>(columnCount)
-                            : (isLinkedHashMap ? new LinkedHashMap<String, Object>(columnCount) : (Map<String, Object>) N.newInstance(targetClass));
-
-                    for (int i = 0; i < columnCount; i++) {
-                        m.put(columnLabels[i], JdbcUtil.getColumnValue(rs, i + 1));
-                    }
-
-                    return (T) m;
-                } else {
-                    final Object entity = N.newInstance(targetClass);
-
-                    for (int i = 0; i < columnCount; i++) {
-                        if (columnLabels[i] == null) {
-                            continue;
-                        }
-
-                        ClassUtil.setPropValue(entity, propSetters[i], columnTypes[i].get(rs, i + 1));
-                    }
-
-                    if (isDirtyMarker) {
-                        ((DirtyMarker) entity).markDirty(false);
-                    }
-
-                    return (T) entity;
-                }
-            }
-        };
-    }
-
-    static <T> Try.BiFunction<ResultSet, List<String>, T, SQLException> createBiRecordGetterFuncByTargetClass(final Class<T> targetClass) {
-        return new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
-            private final BiRecordGetter<T, RuntimeException> biRecordGetter = createBiRecordGetterByTargetClass(targetClass);
-
-            @Override
-            public T apply(ResultSet rs, List<String> columnLabels) throws SQLException {
-                return biRecordGetter.apply(rs, columnLabels);
-            }
-        };
-    }
-
     /**
      * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
      * 
@@ -1764,13 +1779,13 @@ public final class JdbcUtil {
      */
     @SafeVarargs
     public static Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
-        return stream2(null, conn, sql, parameters);
+        return stream(Object[].class, conn, sql, parameters);
     }
 
     /**
      * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
      * 
-     * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
+     * @param targetType Array/List/Map or Entity with getter/setter methods.
      * @param conn
      * @param sql
      * @param parameters
@@ -1782,15 +1797,9 @@ public final class JdbcUtil {
             throws UncheckedSQLException {
         N.checkArgNotNull(targetType);
 
-        return stream2(targetType, conn, sql, parameters);
-    }
-
-    @SafeVarargs
-    private static <T> Try<Stream<T>> stream2(final Class<T> targetType, final Connection conn, final String sql, final Object... parameters)
-            throws UncheckedSQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        boolean isOK = false;
+        Try<Stream<T>> result = null;
 
         try {
             stmt = JdbcUtil.prepareStatement(conn, sql, parameters);
@@ -1799,24 +1808,21 @@ public final class JdbcUtil {
             final PreparedStatement _stmt = stmt;
             final ResultSet _rs = rs;
 
-            @SuppressWarnings("unchecked")
-            final Try<Stream<T>> res = (targetType == null ? (Stream<T>) Stream.of(rs) : Stream.of(targetType, rs)).onClose(new Runnable() {
+            result = Stream.of(targetType, rs).onClose(new Runnable() {
                 @Override
                 public void run() {
                     JdbcUtil.closeQuietly(_rs, _stmt);
                 }
             }).tried();
-
-            isOK = true;
-
-            return res;
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            if (!isOK) {
+            if (result == null) {
                 JdbcUtil.closeQuietly(rs, stmt);
             }
         }
+
+        return result;
     }
 
     /**
@@ -1827,13 +1833,13 @@ public final class JdbcUtil {
      * @throws UncheckedSQLException
      */
     public static Try<Stream<Object[]>> stream(final PreparedStatement stmt) throws UncheckedSQLException {
-        return stream2(null, stmt);
+        return stream(Object[].class, stmt);
     }
 
     /**
      * Don’t close the specified statement before the returned {@code Stream} is consumed/collected/terminated.
      * 
-     * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
+     * @param targetType Array/List/Map or Entity with getter/setter methods.
      * @param stmt
      * @return
      * @throws UncheckedSQLException
@@ -1841,45 +1847,22 @@ public final class JdbcUtil {
     public static <T> Try<Stream<T>> stream(final Class<T> targetType, final PreparedStatement stmt) throws UncheckedSQLException {
         N.checkArgNotNull(targetType);
 
-        return stream2(targetType, stmt);
-    }
-
-    /**
-     * 
-     * @param rs
-     * @throws UncheckedSQLException
-     */
-    public static RowIterator iterate(final ResultSet rs) throws UncheckedSQLException {
-        return new RowIterator(rs, false, false);
-    }
-
-    private static <T> Try<Stream<T>> stream2(final Class<T> targetType, final PreparedStatement stmt) throws UncheckedSQLException {
         ResultSet rs = null;
-        boolean isOK = false;
+        Try<Stream<T>> result = null;
 
         try {
             rs = stmt.executeQuery();
 
-            final ResultSet _rs = rs;
-
-            @SuppressWarnings("unchecked")
-            final Try<Stream<T>> res = (targetType == null ? (Stream<T>) Stream.of(rs) : Stream.of(targetType, rs)).onClose(new Runnable() {
-                @Override
-                public void run() {
-                    JdbcUtil.closeQuietly(_rs);
-                }
-            }).tried();
-
-            isOK = true;
-
-            return res;
+            result = Stream.of(targetType, rs, true);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            if (!isOK) {
+            if (result == null) {
                 JdbcUtil.closeQuietly(rs);
             }
         }
+
+        return result;
     }
 
     /**
@@ -3068,7 +3051,46 @@ public final class JdbcUtil {
      */
     public static <E extends Exception, E2 extends Exception> void parse(final ResultSet rs, long offset, long count, final int processThreadNum,
             final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws UncheckedSQLException, E, E2 {
-        N.parse(new RowIterator(rs, false, false), offset, count, processThreadNum, queueSize, rowParser, onComplete);
+
+        final Iterator<Object[]> iter = new ObjIterator<Object[]>() {
+            private final JdbcUtil.BiRecordGetter<Object[], RuntimeException> biFunc = BiRecordGetter.TO_ARRAY;
+            private List<String> columnLabels = null;
+            private boolean hasNext;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false) {
+                    try {
+                        hasNext = rs.next();
+                    } catch (SQLException e) {
+                        throw new UncheckedSQLException(e);
+                    }
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public Object[] next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                try {
+                    if (columnLabels == null) {
+                        columnLabels = JdbcUtil.getColumnLabelList(rs);
+                    }
+
+                    return biFunc.apply(rs, columnLabels);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+            }
+        };
+
+        N.parse(iter, offset, count, processThreadNum, queueSize, rowParser, onComplete);
     }
 
     public static long copy(final Connection sourceConn, final String selectSql, final Connection targetConn, final String insertSql)
@@ -4258,35 +4280,10 @@ public final class JdbcUtil {
             }
         }
 
-        @SuppressWarnings("deprecation")
-        private <T> T get(Class<T> targetClass, ResultSet rs, List<String> columnLabels) throws SQLException {
-            final List<String> columnLabelList = JdbcUtil.getColumnLabelList(rs);
-            final int columnCount = columnLabelList.size();
-            final Object entity = N.newInstance(targetClass);
+        private <T> T get(Class<T> targetClass, ResultSet rs) throws SQLException {
+            final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
-            if (List.class.isAssignableFrom(targetClass)) {
-                final List<Object> list = (List<Object>) entity;
-
-                for (int i = 0; i < columnCount; i++) {
-                    list.add(JdbcUtil.getColumnValue(rs, i + 1));
-                }
-            } else if (Map.class.isAssignableFrom(targetClass)) {
-                final Map<String, Object> m = (Map<String, Object>) entity;
-
-                for (int i = 0; i < columnCount; i++) {
-                    m.put(columnLabelList.get(i), JdbcUtil.getColumnValue(rs, i + 1));
-                }
-            } else {
-                for (int i = 0; i < columnCount; i++) {
-                    ClassUtil.setPropValue(entity, columnLabelList.get(i), JdbcUtil.getColumnValue(rs, i + 1), true);
-                }
-
-                if (N.isDirtyMarker(targetClass)) {
-                    ((DirtyMarker) entity).markDirty(false);
-                }
-            }
-
-            return (T) entity;
+            return JdbcUtil.createBiRecordGetterByTargetClass(targetClass).apply(rs, columnLabels);
         }
 
         public DataSet query() throws SQLException {
@@ -4316,8 +4313,7 @@ public final class JdbcUtil {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                    final T result = get(targetClass, rs, columnLabels);
+                    final T result = get(targetClass, rs);
 
                     if (rs.next()) {
                         throw new NonUniqueResultException("There are more than one record found by the query");
@@ -4403,8 +4399,7 @@ public final class JdbcUtil {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
-                    return Optional.of(get(targetClass, rs, columnLabels));
+                    return Optional.of(get(targetClass, rs));
                 } else {
                     return Optional.empty();
                 }
@@ -4480,7 +4475,7 @@ public final class JdbcUtil {
         }
 
         public <T> List<T> list(final Class<T> targetClass, int maxResult) throws SQLException {
-            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
+            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
         public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -4561,7 +4556,7 @@ public final class JdbcUtil {
         }
 
         public <T> Stream<T> stream(final Class<T> targetClass, int maxResult) throws SQLException {
-            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
+            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
         public <T, E extends Exception> Stream<T> stream(RecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -5071,21 +5066,15 @@ public final class JdbcUtil {
                 } else {
                     stmt.clearParameters();
                 }
-
-                stmt.close();
             } finally {
-                if (conn != null) {
-                    if (closeHandler == null) {
-                        conn.close();
-                    } else {
-                        try {
-                            conn.close();
-                        } finally {
-                            closeHandler.run();
-                        }
+                if (closeHandler == null) {
+                    JdbcUtil.closeQuietly(stmt, conn);
+                } else {
+                    try {
+                        closeHandler.run();
+                    } finally {
+                        JdbcUtil.closeQuietly(stmt, conn);
                     }
-                } else if (closeHandler != null) {
-                    closeHandler.run();
                 }
             }
         }
@@ -5436,7 +5425,8 @@ public final class JdbcUtil {
          * @throws SQLException
          * @see {@link ClassUtil#getPropNameList(Class)}
          * @see {@link ClassUtil#getPropNameListExclusively(Class, Set)}
-         * @see {@link ClassUtil#getPropNameListExclusively(Class, Collection)}
+         * @see {@link ClassUtil#getPropNameListExclusively(Class, Collection)} 
+         * @see {@link JdbcUtil#getNamedParameters(String)}
          */
         public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
             N.checkArgNotNull(parameterNames);
@@ -6037,6 +6027,37 @@ public final class JdbcUtil {
         }
     }
 
+    public static enum FetchDirection {
+        FORWARD(ResultSet.FETCH_FORWARD), REVERSE(ResultSet.FETCH_REVERSE), UNKNOWN(ResultSet.FETCH_UNKNOWN);
+
+        private final int intValue;
+
+        FetchDirection(int intValue) {
+            this.intValue = intValue;
+        }
+
+        public static FetchDirection valueOf(int intValue) {
+            switch (intValue) {
+                case ResultSet.FETCH_FORWARD:
+                    return FORWARD;
+
+                case ResultSet.FETCH_REVERSE:
+                    return REVERSE;
+
+                case ResultSet.FETCH_UNKNOWN:
+                    return UNKNOWN;
+
+                default:
+                    throw new IllegalArgumentException("No FetchDirection mapping to int value: " + intValue);
+
+            }
+        }
+
+        public int intValue() {
+            return intValue;
+        }
+    }
+
     public static interface ResultExtractor<T, E extends Exception> {
         public static final ResultExtractor<DataSet, RuntimeException> TO_DATA_SET = new ResultExtractor<DataSet, RuntimeException>() {
             @Override
@@ -6061,84 +6082,84 @@ public final class JdbcUtil {
 
         public static final RecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new RecordGetter<Boolean, RuntimeException>() {
             @Override
-            public Boolean apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Boolean apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getBoolean(1);
             }
         };
 
         public static final RecordGetter<Byte, RuntimeException> GET_BYTE = new RecordGetter<Byte, RuntimeException>() {
             @Override
-            public Byte apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Byte apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getByte(1);
             }
         };
 
         public static final RecordGetter<Short, RuntimeException> GET_SHORT = new RecordGetter<Short, RuntimeException>() {
             @Override
-            public Short apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Short apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getShort(1);
             }
         };
 
         public static final RecordGetter<Integer, RuntimeException> GET_INT = new RecordGetter<Integer, RuntimeException>() {
             @Override
-            public Integer apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Integer apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getInt(1);
             }
         };
 
         public static final RecordGetter<Long, RuntimeException> GET_LONG = new RecordGetter<Long, RuntimeException>() {
             @Override
-            public Long apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Long apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getLong(1);
             }
         };
 
         public static final RecordGetter<Float, RuntimeException> GET_FLOAT = new RecordGetter<Float, RuntimeException>() {
             @Override
-            public Float apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Float apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getFloat(1);
             }
         };
 
         public static final RecordGetter<Double, RuntimeException> GET_DOUBLE = new RecordGetter<Double, RuntimeException>() {
             @Override
-            public Double apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Double apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getDouble(1);
             }
         };
 
         public static final RecordGetter<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new RecordGetter<BigDecimal, RuntimeException>() {
             @Override
-            public BigDecimal apply(ResultSet rs) throws SQLException, RuntimeException {
+            public BigDecimal apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getBigDecimal(1);
             }
         };
 
         public static final RecordGetter<String, RuntimeException> GET_STRING = new RecordGetter<String, RuntimeException>() {
             @Override
-            public String apply(ResultSet rs) throws SQLException, RuntimeException {
+            public String apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getString(1);
             }
         };
 
         public static final RecordGetter<Date, RuntimeException> GET_DATE = new RecordGetter<Date, RuntimeException>() {
             @Override
-            public Date apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Date apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getDate(1);
             }
         };
 
         public static final RecordGetter<Time, RuntimeException> GET_TIME = new RecordGetter<Time, RuntimeException>() {
             @Override
-            public Time apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Time apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getTime(1);
             }
         };
 
         public static final RecordGetter<Timestamp, RuntimeException> GET_TIMESTAMP = new RecordGetter<Timestamp, RuntimeException>() {
             @Override
-            public Timestamp apply(ResultSet rs) throws SQLException, RuntimeException {
+            public Timestamp apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getTimestamp(1);
             }
         };
@@ -6148,6 +6169,89 @@ public final class JdbcUtil {
 
     public static interface BiRecordGetter<T, E extends Exception> {
 
+        public static final BiRecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new BiRecordGetter<Boolean, RuntimeException>() {
+            @Override
+            public Boolean apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getBoolean(1);
+            }
+        };
+
+        public static final BiRecordGetter<Byte, RuntimeException> GET_BYTE = new BiRecordGetter<Byte, RuntimeException>() {
+            @Override
+            public Byte apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getByte(1);
+            }
+        };
+
+        public static final BiRecordGetter<Short, RuntimeException> GET_SHORT = new BiRecordGetter<Short, RuntimeException>() {
+            @Override
+            public Short apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getShort(1);
+            }
+        };
+
+        public static final BiRecordGetter<Integer, RuntimeException> GET_INT = new BiRecordGetter<Integer, RuntimeException>() {
+            @Override
+            public Integer apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getInt(1);
+            }
+        };
+
+        public static final BiRecordGetter<Long, RuntimeException> GET_LONG = new BiRecordGetter<Long, RuntimeException>() {
+            @Override
+            public Long apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getLong(1);
+            }
+        };
+
+        public static final BiRecordGetter<Float, RuntimeException> GET_FLOAT = new BiRecordGetter<Float, RuntimeException>() {
+            @Override
+            public Float apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getFloat(1);
+            }
+        };
+
+        public static final BiRecordGetter<Double, RuntimeException> GET_DOUBLE = new BiRecordGetter<Double, RuntimeException>() {
+            @Override
+            public Double apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getDouble(1);
+            }
+        };
+
+        public static final BiRecordGetter<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new BiRecordGetter<BigDecimal, RuntimeException>() {
+            @Override
+            public BigDecimal apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getBigDecimal(1);
+            }
+        };
+
+        public static final BiRecordGetter<String, RuntimeException> GET_STRING = new BiRecordGetter<String, RuntimeException>() {
+            @Override
+            public String apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getString(1);
+            }
+        };
+
+        public static final BiRecordGetter<Date, RuntimeException> GET_DATE = new BiRecordGetter<Date, RuntimeException>() {
+            @Override
+            public Date apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getDate(1);
+            }
+        };
+
+        public static final BiRecordGetter<Time, RuntimeException> GET_TIME = new BiRecordGetter<Time, RuntimeException>() {
+            @Override
+            public Time apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getTime(1);
+            }
+        };
+
+        public static final BiRecordGetter<Timestamp, RuntimeException> GET_TIMESTAMP = new BiRecordGetter<Timestamp, RuntimeException>() {
+            @Override
+            public Timestamp apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
+                return rs.getTimestamp(1);
+            }
+        };
         public static final BiRecordGetter<Object[], RuntimeException> TO_ARRAY = new BiRecordGetter<Object[], RuntimeException>() {
             @Override
             public Object[] apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
@@ -6207,11 +6311,12 @@ public final class JdbcUtil {
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
 
         /**
+         * Don't cache or reuse the returned {@code BiRecordGetter} instance.
          * 
-         * @param targetClass can be Array/List/Map or Entity classes with getter/setter methods.
+         * @param targetType Array/List/Map or Entity with getter/setter methods.
          * @return
          */
-        public static <T> BiRecordGetter<T, RuntimeException> to(Class<T> targetClass) {
+        public static <T> BiRecordGetter<T, RuntimeException> to(Class<? extends T> targetClass) {
             return JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
         }
     }
@@ -6275,37 +6380,6 @@ public final class JdbcUtil {
         };
 
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
-    }
-
-    public static enum FetchDirection {
-        FORWARD(ResultSet.FETCH_FORWARD), REVERSE(ResultSet.FETCH_REVERSE), UNKNOWN(ResultSet.FETCH_UNKNOWN);
-
-        private final int intValue;
-
-        FetchDirection(int intValue) {
-            this.intValue = intValue;
-        }
-
-        public static FetchDirection valueOf(int intValue) {
-            switch (intValue) {
-                case ResultSet.FETCH_FORWARD:
-                    return FORWARD;
-
-                case ResultSet.FETCH_REVERSE:
-                    return REVERSE;
-
-                case ResultSet.FETCH_UNKNOWN:
-                    return UNKNOWN;
-
-                default:
-                    throw new IllegalArgumentException("No FetchDirection mapping to int value: " + intValue);
-
-            }
-        }
-
-        public int intValue() {
-            return intValue;
-        }
     }
 
     static class SimpleDataSource implements DataSource {

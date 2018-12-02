@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,17 +44,16 @@ public final class NamedSQL {
     private final String namedSQL;
     private final String pureSQL;
     private String couchbasePureSQL;
-    private final Map<Integer, String> namedParameters;
-    private Map<Integer, String> couchbaseNamedParameters;
-    private final int parameterCount;
+    private final List<String> namedParameters;
+    private List<String> couchbaseNamedParameters;
+    private int parameterCount;
     private int couchbaseParameterCount;
     private final Map<String, String> attrs;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     private NamedSQL(String sql, Map<String, String> attrs) {
         this.namedSQL = sql.trim();
-        this.namedParameters = new HashMap<>();
-        this.attrs = N.isNullOrEmpty(attrs) ? (Map) new HashMap<>() : new HashMap<>(attrs);
+        this.attrs = ImmutableMap.copyOf(attrs);
 
         final List<String> words = SQLParser.parse(namedSQL);
 
@@ -66,37 +65,39 @@ public final class NamedSQL {
             }
         }
 
+        final List<String> namedParameterList = new ArrayList<>();
+
         if (isNamedSQLPrefix) {
             final StringBuilder sb = ObjectFactory.createStringBuilder();
-            int countOfParameter = 0;
 
             for (String word : words) {
                 if (word.equals(WD.QUESTION_MARK)) {
-                    if (namedParameters.size() > 0) {
+                    if (namedParameterList.size() > 0) {
                         throw new AbacusException("can't mix '?' and '#{propName}' in the same sql script");
                     }
-
-                    countOfParameter++;
+                    parameterCount++;
                 } else if (word.startsWith(LEFT_OF_IBATIS_NAMED_PARAMETER) && word.endsWith(RIGHT_OF_IBATIS_NAMED_PARAMETER)) {
-                    namedParameters.put(countOfParameter++, word.substring(2, word.length() - 1));
+                    namedParameterList.add(word.substring(2, word.length() - 1));
 
                     word = WD.QUESTION_MARK;
+                    parameterCount++;
                 } else if (word.startsWith(PREFIX_OF_NAMED_PARAMETER)) {
-                    namedParameters.put(countOfParameter++, word.substring(1));
+                    namedParameterList.add(word.substring(1));
 
                     word = WD.QUESTION_MARK;
+                    parameterCount++;
                 }
 
                 sb.append(word);
             }
 
-            parameterCount = countOfParameter;
             pureSQL = sb.toString();
+            namedParameters = ImmutableList.of(namedParameterList);
 
             ObjectFactory.recycle(sb);
         } else {
             pureSQL = sql;
-            parameterCount = 0;
+            namedParameters = ImmutableList.empty();
         }
     }
 
@@ -140,11 +141,11 @@ public final class NamedSQL {
         }
     }
 
-    public Map<Integer, String> getNamedParameters() {
+    public List<String> getNamedParameters() {
         return namedParameters;
     }
 
-    public Map<Integer, String> getNamedParameters(boolean isForCouchbase) {
+    public List<String> getNamedParameters(boolean isForCouchbase) {
         if (isForCouchbase) {
             if (N.isNullOrEmpty(couchbasePureSQL)) {
                 parseForCouchbase();
@@ -177,7 +178,7 @@ public final class NamedSQL {
     }
 
     private void parseForCouchbase() {
-        this.couchbaseNamedParameters = new HashMap<>();
+        List<String> couchbaseNamedParameterList = new ArrayList<>();
 
         final List<String> words = SQLParser.parse(namedSQL);
 
@@ -195,19 +196,21 @@ public final class NamedSQL {
 
             for (String word : words) {
                 if (word.equals(WD.QUESTION_MARK)) {
-                    if (couchbaseNamedParameters.size() > 0) {
+                    if (couchbaseNamedParameterList.size() > 0) {
                         throw new AbacusException("can't mix '?' and '#{propName}' in the same sql script");
                     }
 
                     countOfParameter++;
                     word = PREFIX_OF_COUCHBASE_NAMED_PARAMETER + countOfParameter;
                 } else if (word.startsWith(LEFT_OF_IBATIS_NAMED_PARAMETER) && word.endsWith(RIGHT_OF_IBATIS_NAMED_PARAMETER)) {
-                    couchbaseNamedParameters.put(countOfParameter++, word.substring(2, word.length() - 1));
+                    couchbaseNamedParameterList.add(word.substring(2, word.length() - 1));
 
+                    countOfParameter++;
                     word = PREFIX_OF_COUCHBASE_NAMED_PARAMETER + countOfParameter;
                 } else if (word.startsWith(PREFIX_OF_NAMED_PARAMETER) || word.startsWith(PREFIX_OF_COUCHBASE_NAMED_PARAMETER)) {
-                    couchbaseNamedParameters.put(countOfParameter++, word.substring(1));
+                    couchbaseNamedParameterList.add(word.substring(1));
 
+                    countOfParameter++;
                     word = PREFIX_OF_COUCHBASE_NAMED_PARAMETER + countOfParameter;
                 }
 
@@ -218,7 +221,7 @@ public final class NamedSQL {
 
             for (int i = 0; i < countOfParameter; i++) {
                 try {
-                    if (N.parseInt(couchbaseNamedParameters.get(i)) != i + 1) {
+                    if (N.parseInt(couchbaseNamedParameterList.get(i)) != i + 1) {
                         isNamedParametersByNum = false;
                         break;
                     }
@@ -230,16 +233,18 @@ public final class NamedSQL {
             }
 
             if (isNamedParametersByNum) {
-                couchbaseNamedParameters.clear();
+                couchbaseNamedParameterList.clear();
             }
 
-            couchbaseParameterCount = countOfParameter;
             couchbasePureSQL = sb.toString();
+            couchbaseNamedParameters = ImmutableList.of(couchbaseNamedParameterList);
+            couchbaseParameterCount = countOfParameter;
 
             ObjectFactory.recycle(sb);
         } else {
-            couchbaseParameterCount = 0;
             couchbasePureSQL = namedSQL;
+            couchbaseNamedParameters = ImmutableList.empty();
+            couchbaseParameterCount = 0;
         }
     }
 

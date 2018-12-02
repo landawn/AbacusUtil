@@ -51,16 +51,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
-import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedSQLException;
-import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.Charsets;
-import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.DoubleIterator;
@@ -90,7 +87,6 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
-import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.Try;
@@ -2347,11 +2343,7 @@ public abstract class Stream<T>
             return empty();
         }
 
-        if (iterator instanceof RowIterator) {
-            return (Stream<T>) of((RowIterator) iterator);
-        } else {
-            return new IteratorStream<>(iterator);
-        }
+        return new IteratorStream<>(iterator);
     }
 
     /**
@@ -2452,123 +2444,97 @@ public abstract class Stream<T>
     }
 
     /**
-     * It's user's responsibility to close the input <code>rowIterator</code> after the stream is finished.
-     * 
-     * @param rowIterator
-     * @return
-     */
-    public static Stream<Object[]> of(final RowIterator rowIterator) {
-        N.checkArgNotNull(rowIterator);
-
-        return new IteratorStream<>(new ObjIteratorEx<Object[]>() {
-            @Override
-            public boolean hasNext() {
-                return rowIterator.hasNext();
-            }
-
-            @Override
-            public Object[] next() {
-                return rowIterator.next();
-            }
-
-            @Override
-            public void skip(long n) {
-                rowIterator.skip(n);
-            }
-        });
-    }
-
-    public static Try<Stream<Object[]>> of(final RowIterator rowIterator, final boolean closeRowIterator) {
-        return closeRowIterator ? of(rowIterator).onClose(newCloseHandle(rowIterator)).tried() : of(rowIterator).tried();
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>rowIterator</code> after the stream is finished.
-     * 
-     * @param targetClass
-     * @param rowIterator
-     * @return
-     */
-    public static <T> Stream<T> of(final Class<T> targetClass, final RowIterator rowIterator) {
-        N.checkArgNotNull(targetClass);
-        N.checkArgNotNull(rowIterator);
-
-        final Type<?> type = N.typeOf(targetClass);
-
-        N.checkArgument(type.isMap() || type.isEntity(), "target class must be Map or entity with getter/setter methods");
-
-        final int columnCount = rowIterator.columnCount();
-        final String[] columnLabels = rowIterator.columnLabels().toArray(new String[columnCount]);
-
-        final boolean isMap = type.isMap();
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-
-        return Stream.of(rowIterator).map(new Function<Object[], T>() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public T apply(Object[] a) {
-                if (isMap) {
-                    final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                    for (int i = 0; i < columnCount; i++) {
-                        m.put(columnLabels[i], a[i]);
-                    }
-
-                    return (T) m;
-                } else {
-                    final Object entity = N.newInstance(targetClass);
-
-                    for (int i = 0; i < columnCount; i++) {
-                        if (columnLabels[i] == null) {
-                            continue;
-                        }
-
-                        if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                            columnLabels[i] = null;
-                        }
-                    }
-
-                    if (isDirtyMarker) {
-                        ((DirtyMarker) entity).markDirty(false);
-                    }
-
-                    return (T) entity;
-                }
-            }
-        });
-    }
-
-    public static <T> Try<Stream<T>> of(final Class<T> targetClass, final RowIterator rowIterator, final boolean closeRowIterator) {
-        return closeRowIterator ? of(targetClass, rowIterator).onClose(newCloseHandle(rowIterator)).tried() : of(targetClass, rowIterator).tried();
-    }
-
-    /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
      * @param resultSet
      * @return
      */
     public static Stream<Object[]> of(final ResultSet resultSet) {
-        return of(new RowIterator(resultSet, false, false));
+        return of(Object[].class, resultSet);
     }
 
     public static Try<Stream<Object[]>> of(final ResultSet resultSet, final boolean closeResultSet) {
-        return closeResultSet ? of(resultSet).onClose(newCloseHandle(resultSet)).tried() : of(resultSet).tried();
+        return of(Object[].class, resultSet, closeResultSet);
     }
 
     /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
-     * @param targetClass
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
      * @param resultSet
      * @return
      */
     public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet) {
-        return of(targetClass, new RowIterator(resultSet, false, false));
+        N.checkArgNotNull(targetClass);
+        N.checkArgNotNull(resultSet);
+
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
+            private final JdbcUtil.BiRecordGetter<T, RuntimeException> biFunc = JdbcUtil.BiRecordGetter.to(targetClass);
+            private List<String> columnLabels = null;
+            private boolean hasNext;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false) {
+                    try {
+                        hasNext = resultSet.next();
+                    } catch (SQLException e) {
+                        throw new UncheckedSQLException(e);
+                    }
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                try {
+                    if (columnLabels == null) {
+                        columnLabels = JdbcUtil.getColumnLabelList(resultSet);
+                    }
+
+                    return biFunc.apply(resultSet, columnLabels);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+            }
+
+            @Override
+            public void skip(final long n) throws UncheckedSQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                try {
+                    JdbcUtil.skip(resultSet, m);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+
+                hasNext = false;
+            }
+        };
+
+        return of(iter);
     }
 
+    /**
+     * 
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
+     * @param resultSet
+     * @param closeResultSet
+     * @return
+     */
     public static <T> Try<Stream<T>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
-        return closeResultSet ? of(targetClass, resultSet).onClose(newCloseHandle(resultSet)).tried() : of(targetClass, resultSet).tried();
+        return of(targetClass, resultSet).onClose(closeResultSet ? Stream.newCloseHandle(resultSet) : Fn.emptyAction()).tried();
     }
 
     /**

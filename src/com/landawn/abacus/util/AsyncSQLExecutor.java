@@ -16,8 +16,6 @@ package com.landawn.abacus.util;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -496,7 +494,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> get(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Optional<T>> get(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -508,7 +506,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> get(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -518,7 +516,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> get(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Optional<T>> get(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -530,7 +528,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> get(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -540,8 +538,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
+            final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -552,7 +550,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -562,8 +560,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -574,7 +572,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> get(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -669,8 +667,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> gett(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
-            final Object... parameters) {
+    public final <T> ContinuableFuture<T> gett(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -681,7 +678,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> gett(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -691,8 +688,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> gett(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> ContinuableFuture<T> gett(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -703,7 +700,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> gett(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -713,8 +710,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+    public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
+            final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -725,7 +722,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -735,8 +732,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -747,7 +744,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> gett(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -843,7 +840,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -855,7 +852,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -865,7 +862,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -877,7 +874,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -888,7 +885,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -899,7 +896,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -910,7 +907,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -921,7 +918,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1017,7 +1014,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> list(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<List<T>> list(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -1029,7 +1026,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> list(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1039,7 +1036,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> list(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<List<T>> list(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -1051,7 +1048,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> list(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1061,8 +1058,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+            final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1073,7 +1070,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1083,8 +1080,8 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1095,7 +1092,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> list(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1149,7 +1146,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> listAll(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<List<T>> listAll(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -1161,7 +1158,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> listAll(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1171,7 +1168,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<List<T>> listAll(final List<String> sqls, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<List<T>> listAll(final List<String> sqls, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -1183,7 +1180,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<List<T>> listAll(final List<String> sqls, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
             public List<T> call() throws Exception {
@@ -1750,7 +1747,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1762,7 +1759,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
             public Try<Stream<T>> call() throws Exception {
@@ -1772,7 +1769,7 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter,
+    public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1784,7 +1781,7 @@ public final class AsyncSQLExecutor {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Try<Stream<T>>> stream(final String sql, final StatementSetter statementSetter,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
             public Try<Stream<T>> call() throws Exception {

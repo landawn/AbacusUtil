@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -117,12 +118,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedList<T>> ofLinkedList() {
+    public static <T> Class<List<T>> ofLinkedList() {
         return (Class) LinkedList.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedList<T>> ofLinkedList(final Class<T> eleCls) {
+    public static <T> Class<List<T>> ofLinkedList(final Class<T> eleCls) {
         return (Class) LinkedList.class;
     }
 
@@ -147,12 +148,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedHashSet<T>> ofLinkedHashSet() {
+    public static <T> Class<Set<T>> ofLinkedHashSet() {
         return (Class) LinkedHashSet.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedHashSet<T>> ofLinkedHashSet(final Class<T> eleCls) {
+    public static <T> Class<Set<T>> ofLinkedHashSet(final Class<T> eleCls) {
         return (Class) LinkedHashSet.class;
     }
 
@@ -177,12 +178,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<TreeSet<T>> ofTreeSet() {
+    public static <T> Class<NavigableSet<T>> ofTreeSet() {
         return (Class) TreeSet.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<TreeSet<T>> ofTreeSet(final Class<T> eleCls) {
+    public static <T> Class<NavigableSet<T>> ofTreeSet(final Class<T> eleCls) {
         return (Class) TreeSet.class;
     }
 
@@ -207,43 +208,43 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<ArrayDeque<T>> ofArrayDeque() {
+    public static <T> Class<Deque<T>> ofArrayDeque() {
         return (Class) ArrayDeque.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<ArrayDeque<T>> ofArrayDeque(final Class<T> eleCls) {
+    public static <T> Class<Deque<T>> ofArrayDeque(final Class<T> eleCls) {
         return (Class) ArrayDeque.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
-        return (Class) LinkedBlockingQueue.class;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T> Class<LinkedBlockingQueue<T>> ofLinkedBlockingQueue(final Class<T> eleCls) {
-        return (Class) LinkedBlockingQueue.class;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T> Class<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
+    public static <T> Class<Queue<T>> ofConcurrentLinkedQueue() {
         return (Class) ConcurrentLinkedQueue.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue(final Class<T> eleCls) {
+    public static <T> Class<Queue<T>> ofConcurrentLinkedQueue(final Class<T> eleCls) {
         return (Class) ConcurrentLinkedQueue.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<PriorityQueue<T>> ofPriorityQueue() {
+    public static <T> Class<Queue<T>> ofPriorityQueue() {
         return (Class) PriorityQueue.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Class<PriorityQueue<T>> ofPriorityQueue(final Class<T> eleCls) {
+    public static <T> Class<Queue<T>> ofPriorityQueue(final Class<T> eleCls) {
         return (Class) PriorityQueue.class;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Class<BlockingQueue<T>> ofLinkedBlockingQueue() {
+        return (Class) LinkedBlockingQueue.class;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Class<BlockingQueue<T>> ofLinkedBlockingQueue(final Class<T> eleCls) {
+        return (Class) LinkedBlockingQueue.class;
     }
 
     @SuppressWarnings("rawtypes")
@@ -267,12 +268,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<LinkedHashMap<K, V>> ofLinkedHashMap() {
+    public static <K, V> Class<Map<K, V>> ofLinkedHashMap() {
         return (Class) LinkedHashMap.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<LinkedHashMap<K, V>> ofLinkedHashMap(final Class<K> keyCls, final Class<V> valueCls) {
+    public static <K, V> Class<Map<K, V>> ofLinkedHashMap(final Class<K> keyCls, final Class<V> valueCls) {
         return (Class) LinkedHashMap.class;
     }
 
@@ -297,12 +298,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<TreeMap<K, V>> ofTreeMap() {
+    public static <K, V> Class<NavigableMap<K, V>> ofTreeMap() {
         return (Class) TreeMap.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<TreeMap<K, V>> ofTreeMap(final Class<K> keyCls, final Class<V> valueCls) {
+    public static <K, V> Class<NavigableMap<K, V>> ofTreeMap(final Class<K> keyCls, final Class<V> valueCls) {
         return (Class) TreeMap.class;
     }
 
@@ -317,12 +318,12 @@ public final class Clazz {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+    public static <K, V> Class<ConcurrentMap<K, V>> ofConcurrentHashMap() {
         return (Class) ConcurrentHashMap.class;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> Class<ConcurrentHashMap<K, V>> ofConcurrentHashMap(final Class<K> keyCls, final Class<V> valueCls) {
+    public static <K, V> Class<ConcurrentMap<K, V>> ofConcurrentHashMap(final Class<K> keyCls, final Class<V> valueCls) {
         return (Class) ConcurrentHashMap.class;
     }
 

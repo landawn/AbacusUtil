@@ -1,5 +1,7 @@
 ### 1.3.24
 
+* Refactoring: `JdbcUtil` and `SQLExecutor`.
+
 * Improvements and bug fix.
 
 
