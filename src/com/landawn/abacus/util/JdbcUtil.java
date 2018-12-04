@@ -57,6 +57,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -3347,7 +3348,7 @@ public final class JdbcUtil {
          * @return 
          */
         public Q onClose(final Try.Runnable<SQLException> closeHandler) {
-            N.checkArgNotNull(closeHandler);
+            checkArgNotNull(closeHandler, "closeHandler");
             assertNotClosed();
 
             if (this.closeHandler == null) {
@@ -3982,11 +3983,12 @@ public final class JdbcUtil {
          * @param parameters
          * @param type
          * @return
+         * @throws IllegalArgumentException if specified {@code parameters} or {@code type} is null.
          * @throws SQLException
          */
-        public <T> Q setParameters(int startParameterIndex, Collection<? extends T> parameters, Class<T> type) throws SQLException {
-            N.checkArgNotNull(parameters);
-            N.checkArgNotNull(type);
+        public <T> Q setParameters(int startParameterIndex, Collection<? extends T> parameters, Class<T> type) throws IllegalArgumentException, SQLException {
+            checkArgNotNull(parameters, "parameters");
+            checkArgNotNull(type, "type");
 
             final Type<T> setter = N.typeOf(type);
 
@@ -3998,7 +4000,19 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> Q setParameters(Try.EE.Consumer<? super S, SQLException, E> paramSetter) throws SQLException, E {
-            paramSetter.accept(stmt);
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            boolean isOK = false;
+
+            try {
+                paramSetter.accept(stmt);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
 
             return (Q) this;
         }
@@ -4198,7 +4212,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <V> Nullable<V> queryForSingleResult(Class<V> targetClass) throws SQLException {
-            N.checkArgNotNull(targetClass, "targetClass");
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4216,7 +4230,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <V> Optional<V> queryForSingleNonNull(Class<V> targetClass) throws SQLException {
-            N.checkArgNotNull(targetClass, "targetClass");
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4236,7 +4250,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <V> Nullable<V> queryForUniqueResult(Class<V> targetClass) throws NonUniqueResultException, SQLException {
-            N.checkArgNotNull(targetClass, "targetClass");
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4263,7 +4277,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <V> Optional<V> queryForUniqueNonNull(Class<V> targetClass) throws NonUniqueResultException, SQLException {
-            N.checkArgNotNull(targetClass, "targetClass");
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4291,7 +4305,7 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> R query(final ResultExtractor<R, E> resultExtrator) throws SQLException, E {
-            N.checkArgNotNull(resultExtrator);
+            checkArgNotNull(resultExtrator, "resultExtrator");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4302,7 +4316,7 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> R query(final BiResultExtractor<R, E> resultExtrator) throws SQLException, E {
-            N.checkArgNotNull(resultExtrator);
+            checkArgNotNull(resultExtrator, "resultExtrator");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4320,23 +4334,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <T> Optional<T> get(final Class<T> targetClass) throws NonUniqueResultException, SQLException {
-            assertNotClosed();
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    final T result = get(targetClass, rs);
-
-                    if (rs.next()) {
-                        throw new NonUniqueResultException("There are more than one record found by the query");
-                    }
-
-                    return Optional.of(result);
-                } else {
-                    return Optional.empty();
-                }
-            } finally {
-                closeAfterExecutionIfAllowed();
-            }
+            return Optional.ofNullable(gett(targetClass));
         }
 
         /**
@@ -4348,20 +4346,72 @@ public final class JdbcUtil {
          * @throws E
          */
         public <T, E extends Exception> Optional<T> get(RecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
-            N.checkArgNotNull(recordGetter);
+            return Optional.ofNullable(gett(recordGetter));
+        }
+
+        /**
+         * 
+         * @param recordGetter
+         * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+            return Optional.ofNullable(gett(recordGetter));
+        }
+
+        /**
+         * 
+         * @param targetClass
+         * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws SQLException
+         */
+        public <T> T gett(final Class<T> targetClass) throws NonUniqueResultException, SQLException {
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    final T result = recordGetter.apply(rs);
+                    final T result = Objects.requireNonNull(get(targetClass, rs));
 
                     if (rs.next()) {
                         throw new NonUniqueResultException("There are more than one record found by the query");
                     }
 
-                    return Optional.of(result);
+                    return result;
                 } else {
-                    return Optional.empty();
+                    return null;
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param recordGetter
+         * @return
+         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> T gett(RecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+            checkArgNotNull(recordGetter, "recordGetter");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    final T result = Objects.requireNonNull(recordGetter.apply(rs));
+
+                    if (rs.next()) {
+                        throw new NonUniqueResultException("There are more than one record found by the query");
+                    }
+
+                    return result;
+                } else {
+                    return null;
                 }
 
             } finally {
@@ -4377,21 +4427,21 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
-            N.checkArgNotNull(recordGetter);
+        public <T, E extends Exception> T gett(BiRecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+            checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    final T result = recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs));
+                    final T result = Objects.requireNonNull(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs)));
 
                     if (rs.next()) {
                         throw new NonUniqueResultException("There are more than one record found by the query");
                     }
 
-                    return Optional.of(result);
+                    return result;
                 } else {
-                    return Optional.empty();
+                    return null;
                 }
 
             } finally {
@@ -4406,6 +4456,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public <T> Optional<T> findFirst(final Class<T> targetClass) throws SQLException {
+            checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4420,7 +4471,7 @@ public final class JdbcUtil {
         }
 
         public <T, E extends Exception> Optional<T> findFirst(RecordGetter<T, E> recordGetter) throws SQLException, E {
-            N.checkArgNotNull(recordGetter);
+            checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4432,8 +4483,8 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4450,7 +4501,7 @@ public final class JdbcUtil {
         }
 
         public <T, E extends Exception> Optional<T> findFirst(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
-            N.checkArgNotNull(recordGetter);
+            checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4462,8 +4513,8 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
                 throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4504,9 +4555,9 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
                 int maxResult) throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(maxResult, "maxResult");
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordGetter, "recordGetter");
+            checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4540,9 +4591,9 @@ public final class JdbcUtil {
 
         public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
                 int maxResult) throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordGetter);
-            N.checkArgNotNegative(maxResult, "maxResult");
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordGetter, "recordGetter");
+            checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4617,7 +4668,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void ifExists(final RecordConsumer<E> recordConsumer) throws SQLException, E {
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4630,7 +4681,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void ifExists(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4659,7 +4710,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> int count(final RecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4678,7 +4729,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> int count(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4698,7 +4749,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> boolean anyMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4715,7 +4766,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> boolean anyMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4734,7 +4785,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> boolean allMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4751,7 +4802,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> boolean allMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
-            N.checkArgNotNull(recordFilter);
+            checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4778,7 +4829,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void forEach(final RecordConsumer<E> recordConsumer) throws SQLException, E {
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4794,8 +4845,8 @@ public final class JdbcUtil {
 
         public <E extends Exception, E2 extends Exception> void forEach(final RecordPredicate<E> recordFilter, final RecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4811,7 +4862,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void forEach(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4828,8 +4879,8 @@ public final class JdbcUtil {
 
         public <E extends Exception, E2 extends Exception> void forEach(final BiRecordPredicate<E> recordFilter, final BiRecordConsumer<E2> recordConsumer)
                 throws SQLException, E, E2 {
-            N.checkArgNotNull(recordFilter);
-            N.checkArgNotNull(recordConsumer);
+            checkArgNotNull(recordFilter, "recordFilter");
+            checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -4947,7 +4998,7 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> R executeThenApply(final Try.EE.Function<? super S, ? extends R, SQLException, E> getter) throws SQLException, E {
-            N.checkArgNotNull(getter);
+            checkArgNotNull(getter, "getter");
             assertNotClosed();
 
             try {
@@ -4961,7 +5012,7 @@ public final class JdbcUtil {
 
         public <R, E extends Exception> R executeThenApply(final Try.EE.BiFunction<Boolean, ? super S, ? extends R, SQLException, E> getter)
                 throws SQLException, E {
-            N.checkArgNotNull(getter);
+            checkArgNotNull(getter, "getter");
             assertNotClosed();
 
             try {
@@ -4974,7 +5025,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void executeThenAccept(final Try.EE.Consumer<? super S, SQLException, E> consumer) throws SQLException, E {
-            N.checkArgNotNull(consumer);
+            checkArgNotNull(consumer, "consumer");
             assertNotClosed();
 
             try {
@@ -4987,7 +5038,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> void executeThenAccept(final Try.EE.BiConsumer<Boolean, ? super S, SQLException, E> consumer) throws SQLException, E {
-            N.checkArgNotNull(consumer);
+            checkArgNotNull(consumer, "consumer");
             assertNotClosed();
 
             try {
@@ -5000,7 +5051,7 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func) {
-            N.checkArgNotNull(func);
+            checkArgNotNull(func, "func");
             assertNotClosed();
 
             final Q q = (Q) this;
@@ -5014,8 +5065,8 @@ public final class JdbcUtil {
         }
 
         public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func, final Executor executor) {
-            N.checkArgNotNull(func);
-            N.checkArgNotNull(executor);
+            checkArgNotNull(func, "func");
+            checkArgNotNull(executor, "executor");
             assertNotClosed();
 
             final Q q = (Q) this;
@@ -5029,7 +5080,7 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action) {
-            N.checkArgNotNull(action);
+            checkArgNotNull(action, "action");
             assertNotClosed();
 
             final Q q = (Q) this;
@@ -5043,8 +5094,8 @@ public final class JdbcUtil {
         }
 
         public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action, final Executor executor) {
-            N.checkArgNotNull(action);
-            N.checkArgNotNull(executor);
+            checkArgNotNull(action, "action");
+            checkArgNotNull(executor, "executor");
             assertNotClosed();
 
             final Q q = (Q) this;
@@ -5055,6 +5106,30 @@ public final class JdbcUtil {
                     action.accept(q);
                 }
             }, executor);
+        }
+
+        protected void checkArgNotNull(Object arg, String argName) {
+            if (arg == null) {
+                try {
+                    close();
+                } catch (SQLException e) {
+                    logger.error("Failed to close PreparedQuery", e);
+                }
+
+                throw new IllegalArgumentException("'" + argName + "' can't be null");
+            }
+        }
+
+        protected void checkArg(boolean b, String errorMsg) {
+            if (b == false) {
+                try {
+                    close();
+                } catch (SQLException e) {
+                    logger.error("Failed to close PreparedQuery", e);
+                }
+
+                throw new IllegalArgumentException(errorMsg);
+            }
         }
 
         Q onClose(Connection conn) {
@@ -5419,7 +5494,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setParameters(Map<String, Object> parameters) throws SQLException {
-            N.checkArgNotNull(parameters);
+            checkArgNotNull(parameters, "parameters");
 
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
                 setObject(entry.getKey(), entry.getValue());
@@ -5440,8 +5515,8 @@ public final class JdbcUtil {
          * @see {@link JdbcUtil#getNamedParameters(String)}
          */
         public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
-            N.checkArgNotNull(parameterNames);
-            N.checkArgNotNull(entity);
+            checkArgNotNull(parameterNames, "parameterNames");
+            checkArgNotNull(entity, "entity");
 
             for (String parameterName : parameterNames) {
                 setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
@@ -5570,13 +5645,25 @@ public final class JdbcUtil {
 
         public <E extends Exception> PreparedCallableQuery registerOutParameters(final Try.EE.Consumer<? super CallableStatement, SQLException, E> register)
                 throws SQLException, E {
-            register.accept(stmt);
+            checkArgNotNull(register, "register");
+
+            boolean isOK = false;
+
+            try {
+                register.accept(stmt);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
 
             return this;
         }
 
         public <R1, E1 extends Exception> Optional<R1> call(final ResultExtractor<R1, E1> resultExtrator1) throws SQLException, E1 {
-            N.checkArgNotNull(resultExtrator1);
+            checkArgNotNull(resultExtrator1, "resultExtrator1");
             assertNotClosed();
 
             try {
@@ -5596,8 +5683,8 @@ public final class JdbcUtil {
 
         public <R1, R2, E1 extends Exception, E2 extends Exception> Tuple2<Optional<R1>, Optional<R2>> call(final ResultExtractor<R1, E1> resultExtrator1,
                 final ResultExtractor<R2, E2> resultExtrator2) throws SQLException, E1, E2 {
-            N.checkArgNotNull(resultExtrator1);
-            N.checkArgNotNull(resultExtrator2);
+            checkArgNotNull(resultExtrator1, "resultExtrator1");
+            checkArgNotNull(resultExtrator2, "resultExtrator2");
             assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
@@ -5628,9 +5715,9 @@ public final class JdbcUtil {
         public <R1, R2, R3, E1 extends Exception, E2 extends Exception, E3 extends Exception> Tuple3<Optional<R1>, Optional<R2>, Optional<R3>> call(
                 final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3)
                 throws SQLException, E1, E2, E3 {
-            N.checkArgNotNull(resultExtrator1);
-            N.checkArgNotNull(resultExtrator2);
-            N.checkArgNotNull(resultExtrator3);
+            checkArgNotNull(resultExtrator1, "resultExtrator1");
+            checkArgNotNull(resultExtrator2, "resultExtrator2");
+            checkArgNotNull(resultExtrator3, "resultExtrator3");
             assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
@@ -5669,10 +5756,10 @@ public final class JdbcUtil {
         public <R1, R2, R3, R4, E1 extends Exception, E2 extends Exception, E3 extends Exception, E4 extends Exception> Tuple4<Optional<R1>, Optional<R2>, Optional<R3>, Optional<R4>> call(
                 final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3,
                 final ResultExtractor<R4, E4> resultExtrator4) throws SQLException, E1, E2, E3, E4 {
-            N.checkArgNotNull(resultExtrator1);
-            N.checkArgNotNull(resultExtrator2);
-            N.checkArgNotNull(resultExtrator3);
-            N.checkArgNotNull(resultExtrator4);
+            checkArgNotNull(resultExtrator1, "resultExtrator1");
+            checkArgNotNull(resultExtrator2, "resultExtrator2");
+            checkArgNotNull(resultExtrator3, "resultExtrator3");
+            checkArgNotNull(resultExtrator4, "resultExtrator4");
             assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();
@@ -5719,11 +5806,11 @@ public final class JdbcUtil {
         public <R1, R2, R3, R4, R5, E1 extends Exception, E2 extends Exception, E3 extends Exception, E4 extends Exception, E5 extends Exception> Tuple5<Optional<R1>, Optional<R2>, Optional<R3>, Optional<R4>, Optional<R5>> call(
                 final ResultExtractor<R1, E1> resultExtrator1, final ResultExtractor<R2, E2> resultExtrator2, final ResultExtractor<R3, E3> resultExtrator3,
                 final ResultExtractor<R4, E4> resultExtrator4, final ResultExtractor<R5, E5> resultExtrator5) throws SQLException, E1, E2, E3, E4, E5 {
-            N.checkArgNotNull(resultExtrator1);
-            N.checkArgNotNull(resultExtrator2);
-            N.checkArgNotNull(resultExtrator3);
-            N.checkArgNotNull(resultExtrator4);
-            N.checkArgNotNull(resultExtrator5);
+            checkArgNotNull(resultExtrator1, "resultExtrator1");
+            checkArgNotNull(resultExtrator2, "resultExtrator2");
+            checkArgNotNull(resultExtrator3, "resultExtrator3");
+            checkArgNotNull(resultExtrator4, "resultExtrator4");
+            checkArgNotNull(resultExtrator5, "resultExtrator5");
             assertNotClosed();
 
             Optional<R1> result1 = Optional.empty();

@@ -3238,8 +3238,9 @@ public abstract class SQLBuilder {
      * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
      * 
      * @author haiyang li 
-     *
+     * @deprecated
      */
+    @Deprecated
     public static final class SE extends SQLBuilder {
         SE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
@@ -4334,8 +4335,10 @@ public abstract class SQLBuilder {
      * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
      * 
      * @author haiyang li
+     * @deprecated
      *
      */
+    @Deprecated
     public static final class SE2 extends SQLBuilder {
         SE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
@@ -5430,8 +5433,10 @@ public abstract class SQLBuilder {
      * All the property/column names in collection/map/entity/condition will be kept without any change and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
      * 
      * @author haiyang li
+     * @deprecated
      *
      */
+    @Deprecated
     public static final class SE3 extends SQLBuilder {
         SE3() {
             super(NamingPolicy.LOWER_CAMEL_CASE, SQLPolicy.IBATIS_SQL);
