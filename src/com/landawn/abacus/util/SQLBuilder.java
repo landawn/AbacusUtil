@@ -968,7 +968,7 @@ public abstract class SQLBuilder {
     public SQLBuilder from(final Class<?> entityClass) {
         this.entityClass = entityClass;
 
-        return from(getTableName(entityClass));
+        return from(getTableName(this.entityClass));
     }
 
     public SQLBuilder join(final String expr) {
@@ -980,7 +980,9 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder join(final Class<?> entityClass) {
-        return join(getTableName(entityClass));
+        this.entityClass = entityClass;
+
+        return join(getTableName(this.entityClass));
     }
 
     public SQLBuilder leftJoin(final String expr) {
@@ -1319,6 +1321,7 @@ public abstract class SQLBuilder {
 
         final Map<String, String> propColumnNameMap = getPropColumnNameMap();
         int i = 0;
+
         for (Map.Entry<String, SortDirection> entry : orders.entrySet()) {
             if (i++ > 0) {
                 sb.append(_COMMA_SPACE);

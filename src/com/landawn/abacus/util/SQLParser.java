@@ -103,9 +103,9 @@ public final class SQLParser {
     }
 
     public static List<String> parse(String sql) {
-        List<String> words = new ArrayList<>();
         final int sqlLength = sql.length();
         final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final List<String> words = new ArrayList<>();
 
         char quoteChar = 0;
 

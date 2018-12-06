@@ -104,6 +104,7 @@ import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -4017,6 +4018,24 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public <E extends Exception> Q settParameters(Try.EE.Consumer<? super Q, SQLException, E> paramSetter) throws SQLException, E {
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            boolean isOK = false;
+
+            try {
+                paramSetter.accept((Q) this);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
+
+            return (Q) this;
+        }
+
         public Q addBatch() throws SQLException {
             stmt.addBatch();
             isBatch = true;
@@ -4537,7 +4556,7 @@ public final class JdbcUtil {
         }
 
         public <T> List<T> list(final Class<T> targetClass, int maxResult) throws SQLException {
-            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
+            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
         }
 
         public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -4613,48 +4632,187 @@ public final class JdbcUtil {
             }
         }
 
-        public <T> Stream<T> stream(final Class<T> targetClass) throws SQLException {
+        public <T> Try<Stream<T>> stream(final Class<T> targetClass) throws SQLException {
             return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
         }
 
-        public <T> Stream<T> stream(final Class<T> targetClass, int maxResult) throws SQLException {
-            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
+        public <T> Try<Stream<T>> stream(final RecordGetter<T, RuntimeException> recordGetter) throws SQLException {
+            checkArgNotNull(recordGetter, "recordGetter");
+            assertNotClosed();
+
+            Try<Stream<T>> result = null;
+            ResultSet rs = null;
+
+            try {
+                rs = stmt.executeQuery();
+                final ResultSet resultSet = rs;
+
+                final Iterator<T> iter = new ObjIteratorEx<T>() {
+                    private boolean hasNext;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (hasNext == false) {
+                            try {
+                                hasNext = resultSet.next();
+                            } catch (SQLException e) {
+                                throw new UncheckedSQLException(e);
+                            }
+                        }
+
+                        return hasNext;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        hasNext = false;
+
+                        try {
+                            return recordGetter.apply(resultSet);
+                        } catch (SQLException e) {
+                            throw new UncheckedSQLException(e);
+                        }
+                    }
+
+                    @Override
+                    public void skip(final long n) throws UncheckedSQLException {
+                        if (n <= 0) {
+                            return;
+                        }
+
+                        final long m = hasNext ? n - 1 : n;
+
+                        try {
+                            JdbcUtil.skip(resultSet, m);
+                        } catch (SQLException e) {
+                            throw new UncheckedSQLException(e);
+                        }
+
+                        hasNext = false;
+                    }
+                };
+
+                result = Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JdbcUtil.closeQuietly(resultSet);
+                        } finally {
+                            try {
+                                closeAfterExecutionIfAllowed();
+                            } catch (SQLException e) {
+                                throw new UncheckedSQLException(e);
+                            }
+                        }
+                    }
+                }).tried();
+            } finally {
+                if (result == null) {
+                    try {
+                        JdbcUtil.closeQuietly(rs);
+                    } finally {
+                        closeAfterExecutionIfAllowed();
+                    }
+                }
+            }
+
+            return result;
         }
 
-        public <T, E extends Exception> Stream<T> stream(RecordGetter<T, E> recordGetter) throws SQLException, E {
-            return stream(recordGetter, Integer.MAX_VALUE);
-        }
+        public <T> Try<Stream<T>> stream(final BiRecordGetter<T, RuntimeException> recordGetter) throws SQLException {
+            checkArgNotNull(recordGetter, "recordGetter");
+            assertNotClosed();
 
-        public <T, E extends Exception> Stream<T> stream(RecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
-            return stream(RecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
-        }
+            Try<Stream<T>> result = null;
+            ResultSet rs = null;
 
-        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
-                throws SQLException, E, E2 {
-            return stream(recordFilter, recordGetter, Integer.MAX_VALUE);
-        }
+            try {
+                rs = stmt.executeQuery();
+                final ResultSet resultSet = rs;
 
-        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
-                int maxResult) throws SQLException, E, E2 {
-            return Stream.of(list(recordFilter, recordGetter, maxResult));
-        }
+                final Iterator<T> iter = new ObjIteratorEx<T>() {
+                    private List<String> columnLabels = null;
+                    private boolean hasNext;
 
-        public <T, E extends Exception> Stream<T> stream(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
-            return stream(recordGetter, Integer.MAX_VALUE);
-        }
+                    @Override
+                    public boolean hasNext() {
+                        if (hasNext == false) {
+                            try {
+                                hasNext = resultSet.next();
+                            } catch (SQLException e) {
+                                throw new UncheckedSQLException(e);
+                            }
+                        }
 
-        public <T, E extends Exception> Stream<T> stream(BiRecordGetter<T, E> recordGetter, final int maxResult) throws SQLException, E {
-            return stream(BiRecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
-        }
+                        return hasNext;
+                    }
 
-        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
-                throws SQLException, E, E2 {
-            return stream(recordFilter, recordGetter, Integer.MAX_VALUE);
-        }
+                    @Override
+                    public T next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
 
-        public <T, E extends Exception, E2 extends Exception> Stream<T> stream(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
-                int maxResult) throws SQLException, E, E2 {
-            return Stream.of(list(recordFilter, recordGetter, maxResult));
+                        hasNext = false;
+
+                        try {
+                            if (columnLabels == null) {
+                                columnLabels = JdbcUtil.getColumnLabelList(resultSet);
+                            }
+
+                            return recordGetter.apply(resultSet, columnLabels);
+                        } catch (SQLException e) {
+                            throw new UncheckedSQLException(e);
+                        }
+                    }
+
+                    @Override
+                    public void skip(final long n) throws UncheckedSQLException {
+                        if (n <= 0) {
+                            return;
+                        }
+
+                        final long m = hasNext ? n - 1 : n;
+
+                        try {
+                            JdbcUtil.skip(resultSet, m);
+                        } catch (SQLException e) {
+                            throw new UncheckedSQLException(e);
+                        }
+
+                        hasNext = false;
+                    }
+                };
+
+                result = Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JdbcUtil.closeQuietly(resultSet);
+                        } finally {
+                            try {
+                                closeAfterExecutionIfAllowed();
+                            } catch (SQLException e) {
+                                throw new UncheckedSQLException(e);
+                            }
+                        }
+                    }
+                }).tried();
+            } finally {
+                if (result == null) {
+                    try {
+                        JdbcUtil.closeQuietly(rs);
+                    } finally {
+                        closeAfterExecutionIfAllowed();
+                    }
+                }
+            }
+
+            return result;
         }
 
         public boolean exists() throws SQLException {
