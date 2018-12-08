@@ -968,7 +968,7 @@ public abstract class SQLBuilder {
     public SQLBuilder from(final Class<?> entityClass) {
         this.entityClass = entityClass;
 
-        return from(getTableName(this.entityClass));
+        return from(getTableName(entityClass));
     }
 
     public SQLBuilder join(final String expr) {
@@ -980,9 +980,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder join(final Class<?> entityClass) {
-        this.entityClass = entityClass;
-
-        return join(getTableName(this.entityClass));
+        return join(getTableName(entityClass));
     }
 
     public SQLBuilder leftJoin(final String expr) {
