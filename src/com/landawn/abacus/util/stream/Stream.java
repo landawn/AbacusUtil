@@ -2540,14 +2540,14 @@ public abstract class Stream<T>
     /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
-     * @param rs
+     * @param resultSet
      * @param columnIndex starts from 0, not 1.
      * @return
      */
-    public static <T> Stream<T> of(final ResultSet rs, final int columnIndex) {
+    public static <T> Stream<T> of(final ResultSet resultSet, final int columnIndex) {
         N.checkArgNotNegative(columnIndex, "columnIndex");
 
-        final ObjIterator<T> iter = new ObjIterator<T>() {
+        final ObjIteratorEx<T> iter = new ObjIteratorEx<T>() {
             private final int newColumnIndex = columnIndex + 1;
             private boolean hasNext = false;
 
@@ -2555,7 +2555,7 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 if (hasNext == false) {
                     try {
-                        hasNext = rs.next();
+                        hasNext = resultSet.next();
                     } catch (SQLException e) {
                         throw new UncheckedSQLException(e);
                     }
@@ -2573,7 +2573,7 @@ public abstract class Stream<T>
                 T next = null;
 
                 try {
-                    next = (T) JdbcUtil.getColumnValue(rs, newColumnIndex);
+                    next = (T) JdbcUtil.getColumnValue(resultSet, newColumnIndex);
                 } catch (SQLException e) {
                     throw new UncheckedSQLException(e);
                 }
@@ -2581,6 +2581,23 @@ public abstract class Stream<T>
                 hasNext = false;
 
                 return next;
+            }
+
+            @Override
+            public void skip(final long n) throws UncheckedSQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                try {
+                    JdbcUtil.skip(resultSet, m);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+
+                hasNext = false;
             }
         };
 
