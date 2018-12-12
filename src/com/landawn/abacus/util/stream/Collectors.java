@@ -101,6 +101,7 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -1249,6 +1250,21 @@ public class Collectors {
                 } else {
                     return t.toArray((A[]) Array.newInstance(a.getClass().getComponentType(), t.size()));
                 }
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T, A> Collector<T, ?, A[]> toArray(final IntFunction<A[]> arraySupplier) {
+        final Supplier<List<A>> supplier = Suppliers.<A> ofList();
+        @SuppressWarnings("rawtypes")
+        final BiConsumer<List<A>, T> accumulator = (BiConsumer) BiConsumers.ofAdd();
+        final BinaryOperator<List<A>> combiner = BinaryOperators.<A, List<A>> ofAddAllToBigger();
+        final Function<List<A>, A[]> finisher = new Function<List<A>, A[]>() {
+            @Override
+            public A[] apply(List<A> t) {
+                return t.toArray(arraySupplier.apply(t.size()));
             }
         };
 

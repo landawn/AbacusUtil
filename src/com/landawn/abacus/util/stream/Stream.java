@@ -32,8 +32,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +51,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -71,7 +68,6 @@ import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.Keyed;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
@@ -2441,234 +2437,6 @@ public abstract class Stream<T>
         N.checkArgNotNull(reader);
 
         return of(new LineIterator(reader), startIndex, endIndex);
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @return
-     */
-    public static Stream<Object[]> of(final ResultSet resultSet) {
-        return of(Object[].class, resultSet);
-    }
-
-    public static Try<Stream<Object[]>> of(final ResultSet resultSet, final boolean closeResultSet) {
-        return of(Object[].class, resultSet, closeResultSet);
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param targetClass Array/List/Map or Entity with getter/setter methods.
-     * @param resultSet
-     * @return
-     */
-    public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet) {
-        N.checkArgNotNull(targetClass);
-        N.checkArgNotNull(resultSet);
-
-        final Iterator<T> iter = new ObjIteratorEx<T>() {
-            private final JdbcUtil.BiRecordGetter<T, RuntimeException> biFunc = JdbcUtil.BiRecordGetter.to(targetClass);
-            private List<String> columnLabels = null;
-            private boolean hasNext;
-
-            @Override
-            public boolean hasNext() {
-                if (hasNext == false) {
-                    try {
-                        hasNext = resultSet.next();
-                    } catch (SQLException e) {
-                        throw new UncheckedSQLException(e);
-                    }
-                }
-
-                return hasNext;
-            }
-
-            @Override
-            public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                hasNext = false;
-
-                try {
-                    if (columnLabels == null) {
-                        columnLabels = JdbcUtil.getColumnLabelList(resultSet);
-                    }
-
-                    return biFunc.apply(resultSet, columnLabels);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
-            }
-
-            @Override
-            public void skip(final long n) throws UncheckedSQLException {
-                if (n <= 0) {
-                    return;
-                }
-
-                final long m = hasNext ? n - 1 : n;
-
-                try {
-                    JdbcUtil.skip(resultSet, m);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
-
-                hasNext = false;
-            }
-        };
-
-        return of(iter);
-    }
-
-    /**
-     * 
-     * @param targetClass Array/List/Map or Entity with getter/setter methods.
-     * @param resultSet
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<Stream<T>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
-        return of(targetClass, resultSet).onClose(closeResultSet ? Stream.newCloseHandle(resultSet) : Fn.emptyAction()).tried();
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param columnIndex starts from 0, not 1.
-     * @return
-     */
-    public static <T> Stream<T> of(final ResultSet resultSet, final int columnIndex) {
-        N.checkArgNotNegative(columnIndex, "columnIndex");
-
-        final ObjIteratorEx<T> iter = new ObjIteratorEx<T>() {
-            private final int newColumnIndex = columnIndex + 1;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                if (hasNext == false) {
-                    try {
-                        hasNext = resultSet.next();
-                    } catch (SQLException e) {
-                        throw new UncheckedSQLException(e);
-                    }
-                }
-
-                return hasNext;
-            }
-
-            @Override
-            public T next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException("No more rows");
-                }
-
-                T next = null;
-
-                try {
-                    next = (T) JdbcUtil.getColumnValue(resultSet, newColumnIndex);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
-
-                hasNext = false;
-
-                return next;
-            }
-
-            @Override
-            public void skip(final long n) throws UncheckedSQLException {
-                if (n <= 0) {
-                    return;
-                }
-
-                final long m = hasNext ? n - 1 : n;
-
-                try {
-                    JdbcUtil.skip(resultSet, m);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
-
-                hasNext = false;
-            }
-        };
-
-        return of(iter);
-    }
-
-    /**
-     * 
-     * @param resultSet
-     * @param columnIndex starts from 0, not 1.
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<Stream<T>> of(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
-        if (closeResultSet) {
-            return ((Stream<T>) of(resultSet, columnIndex)).onClose(newCloseHandle(resultSet)).tried();
-        } else {
-            return ((Stream<T>) of(resultSet, columnIndex)).tried();
-        }
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param columnName
-     * @return
-     */
-    public static <T> Stream<T> of(final ResultSet resultSet, final String columnName) {
-        return of(resultSet, getColumnIndex(resultSet, columnName));
-    }
-
-    private static int getColumnIndex(final ResultSet resultSet, final String columnName) {
-        N.checkArgNotNull(columnName, "columnName");
-
-        int columnIndex = -1;
-
-        try {
-            final ResultSetMetaData rsmd = resultSet.getMetaData();
-            final int columnCount = rsmd.getColumnCount();
-
-            for (int i = 1; i <= columnCount; i++) {
-                if (JdbcUtil.getColumnLabel(rsmd, i).equals(columnName)) {
-                    columnIndex = i - 1;
-                    break;
-                }
-            }
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        }
-
-        N.checkArgument(columnIndex >= 0, "No column found by name %s", columnName);
-
-        return columnIndex;
-    }
-
-    /**
-     * 
-     * @param resultSet
-     * @param columnName
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<Stream<T>> of(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
-        final int columnIndex = getColumnIndex(resultSet, columnName);
-
-        if (closeResultSet) {
-            return ((Stream<T>) of(resultSet, columnIndex)).onClose(newCloseHandle(resultSet)).tried();
-        } else {
-            return ((Stream<T>) of(resultSet, columnIndex)).tried();
-        }
     }
 
     public static Try<Stream<String>> of(final File file) {

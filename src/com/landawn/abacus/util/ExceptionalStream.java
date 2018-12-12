@@ -302,9 +302,53 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(targetClass, "targetClass");
         N.checkArgNotNull(resultSet, "resultSet");
 
+        final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
+            private final BiRecordGetter<T, RuntimeException> biFunc = BiRecordGetter.to(targetClass);
+
+            @Override
+            public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
+                return biFunc.apply(resultSet, columnLabels);
+            }
+        };
+
+        return of(resultSet, recordGetter);
+    }
+
+    /**
+     * 
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
+     * @param resultSet
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> Try<ExceptionalStream<T, SQLException>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
+        N.checkArgNotNull(targetClass, "targetClass");
+        N.checkArgNotNull(resultSet, "resultSet");
+
+        if (closeResultSet) {
+            return of(targetClass, resultSet).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    JdbcUtil.close(resultSet);
+                }
+            }).tried();
+        } else {
+            return of(targetClass, resultSet).tried();
+        }
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param recordGetter
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(recordGetter, "recordGetter");
+
         final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-            private final JdbcUtil.BiRecordGetter<T, RuntimeException> biFunc = BiRecordGetter.to(targetClass);
-            private List<String> columnLabels = null;
             private boolean hasNext;
 
             @Override
@@ -324,11 +368,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 hasNext = false;
 
-                if (columnLabels == null) {
-                    columnLabels = JdbcUtil.getColumnLabelList(resultSet);
-                }
-
-                return biFunc.apply(resultSet, columnLabels);
+                return recordGetter.apply(resultSet);
             }
 
             @Override
@@ -353,26 +393,64 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
-     * @param targetClass Array/List/Map or Entity with getter/setter methods.
      * @param resultSet
-     * @param closeResultSet
+     * @param recordGetter
      * @return
      */
-    public static <T> Try<ExceptionalStream<T, SQLException>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
-        N.checkArgNotNull(targetClass, "targetClass");
+    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) {
         N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(recordGetter, "recordGetter");
 
-        if (closeResultSet) {
-            return of(targetClass, resultSet).onClose(new Try.Runnable<SQLException>() {
-                @Override
-                public void run() throws SQLException {
-                    JdbcUtil.close(resultSet);
+        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
+            private List<String> columnLabels = null;
+            private boolean hasNext;
+
+            @Override
+            public boolean hasNext() throws SQLException {
+                if (hasNext == false) {
+                    hasNext = resultSet.next();
                 }
-            }).tried();
-        } else {
-            return of(targetClass, resultSet).tried();
-        }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() throws SQLException {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                if (columnLabels == null) {
+                    columnLabels = JdbcUtil.getColumnLabelList(resultSet);
+                }
+
+                return recordGetter.apply(resultSet, columnLabels);
+            }
+
+            @Override
+            public void skip(final long n) throws SQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                try {
+                    JdbcUtil.skip(resultSet, m);
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+
+                hasNext = false;
+            }
+        };
+
+        return newStream(iter);
     }
 
     /**
@@ -1418,6 +1496,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                         throw N.toRuntimeException(e);
                     }
                 }
+
+                @Override
+                public void skip(long n) {
+                    try {
+                        elements.skip(n);
+                    } catch (Exception e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
             });
         } else {
             return Stream.of(new ObjIteratorEx<T>() {
@@ -1435,6 +1522,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 public T next() {
                     try {
                         return elements.next();
+                    } catch (Exception e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void skip(long n) {
+                    try {
+                        elements.skip(n);
                     } catch (Exception e) {
                         throw N.toRuntimeException(e);
                     }
@@ -1561,4 +1657,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
+    public static final class StreamE<T, E extends Exception> extends ExceptionalStream<T, E> {
+        StreamE(com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator<T, E> iter, boolean sorted, Comparator<? super T> comparator,
+                Set<com.landawn.abacus.util.Try.Runnable<? extends E>> closeHandlers) {
+            super(iter, sorted, comparator, closeHandlers);
+        }
+    }
 }

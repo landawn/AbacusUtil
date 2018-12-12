@@ -2,6 +2,8 @@
 
 * Refactoring: `PreparedQuery.stream`.
 
+* Remove `Stream.of(ResultSet...)`, replaced by `ExceptionalStream.of(ResultSet...)`.
+
 * Improvements and bug fix.
 
 

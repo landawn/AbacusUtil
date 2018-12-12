@@ -98,14 +98,13 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
+import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -1768,103 +1767,6 @@ public final class JdbcUtil {
                 closeQuietly(rs);
             }
         }
-    }
-
-    /**
-     * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @return
-     * @throws UncheckedSQLException
-     */
-    @SafeVarargs
-    public static Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
-        return stream(Object[].class, conn, sql, parameters);
-    }
-
-    /**
-     * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
-     * 
-     * @param targetType Array/List/Map or Entity with getter/setter methods.
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @return
-     * @throws UncheckedSQLException
-     */
-    @SafeVarargs
-    public static <T> Try<Stream<T>> stream(final Class<T> targetType, final Connection conn, final String sql, final Object... parameters)
-            throws UncheckedSQLException {
-        N.checkArgNotNull(targetType);
-
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Try<Stream<T>> result = null;
-
-        try {
-            stmt = JdbcUtil.prepareStatement(conn, sql, parameters);
-            rs = stmt.executeQuery();
-
-            final PreparedStatement _stmt = stmt;
-            final ResultSet _rs = rs;
-
-            result = Stream.of(targetType, rs).onClose(new Runnable() {
-                @Override
-                public void run() {
-                    JdbcUtil.closeQuietly(_rs, _stmt);
-                }
-            }).tried();
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            if (result == null) {
-                JdbcUtil.closeQuietly(rs, stmt);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Don’t close the specified statement before the returned {@code Stream} is consumed/collected/terminated.
-     * 
-     * @param stmt
-     * @return
-     * @throws UncheckedSQLException
-     */
-    public static Try<Stream<Object[]>> stream(final PreparedStatement stmt) throws UncheckedSQLException {
-        return stream(Object[].class, stmt);
-    }
-
-    /**
-     * Don’t close the specified statement before the returned {@code Stream} is consumed/collected/terminated.
-     * 
-     * @param targetType Array/List/Map or Entity with getter/setter methods.
-     * @param stmt
-     * @return
-     * @throws UncheckedSQLException
-     */
-    public static <T> Try<Stream<T>> stream(final Class<T> targetType, final PreparedStatement stmt) throws UncheckedSQLException {
-        N.checkArgNotNull(targetType);
-
-        ResultSet rs = null;
-        Try<Stream<T>> result = null;
-
-        try {
-            rs = stmt.executeQuery();
-
-            result = Stream.of(targetType, rs, true);
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            if (result == null) {
-                JdbcUtil.closeQuietly(rs);
-            }
-        }
-
-        return result;
     }
 
     /**
