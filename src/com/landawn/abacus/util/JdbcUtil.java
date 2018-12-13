@@ -1678,7 +1678,7 @@ public final class JdbcUtil {
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            JdbcUtil.close(stmt);
+            JdbcUtil.closeQuietly(stmt);
         }
     }
 
@@ -3883,6 +3883,82 @@ public final class JdbcUtil {
         /**
          * 
          * @param startParameterIndex
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @param param6
+         * @param param7
+         * @param param8
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Object param7,
+                Object param8) throws SQLException {
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param5);
+            setObject(startParameterIndex++, param6);
+            setObject(startParameterIndex++, param7);
+            setObject(startParameterIndex++, param8);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param param1
+         * @param param2
+         * @param param3
+         * @param param4
+         * @param param5
+         * @param param6
+         * @param param7
+         * @param param8
+         * @param param9
+         * @return
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6, Object param7,
+                Object param8, Object param9) throws SQLException {
+            setObject(startParameterIndex++, param1);
+            setObject(startParameterIndex++, param2);
+            setObject(startParameterIndex++, param3);
+            setObject(startParameterIndex++, param4);
+            setObject(startParameterIndex++, param5);
+            setObject(startParameterIndex++, param6);
+            setObject(startParameterIndex++, param7);
+            setObject(startParameterIndex++, param8);
+            setObject(startParameterIndex++, param9);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param parameters 
+         * @return
+         * @throws IllegalArgumentException if specified {@code parameters} or {@code type} is null.
+         * @throws SQLException
+         */
+        public Q setParameters(int startParameterIndex, Collection<?> parameters) throws IllegalArgumentException, SQLException {
+            checkArgNotNull(parameters, "parameters");
+
+            for (Object param : parameters) {
+                setObject(startParameterIndex++, param);
+            }
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
          * @param parameters
          * @param type
          * @return
@@ -3902,6 +3978,13 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        /**
+         * 
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
         public <E extends Exception> Q setParameters(Try.EE.Consumer<? super S, SQLException, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -3920,6 +4003,13 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        /**
+         * 
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
         public <E extends Exception> Q settParameters(Try.EE.Consumer<? super Q, SQLException, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -3927,6 +4017,60 @@ public final class JdbcUtil {
 
             try {
                 paramSetter.accept((Q) this);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <E extends Exception> Q setParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super S, SQLException, E> paramSetter)
+                throws SQLException, E {
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            boolean isOK = false;
+
+            try {
+                paramSetter.accept(startParameterIndex, stmt);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param startParameterIndex
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <E extends Exception> Q settParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super Q, SQLException, E> paramSetter)
+                throws SQLException, E {
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            boolean isOK = false;
+
+            try {
+                paramSetter.accept(startParameterIndex, (Q) this);
 
                 isOK = true;
             } finally {
@@ -4590,7 +4734,7 @@ public final class JdbcUtil {
                     @Override
                     public void run() throws SQLException {
                         try {
-                            JdbcUtil.close(resultSet);
+                            JdbcUtil.closeQuietly(resultSet);
                         } finally {
                             closeAfterExecutionIfAllowed();
                         }
@@ -4599,7 +4743,7 @@ public final class JdbcUtil {
             } finally {
                 if (result == null) {
                     try {
-                        JdbcUtil.close(rs);
+                        JdbcUtil.closeQuietly(rs);
                     } finally {
                         closeAfterExecutionIfAllowed();
                     }
@@ -4666,7 +4810,7 @@ public final class JdbcUtil {
                     @Override
                     public void run() throws SQLException {
                         try {
-                            JdbcUtil.close(resultSet);
+                            JdbcUtil.closeQuietly(resultSet);
                         } finally {
                             closeAfterExecutionIfAllowed();
                         }
@@ -4675,7 +4819,7 @@ public final class JdbcUtil {
             } finally {
                 if (result == null) {
                     try {
-                        JdbcUtil.close(rs);
+                        JdbcUtil.closeQuietly(rs);
                     } finally {
                         closeAfterExecutionIfAllowed();
                     }

@@ -303,11 +303,11 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(resultSet, "resultSet");
 
         final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
-            private final BiRecordGetter<T, RuntimeException> biFunc = BiRecordGetter.to(targetClass);
+            private final BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
 
             @Override
             public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
-                return biFunc.apply(resultSet, columnLabels);
+                return biRecordGetter.apply(resultSet, columnLabels);
             }
         };
 
@@ -329,7 +329,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             return of(targetClass, resultSet).onClose(new Try.Runnable<SQLException>() {
                 @Override
                 public void run() throws SQLException {
-                    JdbcUtil.close(resultSet);
+                    JdbcUtil.closeQuietly(resultSet);
                 }
             }).tried();
         } else {
@@ -524,7 +524,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             return ((ExceptionalStream<T, SQLException>) of(resultSet, columnIndex)).onClose(new Try.Runnable<SQLException>() {
                 @Override
                 public void run() throws SQLException {
-                    JdbcUtil.close(resultSet);
+                    JdbcUtil.closeQuietly(resultSet);
                 }
             }).tried();
         } else {
