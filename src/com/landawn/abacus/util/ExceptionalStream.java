@@ -163,12 +163,13 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return of(iterable.iterator());
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Stream<? extends T> s) {
-        if (s == null) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Stream<? extends T> stream) {
+        if (stream == null) {
             return empty();
         }
 
         final ExceptionalIterator<T, E> iter = new ExceptionalIterator<T, E>() {
+            private Stream<? extends T> s = stream;
             private Iterator<? extends T> iter = null;
 
             @Override
@@ -186,13 +187,31 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
+            public void skip(long n) throws E {
+                if (iter == null) {
+                    s = s.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() throws E {
+                if (iter == null) {
+                    return s.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
             public void close() throws E {
                 s.close();
             }
 
             private void init() {
                 if (iter == null) {
-                    iter = s.iterator();
+                    iter = stream.iterator();
                 }
             }
         };
@@ -1444,9 +1463,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return Optional.of(result);
     }
 
-    public <U> U reduce(U identity, Try.BiFunction<U, ? super T, U, ? extends E> accumulator, Try.BinaryOperator<U, ? extends E> combiner) throws E {
+    public <U> U reduce(U identity, Try.BiFunction<U, ? super T, U, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
-        N.checkArgNotNull(combiner, "combiner");
 
         U result = identity;
 
@@ -1457,11 +1475,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
-    public <R> R collect(Try.Supplier<R, ? extends E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
-            final Try.BiConsumer<R, R, ? extends E> combiner) throws E {
+    public <R> R collect(Try.Supplier<R, ? extends E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
-        N.checkArgNotNull(combiner, "combiner");
 
         final R result = supplier.get();
 
@@ -1631,6 +1647,16 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
         public abstract T next() throws E;
 
+        public void skip(long n) throws E {
+            if (n <= 0) {
+                return;
+            }
+
+            while (n-- > 0 && hasNext()) {
+                next();
+            }
+        }
+
         public long count() throws E {
             long result = 0;
 
@@ -1640,16 +1666,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             return result;
-        }
-
-        public void skip(long n) throws E {
-            if (n <= 0) {
-                return;
-            }
-
-            while (n-- > 0 && hasNext()) {
-                next();
-            }
         }
 
         public void close() throws E {
