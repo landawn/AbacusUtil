@@ -1,5 +1,7 @@
 ### 1.3.25
 
+* Add `ExceptionalStream`.
+
 * Refactoring: `PreparedQuery.stream`.
 
 * Remove `Stream.of(ResultSet...)`, replaced by `ExceptionalStream.of(ResultSet...)`.

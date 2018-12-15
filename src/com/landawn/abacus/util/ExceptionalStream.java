@@ -20,8 +20,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
+import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.ParallelSupported;
@@ -1435,6 +1437,114 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return elements.count();
     }
 
+    /**
+     * 
+     * @return
+     * @throws NonUniqueResultException if there are more than one elements.
+     * @throws E
+     */
+    public Optional<T> onlyOne() throws NonUniqueResultException, E {
+        Optional<T> result = Optional.empty();
+
+        if (elements.hasNext()) {
+            result = Optional.of(elements.next());
+
+            if (elements.hasNext()) {
+                throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", elements.next()));
+            }
+        }
+
+        return result;
+    }
+
+    public OptionalInt sumInt(Try.ToIntFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalInt.empty();
+        }
+
+        long sum = 0;
+
+        while (elements.hasNext()) {
+            sum += func.applyAsInt(elements.next());
+        }
+
+        return OptionalInt.of(N.toIntExact(sum));
+    }
+
+    public OptionalLong sumLong(Try.ToLongFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalLong.empty();
+        }
+
+        long sum = 0;
+
+        while (elements.hasNext()) {
+            sum += func.applyAsLong(elements.next());
+        }
+
+        return OptionalLong.of(sum);
+    }
+
+    public OptionalDouble sumDouble(Try.ToDoubleFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        final List<Double> list = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            list.add(func.applyAsDouble(elements.next()));
+        }
+
+        return OptionalDouble.of(N.sumDouble(list));
+    }
+
+    public OptionalDouble averageInt(Try.ToIntFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        long sum = 0;
+        long count = 0;
+
+        while (elements.hasNext()) {
+            sum += func.applyAsInt(elements.next());
+            count++;
+        }
+
+        return OptionalDouble.of(((double) sum) / count);
+    }
+
+    public OptionalDouble averageLong(Try.ToLongFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        long sum = 0;
+        long count = 0;
+
+        while (elements.hasNext()) {
+            sum += func.applyAsLong(elements.next());
+            count++;
+        }
+
+        return OptionalDouble.of(((double) sum) / count);
+    }
+
+    public OptionalDouble averageDouble(Try.ToDoubleFunction<T, E> func) throws E {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        final List<Double> list = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            list.add(func.applyAsDouble(elements.next()));
+        }
+
+        return N.averageLong(list);
+    }
+
     public T reduce(T identity, Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
 
@@ -1577,6 +1687,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 }
             });
         }
+
     }
 
     public <R> R __(Try.Function<? super ExceptionalStream<T, E>, R, ? extends E> transfer) throws E {

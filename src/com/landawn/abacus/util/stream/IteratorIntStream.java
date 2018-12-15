@@ -1641,14 +1641,14 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         long result = 0;
 
         while (elements.hasNext()) {
             result += elements.nextInt();
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     @Override

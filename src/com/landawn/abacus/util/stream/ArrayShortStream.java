@@ -1324,7 +1324,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         return sum(elements, fromIndex, toIndex);
     }
 

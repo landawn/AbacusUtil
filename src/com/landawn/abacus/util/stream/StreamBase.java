@@ -1218,76 +1218,76 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return (T[]) c.toArray();
     }
 
-    static long sum(final char[] a) {
+    static int sum(final char[] a) {
         if (a == null || a.length == 0) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    static long sum(final char[] a, final int from, final int to) {
+    static int sum(final char[] a, final int from, final int to) {
         long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
-    static long sum(final byte[] a) {
+    static int sum(final byte[] a) {
         if (a == null || a.length == 0) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    static long sum(final byte[] a, final int from, final int to) {
+    static int sum(final byte[] a, final int from, final int to) {
         long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
-    static long sum(final short[] a) {
+    static int sum(final short[] a) {
         if (a == null || a.length == 0) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    static long sum(final short[] a, final int from, final int to) {
+    static int sum(final short[] a, final int from, final int to) {
         long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
-    static long sum(final int[] a) {
+    static int sum(final int[] a) {
         if (a == null || a.length == 0) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    static long sum(final int[] a, final int from, final int to) {
+    static int sum(final int[] a, final int from, final int to) {
         long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
     static long sum(final long[] a) {

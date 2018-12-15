@@ -721,9 +721,9 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         if (fromIndex == toIndex) {
-            return 0L;
+            return 0;
         } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return sum(elements, fromIndex, toIndex);
         }
@@ -741,7 +741,17 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    return cursor >= to ? null : sum(elements, cursor, to);
+                    if (cursor >= to) {
+                        return null;
+                    } else {
+                        long sum = 0;
+
+                        for (int i = cursor; i < to; i++) {
+                            sum += elements[i];
+                        }
+
+                        return sum;
+                    }
                 }
             }));
         }
@@ -762,7 +772,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             throw N.toRuntimeException(e);
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     @Override

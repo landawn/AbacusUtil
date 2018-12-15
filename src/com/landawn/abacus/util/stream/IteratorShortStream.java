@@ -1167,14 +1167,14 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         long result = 0;
 
         while (elements.hasNext()) {
             result += elements.nextShort();
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     @Override

@@ -1239,7 +1239,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         return sum(elements, fromIndex, toIndex);
     }
 

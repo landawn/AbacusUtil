@@ -1049,14 +1049,14 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public long sum() {
+    public int sum() {
         long result = 0;
 
         while (elements.hasNext()) {
             result += elements.nextByte();
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     @Override
