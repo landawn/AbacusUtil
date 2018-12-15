@@ -646,6 +646,22 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static com.landawn.abacus.util.function.Runnable closeAll(final Collection<? extends AutoCloseable> c) {
+        return new com.landawn.abacus.util.function.Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeAll(c);
+            }
+        };
+    }
+
     public static com.landawn.abacus.util.function.Runnable closeQuietly(final AutoCloseable closeable) {
         return new com.landawn.abacus.util.function.Runnable() {
             private volatile boolean isClosed = false;
@@ -675,6 +691,22 @@ public final class Fn extends Comparators {
 
                 isClosed = true;
                 IOUtil.closeAllQuietly(a);
+            }
+        };
+    }
+
+    public static com.landawn.abacus.util.function.Runnable closeAllQuietly(final Collection<? extends AutoCloseable> c) {
+        return new com.landawn.abacus.util.function.Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeAllQuietly(c);
             }
         };
     }

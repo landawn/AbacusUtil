@@ -1488,6 +1488,21 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
+    public <R, RR> RR collect(Try.Supplier<R, ? extends E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
+            final Try.Function<? super R, ? extends RR, E> finisher) throws E {
+        N.checkArgNotNull(supplier, "supplier");
+        N.checkArgNotNull(accumulator, "accumulator");
+        N.checkArgNotNull(finisher, "finisher");
+
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return finisher.apply(result);
+    }
+
     public Try<ExceptionalStream<T, E>> tried() {
         return Try.of(this);
     }
