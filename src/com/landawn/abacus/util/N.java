@@ -24304,13 +24304,13 @@ public final class N {
             return 0;
         }
 
-        int sum = 0;
+        long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
     /**
@@ -24338,13 +24338,13 @@ public final class N {
             return 0;
         }
 
-        int sum = 0;
+        long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
     /**
@@ -24372,13 +24372,13 @@ public final class N {
             return 0;
         }
 
-        int sum = 0;
+        long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
     /**
@@ -24406,13 +24406,13 @@ public final class N {
             return 0;
         }
 
-        int sum = 0;
+        long sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
         }
 
-        return sum;
+        return N.toIntExact(sum);
     }
 
     /**

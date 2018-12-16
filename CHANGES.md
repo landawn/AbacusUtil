@@ -1,3 +1,8 @@
+### 1.3.26
+
+* Improvements and bug fix.
+
+
 ### 1.3.25
 
 * Add `ExceptionalStream`.

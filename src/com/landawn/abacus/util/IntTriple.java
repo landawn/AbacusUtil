@@ -54,7 +54,7 @@ public final class IntTriple {
     }
 
     public int sum() {
-        return _1 + _2 + _3;
+        return N.toIntExact(0L + _1 + _2 + _3);
     }
 
     public double average() {

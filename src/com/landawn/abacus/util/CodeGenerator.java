@@ -2099,7 +2099,7 @@ public final class CodeGenerator {
             }
         }
 
-        if (N.isNullOrEmpty(fieldTypes)) {
+        if (N.isNullOrEmpty(fieldTypes) && fluentSetter == false && constructor == false && copyMethod == false) {
             return;
         }
 
@@ -2448,7 +2448,7 @@ public final class CodeGenerator {
             ParentPropertyMode parentPropertyModeForHashEquals, ParentPropertyMode parentPropertyModeForToString, Map<String, String> fieldName2MethodName,
             final Map<String, Class<?>> importedClasses, final Class<?> utilClass, Writer writer) throws NoSuchFieldException, SecurityException {
 
-        if (N.isNullOrEmpty(fieldTypes)) {
+        if (N.isNullOrEmpty(fieldTypes) && fluentSetter == false && constructor == false && copyMethod == false) {
             return;
         }
 
@@ -2630,135 +2630,159 @@ public final class CodeGenerator {
             IOUtil.writeLine(writer, iden + "}");
         }
 
-        {
-            IOUtil.writeLine(writer, N.EMPTY_STRING);
-            IOUtil.writeLine(writer, iden + "@Override");
-            IOUtil.writeLine(writer, iden + "public int hashCode() {");
-            IOUtil.writeLine(writer, iden + iden + "int h = 17;");
+        if (N.notNullOrEmpty(fieldTypes)) {
+            {
+                IOUtil.writeLine(writer, N.EMPTY_STRING);
+                IOUtil.writeLine(writer, iden + "@Override");
+                IOUtil.writeLine(writer, iden + "public int hashCode() {");
+                IOUtil.writeLine(writer, iden + iden + "int h = 17;");
 
-            if (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
-                    IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + ".hashCode(" + method.getName() + "());");
+                if (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + ".hashCode(" + method.getName() + "());");
+                    }
                 }
-            }
 
-            for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
-                IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + ".hashCode(" + entry.getKey() + ");");
-            }
-
-            if (parentPropertyModeForHashEquals == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
-                    IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + "hashCode(" + method.getName() + "());");
+                for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
+                    IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + ".hashCode(" + entry.getKey() + ");");
                 }
+
+                if (parentPropertyModeForHashEquals == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        IOUtil.writeLine(writer, iden + iden + "h = 31 * h + " + utilClassName + "hashCode(" + method.getName() + "());");
+                    }
+                }
+
+                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "return h;");
+                IOUtil.writeLine(writer, iden + "}");
             }
 
-            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "return h;");
-            IOUtil.writeLine(writer, iden + "}");
-        }
+            {
+                IOUtil.writeLine(writer, N.EMPTY_STRING);
+                IOUtil.writeLine(writer, iden + "@Override");
+                IOUtil.writeLine(writer, iden + "public boolean equals(Object obj) {");
+                IOUtil.writeLine(writer, iden + iden + "if (this == obj) {");
+                IOUtil.writeLine(writer, iden + iden + iden + "return true;");
+                IOUtil.writeLine(writer, iden + iden + "}");
 
-        {
-            IOUtil.writeLine(writer, N.EMPTY_STRING);
-            IOUtil.writeLine(writer, iden + "@Override");
-            IOUtil.writeLine(writer, iden + "public boolean equals(Object obj) {");
-            IOUtil.writeLine(writer, iden + iden + "if (this == obj) {");
-            IOUtil.writeLine(writer, iden + iden + iden + "return true;");
-            IOUtil.writeLine(writer, iden + iden + "}");
+                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "if (obj instanceof " + className + ") {");
+                IOUtil.writeLine(writer, iden + iden + iden + "final " + className + " other = (" + className + ") obj;");
 
-            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "if (obj instanceof " + className + ") {");
-            IOUtil.writeLine(writer, iden + iden + iden + "final " + className + " other = (" + className + ") obj;");
+                int i = 0;
 
-            int i = 0;
-
-            if (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
-                    if (i++ == 0) {
-                        if (i == parentGetterMethods.size() + fieldTypes.size()) {
-                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
-                                    + "(), other." + method.getName() + "());");
+                if (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        if (i++ == 0) {
+                            if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
+                                        + "(), other." + method.getName() + "());");
+                            } else {
+                                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
+                                        + "(), other." + method.getName() + "())");
+                            }
                         } else {
-                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
-                                    + "(), other." + method.getName() + "())");
+                            if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                                IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
+                                        + method.getName() + "());");
+                            } else {
+                                IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
+                                        + method.getName() + "())");
+                            }
+                        }
+                    }
+                }
+
+                for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
+                    final String fieldName = entry.getKey();
+
+                    if (i++ == 0) {
+                        if (i == fieldTypes.size() && (parentGetterMethods.size() == 0 || parentPropertyModeForHashEquals != ParentPropertyMode.LAST)) {
+                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName
+                                    + ", other." + fieldName + ");");
+                        } else {
+                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName
+                                    + ", other." + fieldName + ")");
                         }
                     } else {
-                        if (i == parentGetterMethods.size() + fieldTypes.size()) {
-                            IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
-                                    + method.getName() + "());");
+                        if (((parentPropertyModeForHashEquals != ParentPropertyMode.FIRST && i == fieldTypes.size())
+                                || (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && i == fieldTypes.size() + parentGetterMethods.size()))
+                                && (parentGetterMethods.size() == 0 || parentPropertyModeForHashEquals != ParentPropertyMode.LAST)) {
+                            IOUtil.writeLine(writer,
+                                    iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ");");
                         } else {
-                            IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
+                            IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ")");
+                        }
+                    }
+                }
+
+                if (parentPropertyModeForHashEquals == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        if (i++ == 0) {
+                            if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
+                                        + "(), other." + method.getName() + "());");
+                            } else {
+                                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
+                                        + "(), other." + method.getName() + "())");
+                            }
+                        } else {
+                            if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                                IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
+                                        + method.getName() + "());");
+                            } else {
+                                IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
+                                        + method.getName() + "())");
+                            }
+                        }
+                    }
+                }
+
+                IOUtil.writeLine(writer, iden + iden + "}");
+                IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "return false;");
+                IOUtil.writeLine(writer, iden + "}");
+            }
+
+            {
+                final StringBuilder sb = new StringBuilder();
+                IOUtil.writeLine(writer, N.EMPTY_STRING);
+                sb.append(iden + "@Override" + IOUtil.LINE_SEPARATOR);
+                sb.append(iden + "public String toString() {" + IOUtil.LINE_SEPARATOR);
+
+                int i = 0;
+
+                if (parentPropertyModeForToString == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        if (i++ == 0) {
+                            sb.append(iden + iden + "return \"{" + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName + ".toString("
                                     + method.getName() + "())");
-                        }
-                    }
-                }
-            }
-
-            for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
-                final String fieldName = entry.getKey();
-
-                if (i++ == 0) {
-                    if (i == fieldTypes.size() && (parentGetterMethods.size() == 0 || parentPropertyModeForHashEquals != ParentPropertyMode.LAST)) {
-                        IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName + ", other."
-                                + fieldName + ");");
-                    } else {
-                        IOUtil.writeLine(writer,
-                                IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ")");
-                    }
-                } else {
-                    if (((parentPropertyModeForHashEquals != ParentPropertyMode.FIRST && i == fieldTypes.size())
-                            || (parentPropertyModeForHashEquals == ParentPropertyMode.FIRST && i == fieldTypes.size() + parentGetterMethods.size()))
-                            && (parentGetterMethods.size() == 0 || parentPropertyModeForHashEquals != ParentPropertyMode.LAST)) {
-                        IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ");");
-                    } else {
-                        IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ")");
-                    }
-                }
-            }
-
-            if (parentPropertyModeForHashEquals == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
-                    if (i++ == 0) {
-                        if (i == parentGetterMethods.size() + fieldTypes.size()) {
-                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
-                                    + "(), other." + method.getName() + "());");
                         } else {
-                            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + method.getName()
-                                    + "(), other." + method.getName() + "())");
+                            sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName
+                                    + ".toString(" + method.getName() + "())");
                         }
-                    } else {
+
                         if (i == parentGetterMethods.size() + fieldTypes.size()) {
-                            IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
-                                    + method.getName() + "());");
-                        } else {
-                            IOUtil.writeLine(writer, iden + iden + iden + iden + "&& " + utilClassName + ".equals(" + method.getName() + "(), other."
-                                    + method.getName() + "())");
+                            if (i > 1) {
+                                sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \"}\";" + IOUtil.LINE_SEPARATOR);
+                            } else {
+                                sb.append(" + \"}\";" + IOUtil.LINE_SEPARATOR);
+                            }
                         }
                     }
                 }
-            }
 
-            IOUtil.writeLine(writer, iden + iden + "}");
-            IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + "return false;");
-            IOUtil.writeLine(writer, iden + "}");
-        }
+                for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
+                    final String fieldName = entry.getKey();
 
-        {
-            final StringBuilder sb = new StringBuilder();
-            IOUtil.writeLine(writer, N.EMPTY_STRING);
-            sb.append(iden + "@Override" + IOUtil.LINE_SEPARATOR);
-            sb.append(iden + "public String toString() {" + IOUtil.LINE_SEPARATOR);
-
-            int i = 0;
-
-            if (parentPropertyModeForToString == ParentPropertyMode.FIRST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
                     if (i++ == 0) {
-                        sb.append(iden + iden + "return \"{" + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName + ".toString("
-                                + method.getName() + "())");
+                        sb.append(iden + iden + "return \"{" + fieldName + "=\" + " + utilClassName + ".toString(" + fieldName + ")");
                     } else {
-                        sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName
-                                + ".toString(" + method.getName() + "())");
+                        sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + fieldName + "=\" + " + utilClassName + ".toString(" + fieldName
+                                + ")");
                     }
 
-                    if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                    if ((((parentPropertyModeForToString == null || parentPropertyModeForToString == ParentPropertyMode.NONE)
+                            || (parentPropertyModeForToString == ParentPropertyMode.LAST && parentGetterMethods.size() == 0)) && i == fieldTypes.size())
+                            || (parentPropertyModeForToString == ParentPropertyMode.FIRST && i == parentGetterMethods.size() + fieldTypes.size())) {
                         if (i > 1) {
                             sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \"}\";" + IOUtil.LINE_SEPARATOR);
                         } else {
@@ -2766,51 +2790,31 @@ public final class CodeGenerator {
                         }
                     }
                 }
-            }
 
-            for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
-                final String fieldName = entry.getKey();
-
-                if (i++ == 0) {
-                    sb.append(iden + iden + "return \"{" + fieldName + "=\" + " + utilClassName + ".toString(" + fieldName + ")");
-                } else {
-                    sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + fieldName + "=\" + " + utilClassName + ".toString(" + fieldName + ")");
-                }
-
-                if ((((parentPropertyModeForToString == null || parentPropertyModeForToString == ParentPropertyMode.NONE)
-                        || (parentPropertyModeForToString == ParentPropertyMode.LAST && parentGetterMethods.size() == 0)) && i == fieldTypes.size())
-                        || (parentPropertyModeForToString == ParentPropertyMode.FIRST && i == parentGetterMethods.size() + fieldTypes.size())) {
-                    if (i > 1) {
-                        sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \"}\";" + IOUtil.LINE_SEPARATOR);
-                    } else {
-                        sb.append(" + \"}\";" + IOUtil.LINE_SEPARATOR);
-                    }
-                }
-            }
-
-            if (parentPropertyModeForToString == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
-                for (Method method : parentGetterMethods) {
-                    if (i++ == 0) {
-                        sb.append(iden + iden + "return \"{" + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName + ".toString("
-                                + method.getName() + "())");
-                    } else {
-                        sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName
-                                + ".toString(" + method.getName() + "())");
-                    }
-
-                    if (i == parentGetterMethods.size() + fieldTypes.size()) {
-                        if (i > 1) {
-                            sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \"}\";" + IOUtil.LINE_SEPARATOR);
+                if (parentPropertyModeForToString == ParentPropertyMode.LAST && parentGetterMethods.size() > 0) {
+                    for (Method method : parentGetterMethods) {
+                        if (i++ == 0) {
+                            sb.append(iden + iden + "return \"{" + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName + ".toString("
+                                    + method.getName() + "())");
                         } else {
-                            sb.append(" + \"}\";" + IOUtil.LINE_SEPARATOR);
+                            sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \", " + ClassUtil.getPropNameByMethod(method) + "=\" + " + utilClassName
+                                    + ".toString(" + method.getName() + "())");
+                        }
+
+                        if (i == parentGetterMethods.size() + fieldTypes.size()) {
+                            if (i > 1) {
+                                sb.append(IOUtil.LINE_SEPARATOR + iden + iden + "         + \"}\";" + IOUtil.LINE_SEPARATOR);
+                            } else {
+                                sb.append(" + \"}\";" + IOUtil.LINE_SEPARATOR);
+                            }
                         }
                     }
                 }
+
+                sb.append(iden + "}");
+
+                IOUtil.writeLine(writer, sb.toString());
             }
-
-            sb.append(iden + "}");
-
-            IOUtil.writeLine(writer, sb.toString());
         }
     }
 
@@ -2921,8 +2925,16 @@ public final class CodeGenerator {
         final String targetClassName = targetClass.getSimpleName();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("public static ").append(targetClassName).append(" ").append(ClassUtil.formalizePropName(srcClassName)).append("2").append(targetClassName)
-                .append(" (").append(srcClassName).append(" source) {").append(IOUtil.LINE_SEPARATOR);
+        sb.append("public static ")
+                .append(targetClassName)
+                .append(" ")
+                .append(ClassUtil.formalizePropName(srcClassName))
+                .append("2")
+                .append(targetClassName)
+                .append(" (")
+                .append(srcClassName)
+                .append(" source) {")
+                .append(IOUtil.LINE_SEPARATOR);
         sb.append(iden).append("final ").append(targetClassName).append(" result = new ").append(targetClassName).append("();").append(IOUtil.LINE_SEPARATOR);
 
         for (Map.Entry<String, Method> entry : ClassUtil.getPropGetMethodList(sourceClass).entrySet()) {
@@ -2940,8 +2952,8 @@ public final class CodeGenerator {
             } else if (!setMethod.getParameterTypes()[0].isAssignableFrom(getMethod.getReturnType())) {
                 sb.append(iden).append("// Incompatible parameter type for: source.").append(getMethod.getName()).append("()").append(IOUtil.LINE_SEPARATOR);
             } else {
-                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(getMethod.getName()).append("());")
-                        .append(IOUtil.LINE_SEPARATOR);
+                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(getMethod.getName()).append("());").append(
+                        IOUtil.LINE_SEPARATOR);
             }
         }
 
