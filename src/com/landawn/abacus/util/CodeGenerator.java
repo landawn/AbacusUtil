@@ -2498,6 +2498,20 @@ public final class CodeGenerator {
             String parameterStr = "";
             String signValues = "";
 
+            for (Map.Entry<String, Method> entry : parentSettterMethods.entrySet()) {
+                if (parameterStr.length() > 0) {
+                    parameterStr += ", ";
+                }
+
+                parameterStr += (getParameterTypeName(pkgName, entry));
+
+                if (signValues.length() > 0) {
+                    signValues += IOUtil.LINE_SEPARATOR;
+                }
+
+                signValues += (iden + iden + "super." + entry.getValue().getName() + "(" + entry.getKey() + ");");
+            }
+
             for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {
                 if (parameterStr.length() > 0) {
                     parameterStr += ", ";
@@ -2532,33 +2546,9 @@ public final class CodeGenerator {
                 }
 
                 final String methodName = entry.getValue().getName();
-                String paraTypeName = ClassUtil.getParameterizedTypeNameByMethod(entry.getValue());
-
-                if (N.notNullOrEmpty(pkgName)) {
-                    String tmp = pkgName + ".";
-                    int idx = 0;
-                    char ch = 0;
-
-                    while ((idx = paraTypeName.indexOf(tmp, idx)) >= 0) {
-                        for (int i = idx + tmp.length(), len = paraTypeName.length(); i < len; i++) {
-                            ch = paraTypeName.charAt(i);
-
-                            if ((Character.isLetterOrDigit(ch) || ch == '$' || ch == '_') && i != len - 1) {
-                                continue;
-                            } else if (ch == '.') {
-                                idx = i;
-                                break;
-                            } else {
-                                paraTypeName = paraTypeName.replace(paraTypeName.substring(idx, i), paraTypeName.substring(idx + tmp.length(), i));
-                                idx += (i - idx - tmp.length());
-                                break;
-                            }
-                        }
-                    }
-                }
 
                 IOUtil.writeLine(writer, N.EMPTY_STRING);
-                IOUtil.writeLine(writer, iden + "public " + className + " " + methodName + "(" + paraTypeName + " " + entry.getKey() + ") {");
+                IOUtil.writeLine(writer, iden + "public " + className + " " + methodName + "(" + getParameterTypeName(pkgName, entry) + ") {");
                 IOUtil.writeLine(writer, iden + iden + "super." + methodName + "(" + entry.getKey() + ");");
                 IOUtil.writeLine(writer, N.EMPTY_STRING);
                 IOUtil.writeLine(writer, iden + iden + "return this;");
@@ -2816,6 +2806,35 @@ public final class CodeGenerator {
                 IOUtil.writeLine(writer, sb.toString());
             }
         }
+    }
+
+    private static String getParameterTypeName(final String pkgName, Map.Entry<String, Method> entry) {
+        String paraTypeName = ClassUtil.getParameterizedTypeNameByMethod(entry.getValue());
+
+        if (N.notNullOrEmpty(pkgName)) {
+            String tmp = pkgName + ".";
+            int idx = 0;
+            char ch = 0;
+
+            while ((idx = paraTypeName.indexOf(tmp, idx)) >= 0) {
+                for (int i = idx + tmp.length(), len = paraTypeName.length(); i < len; i++) {
+                    ch = paraTypeName.charAt(i);
+
+                    if ((Character.isLetterOrDigit(ch) || ch == '$' || ch == '_') && i != len - 1) {
+                        continue;
+                    } else if (ch == '.') {
+                        idx = i;
+                        break;
+                    } else {
+                        paraTypeName = paraTypeName.replace(paraTypeName.substring(idx, i), paraTypeName.substring(idx + tmp.length(), i));
+                        idx += (i - idx - tmp.length());
+                        break;
+                    }
+                }
+            }
+        }
+
+        return paraTypeName + " " + entry.getKey();
     }
 
     static String getAnnoType(Type<?> type, final String packageName, Map<String, Class<?>> importedClasses) {
