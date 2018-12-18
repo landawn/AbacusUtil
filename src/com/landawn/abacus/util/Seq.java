@@ -40,9 +40,6 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
@@ -301,20 +298,20 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(N.kthLargest(coll, k, cmp));
     }
-
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code sumInt(com.landawn.abacus.util.Try.ToIntFunction)}.
-     */
-    @Deprecated
-    public int sumInt() {
-        if (N.isNullOrEmpty(coll)) {
-            return 0;
-        }
-
-        return sumInt((ToIntFunction<T>) Fn.numToInt());
-    }
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code sumInt(com.landawn.abacus.util.Try.ToIntFunction)}.
+    //     */
+    //    @Deprecated
+    //    public int sumInt() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return 0;
+    //        }
+    //
+    //        return sumInt((ToIntFunction<T>) Fn.numToInt());
+    //    }
 
     public <E extends Exception> int sumInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
         if (N.isNullOrEmpty(coll)) {
@@ -324,19 +321,19 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumInt(coll, mapper);
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code sumLong(com.landawn.abacus.util.Try.ToLongFunction)}.
-     */
-    @Deprecated
-    public long sumLong() {
-        if (N.isNullOrEmpty(coll)) {
-            return 0L;
-        }
-
-        return sumLong((ToLongFunction<T>) Fn.numToLong());
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code sumLong(com.landawn.abacus.util.Try.ToLongFunction)}.
+    //     */
+    //    @Deprecated
+    //    public long sumLong() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return 0L;
+    //        }
+    //
+    //        return sumLong((ToLongFunction<T>) Fn.numToLong());
+    //    }
 
     public <E extends Exception> long sumLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
         if (N.isNullOrEmpty(coll)) {
@@ -346,19 +343,19 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumLong(coll, mapper);
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code sumDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}.
-     */
-    @Deprecated
-    public double sumDouble() {
-        if (N.isNullOrEmpty(coll)) {
-            return 0D;
-        }
-
-        return sumDouble((ToDoubleFunction<T>) Fn.numToDouble());
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code sumDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}.
+    //     */
+    //    @Deprecated
+    //    public double sumDouble() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return 0D;
+    //        }
+    //
+    //        return sumDouble((ToDoubleFunction<T>) Fn.numToDouble());
+    //    }
 
     public <E extends Exception> double sumDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
         if (N.isNullOrEmpty(coll)) {
@@ -368,55 +365,55 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.sumDouble(coll, mapper);
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code averageInt(com.landawn.abacus.util.Try.ToIntFunction)}
-     */
-    @Deprecated
-    public OptionalDouble averageInt() {
-        if (N.isNullOrEmpty(coll)) {
-            return OptionalDouble.empty();
-        }
-
-        return averageInt((ToIntFunction<T>) Fn.numToInt());
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code averageInt(com.landawn.abacus.util.Try.ToIntFunction)}
+    //     */
+    //    @Deprecated
+    //    public OptionalDouble averageInt() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return OptionalDouble.empty();
+    //        }
+    //
+    //        return averageInt((ToIntFunction<T>) Fn.numToInt());
+    //    }
 
     public <E extends Exception> OptionalDouble averageInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
         return N.averageInt(coll, mapper);
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code averageLong(com.landawn.abacus.util.Try.ToLongFunction)}
-     */
-    @Deprecated
-    public OptionalDouble averageLong() {
-        if (N.isNullOrEmpty(coll)) {
-            return OptionalDouble.empty();
-        }
-
-        return averageLong((ToLongFunction<T>) Fn.numToLong());
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code averageLong(com.landawn.abacus.util.Try.ToLongFunction)}
+    //     */
+    //    @Deprecated
+    //    public OptionalDouble averageLong() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return OptionalDouble.empty();
+    //        }
+    //
+    //        return averageLong((ToLongFunction<T>) Fn.numToLong());
+    //    }
 
     public <E extends Exception> OptionalDouble averageLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
         return N.averageLong(coll, mapper);
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated replaced by {@code averageDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}
-     */
-    @Deprecated
-    public OptionalDouble averageDouble() {
-        if (N.isNullOrEmpty(coll)) {
-            return OptionalDouble.empty();
-        }
-
-        return averageDouble((ToDoubleFunction<T>) Fn.numToDouble());
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated replaced by {@code averageDouble(com.landawn.abacus.util.Try.ToDoubleFunction)}
+    //     */
+    //    @Deprecated
+    //    public OptionalDouble averageDouble() {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return OptionalDouble.empty();
+    //        }
+    //
+    //        return averageDouble((ToDoubleFunction<T>) Fn.numToDouble());
+    //    }
 
     public <E extends Exception> OptionalDouble averageDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
         return N.averageDouble(coll, mapper);

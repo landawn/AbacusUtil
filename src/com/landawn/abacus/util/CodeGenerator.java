@@ -2509,7 +2509,7 @@ public final class CodeGenerator {
                     signValues += IOUtil.LINE_SEPARATOR;
                 }
 
-                signValues += (iden + iden + "super." + entry.getValue().getName() + "(" + entry.getKey() + ");");
+                signValues += (iden + iden + "this." + entry.getValue().getName() + "(" + entry.getKey() + ");");
             }
 
             for (Map.Entry<String, Type<?>> entry : fieldTypes.entrySet()) {

@@ -1531,21 +1531,21 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
-    /**
-     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
-     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
-     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code>, 
-     * or <code>N.concat(a, b)</code> if result container is array: <code>boolean[]/char[]/int[]/.../Object[]</code> when it's necessary in Parallel Stream.
-     * 
-     * @param identity
-     * @param accumulator
-     * @return
-     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
-     * @deprecated
-     */
-    @Deprecated
-    @ParallelSupported
-    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
+    //    /**
+    //     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
+    //     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
+    //     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code>, 
+    //     * or <code>N.concat(a, b)</code> if result container is array: <code>boolean[]/char[]/int[]/.../Object[]</code> when it's necessary in Parallel Stream.
+    //     * 
+    //     * @param identity
+    //     * @param accumulator
+    //     * @return
+    //     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    @ParallelSupported
+    //    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable

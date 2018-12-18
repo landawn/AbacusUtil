@@ -15744,13 +15744,13 @@ public final class N {
             return 0;
         }
 
-        int result = 0;
+        long result = 0;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsInt(a[i]);
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     /**
@@ -15778,13 +15778,13 @@ public final class N {
             return 0;
         }
 
-        int result = 0;
+        long result = 0;
 
         for (T e : c) {
             result += func.applyAsInt(e);
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15795,7 +15795,7 @@ public final class N {
             return 0;
         }
 
-        int result = 0;
+        long result = 0;
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -15819,7 +15819,7 @@ public final class N {
             }
         }
 
-        return result;
+        return N.toIntExact(result);
     }
 
     /**

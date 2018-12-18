@@ -486,48 +486,48 @@ public class Collectors {
         }
     };
 
-    static final Supplier<int[]> SummingInt_Supplier = new Supplier<int[]>() {
+    static final Supplier<long[]> SummingInt_Supplier = new Supplier<long[]>() {
         @Override
-        public int[] get() {
-            return new int[1];
+        public long[] get() {
+            return new long[1];
         }
     };
 
-    static final BinaryOperator<int[]> SummingInt_Combiner = new BinaryOperator<int[]>() {
+    static final BinaryOperator<long[]> SummingInt_Combiner = new BinaryOperator<long[]>() {
         @Override
-        public int[] apply(int[] a, int[] b) {
+        public long[] apply(long[] a, long[] b) {
             a[0] += b[0];
             return a;
         }
     };
 
-    static final Function<int[], Integer> SummingInt_Finisher = new Function<int[], Integer>() {
+    static final Function<long[], Integer> SummingInt_Finisher = new Function<long[], Integer>() {
         @Override
-        public Integer apply(int[] a) {
-            return a[0];
+        public Integer apply(long[] a) {
+            return N.toIntExact(a[0]);
         }
     };
 
-    static final Supplier<int[]> SummingInt_Supplier_2 = new Supplier<int[]>() {
+    static final Supplier<long[]> SummingInt_Supplier_2 = new Supplier<long[]>() {
         @Override
-        public int[] get() {
-            return new int[2];
+        public long[] get() {
+            return new long[2];
         }
     };
 
-    static final BinaryOperator<int[]> SummingInt_Combiner_2 = new BinaryOperator<int[]>() {
+    static final BinaryOperator<long[]> SummingInt_Combiner_2 = new BinaryOperator<long[]>() {
         @Override
-        public int[] apply(int[] a, int[] b) {
+        public long[] apply(long[] a, long[] b) {
             a[0] += b[0];
             a[1] += b[1];
             return a;
         }
     };
 
-    static final Function<int[], OptionalInt> SummingInt_Finisher_2 = new Function<int[], OptionalInt>() {
+    static final Function<long[], OptionalInt> SummingInt_Finisher_2 = new Function<long[], OptionalInt>() {
         @Override
-        public OptionalInt apply(int[] a) {
-            return a[1] == 0 ? OptionalInt.empty() : OptionalInt.of(a[0]);
+        public OptionalInt apply(long[] a) {
+            return a[1] == 0 ? OptionalInt.empty() : OptionalInt.of(N.toIntExact(a[0]));
         }
     };
 
@@ -2670,33 +2670,33 @@ public class Collectors {
      * @return a {@code Collector} that produces the sum of a derived property
      */
     public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<int[]> supplier = SummingInt_Supplier;
+        final Supplier<long[]> supplier = SummingInt_Supplier;
 
-        final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
-            public void accept(int[] a, T t) {
+            public void accept(long[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
             }
         };
 
-        final BinaryOperator<int[]> combiner = SummingInt_Combiner;
-        final Function<int[], Integer> finisher = SummingInt_Finisher;
+        final BinaryOperator<long[]> combiner = SummingInt_Combiner;
+        final Function<long[], Integer> finisher = SummingInt_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalInt> summingIntt(final ToIntFunction<? super T> mapper) {
-        final Supplier<int[]> supplier = SummingInt_Supplier_2;
+        final Supplier<long[]> supplier = SummingInt_Supplier_2;
 
-        final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
-            public void accept(int[] a, T t) {
+            public void accept(long[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
             }
         };
 
-        final BinaryOperator<int[]> combiner = SummingInt_Combiner_2;
-        final Function<int[], OptionalInt> finisher = SummingInt_Finisher_2;
+        final BinaryOperator<long[]> combiner = SummingInt_Combiner_2;
+        final Function<long[], OptionalInt> finisher = SummingInt_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }

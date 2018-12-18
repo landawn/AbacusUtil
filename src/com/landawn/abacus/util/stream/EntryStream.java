@@ -1421,11 +1421,11 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.reduce(identity, accumulator, combiner);
     }
 
-    @Deprecated
-    @ParallelSupported
-    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator) {
-        return s.reduce(identity, accumulator);
-    }
+    //    @Deprecated
+    //    @ParallelSupported
+    //    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator) {
+    //        return s.reduce(identity, accumulator);
+    //    }
 
     @ParallelSupported
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator, final BiConsumer<R, R> combiner) {

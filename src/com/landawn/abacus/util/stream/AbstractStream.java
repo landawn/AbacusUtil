@@ -2419,12 +2419,12 @@ abstract class AbstractStream<T> extends Stream<T> {
         return false;
     }
 
-    @Override
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-        final BinaryOperator<U> combiner = reducingCombiner;
-
-        return reduce(identity, accumulator, combiner);
-    }
+    //    @Override
+    //    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+    //        final BinaryOperator<U> combiner = reducingCombiner;
+    //
+    //        return reduce(identity, accumulator, combiner);
+    //    }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {

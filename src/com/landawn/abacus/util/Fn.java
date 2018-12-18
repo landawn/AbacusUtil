@@ -5665,4 +5665,22 @@ public final class Fn extends Comparators {
             return c;
         }
     }
+
+    public static final class EE {
+        @SuppressWarnings("rawtypes")
+        private static final Try.Function IDENTITY = new Try.Function() {
+            @Override
+            public Object apply(Object t) {
+                return t;
+            }
+        };
+
+        private EE() {
+            // singleton
+        }
+
+        public static <T, E extends Exception> Try.Function<T, T, E> identity() {
+            return IDENTITY;
+        }
+    }
 }

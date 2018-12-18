@@ -22,11 +22,14 @@ import java.util.Set;
 
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
-import com.landawn.abacus.util.stream.ParallelSupported;
 import com.landawn.abacus.util.stream.Stream;
 
 public class ExceptionalStream<T, E extends Exception> implements AutoCloseable {
@@ -603,8 +606,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return columnIndex;
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final Try.BooleanSupplier<? extends E> hasNext,
-            final Try.Supplier<? extends T, ? extends E> next) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final Try.BooleanSupplier<? extends E> hasNext, final Supplier<? extends T> next) {
         N.checkArgNotNull(hasNext, "hasNext");
         N.checkArgNotNull(next, "next");
 
@@ -964,6 +966,202 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
+    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier) {
+        final Try.Function<T, T, E> valueMapper = Fn.EE.identity();
+
+        return groupBy(classifier, valueMapper);
+    }
+
+    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+            final Supplier<? extends Map<K, List<T>>> mapFactory) {
+        final Try.Function<T, T, E> valueMapper = Fn.EE.identity();
+
+        return groupBy(classifier, valueMapper, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+
+    public <K, U> ExceptionalStream<Map.Entry<K, List<U>>, E> groupBy(Try.Function<? super T, ? extends K, ? extends E> classifier,
+            Try.Function<? super T, ? extends U, E> valueMapper) {
+        final Supplier<? extends Map<K, List<U>>> mapFactory = Suppliers.ofMap();
+
+        return groupBy(classifier, valueMapper, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+
+    public <K, U> ExceptionalStream<Map.Entry<K, List<U>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+            final Try.Function<? super T, ? extends U, ? extends E> valueMapper, final Supplier<? extends Map<K, List<U>>> mapFactory) {
+        N.checkArgNotNull(classifier, "classifier");
+        N.checkArgNotNull(valueMapper, "valueMapper");
+        N.checkArgNotNull(mapFactory, "mapFactory");
+
+        return newStream(new ExceptionalIterator<Map.Entry<K, List<U>>, E>() {
+            private Iterator<Map.Entry<K, List<U>>> iter = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                init();
+                return iter.hasNext();
+            }
+
+            @Override
+            public Map.Entry<K, List<U>> next() throws E {
+                init();
+                return iter.next();
+            }
+
+            private void init() throws E {
+                if (iter == null) {
+                    iter = ExceptionalStream.this.groupTo(classifier, valueMapper, mapFactory).entrySet().iterator();
+                }
+            }
+        }, false, null, closeHandlers);
+
+    }
+
+    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+            final Try.Function<? super T, ? extends V, ? extends E> valueMapper, Try.BinaryOperator<V, ? extends E> mergeFunction) {
+        final Supplier<? extends Map<K, V>> mapFactory = Suppliers.ofMap();
+
+        return groupBy(classifier, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+            final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
+            final Supplier<? extends Map<K, V>> mapFactory) {
+        N.checkArgNotNull(classifier, "classifier");
+        N.checkArgNotNull(valueMapper, "valueMapper");
+        N.checkArgNotNull(mergeFunction, "mergeFunction");
+        N.checkArgNotNull(mapFactory, "mapFactory");
+
+        return newStream(new ExceptionalIterator<Map.Entry<K, V>, E>() {
+            private Iterator<Map.Entry<K, V>> iter = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                init();
+                return iter.hasNext();
+            }
+
+            @Override
+            public Map.Entry<K, V> next() throws E {
+                init();
+                return iter.next();
+            }
+
+            private void init() throws E {
+                if (iter == null) {
+                    iter = ExceptionalStream.this.toMap(classifier, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+                }
+            }
+        }, false, null, closeHandlers);
+
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <p>Example:
+     * <pre>
+     * <code>
+     * Stream.of(new Integer[0]).collapse((a, b) -> a < b, (a, b) -> a + b) => []
+     * Stream.of(1).collapse((a, b) -> a < b, (a, b) -> a + b) => [1]
+     * Stream.of(1, 2).collapse((a, b) -> a < b, (a, b) -> a + b) => [3]
+     * Stream.of(1, 2, 3).collapse((a, b) -> a < b, (a, b) -> a + b) => [6]
+     * Stream.of(1, 2, 3, 3, 2, 1).collapse((a, b) -> a < b, (a, b) -> a + b) => [6, 3, 2, 1]
+     * </code>
+     * </pre>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public ExceptionalStream<T, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
+            final Try.BiFunction<? super T, ? super T, T, ? extends E> mergeFunction) {
+        N.checkArgNotNull(collapsible, "collapsible");
+        N.checkArgNotNull(mergeFunction, "mergeFunction");
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<T, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() throws E {
+                T res = hasNext ? next : (next = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        res = mergeFunction.apply(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null, closeHandlers);
+    }
+
+    public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Supplier<R> supplier,
+            final Try.BiConsumer<R, ? super T, ? extends E> accumulator) {
+        N.checkArgNotNull(collapsible, "collapsible");
+        N.checkArgNotNull(supplier, "supplier");
+        N.checkArgNotNull(accumulator, "accumulator");
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                final R res = supplier.get();
+                accumulator.accept(res, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null, closeHandlers);
+    }
+
     public ExceptionalStream<T, E> peek(final Try.Consumer<? super T, ? extends E> action) {
         N.checkArgNotNull(action, "action");
 
@@ -980,6 +1178,44 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return next;
             }
         }, closeHandlers);
+    }
+
+    public ExceptionalStream<List<T>, E> splitToList(final int size) {
+        N.checkArgPositive(size, "size");
+
+        return newStream(new ExceptionalIterator<List<T>, E>() {
+            @Override
+            public boolean hasNext() throws E {
+                return elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>(size);
+                int cnt = 0;
+
+                while (cnt++ < size && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return result;
+            }
+
+            @Override
+            public long count() throws E {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) throws E {
+                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
+        }, false, null, closeHandlers);
     }
 
     public ExceptionalStream<T, E> skip(final long n) {
@@ -1162,7 +1398,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     @SuppressWarnings("rawtypes")
-    @ParallelSupported
+
     public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
 
@@ -1200,7 +1436,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     @SuppressWarnings("rawtypes")
-    @ParallelSupported
+
     public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
 
@@ -1308,7 +1544,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return toList().toArray();
     }
 
-    public <A> A[] toArray(Try.IntFunction<A[], ? extends E> generator) throws E {
+    public <A> A[] toArray(IntFunction<A[]> generator) throws E {
         N.checkArgNotNull(generator, "generator");
 
         final List<T> list = toList();
@@ -1336,7 +1572,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
-    public <C extends Collection<T>> C toCollection(final Try.Supplier<C, ? extends E> supplier) throws E {
+    public <C extends Collection<T>> C toCollection(final Supplier<C> supplier) throws E {
         N.checkArgNotNull(supplier, "supplier");
 
         final C result = supplier.get();
@@ -1366,7 +1602,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
-            final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.Supplier<M, ? extends E> mapFactory) throws E {
+            final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<M> mapFactory) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(mapFactory, "mapFactory");
@@ -1409,7 +1645,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
-            final Try.Supplier<M, ? extends E> mapFactory) throws E {
+            final Supplier<M> mapFactory) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -1428,6 +1664,70 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             } else {
                 result.put(key, valueMapper.apply(next));
             }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public <K> Map<K, List<T>> groupTo(Try.Function<? super T, ? extends K, ? extends E> classifier) throws E {
+        final Supplier<Map<K, List<T>>> mapFactory = Suppliers.ofMap();
+
+        return groupTo(classifier, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public <K, M extends Map<K, List<T>>> M groupTo(final Try.Function<? super T, ? extends K, ? extends E> classifier, final Supplier<M> mapFactory) throws E {
+        final Try.Function<T, T, E> valueMapper = Fn.EE.identity();
+
+        return groupTo(classifier, valueMapper, mapFactory);
+    }
+
+    public <K, U> Map<K, List<U>> groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+            Try.Function<? super T, ? extends U, ? extends E> valueMapper) throws E {
+        final Supplier<Map<K, List<U>>> mapFactory = Suppliers.ofMap();
+
+        return groupTo(keyExtractor, valueMapper, mapFactory);
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    public <K, U, M extends Map<K, List<U>>> M groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+            Try.Function<? super T, ? extends U, ? extends E> valueMapper, Supplier<M> mapFactory) throws E {
+        N.checkArgNotNull(keyExtractor, "keyExtractor");
+        N.checkArgNotNull(valueMapper, "valueMapper");
+        N.checkArgNotNull(mapFactory, "mapFactory");
+
+        final M result = mapFactory.get();
+        T next = null;
+        K key = null;
+
+        while (elements.hasNext()) {
+            next = elements.next();
+            key = keyExtractor.apply(next);
+
+            if (result.containsKey(key) == false) {
+                result.put(key, new ArrayList<U>());
+            }
+
+            result.get(key).add(valueMapper.apply(next));
         }
 
         return result;
@@ -1585,7 +1885,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
-    public <R> R collect(Try.Supplier<R, ? extends E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
+    public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
 
@@ -1598,7 +1898,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
-    public <R, RR> RR collect(Try.Supplier<R, ? extends E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
+    public <R, RR> RR collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
             final Try.Function<? super R, ? extends RR, E> finisher) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
