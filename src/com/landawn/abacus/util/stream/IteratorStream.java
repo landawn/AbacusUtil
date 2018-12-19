@@ -50,7 +50,6 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -1446,53 +1445,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U, C extends Collection<T>> Stream<C> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate,
-            final Supplier<C> collectionSupplier) {
-        return newStream(new ObjIteratorEx<C>() {
-            private T next = (T) NONE;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public C next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final C result = collectionSupplier.get();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (result.size() == 0) {
-                        result.add(next);
-                        preCondition = predicate.test(next, seed);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.test(next, seed) == preCondition) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -1576,12 +1528,16 @@ class IteratorStream<T> extends AbstractStream<T> {
                 int cnt = 0;
 
                 if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
+                    if (prev instanceof ArrayList) {
+                        result.addAll(((ArrayList<T>) prev).subList(windowSize - cnt, prev.size()));
+                    } else {
+                        cnt = windowSize - increment;
 
-                    final Iterator<T> iter = Iterators.skip(prev.iterator(), windowSize - cnt);
+                        final Iterator<T> iter = Iterators.skip(prev.iterator(), windowSize - cnt);
 
-                    while (iter.hasNext()) {
-                        result.add(iter.next());
+                        while (iter.hasNext()) {
+                            result.add(iter.next());
+                        }
                     }
                 }
 
@@ -2056,17 +2012,6 @@ class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return Optional.of(result);
-    }
-
-    @Override
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-        U result = identity;
-
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
-        }
-
-        return result;
     }
 
     @Override

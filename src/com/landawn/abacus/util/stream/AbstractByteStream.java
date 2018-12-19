@@ -42,7 +42,6 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBiPredicate;
@@ -50,7 +49,6 @@ import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteTriFunction;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -206,29 +204,6 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public Stream<ByteStream> split(final BytePredicate predicate) {
         return splitToList(predicate).map(new Function<ByteList, ByteStream>() {
-            @Override
-            public ByteStream apply(ByteList t) {
-                return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
-            }
-        });
-    }
-
-    @Override
-    public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        final BiPredicate<Byte, Object> predicate2 = new BiPredicate<Byte, Object>() {
-
-            @Override
-            public boolean test(Byte t, Object u) {
-                return predicate.test(t);
-            }
-        };
-
-        return splitToList(null, predicate2, null);
-    }
-
-    @Override
-    public <U> Stream<ByteStream> split(final U seed, final BiPredicate<? super Byte, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return splitToList(seed, predicate, seedUpdate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);

@@ -40,9 +40,7 @@ import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -936,84 +934,6 @@ class ArrayFloatStream extends AbstractFloatStream {
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;
                     } else {
-
-                        break;
-                    }
-                }
-
-                return new FloatList(N.copyOfRange(elements, from, cursor));
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<FloatStream> split(final U seed, final BiPredicate<? super Float, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<FloatStream>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public FloatStream next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ArrayFloatStream(elements, from, cursor, sorted, null);
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<FloatList> splitToList(final U seed, final BiPredicate<? super Float, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<FloatList>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public FloatList next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
 
                         break;
                     }

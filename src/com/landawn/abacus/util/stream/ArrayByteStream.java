@@ -38,7 +38,6 @@ import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
@@ -46,7 +45,6 @@ import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -647,84 +645,6 @@ class ArrayByteStream extends AbstractByteStream {
             public void skip(long n) {
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<ByteStream> split(final U seed, final BiPredicate<? super Byte, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<ByteStream>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public ByteStream next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ArrayByteStream(elements, from, cursor, sorted, null);
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<ByteList> splitToList(final U seed, final BiPredicate<? super Byte, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<ByteList>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public ByteList next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ByteList(N.copyOfRange(elements, from, cursor));
             }
         }, false, null);
     }

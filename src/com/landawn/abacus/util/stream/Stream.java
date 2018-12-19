@@ -150,52 +150,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * 
-     * @param seed initial value to check if the value match the condition.
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    /**
-     * 
-     * @param seed initial value to check if the value match the condition.
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    /**
-     * 
-     * @param seed initial value to check if the value match the condition.
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after removing and consuming until the specified <code>predicate</code> return false.
-     * If there is no more elements then an empty stream will be returned.
-     * 
-     * @param seed
-     * @param predicate
-     * @param consumer
-     * @return {@link #dropWhile(Object, BiPredicate)}
-     */
-    @ParallelSupported
-    public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
-
-    @ParallelSupported
-    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate);
-
-    @ParallelSupported
-    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
-
-    /**
      * Returns a stream consisting of the elements in this stream which are
      * instances of given class.
      * 
@@ -226,9 +180,6 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
-
-    @ParallelSupported
-    public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
     //    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);
     //
@@ -453,19 +404,10 @@ public abstract class Stream<T>
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
     @ParallelSupported
-    public abstract <U, R> Stream<R> flatMap(U seed, BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper);
-
-    @ParallelSupported
     public abstract <R> Stream<R> flattMap(Function<? super T, ? extends Collection<? extends R>> mapper);
 
     @ParallelSupported
-    public abstract <U, R> Stream<R> flattMap(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
-
-    @ParallelSupported
     public abstract <R> Stream<R> flatMapp(Function<? super T, R[]> mapper);
-
-    @ParallelSupported
-    public abstract <U, R> Stream<R> flatMapp(U seed, BiFunction<? super T, ? super U, R[]> mapper);
 
     @ParallelSupported
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
@@ -832,27 +774,6 @@ public abstract class Stream<T>
     public abstract Stream<Set<T>> splitToSet(Predicate<? super T> predicate);
 
     /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToSet(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @return
-     */
-    @SequentialOnly
-    public abstract <U> Stream<Set<T>> splitToSet(U seed, BiPredicate<? super T, ? super U> predicate, Consumer<? super U> seedUpdate);
-
-    /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
      * <br />
@@ -867,29 +788,6 @@ public abstract class Stream<T>
 
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> split(Predicate<? super T> predicate, Supplier<C> collectionSupplier);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5), Suppliers.ofList).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @param collectionSupplier
-     * @return
-     */
-    @SequentialOnly
-    public abstract <U, C extends Collection<T>> Stream<C> split(U seed, BiPredicate<? super T, ? super U> predicate, Consumer<? super U> seedUpdate,
-            Supplier<C> collectionSupplier);
 
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> sliding(int windowSize, IntFunction<C> collectionSupplier);
@@ -1052,33 +950,6 @@ public abstract class Stream<T>
     public abstract <E extends Exception> Optional<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
-     * 
-     * @param seed
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
-
-    /**
-     * 
-     * @param seed
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
-
-    /**
-     * 
-     * @param seed
-     * @param predicate
-     * @return
-     */
-    @ParallelSupported
-    public abstract <U, E extends Exception> Optional<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
-
-    /**
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
@@ -1103,15 +974,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
-
-    @ParallelSupported
-    public abstract <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
-
-    @ParallelSupported
-    public abstract <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
-
-    @ParallelSupported
-    public abstract <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     @SequentialOnly
     public abstract boolean containsAll(T... a);
@@ -1480,72 +1342,6 @@ public abstract class Stream<T>
      */
     @ParallelSupported
     public abstract Optional<T> reduce(BinaryOperator<T> accumulator);
-
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using the provided identity, accumulation and
-     * combining functions.  This is equivalent to:
-     * <pre>{@code
-     *     U result = identity;
-     *     for (T element : this stream)
-     *         result = accumulator.apply(result, element)
-     *     return result;
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code identity} value must be an identity for the zipFunction
-     * function.  This means that for all {@code u}, {@code zipFunction(identity, u)}
-     * is equal to {@code u}.  Additionally, the {@code zipFunction} function
-     * must be compatible with the {@code accumulator} function; for all
-     * {@code u} and {@code t}, the following must hold:
-     * <pre>{@code
-     *     zipFunction.apply(u, accumulator.apply(identity, t)) == accumulator.apply(u, t)
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Many reductions using this form can be represented more simply
-     * by an explicit combination of {@code map} and {@code reduce} operations.
-     * The {@code accumulator} function acts as a fused mapper and accumulator,
-     * which can sometimes be more efficient than separate mapping and reduction,
-     * such as when knowing the previously reduced value allows you to avoid
-     * some computation.
-     *
-     * @param <U> The type of the result
-     * @param identity the identity value for the zipFunction function
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values, which must be
-     *                    compatible with the accumulator function
-     * @return the result of the reduction
-     * @see #reduce(BinaryOperator)
-     * @see #reduce(Object, BinaryOperator)
-     */
-    @ParallelSupported
-    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
-
-    //    /**
-    //     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
-    //     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
-    //     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code>, 
-    //     * or <code>N.concat(a, b)</code> if result container is array: <code>boolean[]/char[]/int[]/.../Object[]</code> when it's necessary in Parallel Stream.
-    //     * 
-    //     * @param identity
-    //     * @param accumulator
-    //     * @return
-    //     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    @ParallelSupported
-    //    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable

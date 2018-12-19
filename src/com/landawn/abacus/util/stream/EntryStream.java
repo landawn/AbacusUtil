@@ -31,6 +31,7 @@ import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.ImmutableEntry;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.ListMultimap;
@@ -1407,7 +1408,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public Map.Entry<K, V> reduce(final Map.Entry<K, V> identity, final BinaryOperator<Map.Entry<K, V>> accumulator) {
+    public Map.Entry<K, V> reduce(final ImmutableEntry<K, V> identity, final BinaryOperator<Map.Entry<K, V>> accumulator) {
         return s.reduce(identity, accumulator);
     }
 
@@ -1415,17 +1416,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
     public Optional<Map.Entry<K, V>> reduce(final BinaryOperator<Map.Entry<K, V>> accumulator) {
         return s.reduce(accumulator);
     }
-
-    @ParallelSupported
-    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator, final BinaryOperator<U> combiner) {
-        return s.reduce(identity, accumulator, combiner);
-    }
-
-    //    @Deprecated
-    //    @ParallelSupported
-    //    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator) {
-    //        return s.reduce(identity, accumulator);
-    //    }
 
     @ParallelSupported
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator, final BiConsumer<R, R> combiner) {

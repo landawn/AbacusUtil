@@ -43,7 +43,6 @@ import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -1818,127 +1817,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<Stream<T>>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ArrayStream<>(elements, from, cursor, sorted, cmp, null);
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<List<T>>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public List<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.test(elements[from], seed);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return N.asList(N.copyOfRange(elements, from, cursor));
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <U, C extends Collection<T>> Stream<C> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate,
-            final Supplier<C> collectionSupplier) {
-        return newStream(new ObjIteratorEx<C>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public C next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final C result = collectionSupplier.get();
-
-                while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.test(elements[cursor], seed);
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public Stream<Stream<T>> splitAt(final int n) {
         N.checkArgNotNegative(n, "n");
 
@@ -2493,17 +2371,6 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
 
         return Optional.of(result);
-    }
-
-    @Override
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
-        U result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, elements[i]);
-        }
-
-        return result;
     }
 
     @Override

@@ -42,9 +42,7 @@ import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -206,29 +204,6 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public Stream<ShortStream> split(final ShortPredicate predicate) {
         return splitToList(predicate).map(new Function<ShortList, ShortStream>() {
-            @Override
-            public ShortStream apply(ShortList t) {
-                return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);
-            }
-        });
-    }
-
-    @Override
-    public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        final BiPredicate<Short, Object> predicate2 = new BiPredicate<Short, Object>() {
-
-            @Override
-            public boolean test(Short t, Object u) {
-                return predicate.test(t);
-            }
-        };
-
-        return splitToList(null, predicate2, null);
-    }
-
-    @Override
-    public <U> Stream<ShortStream> split(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return splitToList(seed, predicate, seedUpdate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);

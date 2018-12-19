@@ -25,9 +25,11 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.StringUtil.Strings;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
@@ -986,7 +988,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-
     public <K, U> ExceptionalStream<Map.Entry<K, List<U>>, E> groupBy(Try.Function<? super T, ? extends K, ? extends E> classifier,
             Try.Function<? super T, ? extends U, E> valueMapper) {
         final Supplier<? extends Map<K, List<U>>> mapFactory = Suppliers.ofMap();
@@ -1002,7 +1003,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-
     public <K, U> ExceptionalStream<Map.Entry<K, List<U>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Try.Function<? super T, ? extends U, ? extends E> valueMapper, final Supplier<? extends Map<K, List<U>>> mapFactory) {
         N.checkArgNotNull(classifier, "classifier");
@@ -1180,6 +1180,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, closeHandlers);
     }
 
+    public ExceptionalStream<Stream<T>, E> split(final int size) {
+        return splitToList(size).map(new Try.Function<List<T>, Stream<T>, E>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
     public ExceptionalStream<List<T>, E> splitToList(final int size) {
         N.checkArgPositive(size, "size");
 
@@ -1214,6 +1223,60 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public void skip(long n) throws E {
                 elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
+        }, false, null, closeHandlers);
+    }
+
+    public ExceptionalStream<Stream<T>, E> sliding(final int windowSize, final int increment) {
+        return slidingToList(windowSize, increment).map(new Try.Function<List<T>, Stream<T>, E>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
+    public ExceptionalStream<List<T>, E> slidingToList(final int windowSize, final int increment) {
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final ExceptionalIterator<T, E> elements = this.elements;
+
+        return newStream(new ExceptionalIterator<List<T>, E>() {
+            private List<T> prev = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>(windowSize);
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    result.addAll(prev.subList(windowSize - cnt, prev.size()));
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
             }
         }, false, null, closeHandlers);
     }
@@ -1873,18 +1936,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return Optional.of(result);
     }
 
-    public <U> U reduce(U identity, Try.BiFunction<U, ? super T, U, ? extends E> accumulator) throws E {
-        N.checkArgNotNull(accumulator, "accumulator");
-
-        U result = identity;
-
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
-        }
-
-        return result;
-    }
-
     public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
@@ -1911,6 +1962,28 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
 
         return finisher.apply(result);
+    }
+
+    public <R, A> R collect(Collector<? super T, A, R> collector) throws E {
+        final A container = collector.supplier().get();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+        while (elements.hasNext()) {
+            accumulator.accept(container, elements.next());
+        }
+
+        return collector.finisher().apply(container);
+    }
+
+    public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) throws E {
+        final A container = collector.supplier().get();
+        final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+        while (elements.hasNext()) {
+            accumulator.accept(container, elements.next());
+        }
+
+        return collector.finisher().apply(container);
     }
 
     public Try<ExceptionalStream<T, E>> tried() {

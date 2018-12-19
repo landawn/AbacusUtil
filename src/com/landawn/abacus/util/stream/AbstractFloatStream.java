@@ -43,9 +43,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBiPredicate;
 import com.landawn.abacus.util.function.FloatConsumer;
@@ -207,29 +205,6 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public Stream<FloatStream> split(final FloatPredicate predicate) {
         return splitToList(predicate).map(new Function<FloatList, FloatStream>() {
-            @Override
-            public FloatStream apply(FloatList t) {
-                return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
-            }
-        });
-    }
-
-    @Override
-    public Stream<FloatList> splitToList(final FloatPredicate predicate) {
-        final BiPredicate<Float, Object> predicate2 = new BiPredicate<Float, Object>() {
-
-            @Override
-            public boolean test(Float t, Object u) {
-                return predicate.test(t);
-            }
-        };
-
-        return splitToList(null, predicate2, null);
-    }
-
-    @Override
-    public <U> Stream<FloatStream> split(final U seed, final BiPredicate<? super Float, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return splitToList(seed, predicate, seedUpdate).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
                 return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);

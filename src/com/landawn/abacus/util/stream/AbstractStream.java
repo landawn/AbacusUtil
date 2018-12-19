@@ -101,21 +101,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return filter(Fn.p(seed, predicate));
-    }
-
-    @Override
-    public <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return takeWhile(Fn.p(seed, predicate));
-    }
-
-    @Override
-    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return dropWhile(Fn.p(seed, predicate));
-    }
-
-    @Override
     public Stream<T> skip(final long n, final Consumer<? super T> action) {
         N.checkArgNotNegative(n, "n");
 
@@ -181,18 +166,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        N.checkArgNotNull(predicate);
-
-        return filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return predicate.test(value, seed) == false;
-            }
-        });
-    }
-
-    @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate, final Consumer<? super T> action) {
         N.checkArgNotNull(predicate);
         N.checkArgNotNull(action);
@@ -211,24 +184,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
-
-        return filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                if (predicate.test(value, seed)) {
-                    action.accept(value);
-                    return false;
-                }
-
-                return true;
-            }
-        });
-    }
-
-    @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
         N.checkArgNotNull(predicate);
         N.checkArgNotNull(action);
@@ -237,24 +192,6 @@ abstract class AbstractStream<T> extends Stream<T> {
             @Override
             public boolean test(T value) {
                 if (predicate.test(value)) {
-                    action.accept(value);
-                    return true;
-                }
-
-                return false;
-            }
-        });
-    }
-
-    @Override
-    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
-
-        return dropWhile(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                if (predicate.test(value, seed)) {
                     action.accept(value);
                     return true;
                 }
@@ -292,10 +229,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return newStream(iterator, sorted, cmp);
     }
 
-    @Override
-    public <U, R> Stream<R> map(final U seed, final BiFunction<? super T, ? super U, ? extends R> mapper) {
-        return map(Fn.f(seed, mapper));
-    }
+    
 
     //    @Override
     //    public <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper) {
@@ -395,16 +329,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flatMap(final U seed, final BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper) {
-        return flatMap(new Function<T, Stream<? extends R>>() {
-            @Override
-            public Stream<? extends R> apply(T t) {
-                return mapper.apply(t, seed);
-            }
-        });
-    }
-
-    @Override
     public <R> Stream<R> flattMap(final Function<? super T, ? extends Collection<? extends R>> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
@@ -415,31 +339,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flattMap(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
-        return flatMap(new Function<T, Stream<? extends R>>() {
-            @Override
-            public Stream<? extends R> apply(T t) {
-                return Stream.of(mapper.apply(t, seed));
-            }
-        });
-    }
-
-    @Override
     public <R> Stream<R> flatMapp(final Function<? super T, R[]> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {
             @Override
             public Stream<? extends R> apply(T t) {
                 return Stream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public <U, R> Stream<R> flatMapp(final U seed, final BiFunction<? super T, ? super U, R[]> mapper) {
-        return flatMap(new Function<T, Stream<? extends R>>() {
-            @Override
-            public Stream<? extends R> apply(T t) {
-                return Stream.of(mapper.apply(t, seed));
             }
         });
     }
@@ -566,39 +470,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<Set<T>> splitToSet(final Predicate<? super T> predicate) {
         return split(predicate, Suppliers.<T> ofSet());
-    }
-
-    @Override
-    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
-        final BiPredicate<T, Object> predicate2 = new BiPredicate<T, Object>() {
-
-            @Override
-            public boolean test(T t, Object u) {
-                return predicate.test(t);
-            }
-        };
-
-        return split(null, predicate2, null, collectionSupplier);
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return splitToList(seed, predicate, seedUpdate).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
-            }
-        });
-    }
-
-    @Override
-    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return split(seed, predicate, seedUpdate, Suppliers.<T> ofList());
-    }
-
-    @Override
-    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return split(seed, predicate, seedUpdate, Suppliers.<T> ofSet());
     }
 
     @Override
@@ -1447,16 +1318,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, E extends Exception> Optional<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findFirst(Fn.pp(seed, predicate));
-    }
-
-    @Override
-    public <U, E extends Exception> Optional<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findLast(Fn.pp(seed, predicate));
-    }
-
-    @Override
     public <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
             final Try.Predicate<? super T, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
@@ -1516,26 +1377,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
-    }
-
-    @Override
-    public <U, E extends Exception> Optional<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return findAny(Fn.pp(seed, predicate));
-    }
-
-    @Override
-    public <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return anyMatch(Fn.pp(seed, predicate));
-    }
-
-    @Override
-    public <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return allMatch(Fn.pp(seed, predicate));
-    }
-
-    @Override
-    public <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        return noneMatch(Fn.pp(seed, predicate));
     }
 
     @Override
@@ -2418,13 +2259,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return false;
     }
-
-    //    @Override
-    //    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-    //        final BinaryOperator<U> combiner = reducingCombiner;
-    //
-    //        return reduce(identity, accumulator, combiner);
-    //    }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {

@@ -42,9 +42,7 @@ import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -751,54 +749,6 @@ class IteratorFloatStream extends AbstractFloatStream {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.nextFloat() : 0;
                     } else {
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public <U> Stream<FloatList> splitToList(final U seed, final BiPredicate<? super Float, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return newStream(new ObjIteratorEx<FloatList>() {
-            private float next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public FloatList next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final FloatList result = new FloatList();
-
-                if (hasNext == false) {
-                    next = elements.nextFloat();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        result.add(next);
-                        preCondition = predicate.test(next, seed);
-                        next = (hasNext = elements.hasNext()) ? elements.nextFloat() : 0;
-                    } else if (predicate.test(next, seed) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.nextFloat() : 0;
-                    } else {
-                        if (seedUpdate != null) {
-                            seedUpdate.accept(seed);
-                        }
-
                         break;
                     }
                 }

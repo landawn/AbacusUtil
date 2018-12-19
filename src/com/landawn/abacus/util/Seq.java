@@ -34,6 +34,7 @@ import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -733,12 +734,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.filter(coll, filter, max, supplier);
     }
 
-    public <U, E extends Exception> List<T> filter(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.checkArgNotNull(filter);
-
-        return filter(Fn.pp(seed, filter));
-    }
-
     public <E extends Exception> List<T> takeWhile(Try.Predicate<? super T, E> filter) throws E {
         N.checkArgNotNull(filter);
 
@@ -759,12 +754,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <U, E extends Exception> List<T> takeWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.checkArgNotNull(filter);
-
-        return takeWhile(Fn.pp(seed, filter));
-    }
-
     public <E extends Exception> List<T> takeWhileInclusive(Try.Predicate<? super T, E> filter) throws E {
         N.checkArgNotNull(filter);
 
@@ -783,12 +772,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         return result;
-    }
-
-    public <U, E extends Exception> List<T> takeWhileInclusive(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.checkArgNotNull(filter);
-
-        return takeWhileInclusive(Fn.pp(seed, filter));
     }
 
     public <E extends Exception> List<T> dropWhile(Try.Predicate<? super T, E> filter) throws E {
@@ -819,12 +802,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <U, E extends Exception> List<T> dropWhile(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.checkArgNotNull(filter);
-
-        return dropWhile(Fn.pp(seed, filter));
-    }
-
     public <E extends Exception> List<T> skipUntil(final Try.Predicate<? super T, E> filter) throws E {
         N.checkArgNotNull(filter);
 
@@ -832,17 +809,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
             @Override
             public boolean test(T value) throws E {
                 return !filter.test(value);
-            }
-        });
-    }
-
-    public <U, E extends Exception> List<T> skipUntil(final U seed, final Try.BiPredicate<? super T, ? super U, E> filter) throws E {
-        N.checkArgNotNull(filter);
-
-        return dropWhile(new Try.Predicate<T, E>() {
-            @Override
-            public boolean test(T value) throws E {
-                return !filter.test(value, seed);
             }
         });
     }
@@ -1715,7 +1681,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param accumulator
      * @return
      */
-    public <U, E extends Exception> U reduce(U identity, Try.BiFunction<U, ? super T, U, E> accumulator) throws E {
+    public <E extends Exception> T reduce(T identity, Try.BinaryOperator<T, E> accumulator) throws E {
         N.checkArgNotNull(accumulator);
 
         if (isEmpty()) {
@@ -1723,7 +1689,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         final Iterator<T> iter = iterator();
-        U result = identity;
+        T result = identity;
 
         while (iter.hasNext()) {
             result = accumulator.apply(result, iter.next());
@@ -1910,7 +1876,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <U, E extends Exception> List<List<T>> split(final Try.Predicate<? super T, E> predicate) throws E {
+        return split(predicate, Suppliers.<T> ofList());
+    }
+
+    public <U, C extends Collection<T>, E extends Exception> List<C> split(final Try.Predicate<? super T, E> predicate, final Supplier<C> supplier) throws E {
         N.checkArgNotNull(predicate);
+        N.checkArgNotNull(supplier);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
@@ -1923,24 +1894,31 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
         };
 
-        return split(null, predicate2, Fn.doNothing());
+        return split(null, predicate2, Fn.doNothing(), supplier);
     }
 
-    public <U, E extends Exception, E2 extends Exception> List<List<T>> split(final U identity, final Try.BiPredicate<? super T, ? super U, E> predicate,
-            final Try.Consumer<? super U, E2> identityUpdate) throws E, E2 {
+    public <U, E extends Exception, E2 extends Exception> List<List<T>> split(final U flag, final Try.BiPredicate<? super T, ? super U, E> predicate,
+            final Try.Consumer<? super U, E2> flagUpdate) throws E, E2 {
+        return split(flag, predicate, flagUpdate, Suppliers.<T> ofList());
+    }
+
+    public <U, C extends Collection<T>, E extends Exception, E2 extends Exception> List<C> split(final U flag,
+            final Try.BiPredicate<? super T, ? super U, E> predicate, final Try.Consumer<? super U, E2> flagUpdate, final Supplier<C> supplier) throws E, E2 {
         N.checkArgNotNull(predicate);
+        N.checkArgNotNull(flagUpdate);
+        N.checkArgNotNull(supplier);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
         }
 
-        final List<List<T>> res = new ArrayList<>();
+        final List<C> res = new ArrayList<>();
         final Iterator<T> elements = iterator();
         T next = (T) N.NULL_MASK;
         boolean preCondition = false;
 
         while (next != N.NULL_MASK || elements.hasNext()) {
-            final List<T> piece = new ArrayList<>();
+            final C piece = supplier.get();
 
             if (next == N.NULL_MASK) {
                 next = elements.next();
@@ -1949,14 +1927,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
             while (next != N.NULL_MASK) {
                 if (piece.size() == 0) {
                     piece.add(next);
-                    preCondition = predicate.test(next, identity);
+                    preCondition = predicate.test(next, flag);
                     next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
-                } else if (predicate.test(next, identity) == preCondition) {
+                } else if (predicate.test(next, flag) == preCondition) {
                     piece.add(next);
                     next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
                 } else {
-                    if (identityUpdate != null) {
-                        identityUpdate.accept(identity);
+                    if (flagUpdate != null) {
+                        flagUpdate.accept(flag);
                     }
 
                     break;

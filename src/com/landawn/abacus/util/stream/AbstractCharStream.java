@@ -42,7 +42,6 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBiPredicate;
@@ -50,7 +49,6 @@ import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -206,29 +204,6 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public Stream<CharStream> split(final CharPredicate predicate) {
         return splitToList(predicate).map(new Function<CharList, CharStream>() {
-            @Override
-            public CharStream apply(CharList t) {
-                return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
-            }
-        });
-    }
-
-    @Override
-    public Stream<CharList> splitToList(final CharPredicate predicate) {
-        final BiPredicate<Character, Object> predicate2 = new BiPredicate<Character, Object>() {
-
-            @Override
-            public boolean test(Character t, Object u) {
-                return predicate.test(t);
-            }
-        };
-
-        return splitToList(null, predicate2, null);
-    }
-
-    @Override
-    public <U> Stream<CharStream> split(final U seed, final BiPredicate<? super Character, ? super U> predicate, final Consumer<? super U> seedUpdate) {
-        return splitToList(seed, predicate, seedUpdate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);

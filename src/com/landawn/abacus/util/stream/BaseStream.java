@@ -41,8 +41,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -168,46 +166,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     @SequentialOnly
     Stream<PL> splitToList(final P predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @return
-     */
-    @SequentialOnly
-    <U> Stream<S> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @return
-     */
-    @SequentialOnly
-    <U> Stream<PL> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>.
