@@ -64,6 +64,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.JdbcUtil.PreparedQuery;
 import com.landawn.abacus.util.SQLBuilder.NE;
@@ -72,6 +73,7 @@ import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -7590,6 +7592,87 @@ public class SQLExecutor implements Closeable {
         };
 
         public T extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException;
+
+        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor) {
+            return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
+        }
+
+        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new ResultExtractor<M>() {
+                @Override
+                public M extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+                    final int offset = jdbcSettings.getOffset();
+                    int count = jdbcSettings.getCount();
+
+                    JdbcUtil.skip(rs, offset);
+
+                    final M result = supplier.get();
+                    K key = null;
+                    List<V> value = null;
+
+                    while (count-- > 0 && rs.next()) {
+                        key = keyExtractor.apply(rs);
+                        value = result.get(key);
+
+                        if (value == null) {
+                            value = new ArrayList<>();
+                            result.put(key, value);
+                        }
+
+                        value.add(valueExtractor.apply(rs));
+                    }
+
+                    return result;
+                }
+            };
+        }
+
+        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor) {
+            return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
+        }
+
+        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new ResultExtractor<M>() {
+                @Override
+                public M extractData(final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+                    final int offset = jdbcSettings.getOffset();
+                    int count = jdbcSettings.getCount();
+
+                    JdbcUtil.skip(rs, offset);
+
+                    final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+                    final M result = supplier.get();
+                    K key = null;
+                    List<V> value = null;
+
+                    while (count-- > 0 && rs.next()) {
+                        key = keyExtractor.apply(rs, columnLabels);
+                        value = result.get(key);
+
+                        if (value == null) {
+                            value = new ArrayList<>();
+                            result.put(key, value);
+                        }
+
+                        value.add(valueExtractor.apply(rs, columnLabels));
+                    }
+
+                    return result;
+                }
+            };
+        }
     }
 
     /**

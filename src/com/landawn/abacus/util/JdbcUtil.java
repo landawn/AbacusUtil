@@ -99,12 +99,14 @@ import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  *
@@ -4362,7 +4364,7 @@ public final class JdbcUtil {
         private <T> T get(Class<T> targetClass, ResultSet rs) throws SQLException {
             final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
-            return JdbcUtil.createBiRecordGetterByTargetClass(targetClass).apply(rs, columnLabels);
+            return BiRecordGetter.to(targetClass).apply(rs, columnLabels);
         }
 
         public DataSet query() throws SQLException {
@@ -4598,11 +4600,11 @@ public final class JdbcUtil {
         }
 
         public <T> List<T> list(final Class<T> targetClass) throws SQLException {
-            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
+            return list(BiRecordGetter.to(targetClass));
         }
 
         public <T> List<T> list(final Class<T> targetClass, int maxResult) throws SQLException {
-            return list(JdbcUtil.createBiRecordGetterByTargetClass(targetClass), maxResult);
+            return list(BiRecordGetter.to(targetClass), maxResult);
         }
 
         public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
@@ -4679,7 +4681,7 @@ public final class JdbcUtil {
         }
 
         public <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass) throws SQLException {
-            return stream(JdbcUtil.createBiRecordGetterByTargetClass(targetClass));
+            return stream(BiRecordGetter.to(targetClass));
         }
 
         public <T> Try<ExceptionalStream<T, SQLException>> stream(final RecordGetter<T, RuntimeException> recordGetter) throws SQLException {
@@ -6338,32 +6340,83 @@ public final class JdbcUtil {
 
         T apply(ResultSet rs) throws SQLException, E;
 
-        //    /**
-        //     * Don't cache or reuse the returned {@code ResultExtractor} instance.
-        //     * 
-        //     * @param biResultExtractor
-        //     * @return
-        //     * @deprecated unnecessary!
-        //     */
-        //    @Deprecated
-        //    public static <T, E extends Exception> ResultExtractor<T, E> from(BiResultExtractor<? extends T, E> biResultExtractor) {
-        //        return new ResultExtractor<T, E>() {
-        //            private volatile List<String> columnLabels = null;
-        //
-        //            @Override
-        //            public T apply(ResultSet rs) throws SQLException, E {
-        //                if (columnLabels == null) {
-        //                    columnLabels = JdbcUtil.getColumnLabelList(rs);
-        //                }
-        //
-        //                return biResultExtractor.apply(rs, columnLabels);
-        //            }
-        //        };
-        //    }
+        public static <K, V> ResultExtractor<Map<K, List<V>>, RuntimeException> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor) throws SQLException {
+            return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
+        }
+
+        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M, RuntimeException> groupTo(
+                final Try.Function<ResultSet, K, SQLException> keyExtractor, final Try.Function<ResultSet, V, SQLException> valueExtractor,
+                final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new ResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs) throws SQLException {
+
+                    final M result = supplier.get();
+                    K key = null;
+                    List<V> value = null;
+
+                    while (rs.next()) {
+                        key = keyExtractor.apply(rs);
+                        value = result.get(key);
+
+                        if (value == null) {
+                            value = new ArrayList<>();
+                            result.put(key, value);
+                        }
+
+                        value.add(valueExtractor.apply(rs));
+                    }
+
+                    return result;
+                }
+            };
+        }
     }
 
     public static interface BiResultExtractor<T, E extends Exception> {
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+
+        public static <K, V> BiResultExtractor<Map<K, List<V>>, RuntimeException> groupTo(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor) throws SQLException {
+            return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
+        }
+
+        public static <K, V, M extends Map<K, List<V>>> BiResultExtractor<M, RuntimeException> groupTo(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new BiResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs, List<String> columnLabels) throws SQLException {
+                    final M result = supplier.get();
+                    K key = null;
+                    List<V> value = null;
+
+                    while (rs.next()) {
+                        key = keyExtractor.apply(rs, columnLabels);
+                        value = result.get(key);
+
+                        if (value == null) {
+                            value = new ArrayList<>();
+                            result.put(key, value);
+                        }
+
+                        value.add(valueExtractor.apply(rs, columnLabels));
+                    }
+
+                    return result;
+                }
+            };
+        }
     }
 
     /**

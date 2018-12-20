@@ -1897,6 +1897,22 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return split(null, predicate2, Fn.doNothing(), supplier);
     }
 
+    /**
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Seq.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * @param flag
+     * @param predicate
+     * @param flagUpdate
+     * @return
+     * @throws E
+     * @throws E2
+     */
     public <U, E extends Exception, E2 extends Exception> List<List<T>> split(final U flag, final Try.BiPredicate<? super T, ? super U, E> predicate,
             final Try.Consumer<? super U, E2> flagUpdate) throws E, E2 {
         return split(flag, predicate, flagUpdate, Suppliers.<T> ofList());

@@ -5667,20 +5667,24 @@ public final class Fn extends Comparators {
     }
 
     public static final class EE {
-        @SuppressWarnings("rawtypes")
-        private static final Try.Function IDENTITY = new Try.Function() {
-            @Override
-            public Object apply(Object t) {
-                return t;
-            }
-        };
-
         private EE() {
             // singleton
         }
 
         public static <T, E extends Exception> Try.Function<T, T, E> identity() {
-            return IDENTITY;
+            return Fn.IDENTITY;
+        }
+
+        public static <T, E extends Exception> Try.BinaryOperator<T, E> throwingMerger() {
+            return BinaryOperators.THROWING_MERGER;
+        }
+
+        public static <T, E extends Exception> Try.BinaryOperator<T, E> ignoringMerger() {
+            return BinaryOperators.IGNORING_MERGER;
+        }
+
+        public static <T, E extends Exception> Try.BinaryOperator<T, E> replacingMerger() {
+            return BinaryOperators.REPLACING_MERGER;
         }
     }
 }

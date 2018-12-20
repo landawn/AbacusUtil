@@ -229,8 +229,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         return newStream(iterator, sorted, cmp);
     }
 
-    
-
     //    @Override
     //    public <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper) {
     //        return biMap(mapper, false);
@@ -2273,13 +2271,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> finisher) {
-        return finisher.apply(collect(downstream));
+    public <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> func) {
+        return func.apply(collect(downstream));
     }
 
     @Override
-    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> finisher) {
-        return finisher.apply(collect(downstream));
+    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> func) {
+        return func.apply(collect(downstream));
     }
 
     @Override

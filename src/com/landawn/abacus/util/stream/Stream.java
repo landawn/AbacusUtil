@@ -1469,10 +1469,10 @@ public abstract class Stream<T>
     public abstract <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector);
 
     @ParallelSupported
-    public abstract <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> finisher);
+    public abstract <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> func);
 
     @ParallelSupported
-    public abstract <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> finisher);
+    public abstract <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> func);
 
     @SequentialOnly
     public abstract <R> R toListAndThen(Function<? super List<T>, R> func);

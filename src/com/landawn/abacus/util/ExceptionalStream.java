@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1040,6 +1039,17 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return groupBy(classifier, valueMapper, mergeFunction, mapFactory);
     }
 
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @see {@link Fn.EE#throwingMerger()}
+     * @see {@link Fn.EE#replacingMerger()}
+     * @see {@link Fn.EE#ignoringMerger()}
+     */
     public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<? extends Map<K, V>> mapFactory) {
@@ -1647,65 +1657,65 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return result;
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @return
+     * @throws E
+     * @see {@link Fn.EE#throwingMerger()}
+     * @see {@link Fn.EE#replacingMerger()}
+     * @see {@link Fn.EE#ignoringMerger()}
+     */
     public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-
-        final Map<K, V> result = new HashMap<>();
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-
-            result.put(keyExtractor.apply(next), valueMapper.apply(next));
-        }
-
-        return result;
+        return toMap(keyExtractor, valueMapper, Suppliers.<K, V> ofMap());
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @throws E
+     * @see {@link Fn.EE#throwingMerger()}
+     * @see {@link Fn.EE#replacingMerger()}
+     * @see {@link Fn.EE#ignoringMerger()}
+     */
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<M> mapFactory) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mapFactory, "mapFactory");
-
-        final M result = mapFactory.get();
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-
-            result.put(keyExtractor.apply(next), valueMapper.apply(next));
-        }
-
-        return result;
+        return toMap(keyExtractor, valueMapper, Fn.EE.<V, E> throwingMerger(), mapFactory);
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @throws E
+     * @see {@link Fn.EE#throwingMerger()}
+     * @see {@link Fn.EE#replacingMerger()}
+     * @see {@link Fn.EE#ignoringMerger()}
+     */
     public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mergeFunction, "mergeFunction");
-
-        final Map<K, V> result = new HashMap<>();
-        T next = null;
-        K key = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-            key = keyExtractor.apply(next);
-
-            if (result.containsKey(key)) {
-                result.put(key, mergeFunction.apply(result.get(key), valueMapper.apply(next)));
-            } else {
-                result.put(key, valueMapper.apply(next));
-            }
-        }
-
-        return result;
+        return toMap(keyExtractor, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @throws E
+     * @see {@link Fn.EE#throwingMerger()}
+     * @see {@link Fn.EE#replacingMerger()}
+     * @see {@link Fn.EE#ignoringMerger()}
+     */
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<M> mapFactory) throws E {
@@ -1739,9 +1749,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see Collectors#groupingBy(Function)
      */
     public <K> Map<K, List<T>> groupTo(Try.Function<? super T, ? extends K, ? extends E> classifier) throws E {
-        final Supplier<Map<K, List<T>>> mapFactory = Suppliers.ofMap();
-
-        return groupTo(classifier, mapFactory);
+        return groupTo(classifier, Suppliers.<K, List<T>> ofMap());
     }
 
     /**
@@ -1759,9 +1767,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <K, U> Map<K, List<U>> groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             Try.Function<? super T, ? extends U, ? extends E> valueMapper) throws E {
-        final Supplier<Map<K, List<U>>> mapFactory = Suppliers.ofMap();
-
-        return groupTo(keyExtractor, valueMapper, mapFactory);
+        return groupTo(keyExtractor, valueMapper, Suppliers.<K, List<U>> ofMap());
     }
 
     /**
@@ -1964,7 +1970,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return finisher.apply(result);
     }
 
-    public <R, A> R collect(Collector<? super T, A, R> collector) throws E {
+    public <R, A> R collect(final Collector<? super T, A, R> collector) throws E {
+        N.checkArgNotNull(collector, "collector");
+
         final A container = collector.supplier().get();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
@@ -1973,6 +1981,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
 
         return collector.finisher().apply(container);
+    }
+
+    public <R, RR, A> RR collectAndThen(final Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func) throws E {
+        N.checkArgNotNull(collector, "collector");
+        N.checkArgNotNull(func, "func");
+
+        final A container = collector.supplier().get();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+        while (elements.hasNext()) {
+            accumulator.accept(container, elements.next());
+        }
+
+        return func.apply(collector.finisher().apply(container));
     }
 
     public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) throws E {
@@ -1984,6 +2006,21 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
 
         return collector.finisher().apply(container);
+    }
+
+    public <R, RR, A> RR collectAndThen(final java.util.stream.Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func)
+            throws E {
+        N.checkArgNotNull(collector, "collector");
+        N.checkArgNotNull(func, "func");
+
+        final A container = collector.supplier().get();
+        final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
+
+        while (elements.hasNext()) {
+            accumulator.accept(container, elements.next());
+        }
+
+        return func.apply(collector.finisher().apply(container));
     }
 
     public Try<ExceptionalStream<T, E>> tried() {
