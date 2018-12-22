@@ -106,7 +106,10 @@ import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Collector;
 
 /**
  *
@@ -968,6 +971,7 @@ public final class JdbcUtil {
             };
         } else if (List.class.isAssignableFrom(targetClass)) {
             return new BiRecordGetter<T, RuntimeException>() {
+
                 private final boolean isListOrArrayList = targetClass.equals(List.class) || targetClass.equals(ArrayList.class);
 
                 @Override
@@ -1000,7 +1004,9 @@ public final class JdbcUtil {
                     return (T) m;
                 }
             };
-        } else if (N.isEntity(targetClass)) {
+        } else if (N.isEntity(targetClass))
+
+        {
             return new BiRecordGetter<T, RuntimeException>() {
                 private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
                 private volatile String[] columnLabels = null;
@@ -6340,6 +6346,138 @@ public final class JdbcUtil {
 
         T apply(ResultSet rs) throws SQLException, E;
 
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @return
+         */
+        public static <K, V> ResultExtractor<Map<K, V>, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor) {
+            return toMap(keyExtractor, valueExtractor, Suppliers.<K, V> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param supplier
+         * @return
+         */
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param mergeFunction
+         * @return
+         * @see {@link Fn.EE#throwingMerger()}
+         * @see {@link Fn.EE#replacingMerger()}
+         * @see {@link Fn.EE#ignoringMerger()}
+         */
+        public static <K, V> ResultExtractor<Map<K, V>, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction) {
+            return toMap(keyExtractor, valueExtractor, mergeFunction, Suppliers.<K, V> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param mergeFunction
+         * @param supplier
+         * @return
+         * @see {@link Fn.EE#throwingMerger()}
+         * @see {@link Fn.EE#replacingMerger()}
+         * @see {@link Fn.EE#ignoringMerger()}
+         */
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
+                final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(mergeFunction, "mergeFunction");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new ResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs) throws SQLException {
+                    final M result = supplier.get();
+
+                    while (rs.next()) {
+                        Fn.merge(result, keyExtractor.apply(rs), valueExtractor.apply(rs), mergeFunction);
+                    }
+
+                    return result;
+                }
+            };
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param downstream
+         * @return
+         */
+        public static <K, V, A, D> ResultExtractor<Map<K, D>, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream) {
+            return toMap(keyExtractor, valueExtractor, downstream, Suppliers.<K, D> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param downstream
+         * @param supplier
+         * @return
+         */
+        public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(downstream, "downstream");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new ResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs) throws SQLException {
+
+                    final Supplier<A> downstreamSupplier = downstream.supplier();
+                    final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+                    final Function<A, D> downstreamFinisher = downstream.finisher();
+
+                    final M result = supplier.get();
+                    final Map<K, A> tmp = (Map<K, A>) result;
+                    K key = null;
+                    A container = null;
+
+                    while (rs.next()) {
+                        key = keyExtractor.apply(rs);
+                        container = tmp.get(key);
+
+                        if (container == null) {
+                            container = downstreamSupplier.get();
+                            tmp.put(key, container);
+                        }
+
+                        downstreamAccumulator.accept(container, valueExtractor.apply(rs));
+                    }
+
+                    for (Map.Entry<K, D> entry : result.entrySet()) {
+                        entry.setValue(downstreamFinisher.apply((A) entry.getValue()));
+                    }
+
+                    return result;
+                }
+            };
+        }
+
         public static <K, V> ResultExtractor<Map<K, List<V>>, RuntimeException> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
                 final Try.Function<ResultSet, V, SQLException> valueExtractor) throws SQLException {
             return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
@@ -6380,6 +6518,143 @@ public final class JdbcUtil {
 
     public static interface BiResultExtractor<T, E extends Exception> {
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @return
+         */
+        public static <K, V> BiResultExtractor<Map<K, V>, RuntimeException> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor) {
+            return toMap(keyExtractor, valueExtractor, Suppliers.<K, V> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param supplier
+         * @return
+         */
+        public static <K, V, M extends Map<K, V>> BiResultExtractor<M, RuntimeException> toMap(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param mergeFunction
+         * @return
+         * @see {@link Fn.EE#throwingMerger()}
+         * @see {@link Fn.EE#replacingMerger()}
+         * @see {@link Fn.EE#ignoringMerger()}
+         */
+        public static <K, V> BiResultExtractor<Map<K, V>, RuntimeException> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction) {
+            return toMap(keyExtractor, valueExtractor, mergeFunction, Suppliers.<K, V> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param mergeFunction
+         * @param supplier
+         * @return
+         * @see {@link Fn.EE#throwingMerger()}
+         * @see {@link Fn.EE#replacingMerger()}
+         * @see {@link Fn.EE#ignoringMerger()}
+         */
+        public static <K, V, M extends Map<K, V>> BiResultExtractor<M, RuntimeException> toMap(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
+                final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(mergeFunction, "mergeFunction");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new BiResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+                    final M result = supplier.get();
+
+                    while (rs.next()) {
+                        Fn.merge(result, keyExtractor.apply(rs, columnLabels), valueExtractor.apply(rs, columnLabels), mergeFunction);
+                    }
+
+                    return result;
+                }
+            };
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param downstream
+         * @return
+         */
+        public static <K, V, A, D> BiResultExtractor<Map<K, D>, RuntimeException> toMap(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream) {
+            return toMap(keyExtractor, valueExtractor, downstream, Suppliers.<K, D> ofMap());
+        }
+
+        /**
+         * 
+         * @param keyExtractor
+         * @param valueExtractor
+         * @param downstream
+         * @param supplier
+         * @return
+         */
+        public static <K, V, A, D, M extends Map<K, D>> BiResultExtractor<M, RuntimeException> toMap(
+                final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
+                final Supplier<M> supplier) {
+            N.checkArgNotNull(keyExtractor, "keyExtractor");
+            N.checkArgNotNull(valueExtractor, "valueExtractor");
+            N.checkArgNotNull(downstream, "downstream");
+            N.checkArgNotNull(supplier, "supplier");
+
+            return new BiResultExtractor<M, RuntimeException>() {
+                @Override
+                public M apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+
+                    final Supplier<A> downstreamSupplier = downstream.supplier();
+                    final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+                    final Function<A, D> downstreamFinisher = downstream.finisher();
+
+                    final M result = supplier.get();
+                    final Map<K, A> tmp = (Map<K, A>) result;
+                    K key = null;
+                    A container = null;
+
+                    while (rs.next()) {
+                        key = keyExtractor.apply(rs, columnLabels);
+                        container = tmp.get(key);
+
+                        if (container == null) {
+                            container = downstreamSupplier.get();
+                            tmp.put(key, container);
+                        }
+
+                        downstreamAccumulator.accept(container, valueExtractor.apply(rs, columnLabels));
+                    }
+
+                    for (Map.Entry<K, D> entry : result.entrySet()) {
+                        entry.setValue(downstreamFinisher.apply((A) entry.getValue()));
+                    }
+
+                    return result;
+                }
+            };
+        }
 
         public static <K, V> BiResultExtractor<Map<K, List<V>>, RuntimeException> groupTo(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,

@@ -1423,7 +1423,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         final M result = mapFactory.apply(size);
 
         for (int i = 0; i < size; i++) {
-            N.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+            Fn.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
         }
 
         return result;

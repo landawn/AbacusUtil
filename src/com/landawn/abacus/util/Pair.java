@@ -50,20 +50,10 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
         return new Pair<>(entry.getKey(), entry.getValue());
     }
 
-    public L left() {
-        return left;
-    }
-
-    public R right() {
-        return right;
-    }
-
     /**
      * 
-     * @return
-     * @deprecated replaced by {@link #left()}
+     * @return 
      */
-    @Deprecated
     public L getLeft() {
         return left;
     }
@@ -76,10 +66,8 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
 
     /**
      * 
-     * @return
-     * @deprecated replaced by {@link #right()}
+     * @return 
      */
-    @Deprecated
     public R getRight() {
         return right;
     }

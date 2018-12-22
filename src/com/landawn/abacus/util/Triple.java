@@ -47,24 +47,10 @@ public final class Triple<L, M, R> {
         return new Triple<>(l, m, r);
     }
 
-    public L left() {
-        return left;
-    }
-
-    public M middle() {
-        return middle;
-    }
-
-    public R right() {
-        return right;
-    }
-
     /**
      * 
-     * @return
-     * @deprecated replaced by {@link #left()}
+     * @return 
      */
-    @Deprecated
     public L getLeft() {
         return left;
     }
@@ -77,10 +63,8 @@ public final class Triple<L, M, R> {
 
     /**
      * 
-     * @return
-     * @deprecated replaced by {@link #middle()}
+     * @return 
      */
-    @Deprecated
     public M getMiddle() {
         return middle;
     }
@@ -93,10 +77,8 @@ public final class Triple<L, M, R> {
 
     /**
      * 
-     * @return
-     * @deprecated replaced by {@link #right()}
+     * @return 
      */
-    @Deprecated
     public R getRight() {
         return right;
     }

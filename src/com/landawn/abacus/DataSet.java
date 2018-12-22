@@ -79,13 +79,6 @@ public interface DataSet {
     List<String> columnNameList();
 
     /**
-     * Return the column name list filtered by specified <code>filter</code>.
-     * 
-     * @param filter
-     */
-    <E extends Exception> List<String> columnNames(Try.Predicate<String, E> filter) throws E;
-
-    /**
      * Method getColumnName.
      *
      * @param columnIndex
@@ -107,7 +100,7 @@ public interface DataSet {
      * @param columnNames
      * @return
      */
-    int[] getColumnIndex(Collection<String> columnNames);
+    int[] getColumnIndexes(Collection<String> columnNames);
 
     /**
      *
@@ -122,7 +115,7 @@ public interface DataSet {
      * @param columnNames
      * @return <code>true</code> if all the specified columns are included in the this <code>DataSet</code>
      */
-    boolean containsColumnAll(Collection<String> columnNames);
+    boolean containsAllColumns(Collection<String> columnNames);
 
     /**
      *
@@ -135,7 +128,7 @@ public interface DataSet {
      * 
      * @param oldNewNames
      */
-    void renameColumn(Map<String, String> oldNewNames);
+    void renameColumns(Map<String, String> oldNewNames);
 
     /**
      *
@@ -149,17 +142,17 @@ public interface DataSet {
      * @param columnNames
      * @param func
      */
-    <E extends Exception> void renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E;
+    <E extends Exception> void renameColumns(Collection<String> columnNames, Try.Function<String, String, E> func) throws E;
 
     /**
      * 
      * @param func
      */
-    <E extends Exception> void renameColumn(Try.Function<String, String, E> func) throws E;
+    <E extends Exception> void renameColumns(Try.Function<String, String, E> func) throws E;
 
     void moveColumn(String columnName, int newPosition);
 
-    void moveColumn(Map<String, Integer> columnNameNewPositionMap);
+    void moveColumns(Map<String, Integer> columnNameNewPositionMap);
 
     /**
      * Swap the positions of the two specified columns.
@@ -167,7 +160,7 @@ public interface DataSet {
      * @param columnNameA
      * @param columnNameB
      */
-    void swapColumn(String columnNameA, String columnNameB);
+    void swapColumns(String columnNameA, String columnNameB);
 
     /**
      * Move the specified row to the new position.
@@ -183,7 +176,7 @@ public interface DataSet {
      * @param columnNameA
      * @param columnNameB
      */
-    void swapRow(int rowIndexA, int rowIndexB);
+    void swapRows(int rowIndexA, int rowIndexB);
 
     /**
      *
@@ -545,14 +538,14 @@ public interface DataSet {
      *
      * @param columnNames
      */
-    void removeColumnAll(Collection<String> columnNames);
+    void removeColumns(Collection<String> columnNames);
 
     /**
      * Remove the column(s) whose name matches the specified {@code filter}
      *
      * @param filter column name filter
      */
-    <E extends Exception> void removeColumnIf(Try.Predicate<String, E> filter) throws E;
+    <E extends Exception> void removeColumnsIf(Try.Predicate<String, E> filter) throws E;
 
     /**
      * Update the values of the specified column by the specified Try.Function.
@@ -568,7 +561,7 @@ public interface DataSet {
      * @param columnNames
      * @param func
      */
-    <T, E extends Exception> void updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
+    <T, E extends Exception> void updateColumns(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Convert the specified column to target type.
@@ -583,7 +576,7 @@ public interface DataSet {
      *
      * @param columnTargetTypes
      */
-    void convertColumn(Map<String, Class<?>> columnTargetTypes);
+    void convertColumns(Map<String, Class<?>> columnTargetTypes);
 
     //
     //    /**
@@ -600,18 +593,18 @@ public interface DataSet {
      * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return
      */
-    void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
+    void combineColumns(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
 
-    <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc) throws E;
+    <E extends Exception> void combineColumns(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc) throws E;
 
-    <E extends Exception> void combineColumn(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc) throws E;
+    <E extends Exception> void combineColumns(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc) throws E;
 
-    <E extends Exception> void combineColumn(Tuple3<String, String, String> columnNames, String newColumnName, Try.TriFunction<?, ?, ?, ?, E> combineFunc)
+    <E extends Exception> void combineColumns(Tuple3<String, String, String> columnNames, String newColumnName, Try.TriFunction<?, ?, ?, ?, E> combineFunc)
             throws E;
 
-    <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
+    <E extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
 
-    <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
+    <E extends Exception, E2 extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName,
             Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2;
 
     <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<T, ? extends List<?>, E> divideFunc) throws E;
@@ -646,7 +639,7 @@ public interface DataSet {
      * 
      * @param indices
      */
-    void removeRowAll(int... indices);
+    void removeRows(int... indices);
 
     /**
      * 
@@ -669,7 +662,7 @@ public interface DataSet {
      * @param indices
      * @param func
      */
-    <E extends Exception> void updateRowAll(int[] indices, Try.Function<?, ?, E> func) throws E;
+    <E extends Exception> void updateRows(int[] indices, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Update all the values in this DataSet with the specified Try.Function.

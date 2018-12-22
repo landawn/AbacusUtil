@@ -2205,7 +2205,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         while (iter.hasNext()) {
             element = iter.next();
-            N.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            Fn.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
         return result;

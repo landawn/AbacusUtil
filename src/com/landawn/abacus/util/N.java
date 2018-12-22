@@ -29005,21 +29005,6 @@ public final class N {
         }
     }
 
-    static <K, V, E extends Exception> V merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction) throws E {
-        N.checkArgNotNull(remappingFunction);
-        N.checkArgNotNull(value);
-
-        V oldValue = map.get(key);
-        V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
-        if (newValue == null) {
-            map.remove(key);
-        } else {
-            map.put(key, newValue);
-        }
-
-        return newValue;
-    }
-
     private static final class PowerSet<E> extends AbstractSet<Set<E>> {
         final ImmutableMap<E, Integer> inputSet;
 

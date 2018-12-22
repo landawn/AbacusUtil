@@ -72,6 +72,7 @@ import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
+import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Triple;
@@ -202,19 +203,6 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> List<String> columnNames(Try.Predicate<String, E> filter) throws E {
-        final List<String> columnNames = new ArrayList<>();
-
-        for (String columnName : _columnNameList) {
-            if (filter.test(columnName)) {
-                columnNames.add(columnName);
-            }
-        }
-
-        return columnNames;
-    }
-
-    @Override
     public String getColumnName(final int columnIndex) {
         return _columnNameList.get(columnIndex);
     }
@@ -240,7 +228,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public int[] getColumnIndex(final Collection<String> columnNames) {
+    public int[] getColumnIndexes(final Collection<String> columnNames) {
         int[] columnIndexes = new int[columnNames.size()];
         int i = 0;
         for (String columnName : columnNames) {
@@ -256,7 +244,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public boolean containsColumnAll(final Collection<String> columnNames) {
+    public boolean containsAllColumns(final Collection<String> columnNames) {
         for (String columnName : columnNames) {
             if (containsColumn(columnName) == false) {
                 return false;
@@ -290,7 +278,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void renameColumn(final Map<String, String> oldNewNames) {
+    public void renameColumns(final Map<String, String> oldNewNames) {
         checkFrozen();
 
         for (Map.Entry<String, String> entry : oldNewNames.entrySet()) {
@@ -312,7 +300,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void renameColumn(final Collection<String> columnNames, final Try.Function<String, String, E> func) throws E {
+    public <E extends Exception> void renameColumns(final Collection<String> columnNames, final Try.Function<String, String, E> func) throws E {
         checkColumnName(columnNames);
 
         final Map<String, String> map = N.newHashMap(N.initHashCapacity(columnNames.size()));
@@ -321,12 +309,12 @@ public class RowDataSet implements DataSet, Cloneable {
             map.put(columnName, func.apply(columnName));
         }
 
-        renameColumn(map);
+        renameColumns(map);
     }
 
     @Override
-    public <E extends Exception> void renameColumn(final Try.Function<String, String, E> func) throws E {
-        renameColumn(_columnNameList, func);
+    public <E extends Exception> void renameColumns(final Try.Function<String, String, E> func) throws E {
+        renameColumns(_columnNameList, func);
     }
 
     @Override
@@ -353,7 +341,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void moveColumn(Map<String, Integer> columnNameNewPositionMap) {
+    public void moveColumns(Map<String, Integer> columnNameNewPositionMap) {
         checkFrozen();
 
         final List<Map.Entry<String, Integer>> entries = new ArrayList<>(columnNameNewPositionMap.size());
@@ -392,7 +380,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void swapColumn(String columnNameA, String columnNameB) {
+    public void swapColumns(String columnNameA, String columnNameB) {
         checkFrozen();
 
         int columnIndexA = checkColumnName(columnNameA);
@@ -437,7 +425,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void swapRow(int rowIndexA, int rowIndexB) {
+    public void swapRows(int rowIndexA, int rowIndexB) {
         checkFrozen();
 
         this.checkRowNum(rowIndexA);
@@ -836,11 +824,11 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public void removeColumn(final String columnName) {
-        removeColumnAll(N.asList(columnName));
+        removeColumns(N.asList(columnName));
     }
 
     @Override
-    public void removeColumnAll(final Collection<String> columnNames) {
+    public void removeColumns(final Collection<String> columnNames) {
         checkFrozen();
 
         final int[] columnIndexes = checkColumnName(columnNames);
@@ -858,8 +846,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void removeColumnIf(Predicate<String, E> filter) throws E {
-        removeColumnAll(columnNames(filter));
+    public <E extends Exception> void removeColumnsIf(Predicate<String, E> filter) throws E {
+        removeColumns(Seq.of(_columnNameList).filter(filter));
     }
 
     @Override
@@ -870,7 +858,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void convertColumn(final Map<String, Class<?>> columnTargetTypes) {
+    public void convertColumns(final Map<String, Class<?>> columnTargetTypes) {
         checkFrozen();
 
         checkColumnName(columnTargetTypes.keySet());
@@ -895,7 +883,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> void updateColumnAll(final Collection<String> columnNames, final Try.Function<?, ?, E> func) throws E {
+    public <T, E extends Exception> void updateColumns(final Collection<String> columnNames, final Try.Function<?, ?, E> func) throws E {
         checkColumnName(columnNames);
 
         final Try.Function<Object, Object, E> func2 = (Try.Function<Object, Object, E>) func;
@@ -941,48 +929,49 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public void combineColumn(final Collection<String> columnNames, final String newColumnName, final Class<?> newColumnClass) {
+    public void combineColumns(final Collection<String> columnNames, final String newColumnName, final Class<?> newColumnClass) {
         checkFrozen();
 
         final List<Object> newColumn = toList(newColumnClass, columnNames, 0, size());
 
-        removeColumnAll(columnNames);
+        removeColumns(columnNames);
 
         addColumn(newColumnName, newColumn);
     }
 
     @Override
-    public <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc)
+    public <E extends Exception> void combineColumns(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc)
             throws E {
         addColumn(newColumnName, columnNames, combineFunc);
 
-        removeColumnAll(columnNames);
+        removeColumns(columnNames);
     }
 
     @Override
-    public <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
-        combineColumn(columnNames(columnNameFilter), newColumnName, newColumnClass);
+    public <E extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
+        combineColumns(Seq.of(_columnNameList).filter(columnNameFilter), newColumnName, newColumnClass);
     }
 
     @Override
-    public <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
+    public <E extends Exception, E2 extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName,
             Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
-        combineColumn(columnNames(columnNameFilter), newColumnName, combineFunc);
+        combineColumns(Seq.of(_columnNameList).filter(columnNameFilter), newColumnName, combineFunc);
     }
 
     @Override
-    public <E extends Exception> void combineColumn(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc) throws E {
+    public <E extends Exception> void combineColumns(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc)
+            throws E {
         addColumn(newColumnName, columnNames, combineFunc);
 
-        removeColumnAll(Arrays.asList(columnNames._1, columnNames._2));
+        removeColumns(Arrays.asList(columnNames._1, columnNames._2));
     }
 
     @Override
-    public <E extends Exception> void combineColumn(Tuple3<String, String, String> columnNames, String newColumnName,
+    public <E extends Exception> void combineColumns(Tuple3<String, String, String> columnNames, String newColumnName,
             Try.TriFunction<?, ?, ?, ?, E> combineFunc) throws E {
         addColumn(newColumnName, columnNames, combineFunc);
 
-        removeColumnAll(Arrays.asList(columnNames._1, columnNames._2, columnNames._3));
+        removeColumns(Arrays.asList(columnNames._1, columnNames._2, columnNames._3));
     }
 
     @Override
@@ -1276,7 +1265,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     @SafeVarargs
-    public final void removeRowAll(int... indices) {
+    public final void removeRows(int... indices) {
         checkFrozen();
 
         for (int rowIndex : indices) {
@@ -1319,7 +1308,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void updateRowAll(int[] indices, Try.Function<?, ?, E> func) throws E {
+    public <E extends Exception> void updateRows(int[] indices, Try.Function<?, ?, E> func) throws E {
         checkFrozen();
 
         for (int rowIndex : indices) {
@@ -5150,8 +5139,12 @@ public class RowDataSet implements DataSet, Cloneable {
     };
 
     private Stream<Set<String>> cubeSet(final Collection<String> columnNames) {
-        return Stream.of(N.powerSet(N.newLinkedHashSet(columnNames))).groupByToEntry(TO_SIZE_FUNC).values().carry(REVERSE_ACTION)
-                .flattMap(Fn.<List<Set<String>>> identity()).reversed();
+        return Stream.of(N.powerSet(N.newLinkedHashSet(columnNames)))
+                .groupByToEntry(TO_SIZE_FUNC)
+                .values()
+                .carry(REVERSE_ACTION)
+                .flattMap(Fn.<List<Set<String>>> identity())
+                .reversed();
     }
 
     @Override
@@ -6713,7 +6706,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 putRowIndex(joinColumnRightRowIndexMap, hashKey, rightRowIndex);
             }
 
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
             List<Integer> rightRowIndexList = null;
 
             for (int leftRowIndex = 0, size = size(); leftRowIndex < size; leftRowIndex++) {
@@ -6754,7 +6747,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 row = null;
             }
 
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
             row = ObjectFactory.createObjectArray(leftJoinColumnIndexes.length);
             List<Integer> rightRowIndexList = null;
 
@@ -7194,8 +7187,8 @@ public class RowDataSet implements DataSet, Cloneable {
                 putRowIndex(joinColumnLeftRowIndexMap, hashKey, leftRowIndex);
             }
 
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
 
             for (int rightRowIndex = 0, rightDataSetSize = right.size(); rightRowIndex < rightDataSetSize; rightRowIndex++) {
                 hashKey = getHashKey(rightJoinColumn.get(rightRowIndex));
@@ -7236,8 +7229,8 @@ public class RowDataSet implements DataSet, Cloneable {
                 row = null;
             }
 
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
             row = ObjectFactory.createObjectArray(rightJoinColumnIndexes.length);
             List<Integer> leftRowIndexList = null;
 
@@ -7362,7 +7355,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
 
             final int newColumnIndex = newColumnList.size() - 1;
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
             List<Integer> leftRowIndexList = null;
 
             for (int rightRowIndex = 0, rightDataSetSize = right.size(); rightRowIndex < rightDataSetSize; rightRowIndex++) {
@@ -7404,7 +7397,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
 
             final int newColumnIndex = newColumnList.size() - 1;
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
             row = ObjectFactory.createObjectArray(rightJoinColumnIndexes.length);
             List<Integer> leftRowIndexList = null;
 
@@ -7498,7 +7491,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
 
             final int newColumnIndex = newColumnList.size() - 1;
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
             List<Integer> leftRowIndexList = null;
             List<Integer> rightRowIndexList = null;
 
@@ -7558,7 +7551,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
 
             final int newColumnIndex = newColumnList.size() - 1;
-            final int[] leftColumnIndexes = this.getColumnIndex(leftColumnNames);
+            final int[] leftColumnIndexes = this.getColumnIndexes(leftColumnNames);
             List<Integer> leftRowIndexList = null;
             List<Integer> rightRowIndexList = null;
 
@@ -7647,7 +7640,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 putRowIndex(joinColumnRightRowIndexMap, hashKey, rightRowIndex);
             }
 
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
             final Set<Object> joinColumnLeftRowIndexSet = new HashSet<>();
 
             for (int leftRowIndex = 0, size = size(); leftRowIndex < size; leftRowIndex++) {
@@ -7696,7 +7689,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 row = null;
             }
 
-            final int[] rightColumnIndexes = right.getColumnIndex(rightColumnNames);
+            final int[] rightColumnIndexes = right.getColumnIndexes(rightColumnNames);
             final Map<Object[], Integer> joinColumnLeftRowIndexMap = new ArrayHashMap<>();
 
             for (int leftRowIndex = 0, size = size(); leftRowIndex < size; leftRowIndex++) {
@@ -8153,8 +8146,8 @@ public class RowDataSet implements DataSet, Cloneable {
                 }
             }
         } else {
-            final int[] columnIndexes = this.getColumnIndex(commonColumnNameList);
-            final int[] otherColumnIndexes = other.getColumnIndex(commonColumnNameList);
+            final int[] columnIndexes = this.getColumnIndexes(commonColumnNameList);
+            final int[] otherColumnIndexes = other.getColumnIndexes(commonColumnNameList);
 
             final Multiset<Object[]> rowSet = new Multiset<>(ArrayHashMap.class);
             Object[] row = null;
@@ -8259,8 +8252,8 @@ public class RowDataSet implements DataSet, Cloneable {
                 }
             }
         } else {
-            final int[] columnIndexes = this.getColumnIndex(commonColumnNameList);
-            final int[] otherColumnIndexes = other.getColumnIndex(commonColumnNameList);
+            final int[] columnIndexes = this.getColumnIndexes(commonColumnNameList);
+            final int[] otherColumnIndexes = other.getColumnIndexes(commonColumnNameList);
 
             final Set<Object[]> rowSet = new ArrayHashSet<>();
             Object[] row = null;

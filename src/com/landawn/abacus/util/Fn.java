@@ -106,6 +106,7 @@ import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
+import com.landawn.abacus.util.stream.SequentialOnly;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1734,6 +1735,7 @@ public final class Fn extends Comparators {
      * 
      * @return
      */
+    @SequentialOnly
     public static <T> Function<T, Indexed<T>> indexed() {
         return new Function<T, Indexed<T>>() {
             private final MutableLong idx = new MutableLong(0);
@@ -1751,6 +1753,7 @@ public final class Fn extends Comparators {
      * @param predicate
      * @return
      */
+    @SequentialOnly
     public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
         return Predicates.indexed(predicate);
     }
@@ -2900,6 +2903,17 @@ public final class Fn extends Comparators {
         return Collectors.combine(collector1, collector2, collector3);
     }
 
+    static <K, V, E extends Exception> void merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction)
+            throws E {
+        final V oldValue = map.get(key);
+
+        if (oldValue == null && map.containsKey(key) == false) {
+            map.put(key, value);
+        } else {
+            map.put(key, remappingFunction.apply(oldValue, value));
+        }
+    }
+
     public static class Factory {
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
             @Override
@@ -3452,13 +3466,6 @@ public final class Fn extends Comparators {
                     return c;
                 }
             };
-        }
-
-        @Deprecated
-        public static final class IntFunctions extends Factory {
-            private IntFunctions() {
-                // singleton.
-            }
         }
     }
 
@@ -5472,7 +5479,7 @@ public final class Fn extends Comparators {
         private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
             @Override
             public List apply(Pair t) {
-                return N.asList(t.left(), t.right());
+                return N.asList(t.left, t.right);
             }
         };
 
@@ -5480,7 +5487,7 @@ public final class Fn extends Comparators {
         private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
             @Override
             public Set apply(Pair t) {
-                return N.asSet(t.left(), t.right());
+                return N.asSet(t.left, t.right);
             }
         };
 
@@ -5506,7 +5513,7 @@ public final class Fn extends Comparators {
         private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
             @Override
             public List apply(Triple t) {
-                return N.asList(t.left(), t.middle(), t.right());
+                return N.asList(t.left, t.middle, t.right);
             }
         };
 
@@ -5514,7 +5521,7 @@ public final class Fn extends Comparators {
         private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
             @Override
             public Set apply(Triple t) {
-                return N.asSet(t.left(), t.middle(), t.right());
+                return N.asSet(t.left, t.middle, t.right);
             }
         };
 

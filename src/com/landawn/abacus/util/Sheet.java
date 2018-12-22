@@ -563,7 +563,7 @@ public final class Sheet<R, C, E> implements Cloneable {
      * @param rowKeyA
      * @param rowKeyB
      */
-    public void swapRow(Object rowKeyA, Object rowKeyB) {
+    public void swapRows(Object rowKeyA, Object rowKeyB) {
         checkFrozen();
 
         final int rowIndexA = this.getRowIndex(rowKeyA);
@@ -830,7 +830,7 @@ public final class Sheet<R, C, E> implements Cloneable {
      * @param columnKeyA
      * @param columnKeyB
      */
-    public void swapColumn(Object columnKeyA, Object columnKeyB) {
+    public void swapColumns(Object columnKeyA, Object columnKeyB) {
         checkFrozen();
 
         final int columnIndexA = this.getColumnIndex(columnKeyA);

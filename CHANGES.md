@@ -1,5 +1,7 @@
 ### 1.3.26
 
+* Refactoring `DataSet`.
+
 * Improvements and bug fix.
 
 

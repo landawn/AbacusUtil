@@ -1067,7 +1067,7 @@ public class Builder<T> {
         }
 
         public DataSetBuilder renameColumn(Map<String, String> oldNewNames) {
-            val.renameColumn(oldNewNames);
+            val.renameColumns(oldNewNames);
 
             return this;
         }
@@ -1079,13 +1079,13 @@ public class Builder<T> {
         }
 
         public <E extends Exception> DataSetBuilder renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E {
-            val.renameColumn(columnNames, func);
+            val.renameColumns(columnNames, func);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder renameColumn(Try.Function<String, String, E> func) throws E {
-            val.renameColumn(func);
+            val.renameColumns(func);
 
             return this;
         }
@@ -1164,13 +1164,13 @@ public class Builder<T> {
         }
 
         public DataSetBuilder removeColumnAll(Collection<String> columnNames) {
-            val.removeColumnAll(columnNames);
+            val.removeColumns(columnNames);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder removeColumnIf(Predicate<String, E> filter) throws E {
-            val.removeColumnIf(filter);
+            val.removeColumnsIf(filter);
 
             return this;
         }
@@ -1182,7 +1182,7 @@ public class Builder<T> {
         }
 
         public <T, E extends Exception> DataSetBuilder updateColumnAll(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E {
-            val.updateColumnAll(columnNames, func);
+            val.updateColumns(columnNames, func);
 
             return this;
         }
@@ -1194,48 +1194,48 @@ public class Builder<T> {
         }
 
         public DataSetBuilder convertColumn(Map<String, Class<?>> columnTargetTypes) {
-            val.convertColumn(columnTargetTypes);
+            val.convertColumns(columnTargetTypes);
 
             return this;
         }
 
         public DataSetBuilder combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass) {
-            val.combineColumn(columnNames, newColumnName, newColumnClass);
+            val.combineColumns(columnNames, newColumnName, newColumnClass);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder combineColumn(Collection<String> columnNames, String newColumnName,
                 Try.Function<? super Object[], ?, E> combineFunc) throws E {
-            val.combineColumn(columnNames, newColumnName, combineFunc);
+            val.combineColumns(columnNames, newColumnName, combineFunc);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder combineColumn(Tuple2<String, String> columnNames, String newColumnName,
                 Try.BiFunction<?, ?, ?, E> combineFunc) throws E {
-            val.combineColumn(columnNames, newColumnName, combineFunc);
+            val.combineColumns(columnNames, newColumnName, combineFunc);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder combineColumn(Tuple3<String, String, String> columnNames, String newColumnName,
                 Try.TriFunction<?, ?, ?, ?, E> combineFunc) throws E {
-            val.combineColumn(columnNames, newColumnName, combineFunc);
+            val.combineColumns(columnNames, newColumnName, combineFunc);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass)
                 throws E {
-            val.combineColumn(columnNameFilter, newColumnName, newColumnClass);
+            val.combineColumns(columnNameFilter, newColumnName, newColumnClass);
 
             return this;
         }
 
         public <E extends Exception, E2 extends Exception> DataSetBuilder combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
                 Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
-            val.combineColumn(columnNameFilter, newColumnName, combineFunc);
+            val.combineColumns(columnNameFilter, newColumnName, combineFunc);
 
             return this;
         }
