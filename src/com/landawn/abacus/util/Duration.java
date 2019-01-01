@@ -694,6 +694,9 @@ public final class Duration implements Comparable<Duration>, Serializable {
     }
 
     /**
+     * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
+     * <br />
+     * 
      * Returns the product of the arguments, throwing an exception if the result overflows a {@code long}.
      *
      * @param x
@@ -721,6 +724,9 @@ public final class Duration implements Comparable<Duration>, Serializable {
     }
 
     /**
+     * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
+     * <br />
+     * 
      * Returns the sum of its arguments, throwing an exception if the result overflows a {@code long}.
      *
      * @param x

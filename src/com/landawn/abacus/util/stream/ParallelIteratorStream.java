@@ -419,7 +419,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         for (int i = 0; i < maxThreadNum; i++) {
             iters.add(new ObjIteratorEx<R>() {
                 @SuppressWarnings("unchecked")
-                private final T NONE = (T) Stream.NONE;
+                private final T NONE = (T) StreamBase.NONE;
 
                 private T first = NONE;
                 private T second = NONE;
@@ -494,7 +494,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         for (int i = 0; i < maxThreadNum; i++) {
             iters.add(new ObjIteratorEx<R>() {
                 @SuppressWarnings("unchecked")
-                private final T NONE = (T) Stream.NONE;
+                private final T NONE = (T) StreamBase.NONE;
 
                 private T first = NONE;
                 private T second = NONE;

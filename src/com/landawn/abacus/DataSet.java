@@ -4197,13 +4197,23 @@ public interface DataSet {
     DataSet unionAll(DataSet dataSet);
 
     /**
-     * Returns a new <code>DataSet</code>.
+     * Returns a new {@code DataSet} with all rows from this DataSet and which also appear in the specified {@code other} in common columns.
+     * This operation doesn't remove duplicate rows from the final result set.
      *
-     * @param dataSet
-     * @return a new DataSet
-     * @see com.landawn.abacus.util.IntList#intersection(com.landawn.abacus.util.IntList)
+     * @param other
+     * @return
+     * @see java.util.Collection#retainAll(Collection)
      */
-    DataSet intersection(DataSet dataSet);
+    DataSet intersectAll(DataSet other);
+
+    /**
+     * Returns a new {@code DataSet} with all rows from this DataSet and which not appear in the specified {@code other} in common columns.
+     *
+     * @param other
+     * @return
+     * @see java.util.Collection#removeAll(Collection)
+     */
+    DataSet except(DataSet other);
 
     /**
      * Returns a new <code>DataSet</code>.
@@ -4223,23 +4233,13 @@ public interface DataSet {
     DataSet symmetricDifference(DataSet dataSet);
 
     /**
-     * Returns a new {@code DataSet} with all rows from this DataSet and which also appear in the specified {@code other} in common columns.
-     * This operation doesn't remove duplicate rows from the final result set.
+     * Returns a new <code>DataSet</code>.
      *
-     * @param other
-     * @return
-     * @see java.util.Collection#retainAll(Collection)
+     * @param dataSet
+     * @return a new DataSet
+     * @see com.landawn.abacus.util.IntList#intersection(com.landawn.abacus.util.IntList)
      */
-    DataSet intersectAll(DataSet other);
-
-    /**
-     * Returns a new {@code DataSet} with all rows from this DataSet and which not appear in the specified {@code other} in common columns.
-     *
-     * @param other
-     * @return
-     * @see java.util.Collection#removeAll(Collection)
-     */
-    DataSet except(DataSet other);
+    DataSet intersection(DataSet dataSet);
 
     /**
      * Returns a new <code>DataSet</code> by appending the specified <code>from</code> <code>DataSet</code> into this <code>DataSet</code>.

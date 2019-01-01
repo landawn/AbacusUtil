@@ -1202,7 +1202,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     }
 
     static Object hashKey(Object obj) {
-        return obj == null || obj.getClass().isArray() == false ? obj : Wrapper.of(obj);
+        return obj == null ? NONE : (obj.getClass().isArray() ? Wrapper.of(obj) : obj);
     }
 
     static <T> T[] toArray(Collection<T> c) {

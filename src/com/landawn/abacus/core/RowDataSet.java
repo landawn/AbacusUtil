@@ -281,6 +281,10 @@ public class RowDataSet implements DataSet, Cloneable {
     public void renameColumns(final Map<String, String> oldNewNames) {
         checkFrozen();
 
+        if (N.hasDuplicates(oldNewNames.values())) {
+            throw new IllegalArgumentException("Duplicated new column names: " + oldNewNames.values());
+        }
+
         for (Map.Entry<String, String> entry : oldNewNames.entrySet()) {
             checkColumnName(entry.getKey());
 

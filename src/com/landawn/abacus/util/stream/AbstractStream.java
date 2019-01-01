@@ -264,7 +264,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Iterator<T> iter = iterator();
 
         return newStream(new ObjIteratorEx<U>() {
-            private final T NULL = (T) Stream.NONE;
+            private final T NULL = (T) StreamBase.NONE;
             private T left = NULL;
             private T right = null;
             private T next = null;
@@ -1937,10 +1937,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public boolean test(T value) {
-                Object key = hashKey(keyExtractor.apply(value));
-                key = key == null ? NONE : key;
-
-                return map.put(key, Stream.NONE) == null;
+                return map.put(hashKey(keyExtractor.apply(value)), StreamBase.NONE) == null;
             }
         } : new Predicate<T>() {
             private final Set<Object> set = new HashSet<>();

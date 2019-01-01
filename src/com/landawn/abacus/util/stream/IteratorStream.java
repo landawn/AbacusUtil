@@ -369,7 +369,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
-            private final T NONE = (T) Stream.NONE;
+            private final T NONE = (T) StreamBase.NONE;
             private T prev = NONE;
             private T _1 = NONE;
 
@@ -421,7 +421,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
-            private final T NONE = (T) Stream.NONE;
+            private final T NONE = (T) StreamBase.NONE;
             private T prev = NONE;
             private T prev2 = NONE;
             private T _1 = NONE;
