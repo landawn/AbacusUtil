@@ -28,6 +28,7 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamingPolicy;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.Consumer;
 
 import android.annotation.TargetApi;
@@ -723,7 +724,7 @@ public class Fu {
         return thread == Looper.getMainLooper().getThread();
     }
 
-    public static void runOnUiThread(Runnable action) {
+    public static <E extends Exception> void runOnUiThread(Try.Runnable<E> action) throws E {
         if (isUiThread()) {
             action.run();
         } else {

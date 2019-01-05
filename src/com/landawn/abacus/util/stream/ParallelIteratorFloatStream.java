@@ -319,7 +319,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     float next = 0;
@@ -585,7 +585,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     float next = 0;
@@ -628,7 +628,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     float next = 0;
@@ -671,7 +671,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     float next = 0;
@@ -715,7 +715,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     final Pair<Long, Float> pair = new Pair<>();
@@ -765,7 +765,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     final Pair<Long, Float> pair = new Pair<>();
@@ -812,7 +812,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         final Holder<Object> resultHolder = Holder.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     float next = 0;

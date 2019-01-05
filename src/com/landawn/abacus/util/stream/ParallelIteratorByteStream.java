@@ -251,7 +251,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     byte next = 0;
@@ -517,7 +517,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     byte next = 0;
@@ -560,7 +560,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     byte next = 0;
@@ -603,7 +603,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     byte next = 0;
@@ -647,7 +647,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     final Pair<Long, Byte> pair = new Pair<>();
@@ -697,7 +697,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     final Pair<Long, Byte> pair = new Pair<>();
@@ -744,7 +744,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Holder<Object> resultHolder = Holder.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     byte next = 0;

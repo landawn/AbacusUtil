@@ -27469,20 +27469,20 @@ public final class N {
         }
     }
 
-    public static ContinuableFuture<Void> asyncExecute(final Runnable command) {
+    public static ContinuableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> command) {
         return asyncExecutor.execute(command);
     }
 
-    public static ContinuableFuture<Void> asyncExecute(final Runnable command, final long delay) {
+    public static ContinuableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> command, final long delay) {
         return asyncExecutor.execute(command, delay);
     }
 
     @SafeVarargs
-    public static List<ContinuableFuture<Void>> asyncExecute(final Runnable... commands) {
+    public static List<ContinuableFuture<Void>> asyncExecute(final Try.Runnable<? extends Exception>... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static List<ContinuableFuture<Void>> asyncExecute(final List<? extends Runnable> commands) {
+    public static List<ContinuableFuture<Void>> asyncExecute(final List<? extends Try.Runnable<? extends Exception>> commands) {
         return asyncExecutor.execute(commands);
     }
 

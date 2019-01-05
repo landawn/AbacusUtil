@@ -3708,7 +3708,7 @@ public abstract class Stream<T>
         final int threadNum = Math.min(c.size(), readThreadNum);
 
         for (int i = 0; i < threadNum; i++) {
-            DEFAULT_ASYNC_EXECUTOR.execute(new Runnable() {
+            DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -8327,7 +8327,7 @@ public abstract class Stream<T>
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Runnable() {
+            futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     Iterator<? extends T> a = null;
@@ -8378,7 +8378,7 @@ public abstract class Stream<T>
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
             final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final BlockingQueue<A> queueA, final BlockingQueue<B> queueB,
             final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
-        asyncExecutor.execute(new Runnable() {
+        asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 try {
@@ -8403,7 +8403,7 @@ public abstract class Stream<T>
             }
         });
 
-        asyncExecutor.execute(new Runnable() {
+        asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 try {
@@ -8433,7 +8433,7 @@ public abstract class Stream<T>
             final AsyncExecutor asyncExecutor, final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final AtomicInteger threadCounterC,
             final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> eHolder,
             final MutableBoolean onGoing) {
-        asyncExecutor.execute(new Runnable() {
+        asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 try {
@@ -8458,7 +8458,7 @@ public abstract class Stream<T>
             }
         });
 
-        asyncExecutor.execute(new Runnable() {
+        asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 try {
@@ -8483,7 +8483,7 @@ public abstract class Stream<T>
             }
         });
 
-        asyncExecutor.execute(new Runnable() {
+        asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 try {
@@ -8521,7 +8521,7 @@ public abstract class Stream<T>
             final AtomicInteger count = counters[idx];
             final BlockingQueue<Object> queue = queues[idx];
 
-            asyncExecutor.execute(new Runnable() {
+            asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {

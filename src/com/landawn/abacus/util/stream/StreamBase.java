@@ -113,7 +113,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
         DEFAULT_ASYNC_EXECUTOR = new AsyncExecutor(threadPoolExecutor) {
             @Override
-            public ContinuableFuture<Void> execute(final Runnable command) {
+            public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> command) {
                 //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
                 //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
                 //    }

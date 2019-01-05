@@ -4,6 +4,8 @@
 
 * Rename `N.len(Collection/Map)` to `N.size(Collection/Map)`.
 
+* Refactoring: `AsyncExecutor`.
+
 * Improvements and bug fix.
 
 

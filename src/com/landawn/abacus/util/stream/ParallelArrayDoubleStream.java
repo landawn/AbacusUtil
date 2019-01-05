@@ -315,7 +315,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -335,7 +335,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         double next = 0;
@@ -1002,7 +1002,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1025,7 +1025,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         double next = 0;
@@ -1075,7 +1075,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1098,7 +1098,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         double next = 0;
@@ -1148,7 +1148,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1171,7 +1171,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         double next = 0;
@@ -1221,7 +1221,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1253,7 +1253,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         final Pair<Integer, Double> pair = new Pair<>();
@@ -1309,7 +1309,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         final int from = fromIndex + sliceIndex * sliceSize;
@@ -1341,7 +1341,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         final Pair<Integer, Double> pair = new Pair<>();
@@ -1397,7 +1397,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1428,7 +1428,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
                     @Override
                     public void run() {
                         double next = 0;

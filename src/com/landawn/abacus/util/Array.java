@@ -2886,7 +2886,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -2924,7 +2924,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3007,7 +3007,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3045,7 +3045,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3128,7 +3128,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3166,7 +3166,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3249,7 +3249,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3287,7 +3287,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3370,7 +3370,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3408,7 +3408,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3491,7 +3491,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3529,7 +3529,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3631,7 +3631,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3669,7 +3669,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {
@@ -3784,7 +3784,7 @@ public final class Array {
 
             activeThreadNum.incrementAndGet();
 
-            parallelSortExecutor.execute(new Runnable() {
+            parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
                     try {
@@ -3822,7 +3822,7 @@ public final class Array {
 
                     activeThreadNum.incrementAndGet();
 
-                    parallelSortExecutor.execute(new Runnable() {
+                    parallelSortExecutor.execute(new Try.Runnable<RuntimeException>() {
                         @Override
                         public void run() {
                             try {

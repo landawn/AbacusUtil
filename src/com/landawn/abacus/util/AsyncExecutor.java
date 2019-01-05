@@ -118,15 +118,15 @@ public class AsyncExecutor {
         this.executor = executor;
     }
 
-    public ContinuableFuture<Void> execute(final Runnable command) {
-        return execute(new FutureTask<Void>(command, null));
+    public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> command) {
+        return execute(new FutureTask<Void>(Fn.toCallable(command)));
     }
 
-    public ContinuableFuture<Void> execute(final Runnable action, final long delay) {
+    public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
         return execute(action, delay, TimeUnit.MILLISECONDS);
     }
 
-    public ContinuableFuture<Void> execute(final Runnable action, final long delay, final TimeUnit timeUnit) {
+    public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay, final TimeUnit timeUnit) {
         final Executor executor = getExecutor();
 
         final Callable<ContinuableFuture<Void>> scheduledAction = new Callable<ContinuableFuture<Void>>() {
@@ -142,7 +142,7 @@ public class AsyncExecutor {
     }
 
     @SafeVarargs
-    public final List<ContinuableFuture<Void>> execute(final Runnable... commands) {
+    public final List<ContinuableFuture<Void>> execute(final Try.Runnable<? extends Exception>... commands) {
         if (N.isNullOrEmpty(commands)) {
             return new ArrayList<>();
         }
@@ -156,14 +156,14 @@ public class AsyncExecutor {
         return results;
     }
 
-    public List<ContinuableFuture<Void>> execute(final List<? extends Runnable> commands) {
+    public List<ContinuableFuture<Void>> execute(final List<? extends Try.Runnable<? extends Exception>> commands) {
         if (N.isNullOrEmpty(commands)) {
             return new ArrayList<>();
         }
 
         final List<ContinuableFuture<Void>> results = new ArrayList<>(commands.size());
 
-        for (Runnable cmd : commands) {
+        for (Try.Runnable<? extends Exception> cmd : commands) {
             results.add(execute(cmd));
         }
 

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.util.DateUtil;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.MoreExecutors;
 import com.landawn.abacus.util.Retry;
 import com.landawn.abacus.util.Try;
@@ -71,11 +72,11 @@ public class Async {
      * @param action
      * @return
      */
-    static ContinuableFuture<Void> execute(final Runnable action) {
-        return execute(new FutureTask<Void>(action, null), SERIAL_EXECUTOR);
+    static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action) {
+        return execute(new FutureTask<Void>(Fn.toCallable(action)), SERIAL_EXECUTOR);
     }
 
-    static ContinuableFuture<Void> execute(final Runnable action, final long delay) {
+    static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
         final Callable<ContinuableFuture<Void>> scheduledAction = new Callable<ContinuableFuture<Void>>() {
             @Override
             public ContinuableFuture<Void> call() throws Exception {
@@ -155,11 +156,11 @@ public class Async {
      * @param action
      * @return
      */
-    static ContinuableFuture<Void> executeWithThreadPool(final Runnable action) {
-        return execute(new FutureTask<Void>(action, null), TP_EXECUTOR);
+    static ContinuableFuture<Void> executeWithThreadPool(final Try.Runnable<? extends Exception> action) {
+        return execute(new FutureTask<Void>(Fn.toCallable(action)), TP_EXECUTOR);
     }
 
-    static ContinuableFuture<Void> executeWithThreadPool(final Runnable action, final long delay) {
+    static ContinuableFuture<Void> executeWithThreadPool(final Try.Runnable<? extends Exception> action, final long delay) {
         final Callable<ContinuableFuture<Void>> scheduledAction = new Callable<ContinuableFuture<Void>>() {
             @Override
             public ContinuableFuture<Void> call() throws Exception {
@@ -239,7 +240,7 @@ public class Async {
      * @param action
      * @return
      */
-    static ContinuableFuture<Void> executeOnUiThread(final Runnable action) {
+    static ContinuableFuture<Void> executeOnUiThread(final Try.Runnable<? extends Exception> action) {
         return executeOnUiThread(action, 0);
     }
 
@@ -250,8 +251,8 @@ public class Async {
      * @param delay
      * @return
      */
-    static ContinuableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
-        return execute(new FutureTask<Void>(action, null), _UI_EXECUTOR, delay);
+    static ContinuableFuture<Void> executeOnUiThread(final Try.Runnable<? extends Exception> action, final long delay) {
+        return execute(new FutureTask<Void>(Fn.toCallable(action)), _UI_EXECUTOR, delay);
     }
 
     /**
@@ -420,11 +421,11 @@ public class Async {
          * @param action
          * @return
          */
-        public static ContinuableFuture<Void> execute(final Runnable action) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action) {
             return Async.execute(action);
         }
 
-        public static ContinuableFuture<Void> execute(final Runnable action, final long delay) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
             return Async.execute(action, delay);
         }
 
@@ -465,11 +466,11 @@ public class Async {
          * @param action
          * @return
          */
-        public static ContinuableFuture<Void> execute(final Runnable action) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action) {
             return Async.executeWithThreadPool(action);
         }
 
-        public static ContinuableFuture<Void> execute(final Runnable action, final long delay) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
             return Async.executeWithThreadPool(action, delay);
         }
 
@@ -510,7 +511,7 @@ public class Async {
          * @param action
          * @return
          */
-        public static ContinuableFuture<Void> execute(final Runnable action) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action) {
             return Async.executeOnUiThread(action);
         }
 
@@ -521,7 +522,7 @@ public class Async {
          * @param delay unit is milliseconds
          * @return
          */
-        public static ContinuableFuture<Void> execute(final Runnable action, final long delay) {
+        public static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
             return Async.executeOnUiThread(action, delay);
         }
 
