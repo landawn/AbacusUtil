@@ -2273,7 +2273,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> func) {
+    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, java.util.function.Function<R, RR> func) {
         return func.apply(collect(downstream));
     }
 
