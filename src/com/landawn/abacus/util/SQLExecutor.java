@@ -2961,7 +2961,7 @@ public class SQLExecutor implements Closeable {
         try {
             final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
-            result = new PreparedQuery(stmt).onClose(new Try.Runnable<SQLException>() {
+            result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Try.Runnable<SQLException>() {
                 @Override
                 public void run() {
                     closeQuietly(localConn, conn, ds);

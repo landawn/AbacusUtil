@@ -112,7 +112,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     public static FloatList from(final Collection<Float> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new FloatList();

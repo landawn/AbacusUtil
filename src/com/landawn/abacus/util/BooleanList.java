@@ -111,7 +111,7 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
     }
 
     public static BooleanList from(final Collection<Boolean> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new BooleanList();

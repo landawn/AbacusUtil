@@ -196,47 +196,47 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public T getNow(T defaultValue) {
-        try {
-            return isDone() ? get() : defaultValue;
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        }
+        return getNow(defaultValue);
     }
 
-    public <U, E extends Exception> U getThenApply(final Try.Function<? super T, ? extends U, E> action) throws E {
-        try {
-            return action.apply(get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        }
+    public <U, E extends Exception> U getThenApply(final Try.Function<? super T, ? extends U, E> action) throws InterruptedException, ExecutionException, E {
+        return action.apply(get());
     }
 
-    public <U, E extends Exception> U getThenApply(final long timeout, final TimeUnit unit, final Try.Function<? super T, ? extends U, E> action) throws E {
-        try {
-            return action.apply(get(timeout, unit));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw N.toRuntimeException(e);
-        }
+    public <U, E extends Exception> U getThenApply(final long timeout, final TimeUnit unit, final Try.Function<? super T, ? extends U, E> action)
+            throws InterruptedException, ExecutionException, TimeoutException, E {
+        return action.apply(get(timeout, unit));
     }
 
-    public <U, E extends Exception> U getThenApply(final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
+    public <U, E extends Exception> U getThenApply(final Try.BiFunction<? super T, ? super Exception, ? extends U, E> action) throws E {
         final Pair<T, Exception> result = gett();
         return action.apply(result.left, result.right);
     }
 
-    public <U, E extends Exception> U getThenApply(final long timeout, final TimeUnit unit, final Try.BiFunction<? super T, Exception, ? extends U, E> action)
-            throws E {
+    public <U, E extends Exception> U getThenApply(final long timeout, final TimeUnit unit,
+            final Try.BiFunction<? super T, ? super Exception, ? extends U, E> action) throws E {
         final Pair<T, Exception> result = gett(timeout, unit);
         return action.apply(result.left, result.right);
     }
 
-    public <E extends Exception> void getThenAccept(final Try.Consumer<T, E> action) throws InterruptedException, ExecutionException, E {
+    public <E extends Exception> void getThenAccept(final Try.Consumer<? super T, E> action) throws InterruptedException, ExecutionException, E {
         action.accept(get());
     }
 
-    public <E extends Exception> void getThenAccept(final long timeout, final TimeUnit unit, final Try.Consumer<T, E> action)
+    public <E extends Exception> void getThenAccept(final long timeout, final TimeUnit unit, final Try.Consumer<? super T, E> action)
             throws InterruptedException, ExecutionException, TimeoutException, E {
         action.accept(get(timeout, unit));
+    }
+
+    public <E extends Exception> void getThenAccept(final Try.BiConsumer<? super T, ? super Exception, E> action) throws E {
+        final Pair<T, Exception> result = gett();
+        action.accept(result.left, result.right);
+    }
+
+    public <E extends Exception> void getThenAccept(final long timeout, final TimeUnit unit, final Try.BiConsumer<? super T, ? super Exception, E> action)
+            throws E {
+        final Pair<T, Exception> result = gett(timeout, unit);
+        action.accept(result.left, result.right);
     }
 
     //    public void complete() throws InterruptedException, ExecutionException {

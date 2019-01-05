@@ -111,7 +111,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
     }
 
     public static CharList from(final Collection<Character> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new CharList();

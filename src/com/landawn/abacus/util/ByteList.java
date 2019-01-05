@@ -111,7 +111,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     public static ByteList from(final Collection<Byte> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new ByteList();

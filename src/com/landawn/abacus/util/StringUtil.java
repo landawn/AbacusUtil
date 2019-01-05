@@ -5624,7 +5624,7 @@ public abstract class StringUtil {
     }
 
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -5659,7 +5659,7 @@ public abstract class StringUtil {
     }
 
     public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -5777,7 +5777,7 @@ public abstract class StringUtil {
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
             final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(m));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(m));
 
         if (N.isNullOrEmpty(m) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
@@ -5815,7 +5815,7 @@ public abstract class StringUtil {
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
             final boolean trim) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(m));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(m));
 
         if (N.isNullOrEmpty(m) || fromIndex == toIndex) {
             return N.EMPTY_STRING;

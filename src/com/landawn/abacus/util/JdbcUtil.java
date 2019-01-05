@@ -3222,6 +3222,7 @@ public final class JdbcUtil {
      * @param <Q>
      */
     static abstract class AbstractPreparedQuery<S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>> implements AutoCloseable {
+        final AsyncExecutor asyncExecutor;
         final S stmt;
         Connection conn;
         boolean isBatch = false;
@@ -3230,7 +3231,12 @@ public final class JdbcUtil {
         Try.Runnable<SQLException> closeHandler;
 
         AbstractPreparedQuery(S stmt) {
+            this(stmt, null);
+        }
+
+        AbstractPreparedQuery(S stmt, AsyncExecutor asyncExecutor) {
             this.stmt = stmt;
+            this.asyncExecutor = asyncExecutor;
         }
 
         /**
@@ -5230,21 +5236,30 @@ public final class JdbcUtil {
             }
         }
 
-        public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func) {
+        public <R, E extends Exception> ContinuableFuture<R> asyncApply(final Try.Function<Q, R, E> func) {
             checkArgNotNull(func, "func");
             assertNotClosed();
 
             final Q q = (Q) this;
 
-            return ContinuableFuture.call(new Try.Callable<R, E>() {
-                @Override
-                public R call() throws E {
-                    return func.apply(q);
-                }
-            });
+            if (asyncExecutor == null) {
+                return ContinuableFuture.call(new Try.Callable<R, E>() {
+                    @Override
+                    public R call() throws E {
+                        return func.apply(q);
+                    }
+                });
+            } else {
+                return asyncExecutor.execute(new Try.Callable<R, E>() {
+                    @Override
+                    public R call() throws E {
+                        return func.apply(q);
+                    }
+                });
+            }
         }
 
-        public <R, E extends Exception> ContinuableFuture<R> applyAsync(final Try.Function<Q, R, E> func, final Executor executor) {
+        public <R, E extends Exception> ContinuableFuture<R> asyncApply(final Try.Function<Q, R, E> func, final Executor executor) {
             checkArgNotNull(func, "func");
             checkArgNotNull(executor, "executor");
             assertNotClosed();
@@ -5259,21 +5274,31 @@ public final class JdbcUtil {
             }, executor);
         }
 
-        public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action) {
+        public <E extends Exception> ContinuableFuture<Void> asyncAccept(final Try.Consumer<Q, E> action) {
             checkArgNotNull(action, "action");
             assertNotClosed();
 
             final Q q = (Q) this;
 
-            return ContinuableFuture.run(new Try.Runnable<E>() {
-                @Override
-                public void run() throws E {
-                    action.accept(q);
-                }
-            });
+            if (asyncExecutor == null) {
+                return ContinuableFuture.run(new Try.Runnable<E>() {
+                    @Override
+                    public void run() throws E {
+                        action.accept(q);
+                    }
+                });
+            } else {
+                return asyncExecutor.execute(new Try.Callable<Void, E>() {
+                    @Override
+                    public Void call() throws E {
+                        action.accept(q);
+                        return null;
+                    }
+                });
+            }
         }
 
-        public <E extends Exception> ContinuableFuture<Void> acceptAsync(final Try.Consumer<Q, E> action, final Executor executor) {
+        public <E extends Exception> ContinuableFuture<Void> asyncAccept(final Try.Consumer<Q, E> action, final Executor executor) {
             checkArgNotNull(action, "action");
             checkArgNotNull(executor, "executor");
             assertNotClosed();
@@ -5377,8 +5402,13 @@ public final class JdbcUtil {
      *
      */
     public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
-        PreparedQuery(java.sql.PreparedStatement stmt) {
+
+        PreparedQuery(PreparedStatement stmt) {
             super(stmt);
+        }
+
+        PreparedQuery(PreparedStatement stmt, AsyncExecutor asyncExecutor) {
+            super(stmt, asyncExecutor);
         }
     }
 
@@ -5401,10 +5431,15 @@ public final class JdbcUtil {
      *
      */
     public static class PreparedCallableQuery extends AbstractPreparedQuery<CallableStatement, PreparedCallableQuery> {
-        private final java.sql.CallableStatement stmt;
+        private final CallableStatement stmt;
 
-        PreparedCallableQuery(java.sql.CallableStatement stmt) {
+        PreparedCallableQuery(CallableStatement stmt) {
             super(stmt);
+            this.stmt = stmt;
+        }
+
+        PreparedCallableQuery(CallableStatement stmt, AsyncExecutor asyncExecutor) {
+            super(stmt, asyncExecutor);
             this.stmt = stmt;
         }
 

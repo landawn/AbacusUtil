@@ -2437,7 +2437,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <U, E extends Exception, E2 extends Exception> List<Pair<T, U>> innerJoin(final Collection<U> b, final Try.Function<? super T, ?, E> leftKeyMapper,
             final Try.Function<? super U, ?, E2> rightKeyMapper) throws E, E2 {
-        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), N.len(b)));
+        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), N.size(b)));
 
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
             return result;
@@ -2468,7 +2468,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
     public <U, E extends Exception> List<Pair<T, U>> innerJoin(final Collection<U> b, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), N.len(b)));
+        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), N.size(b)));
 
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
             return result;
@@ -2497,7 +2497,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <U, E extends Exception, E2 extends Exception> List<Pair<T, U>> fullJoin(final Collection<U> b, final Try.Function<? super T, ?, E> leftKeyMapper,
             final Try.Function<? super U, ?, E2> rightKeyMapper) throws E, E2 {
-        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), N.len(b)));
+        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), N.size(b)));
 
         if (N.isNullOrEmpty(coll)) {
             for (T left : coll) {
@@ -2543,7 +2543,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
     public <U, E extends Exception> List<Pair<T, U>> fullJoin(final Collection<U> b, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), N.len(b)));
+        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), N.size(b)));
 
         if (N.isNullOrEmpty(coll)) {
             for (T left : coll) {
@@ -2670,7 +2670,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <U, E extends Exception, E2 extends Exception> List<Pair<T, U>> rightJoin(final Collection<U> b, final Try.Function<? super T, ?, E> leftKeyMapper,
             final Try.Function<? super U, ?, E2> rightKeyMapper) throws E, E2 {
-        final List<Pair<T, U>> result = new ArrayList<>(N.len(b));
+        final List<Pair<T, U>> result = new ArrayList<>(N.size(b));
 
         if (N.isNullOrEmpty(b)) {
             return result;
@@ -2706,7 +2706,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
     public <U, E extends Exception> List<Pair<T, U>> rightJoin(final Collection<U> b, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
-        final List<Pair<T, U>> result = new ArrayList<>(N.len(b));
+        final List<Pair<T, U>> result = new ArrayList<>(N.size(b));
 
         if (N.isNullOrEmpty(b)) {
             return result;

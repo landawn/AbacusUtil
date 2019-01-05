@@ -132,7 +132,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
     }
 
     public static IntList from(final Collection<Integer> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new IntList();

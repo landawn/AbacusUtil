@@ -380,7 +380,15 @@ public final class Fn extends Comparators {
     private static final Function<Collection, Integer> SIZE = new Function<Collection, Integer>() {
         @Override
         public Integer apply(Collection t) {
-            return N.len(t);
+            return N.size(t);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Function<Map, Integer> SIZE_M = new Function<Map, Integer>() {
+        @Override
+        public Integer apply(Map t) {
+            return N.size(t);
         }
     };
 
@@ -961,6 +969,11 @@ public final class Fn extends Comparators {
     @SuppressWarnings("rawtypes")
     public static <T extends Collection> Function<T, Integer> size() {
         return (Function<T, Integer>) SIZE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Map> Function<T, Integer> sizeM() {
+        return (Function<T, Integer>) SIZE_M;
     }
 
     public static <T, U> Function<T, U> cast(final Class<U> clazz) {
@@ -2412,6 +2425,41 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static <R, E extends Exception> Try.Callable<R, E> callable(final Try.Callable<R, E> callable) {
+        N.checkArgNotNull(callable);
+
+        return callable;
+    }
+
+    public static <E extends Exception> Try.Runnable<E> runnable(final Try.Runnable<E> runnable) {
+        N.checkArgNotNull(runnable);
+
+        return runnable;
+    }
+
+    public static <E extends Exception> Try.Callable<Void, E> toCallable(final Try.Runnable<E> runnable) {
+        N.checkArgNotNull(runnable);
+
+        return new Try.Callable<Void, E>() {
+            @Override
+            public Void call() throws E {
+                runnable.run();
+                return null;
+            }
+        };
+    }
+
+    public static <R, E extends Exception> Try.Runnable<E> toRunnable(final Try.Callable<R, E> callable) {
+        N.checkArgNotNull(callable);
+
+        return new Try.Runnable<E>() {
+            @Override
+            public void run() throws E {
+                callable.call();
+            }
+        };
+    }
+
     public static <T> BinaryOperator<T> throwingMerger() {
         return BinaryOperators.THROWING_MERGER;
     }
@@ -2879,9 +2927,20 @@ public final class Fn extends Comparators {
         return Collectors.combine(collector1, collector2);
     }
 
+    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2, final BiFunction<? super R1, ? super R2, R> finisher) {
+        return Collectors.combine(collector1, collector2, finisher);
+    }
+
     public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(final Collector<? super T, A1, R1> collector1,
             final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3) {
         return Collectors.combine(collector1, collector2, collector3);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3,
+            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
+        return Collectors.combine(collector1, collector2, collector3, finisher);
     }
 
     public static <T, A1, A2, R1, R2> Collector<T, Tuple2<A1, A2>, Tuple2<R1, R2>> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
@@ -2889,10 +2948,21 @@ public final class Fn extends Comparators {
         return Collectors.combine(collector1, collector2);
     }
 
+    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
+            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.function.BiFunction<? super R1, ? super R2, R> finisher) {
+        return Collectors.combine(collector1, collector2, finisher);
+    }
+
     public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(
             final java.util.stream.Collector<? super T, A1, R1> collector1, final java.util.stream.Collector<? super T, A2, R2> collector2,
             final java.util.stream.Collector<? super T, A3, R3> collector3) {
         return Collectors.combine(collector1, collector2, collector3);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
+            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.stream.Collector<? super T, A3, R3> collector3,
+            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
+        return Collectors.combine(collector1, collector2, collector3, finisher);
     }
 
     static <K, V, E extends Exception> void merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction)

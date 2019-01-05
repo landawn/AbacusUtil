@@ -112,7 +112,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
     }
 
     public static LongList from(final Collection<Long> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new LongList();

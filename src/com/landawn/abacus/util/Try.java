@@ -472,47 +472,12 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface Runnable<E extends Exception> {
         void run() throws E;
-
-        public static <E extends Exception> Runnable<E> of(final Runnable<E> runnable) {
-            N.checkArgNotNull(runnable);
-
-            return runnable;
-        }
-
-        public static <R, E extends Exception> Runnable<E> create(final Callable<R, E> callable) {
-            N.checkArgNotNull(callable);
-
-            return new Runnable<E>() {
-                @Override
-                public void run() throws E {
-                    callable.call();
-                }
-            };
-        }
     }
 
     public static interface Callable<R, E extends Exception> extends java.util.concurrent.Callable<R> {
 
         @Override
         R call() throws E;
-
-        public static <R, E extends Exception> Callable<R, E> of(final Callable<R, E> callable) {
-            N.checkArgNotNull(callable);
-
-            return callable;
-        }
-
-        public static <E extends Exception> Callable<Void, E> create(Runnable<E> cmd) {
-            N.checkArgNotNull(cmd);
-
-            return new Callable<Void, E>() {
-                @Override
-                public Void call() throws E {
-                    cmd.run();
-                    return null;
-                }
-            };
-        }
     }
 
     public static interface Supplier<T, E extends Exception> {

@@ -112,7 +112,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     }
 
     public static ShortList from(final Collection<Short> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new ShortList();

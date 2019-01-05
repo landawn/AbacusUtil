@@ -112,7 +112,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     public static DoubleList from(final Collection<Double> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, N.len(c));
+        N.checkFromToIndex(fromIndex, toIndex, N.size(c));
 
         if (N.isNullOrEmpty(c)) {
             return new DoubleList();

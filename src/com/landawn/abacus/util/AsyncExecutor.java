@@ -59,6 +59,7 @@ public class AsyncExecutor {
         SCHEDULED_EXECUTOR = MoreExecutors.getExitingScheduledExecutorService(executor);
     }
 
+    private final int coreThreadPoolSize;
     private final int maxThreadPoolSize;
     private final long keepAliveTime;
     private final TimeUnit unit;
@@ -66,10 +67,20 @@ public class AsyncExecutor {
     private volatile Executor executor;
 
     public AsyncExecutor() {
-        this(DEFAULT_MAX_THREAD_POOL_SIZE, 300, TimeUnit.SECONDS);
+        this(DEFAULT_CORE_POOL_SIZE, DEFAULT_MAX_THREAD_POOL_SIZE, 300, TimeUnit.SECONDS);
     }
 
     public AsyncExecutor(int maxThreadPoolSize, long keepAliveTime, TimeUnit unit) {
+        this(DEFAULT_CORE_POOL_SIZE, maxThreadPoolSize, keepAliveTime, unit);
+    }
+
+    public AsyncExecutor(int coreThreadPoolSize, int maxThreadPoolSize, long keepAliveTime, TimeUnit unit) {
+        N.checkArgNotNegative(coreThreadPoolSize, "coreThreadPoolSize");
+        N.checkArgNotNegative(maxThreadPoolSize, "maxThreadPoolSize");
+        N.checkArgNotNegative(keepAliveTime, "keepAliveTime");
+        N.checkArgNotNull(unit, "unit");
+
+        this.coreThreadPoolSize = coreThreadPoolSize;
         this.maxThreadPoolSize = maxThreadPoolSize;
         this.keepAliveTime = keepAliveTime;
         this.unit = unit;
@@ -102,7 +113,7 @@ public class AsyncExecutor {
      * @param asyncExecutor
      */
     public AsyncExecutor(final Executor executor) {
-        this(8, 300, TimeUnit.SECONDS);
+        this(DEFAULT_CORE_POOL_SIZE, DEFAULT_MAX_THREAD_POOL_SIZE, 300, TimeUnit.SECONDS);
 
         this.executor = executor;
     }
@@ -308,8 +319,8 @@ public class AsyncExecutor {
         if (executor == null) {
             synchronized (this) {
                 if (executor == null) {
-                    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(Math.min(DEFAULT_CORE_POOL_SIZE, maxThreadPoolSize), maxThreadPoolSize,
-                            keepAliveTime, unit, new LinkedBlockingQueue<Runnable>());
+                    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(coreThreadPoolSize, maxThreadPoolSize, keepAliveTime, unit,
+                            new LinkedBlockingQueue<Runnable>());
                     threadPoolExecutor.allowCoreThreadTimeOut(true);
                     executor = threadPoolExecutor;
                 }

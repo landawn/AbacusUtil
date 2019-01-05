@@ -1,5 +1,9 @@
 ### 1.3.27
 
+* Rename `PreparedQuery/PreparedCallableQuery.applyAsync/acceptAsync` to `PreparedQuery/PreparedCallableQuery.asyncApply/asyncAccept`.
+
+* Rename `N.len(Collection/Map)` to `N.size(Collection/Map)`.
+
 * Improvements and bug fix.
 
 

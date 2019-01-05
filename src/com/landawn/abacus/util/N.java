@@ -221,7 +221,7 @@ import com.landawn.abacus.util.stream.Stream;
 public final class N {
     private static final Logger logger = LoggerFactory.getLogger(N.class);
 
-    private static final AsyncExecutor asyncExecutor = new AsyncExecutor(256, 300L, TimeUnit.SECONDS);
+    private static final AsyncExecutor asyncExecutor = new AsyncExecutor(32, 256, 300L, TimeUnit.SECONDS);
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
@@ -1682,7 +1682,7 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static Object[] toArray(final Collection<?> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_OBJECT_ARRAY;
@@ -1718,7 +1718,7 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Collection<T> c, final int fromIndex, final int toIndex, final A[] a) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (N.isNullOrEmpty(c)) {
             return a;
@@ -1754,7 +1754,7 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         final A[] res = N.newArray(targetClass.getComponentType(), toIndex - fromIndex);
 
@@ -1791,11 +1791,11 @@ public final class N {
     }
 
     public static boolean[] toBooleanArray(final Collection<Boolean> c, final boolean defaultForNull) {
-        return toBooleanArray(c, 0, len(c), defaultForNull);
+        return toBooleanArray(c, 0, size(c), defaultForNull);
     }
 
     public static boolean[] toBooleanArray(final Collection<Boolean> c, final int fromIndex, final int toIndex, final boolean defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_BOOLEAN_ARRAY;
@@ -1849,11 +1849,11 @@ public final class N {
     }
 
     public static char[] toCharArray(final Collection<Character> c, final char defaultForNull) {
-        return toCharArray(c, 0, len(c), defaultForNull);
+        return toCharArray(c, 0, size(c), defaultForNull);
     }
 
     public static char[] toCharArray(final Collection<Character> c, final int fromIndex, final int toIndex, final char defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_CHAR_ARRAY;
@@ -1907,11 +1907,11 @@ public final class N {
     }
 
     public static byte[] toByteArray(final Collection<Byte> c, final byte defaultForNull) {
-        return toByteArray(c, 0, len(c), defaultForNull);
+        return toByteArray(c, 0, size(c), defaultForNull);
     }
 
     public static byte[] toByteArray(final Collection<Byte> c, final int fromIndex, final int toIndex, final byte defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_BYTE_ARRAY;
@@ -1965,11 +1965,11 @@ public final class N {
     }
 
     public static short[] toShortArray(final Collection<Short> c, final short defaultForNull) {
-        return toShortArray(c, 0, len(c), defaultForNull);
+        return toShortArray(c, 0, size(c), defaultForNull);
     }
 
     public static short[] toShortArray(final Collection<Short> c, final int fromIndex, final int toIndex, final short defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_SHORT_ARRAY;
@@ -2023,11 +2023,11 @@ public final class N {
     }
 
     public static int[] toIntArray(final Collection<Integer> c, final int defaultForNull) {
-        return toIntArray(c, 0, len(c), defaultForNull);
+        return toIntArray(c, 0, size(c), defaultForNull);
     }
 
     public static int[] toIntArray(final Collection<Integer> c, final int fromIndex, final int toIndex, final int defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_INT_ARRAY;
@@ -2081,11 +2081,11 @@ public final class N {
     }
 
     public static long[] toLongArray(final Collection<Long> c, final long defaultForNull) {
-        return toLongArray(c, 0, len(c), defaultForNull);
+        return toLongArray(c, 0, size(c), defaultForNull);
     }
 
     public static long[] toLongArray(final Collection<Long> c, final int fromIndex, final int toIndex, final long defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_LONG_ARRAY;
@@ -2139,11 +2139,11 @@ public final class N {
     }
 
     public static float[] toFloatArray(final Collection<Float> c, final float defaultForNull) {
-        return toFloatArray(c, 0, len(c), defaultForNull);
+        return toFloatArray(c, 0, size(c), defaultForNull);
     }
 
     public static float[] toFloatArray(final Collection<Float> c, final int fromIndex, final int toIndex, final float defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_FLOAT_ARRAY;
@@ -2197,11 +2197,11 @@ public final class N {
     }
 
     public static double[] toDoubleArray(final Collection<Double> c, final double defaultForNull) {
-        return toDoubleArray(c, 0, len(c), defaultForNull);
+        return toDoubleArray(c, 0, size(c), defaultForNull);
     }
 
     public static double[] toDoubleArray(final Collection<Double> c, final int fromIndex, final int toIndex, final double defaultForNull) {
-        N.checkFromToIndex(fromIndex, toIndex, len(c));
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return EMPTY_DOUBLE_ARRAY;
@@ -5269,7 +5269,7 @@ public final class N {
      * @param c
      * @return
      */
-    public static int len(final Collection<?> c) {
+    public static int size(final Collection<?> c) {
         return c == null ? 0 : c.size();
     }
 
@@ -5279,7 +5279,7 @@ public final class N {
      * @param m
      * @return
      */
-    public static int len(final Map<?, ?> m) {
+    public static int size(final Map<?, ?> m) {
         return m == null ? 0 : m.size();
     }
 
@@ -8761,7 +8761,7 @@ public final class N {
     }
 
     public static void reverse(final List<?> list, int fromIndex, int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, len(list));
+        checkFromToIndex(fromIndex, toIndex, size(list));
 
         if (N.isNullOrEmpty(list) || list.size() == 1) {
             return;
@@ -13016,7 +13016,7 @@ public final class N {
      */
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.Consumer<? super T, E> action) throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size(c));
         N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -13104,7 +13104,7 @@ public final class N {
      */
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
             final Try.IndexedConsumer<? super T, E> action) throws E {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, len(c));
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size(c));
         N.checkArgNotNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -13337,8 +13337,8 @@ public final class N {
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = size(a);
+        final int lenB = size(b);
 
         for (int i = 0, maxLen = N.max(lenA, lenB); i < maxLen; i++) {
             action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB);
@@ -13365,9 +13365,9 @@ public final class N {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = size(a);
+        final int lenB = size(b);
+        final int lenC = size(c);
 
         for (int i = 0, maxLen = N.max(lenA, lenB, lenC); i < maxLen; i++) {
             action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB, i < lenC ? iterC.next() : valueForNoneC);
@@ -14060,7 +14060,7 @@ public final class N {
 
     public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14196,7 +14196,7 @@ public final class N {
 
     public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(filter);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14307,7 +14307,7 @@ public final class N {
      */
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToBooleanFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14401,7 +14401,7 @@ public final class N {
      */
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToCharFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14495,7 +14495,7 @@ public final class N {
      */
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToByteFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14589,7 +14589,7 @@ public final class N {
      */
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToShortFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14683,7 +14683,7 @@ public final class N {
      */
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14777,7 +14777,7 @@ public final class N {
      */
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14871,7 +14871,7 @@ public final class N {
      */
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToFloatFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -14965,7 +14965,7 @@ public final class N {
      */
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15059,7 +15059,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15159,7 +15159,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15257,7 +15257,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15364,7 +15364,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15562,7 +15562,7 @@ public final class N {
      */
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15669,7 +15669,7 @@ public final class N {
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -15789,7 +15789,7 @@ public final class N {
 
     public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return 0;
@@ -15903,7 +15903,7 @@ public final class N {
 
     public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -16021,7 +16021,7 @@ public final class N {
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return 0D;
@@ -16137,7 +16137,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -16239,7 +16239,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -16322,7 +16322,7 @@ public final class N {
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
@@ -16819,7 +16819,7 @@ public final class N {
      */
     public static <T, E extends Exception> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Predicate<? super T, E> filter) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(filter);
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -17130,7 +17130,7 @@ public final class N {
     }
 
     public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
-        return top(c, 0, len(c), n, cmp);
+        return top(c, 0, size(c), n, cmp);
     }
 
     public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
@@ -17330,7 +17330,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> topp(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
-        return topp(c, 0, len(c), n, cmp);
+        return topp(c, 0, size(c), n, cmp);
     }
 
     /**
@@ -17720,7 +17720,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -17841,7 +17841,7 @@ public final class N {
      */
     public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Try.Function<? super T, ?, E> keyExtractor) throws E {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
@@ -18437,7 +18437,7 @@ public final class N {
      * @return
      */
     public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
-        checkFromToIndex(fromIndex, toIndex, len(c));
+        checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
@@ -25304,7 +25304,7 @@ public final class N {
      * @return the minimum value in the Collection
      */
     public static <T> T min(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
-        checkFromToIndex(from, to, len(c));
+        checkFromToIndex(from, to, size(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
             throw new IllegalArgumentException("The size of collection can not be null or empty");
@@ -25938,7 +25938,7 @@ public final class N {
      * @return the maximum value in the Collection
      */
     public static <T> T max(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
-        checkFromToIndex(from, to, len(c));
+        checkFromToIndex(from, to, size(c));
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
             throw new IllegalArgumentException("The size of collection can not be null or empty");
@@ -28532,8 +28532,8 @@ public final class N {
             final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
-        final int lenA = len(a);
-        final int lenB = len(b);
+        final int lenA = size(a);
+        final int lenB = size(b);
         final int maxLen = max(lenA, lenB);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -28564,9 +28564,9 @@ public final class N {
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
-        final int lenA = len(a);
-        final int lenB = len(b);
-        final int lenC = len(c);
+        final int lenA = size(a);
+        final int lenB = size(b);
+        final int lenC = size(c);
         final int maxLen = max(lenA, lenB, lenC);
         final List<R> result = new ArrayList<>(maxLen);
 
@@ -28586,7 +28586,7 @@ public final class N {
      */
     public static <T, L, R, E extends Exception> Pair<List<L>, List<R>> unzip(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Pair<L, R>, E> unzip) throws E {
-        final int len = len(c);
+        final int len = size(c);
 
         final List<L> l = new ArrayList<L>(len);
         final List<R> r = new ArrayList<R>(len);
@@ -28613,7 +28613,7 @@ public final class N {
      */
     public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>, E extends Exception> Pair<LC, RC> unzip(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Pair<L, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier) throws E {
-        final int len = len(c);
+        final int len = size(c);
 
         final LC l = (LC) supplier.apply(len);
         final RC r = (RC) supplier.apply(len);
@@ -28639,7 +28639,7 @@ public final class N {
      */
     public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
-        final int len = len(c);
+        final int len = size(c);
 
         final List<L> l = new ArrayList<L>(len);
         final List<M> m = new ArrayList<M>(len);
@@ -28669,7 +28669,7 @@ public final class N {
     public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
             final Collection<? extends T> c, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier)
             throws E {
-        final int len = len(c);
+        final int len = size(c);
 
         final LC l = (LC) supplier.apply(len);
         final MC m = (MC) supplier.apply(len);

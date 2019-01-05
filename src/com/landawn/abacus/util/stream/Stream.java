@@ -2074,7 +2074,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> of(final Collection<? extends T> c, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, N.len(c));
+        N.checkFromToIndex(startIndex, endIndex, N.size(c));
 
         if (N.isNullOrEmpty(c) && (startIndex == 0 && endIndex == 0)) {
             return empty();
