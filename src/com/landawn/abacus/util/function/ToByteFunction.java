@@ -31,12 +31,18 @@ public interface ToByteFunction<T> extends Try.ToByteFunction<T, RuntimeExceptio
         }
     };
 
-    static final ToByteFunction<Number> NUM = new ToByteFunction<Number>() {
+    static final ToByteFunction<Number> FROM_NUM = new ToByteFunction<Number>() {
         @Override
         public byte applyAsByte(Number value) {
             return value == null ? 0 : value.byteValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToByteFunction<Number> NUM = FROM_NUM;
 
     @Override
     byte applyAsByte(T value);

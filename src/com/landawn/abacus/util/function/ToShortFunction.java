@@ -31,12 +31,18 @@ public interface ToShortFunction<T> extends Try.ToShortFunction<T, RuntimeExcept
         }
     };
 
-    static final ToShortFunction<Number> NUM = new ToShortFunction<Number>() {
+    static final ToShortFunction<Number> FROM_NUM = new ToShortFunction<Number>() {
         @Override
         public short applyAsShort(Number value) {
             return value == null ? 0 : value.shortValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToShortFunction<Number> NUM = FROM_NUM;
 
     @Override
     short applyAsShort(T value);

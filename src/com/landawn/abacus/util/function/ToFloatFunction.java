@@ -31,12 +31,18 @@ public interface ToFloatFunction<T> extends Try.ToFloatFunction<T, RuntimeExcept
         }
     };
 
-    static final ToFloatFunction<Number> NUM = new ToFloatFunction<Number>() {
+    static final ToFloatFunction<Number> FROM_NUM = new ToFloatFunction<Number>() {
         @Override
         public float applyAsFloat(Number value) {
             return value == null ? 0 : value.floatValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToFloatFunction<Number> NUM = FROM_NUM;
 
     @Override
     float applyAsFloat(T value);

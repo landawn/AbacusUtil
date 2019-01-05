@@ -514,27 +514,6 @@ public final class Fn extends Comparators {
         }
     };
 
-    private static final ToIntFunction<Number> NUM_TO_INT_FUNC = new ToIntFunction<Number>() {
-        @Override
-        public int applyAsInt(Number value) {
-            return value == null ? 0 : value.intValue();
-        }
-    };
-
-    private static final ToLongFunction<Number> NUM_TO_LONG_FUNC = new ToLongFunction<Number>() {
-        @Override
-        public long applyAsLong(Number value) {
-            return value == null ? 0 : value.longValue();
-        }
-    };
-
-    private static final ToDoubleFunction<Number> NUM_TO_DOUBLE_FUNC = new ToDoubleFunction<Number>() {
-        @Override
-        public double applyAsDouble(Number value) {
-            return value == null ? 0d : value.doubleValue();
-        }
-    };
-
     private Fn() {
         super();
         // Singleton.
@@ -1659,17 +1638,17 @@ public final class Fn extends Comparators {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T extends Number> ToIntFunction<T> numToInt() {
-        return (ToIntFunction) NUM_TO_INT_FUNC;
+        return (ToIntFunction) ToIntFunction.FROM_NUM;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T extends Number> ToLongFunction<T> numToLong() {
-        return (ToLongFunction) NUM_TO_LONG_FUNC;
+        return (ToLongFunction) ToLongFunction.FROM_NUM;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T extends Number> ToDoubleFunction<T> numToDouble() {
-        return (ToDoubleFunction) NUM_TO_DOUBLE_FUNC;
+        return (ToDoubleFunction) ToDoubleFunction.FROM_NUM;
     }
 
     /**
@@ -1726,6 +1705,19 @@ public final class Fn extends Comparators {
             @Override
             public boolean test(T t, U u) {
                 return predicate.test(t, u) && counter.getAndDecrement() > 0;
+            }
+        };
+    }
+
+    public static <T> Predicate<T> timeLimit(final long timeInMillis) {
+        N.checkArgNotNegative(timeInMillis, "timeInMillis");
+
+        return new Predicate<T>() {
+            private final long now = System.currentTimeMillis();
+
+            @Override
+            public boolean test(T t) {
+                return System.currentTimeMillis() - now < timeInMillis;
             }
         };
     }

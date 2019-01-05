@@ -31,12 +31,18 @@ public interface ToDoubleFunction<T> extends java.util.function.ToDoubleFunction
         }
     };
 
-    static final ToDoubleFunction<Number> NUM = new ToDoubleFunction<Number>() {
+    static final ToDoubleFunction<Number> FROM_NUM = new ToDoubleFunction<Number>() {
         @Override
         public double applyAsDouble(Number value) {
             return value == null ? 0 : value.doubleValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToDoubleFunction<Number> NUM = FROM_NUM;
 
     @Override
     double applyAsDouble(T value);

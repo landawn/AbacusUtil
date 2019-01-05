@@ -31,12 +31,18 @@ public interface ToLongFunction<T> extends java.util.function.ToLongFunction<T>,
         }
     };
 
-    static final ToLongFunction<Number> NUM = new ToLongFunction<Number>() {
+    static final ToLongFunction<Number> FROM_NUM = new ToLongFunction<Number>() {
         @Override
         public long applyAsLong(Number value) {
             return value == null ? 0 : value.longValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToLongFunction<Number> NUM = FROM_NUM;
 
     @Override
     long applyAsLong(T value);

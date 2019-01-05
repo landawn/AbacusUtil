@@ -111,6 +111,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -161,15 +162,13 @@ import com.landawn.abacus.util.function.ToShortFunction;
 public class Collectors {
     static final Object NONE = new Object();
 
-    static final Set<Collector.Characteristics> CH_CONCURRENT_ID = Collections
-            .unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT, Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
-    static final Set<Collector.Characteristics> CH_CONCURRENT_NOID = Collections
-            .unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT, Collector.Characteristics.UNORDERED));
-    static final Set<Collector.Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
-    static final Set<Collector.Characteristics> CH_UNORDERED_ID = Collections
-            .unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
-    static final Set<Collector.Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
-    static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
+    static final Set<Characteristics> CH_CONCURRENT_ID = Collections
+            .unmodifiableSet(EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH));
+    static final Set<Characteristics> CH_CONCURRENT_NOID = Collections.unmodifiableSet(EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED));
+    static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
+    static final Set<Characteristics> CH_UNORDERED_ID = Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH));
+    static final Set<Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED));
+    static final Set<Characteristics> CH_NOID = Collections.emptySet();
 
     // ==============================================================
     static final Function<List<Object>, ImmutableList<Object>> ImmutableList_Finisher = new Function<List<Object>, ImmutableList<Object>>() {
@@ -1043,7 +1042,7 @@ public class Collectors {
         }
 
         @Override
-        public Set<com.landawn.abacus.util.stream.Collector.Characteristics> characteristics() {
+        public Set<Characteristics> characteristics() {
             return characteristics;
         }
     }
@@ -1104,7 +1103,7 @@ public class Collectors {
      * control over the returned {@code Set} is required, use
      * {@link #toCollection(Supplier)}.
      *
-     * <p>This is an {@link Collector.Characteristics#UNORDERED unordered}
+     * <p>This is an {@link Characteristics#UNORDERED unordered}
      * Collector.
      *
      * @param <T> the type of the input elements
@@ -1879,14 +1878,14 @@ public class Collectors {
             }
         };
 
-        Set<Collector.Characteristics> characteristics = downstream.characteristics();
+        Set<Characteristics> characteristics = downstream.characteristics();
 
-        if (characteristics.contains(Collector.Characteristics.IDENTITY_FINISH)) {
+        if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             if (characteristics.size() == 1)
                 characteristics = Collectors.CH_NOID;
             else {
                 characteristics = EnumSet.copyOf(characteristics);
-                characteristics.remove(Collector.Characteristics.IDENTITY_FINISH);
+                characteristics.remove(Characteristics.IDENTITY_FINISH);
                 characteristics = Collections.unmodifiableSet(characteristics);
             }
         }
@@ -3953,7 +3952,7 @@ public class Collectors {
         //        @SuppressWarnings("unchecked")
         //        Supplier<Map<K, A>> mangledFactory = (Supplier<Map<K, A>>) mapFactory;
         //
-        //        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
+        //        if (downstream.characteristics().contains(Characteristics.IDENTITY_FINISH)) {
         //            return new CollectorImpl<>(mangledFactory, accumulator, merger, CH_ID);
         //        }
         //        else {
@@ -4019,8 +4018,8 @@ public class Collectors {
      * operation on input elements of type {@code T}, grouping elements
      * according to a classification function.
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * <p>The classification function maps elements to some key type {@code K}.
      * The collector produces a {@code ConcurrentMap<K, List<T>>} whose keys are the
@@ -4067,8 +4066,8 @@ public class Collectors {
      * operation on the values associated with a given key using the specified
      * downstream {@code Collector}.
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * <p>The classification function maps elements to some key type {@code K}.
      * The downstream collector operates on elements of type {@code T} and
@@ -4110,8 +4109,8 @@ public class Collectors {
      * downstream {@code Collector}.  The {@code ConcurrentMap} produced by the
      * Collector is created with the supplied factory function.
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * <p>The classification function maps elements to some key type {@code K}.
      * The downstream collector operates on elements of type {@code T} and
@@ -4150,7 +4149,7 @@ public class Collectors {
         //        @SuppressWarnings("unchecked")
         //        Supplier<ConcurrentMap<K, A>> mangledFactory = (Supplier<ConcurrentMap<K, A>>) mapFactory;
         //        BiConsumer<ConcurrentMap<K, A>, T> accumulator;
-        //        if (downstream.characteristics().contains(Collector.Characteristics.CONCURRENT)) {
+        //        if (downstream.characteristics().contains(Characteristics.CONCURRENT)) {
         //            accumulator = (m, t) -> {
         //                K key = N.checkArgNotNull(classifier.apply(t), "element cannot be mapped to a null key");
         //                A resultContainer = m.computeIfAbsent(key, k -> downstreamSupplier.get());
@@ -4166,7 +4165,7 @@ public class Collectors {
         //            };
         //        }
         //
-        //        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
+        //        if (downstream.characteristics().contains(Characteristics.IDENTITY_FINISH)) {
         //            return new CollectorImpl<>(mangledFactory, accumulator, merger, CH_CONCURRENT_ID);
         //        } else {
         //            @SuppressWarnings("unchecked")
@@ -4273,7 +4272,7 @@ public class Collectors {
         //        BinaryOperator<A> op = downstream.combiner();
         //        BinaryOperator<Partition<A>> merger = (left, right) -> new Partition<>(op.apply(left.forTrue, right.forTrue), op.apply(left.forFalse, right.forFalse));
         //        Supplier<Partition<A>> supplier = () -> new Partition<>(downstream.supplier().get(), downstream.supplier().get());
-        //        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
+        //        if (downstream.characteristics().contains(Characteristics.IDENTITY_FINISH)) {
         //            return new CollectorImpl<>(supplier, accumulator, merger, CH_ID);
         //        } else {
         //            Function<Partition<A>, Map<Boolean, D>> finisher = par -> new Partition<>(downstream.finisher().apply(par.forTrue),
@@ -4664,8 +4663,8 @@ public class Collectors {
      *                                                   Functions.identity());
      * }</pre>
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
@@ -4720,8 +4719,8 @@ public class Collectors {
      *                                                 (s, a) -> s + ", " + a));
      * }</pre>
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
@@ -4758,8 +4757,8 @@ public class Collectors {
      * results are merged using the provided merging function.  The
      * {@code ConcurrentMap} is created by a provided supplier function.
      *
-     * <p>This is a {@link Collector.Characteristics#CONCURRENT concurrent} and
-     * {@link Collector.Characteristics#UNORDERED unordered} Collector.
+     * <p>This is a {@link Characteristics#CONCURRENT concurrent} and
+     * {@link Characteristics#UNORDERED unordered} Collector.
      *
      * @param <T> the type of the input elements
      * @param <K> the output type of the key mapping function
@@ -4924,8 +4923,8 @@ public class Collectors {
             }
         };
 
-        List<Collector.Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
@@ -4979,13 +4978,13 @@ public class Collectors {
             }
         };
 
-        List<Collector.Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
 
         if (N.notNullOrEmpty(common)) {
             common = N.intersection(common, collector3.characteristics());
         }
 
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
@@ -4999,6 +4998,111 @@ public class Collectors {
 
             return new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
         }
+    }
+
+    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2, final BiFunction<? super R1, ? super R2, R> finisher) {
+        final Supplier<A1> supplier1 = collector1.supplier();
+        final Supplier<A2> supplier2 = collector2.supplier();
+        final BiConsumer<A1, ? super T> accumulator1 = collector1.accumulator();
+        final BiConsumer<A2, ? super T> accumulator2 = collector2.accumulator();
+        final BinaryOperator<A1> combiner1 = collector1.combiner();
+        final BinaryOperator<A2> combiner2 = collector2.combiner();
+        final Function<A1, R1> finisher1 = collector1.finisher();
+        final Function<A2, R2> finisher2 = collector2.finisher();
+
+        final Supplier<Tuple2<A1, A2>> supplier = new Supplier<Tuple2<A1, A2>>() {
+            @Override
+            public Tuple2<A1, A2> get() {
+                return Tuple.of(supplier1.get(), supplier2.get());
+            }
+        };
+
+        final BiConsumer<Tuple2<A1, A2>, T> accumulator = new BiConsumer<Tuple2<A1, A2>, T>() {
+            @Override
+            public void accept(Tuple2<A1, A2> acct, T e) {
+                accumulator1.accept(acct._1, e);
+                accumulator2.accept(acct._2, e);
+            }
+        };
+
+        final BinaryOperator<Tuple2<A1, A2>> combiner = new BinaryOperator<Tuple2<A1, A2>>() {
+            @Override
+            public Tuple2<A1, A2> apply(Tuple2<A1, A2> t, Tuple2<A1, A2> u) {
+                return Tuple.of(combiner1.apply(t._1, u._1), combiner2.apply(t._2, u._2));
+            }
+        };
+
+        final List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        common.remove(Characteristics.IDENTITY_FINISH);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+
+        final Function<Tuple2<A1, A2>, R> finalFinisher = new Function<Tuple2<A1, A2>, R>() {
+            @Override
+            public R apply(Tuple2<A1, A2> t) {
+                return finisher.apply(finisher1.apply(t._1), finisher2.apply(t._2));
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finalFinisher, characteristics);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final Collector<? super T, A1, R1> collector1,
+            final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3,
+            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
+        final Supplier<A1> supplier1 = collector1.supplier();
+        final Supplier<A2> supplier2 = collector2.supplier();
+        final Supplier<A3> supplier3 = collector3.supplier();
+        final BiConsumer<A1, ? super T> accumulator1 = collector1.accumulator();
+        final BiConsumer<A2, ? super T> accumulator2 = collector2.accumulator();
+        final BiConsumer<A3, ? super T> accumulator3 = collector3.accumulator();
+        final BinaryOperator<A1> combiner1 = collector1.combiner();
+        final BinaryOperator<A2> combiner2 = collector2.combiner();
+        final BinaryOperator<A3> combiner3 = collector3.combiner();
+        final Function<A1, R1> finisher1 = collector1.finisher();
+        final Function<A2, R2> finisher2 = collector2.finisher();
+        final Function<A3, R3> finisher3 = collector3.finisher();
+
+        final Supplier<Tuple3<A1, A2, A3>> supplier = new Supplier<Tuple3<A1, A2, A3>>() {
+            @Override
+            public Tuple3<A1, A2, A3> get() {
+                return Tuple.of(supplier1.get(), supplier2.get(), supplier3.get());
+            }
+        };
+
+        final BiConsumer<Tuple3<A1, A2, A3>, T> accumulator = new BiConsumer<Tuple3<A1, A2, A3>, T>() {
+            @Override
+            public void accept(Tuple3<A1, A2, A3> acct, T e) {
+                accumulator1.accept(acct._1, e);
+                accumulator2.accept(acct._2, e);
+                accumulator3.accept(acct._3, e);
+            }
+        };
+
+        final BinaryOperator<Tuple3<A1, A2, A3>> combiner = new BinaryOperator<Tuple3<A1, A2, A3>>() {
+            @Override
+            public Tuple3<A1, A2, A3> apply(Tuple3<A1, A2, A3> t, Tuple3<A1, A2, A3> u) {
+                return Tuple.of(combiner1.apply(t._1, u._1), combiner2.apply(t._2, u._2), combiner3.apply(t._3, u._3));
+            }
+        };
+
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+
+        if (N.notNullOrEmpty(common)) {
+            common = N.intersection(common, collector3.characteristics());
+        }
+
+        common.remove(Characteristics.IDENTITY_FINISH);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+
+        final Function<Tuple3<A1, A2, A3>, R> finalFinisher = new Function<Tuple3<A1, A2, A3>, R>() {
+            @Override
+            public R apply(Tuple3<A1, A2, A3> t) {
+                return finisher.apply(finisher1.apply(t._1), finisher2.apply(t._2), finisher3.apply(t._3));
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finalFinisher, characteristics);
     }
 
     @SuppressWarnings("rawtypes")
@@ -5080,13 +5184,13 @@ public class Collectors {
             }
         };
 
-        Collection<Collector.Characteristics> common = cs[0].characteristics();
+        Collection<Characteristics> common = cs[0].characteristics();
 
         for (int i = 1; i < len && N.notNullOrEmpty(common); i++) {
             common = N.intersection(common, cs[i].characteristics());
         }
 
-        final Set<Collector.Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
 
         if (characteristics.contains(Characteristics.IDENTITY_FINISH)) {
             return new CollectorImpl<>(supplier, accumulator, combiner, characteristics);
@@ -5215,6 +5319,111 @@ public class Collectors {
 
             return new CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
         }
+    }
+
+    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
+            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.function.BiFunction<? super R1, ? super R2, R> finisher) {
+        final java.util.function.Supplier<A1> supplier1 = collector1.supplier();
+        final java.util.function.Supplier<A2> supplier2 = collector2.supplier();
+        final java.util.function.BiConsumer<A1, ? super T> accumulator1 = collector1.accumulator();
+        final java.util.function.BiConsumer<A2, ? super T> accumulator2 = collector2.accumulator();
+        final java.util.function.BinaryOperator<A1> combiner1 = collector1.combiner();
+        final java.util.function.BinaryOperator<A2> combiner2 = collector2.combiner();
+        final java.util.function.Function<A1, R1> finisher1 = collector1.finisher();
+        final java.util.function.Function<A2, R2> finisher2 = collector2.finisher();
+
+        final Supplier<Tuple2<A1, A2>> supplier = new Supplier<Tuple2<A1, A2>>() {
+            @Override
+            public Tuple2<A1, A2> get() {
+                return Tuple.of(supplier1.get(), supplier2.get());
+            }
+        };
+
+        final BiConsumer<Tuple2<A1, A2>, T> accumulator = new BiConsumer<Tuple2<A1, A2>, T>() {
+            @Override
+            public void accept(Tuple2<A1, A2> acct, T e) {
+                accumulator1.accept(acct._1, e);
+                accumulator2.accept(acct._2, e);
+            }
+        };
+
+        final BinaryOperator<Tuple2<A1, A2>> combiner = new BinaryOperator<Tuple2<A1, A2>>() {
+            @Override
+            public Tuple2<A1, A2> apply(Tuple2<A1, A2> t, Tuple2<A1, A2> u) {
+                return Tuple.of(combiner1.apply(t._1, u._1), combiner2.apply(t._2, u._2));
+            }
+        };
+
+        final List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+        common.remove(Characteristics.IDENTITY_FINISH);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+
+        final Function<Tuple2<A1, A2>, R> finalFinisher = new Function<Tuple2<A1, A2>, R>() {
+            @Override
+            public R apply(Tuple2<A1, A2> t) {
+                return finisher.apply(finisher1.apply(t._1), finisher2.apply(t._2));
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finalFinisher, characteristics);
+    }
+
+    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
+            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.stream.Collector<? super T, A3, R3> collector3,
+            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
+        final java.util.function.Supplier<A1> supplier1 = collector1.supplier();
+        final java.util.function.Supplier<A2> supplier2 = collector2.supplier();
+        final java.util.function.Supplier<A3> supplier3 = collector3.supplier();
+        final java.util.function.BiConsumer<A1, ? super T> accumulator1 = collector1.accumulator();
+        final java.util.function.BiConsumer<A2, ? super T> accumulator2 = collector2.accumulator();
+        final java.util.function.BiConsumer<A3, ? super T> accumulator3 = collector3.accumulator();
+        final java.util.function.BinaryOperator<A1> combiner1 = collector1.combiner();
+        final java.util.function.BinaryOperator<A2> combiner2 = collector2.combiner();
+        final java.util.function.BinaryOperator<A3> combiner3 = collector3.combiner();
+        final java.util.function.Function<A1, R1> finisher1 = collector1.finisher();
+        final java.util.function.Function<A2, R2> finisher2 = collector2.finisher();
+        final java.util.function.Function<A3, R3> finisher3 = collector3.finisher();
+
+        final Supplier<Tuple3<A1, A2, A3>> supplier = new Supplier<Tuple3<A1, A2, A3>>() {
+            @Override
+            public Tuple3<A1, A2, A3> get() {
+                return Tuple.of(supplier1.get(), supplier2.get(), supplier3.get());
+            }
+        };
+
+        final BiConsumer<Tuple3<A1, A2, A3>, T> accumulator = new BiConsumer<Tuple3<A1, A2, A3>, T>() {
+            @Override
+            public void accept(Tuple3<A1, A2, A3> acct, T e) {
+                accumulator1.accept(acct._1, e);
+                accumulator2.accept(acct._2, e);
+                accumulator3.accept(acct._3, e);
+            }
+        };
+
+        final BinaryOperator<Tuple3<A1, A2, A3>> combiner = new BinaryOperator<Tuple3<A1, A2, A3>>() {
+            @Override
+            public Tuple3<A1, A2, A3> apply(Tuple3<A1, A2, A3> t, Tuple3<A1, A2, A3> u) {
+                return Tuple.of(combiner1.apply(t._1, u._1), combiner2.apply(t._2, u._2), combiner3.apply(t._3, u._3));
+            }
+        };
+
+        List<Characteristics> common = N.intersection(collector1.characteristics(), collector2.characteristics());
+
+        if (N.notNullOrEmpty(common)) {
+            common = N.intersection(common, collector3.characteristics());
+        }
+
+        common.remove(Characteristics.IDENTITY_FINISH);
+        final Set<Characteristics> characteristics = N.isNullOrEmpty(common) ? CH_NOID : new HashSet<>(common);
+
+        final Function<Tuple3<A1, A2, A3>, R> finalFinisher = new Function<Tuple3<A1, A2, A3>, R>() {
+            @Override
+            public R apply(Tuple3<A1, A2, A3> t) {
+                return finisher.apply(finisher1.apply(t._1), finisher2.apply(t._2), finisher3.apply(t._3));
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finalFinisher, characteristics);
     }
 
     @SuppressWarnings("rawtypes")

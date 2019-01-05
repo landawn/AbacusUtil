@@ -31,12 +31,18 @@ public interface ToIntFunction<T> extends java.util.function.ToIntFunction<T>, T
         }
     };
 
-    static final ToIntFunction<Number> NUM = new ToIntFunction<Number>() {
+    static final ToIntFunction<Number> FROM_NUM = new ToIntFunction<Number>() {
         @Override
         public int applyAsInt(Number value) {
             return value == null ? 0 : value.intValue();
         }
     };
+
+    /**
+     * @deprecated replaced with {@code FROM_NUM}.
+     */
+    @Deprecated
+    static final ToIntFunction<Number> NUM = FROM_NUM;
 
     @Override
     int applyAsInt(T value);
