@@ -108,8 +108,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
-[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html), 
-[EntryStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EntryStream_view.html), 
+[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html),  
 [CharStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharStream_view.html), 
 [ByteStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteStream_view.html), 
 [ShortStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortStream_view.html), 
@@ -117,6 +116,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [LongStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongStream_view.html), 
 [FloatStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/FloatStream_view.html), 
 [DoubleStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleStream_view.html), 
+[EntryStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/EntryStream_view.html), 
+[ExceptionalStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ExceptionalStream_view.html), 
 [Fn](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Fn_view.html) and more 
 [Collectors](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Collectors_view.html).
 
