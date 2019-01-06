@@ -841,7 +841,9 @@ public final class DateUtil {
      * @param amount
      * @param unit
      * @return a new instance of Date with the specified amount rolled.
+     * @deprecated replaced by {@code addYears/addMonths/addWeeks/...}
      */
+    @Deprecated
     public static <T extends java.util.Date> T roll(final T date, final long amount, final TimeUnit unit) {
         N.checkArgNotNull(date, "date");
 
@@ -859,7 +861,9 @@ public final class DateUtil {
      * @param amount
      * @param unit
      * @return a new instance of Date with the specified amount rolled.
+     * @deprecated replaced by {@code addYears/addMonths/addWeeks/...}
      */
+    @Deprecated
     public static <T extends java.util.Date> T roll(final T date, final long amount, final CalendarUnit unit) {
         N.checkArgNotNull(date, "date");
 
@@ -891,7 +895,9 @@ public final class DateUtil {
      * @param amount
      * @param unit
      * @return a new instance of Calendar with the specified amount rolled.
+     * @deprecated replaced by {@code addYears/addMonths/addWeeks/...}
      */
+    @Deprecated
     public static <T extends Calendar> T roll(final T calendar, final long amount, final TimeUnit unit) {
         N.checkArgNotNull(calendar, "calendar");
 
@@ -909,7 +915,9 @@ public final class DateUtil {
      * @param amount
      * @param unit
      * @return a new instance of Calendar with the specified amount rolled.
+     * @deprecated replaced by {@code addYears/addMonths/addWeeks/...}
      */
+    @Deprecated
     public static <T extends Calendar> T roll(final T calendar, final long amount, final CalendarUnit unit) {
         N.checkArgNotNull(calendar, "calendar");
 
@@ -925,6 +933,231 @@ public final class DateUtil {
     }
 
     //-----------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of years to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addYears(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.YEAR);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of months to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addMonths(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.MONTH);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of weeks to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addWeeks(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.WEEK);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of days to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addDays(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.DAY);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of hours to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addHours(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.HOUR);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of minutes to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addMinutes(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.MINUTE);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of seconds to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addSeconds(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.SECOND);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of milliseconds to a date returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param date  the date, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the date is null
+     */
+    public static <T extends java.util.Date> T addMilliseconds(final T date, final int amount) {
+        return roll(date, amount, CalendarUnit.MILLISECOND);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of years to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addYears(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.YEAR);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of months to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addMonths(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.MONTH);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of weeks to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addWeeks(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.WEEK);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of days to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addDays(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.DAY);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of hours to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addHours(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.HOUR);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of minutes to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addMinutes(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.MINUTE);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of seconds to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addSeconds(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.SECOND);
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a number of milliseconds to a calendar returning a new object.
+     * The original {@code Date} is unchanged.
+     *
+     * @param calendar  the calendar, not null
+     * @param amount  the amount to add, may be negative
+     * @return the new {@code Date} with the amount added
+     * @throws IllegalArgumentException if the calendar is null
+     */
+    public static <T extends Calendar> T addMilliseconds(final T calendar, final int amount) {
+        return roll(calendar, amount, CalendarUnit.MILLISECOND);
+    }
+
     /**
      * Copied from Apache Commons Lang under Apache License v2.
      * <br />

@@ -38,6 +38,6 @@
 	<classpathentry kind="lib" path="lib/neo4j-ogm-core-2.0.0-M03.jar"/>
 	<classpathentry kind="lib" path="lib/neo4j-ogm-http-driver-2.0.0-M03.jar"/>
 	<classpathentry kind="lib" path="lib/javaee-api-7.0.jar"/>
-	<classpathentry kind="lib" path="lib/abacus-util-1.3.27.jar"/>
+	<classpathentry kind="lib" path="lib/abacus-util-1.3.28.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
