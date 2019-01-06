@@ -1,3 +1,10 @@
+### 1.3.28
+
+* Remove `HttpClient.request`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.27
 
 * Rename `PreparedQuery/PreparedCallableQuery.applyAsync/acceptAsync` to `PreparedQuery/PreparedCallableQuery.asyncApply/asyncAccept`.
