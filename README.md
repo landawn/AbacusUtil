@@ -108,7 +108,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: 
 [BaseStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BaseStream_view.html), 
-[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html),  
+[Stream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Stream_view.html), 
 [CharStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CharStream_view.html), 
 [ByteStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ByteStream_view.html), 
 [ShortStream](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ShortStream_view.html), 
