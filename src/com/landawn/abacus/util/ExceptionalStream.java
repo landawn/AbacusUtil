@@ -123,27 +123,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Collection<T> c) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
 
-        return newStream(new ExceptionalIterator<T, E>() {
-            private Iterator<T> iter = c.iterator();
-
-            @Override
-            public boolean hasNext() throws E {
-                return iter.hasNext();
-            }
-
-            @Override
-            public T next() throws E {
-                return iter.next();
-            }
-        });
+        return of(c.iterator());
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterator<T> iter) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterator<? extends T> iter) {
         if (iter == null) {
             return empty();
         }
@@ -161,12 +149,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterable<T> iterable) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterable<? extends T> iterable) {
         if (iterable == null) {
             return empty();
         }
 
         return of(iterable.iterator());
+    }
+
+    public static <K, V, E extends Exception> ExceptionalStream<Map.Entry<K, V>, E> of(final Map<K, V> m) {
+        if (m == null) {
+            return empty();
+        }
+
+        return of(m.entrySet());
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> of(final Stream<? extends T> stream) {
@@ -228,6 +224,26 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 iter.close();
             }
         });
+    }
+
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Collection<? extends T> c, final Class<E> exceptionType) {
+        return of(c);
+    }
+
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterator<? extends T> iter, final Class<E> exceptionType) {
+        return of(iter);
+    }
+
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Iterable<? extends T> iterable, final Class<E> exceptionType) {
+        return of(iterable);
+    }
+
+    public static <K, V, E extends Exception> ExceptionalStream<Map.Entry<K, V>, E> of(final Map<K, V> m, final Class<E> exceptionType) {
+        return of(m);
+    }
+
+    public static <T, E extends Exception> ExceptionalStream<T, E> of(final Stream<? extends T> stream, final Class<E> exceptionType) {
+        return of(stream);
     }
 
     public static Try<ExceptionalStream<String, IOException>> of(final File file) {

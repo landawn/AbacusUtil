@@ -361,6 +361,8 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
+    // public abstract <U> Stream<U> mapp(Function<? super T, ? extends Optional<? extends U>> mapper);
+
     /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying

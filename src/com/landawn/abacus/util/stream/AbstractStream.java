@@ -326,6 +326,27 @@ abstract class AbstractStream<T> extends Stream<T> {
         return mapToEntry(mapper);
     }
 
+    //    private static final Predicate<Optional<?>> IS_PRESENT = new Predicate<Optional<?>>() {
+    //        @Override
+    //        public boolean test(Optional<?> t) {
+    //            return t.isPresent();
+    //        }
+    //    };
+    //
+    //    private static final Function<Optional<Object>, Object> OPTIONAL_GET = new Function<Optional<Object>, Object>() {
+    //        @Override
+    //        public Object apply(Optional<Object> t) {
+    //            return t.get();
+    //        }
+    //    };
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    @Override
+    //    public <U> Stream<U> mapp(Function<? super T, ? extends Optional<? extends U>> mapper) {
+    //        final Function<Optional<? extends U>, U> optionalGetter = (Function) OPTIONAL_GET;
+    //        return map(mapper).filter(IS_PRESENT).map(optionalGetter);
+    //    }
+
     @Override
     public <R> Stream<R> flattMap(final Function<? super T, ? extends Collection<? extends R>> mapper) {
         return flatMap(new Function<T, Stream<? extends R>>() {

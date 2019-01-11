@@ -1,3 +1,8 @@
+### 1.3.29
+
+* Improvements and bug fix.
+
+
 ### 1.3.28
 
 * Remove `HttpClient.request`.
