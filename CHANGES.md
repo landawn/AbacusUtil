@@ -1,5 +1,9 @@
 ### 1.3.29
 
+* Add `Result<T, Throwable>`.
+
+* Refactoring `ContinuableFuture` with `Result<T, Throwable`.
+
 * Improvements and bug fix.
 
 

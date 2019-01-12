@@ -26,7 +26,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Result;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.Tuple.Tuple4;
@@ -179,19 +179,19 @@ public class ContinuableFuture<T> implements Future<T> {
         return future.get(timeout, unit);
     }
 
-    public Pair<T, Exception> gett() {
+    public Result<T, Exception> gett() {
         try {
-            return Pair.of(get(), null);
+            return Result.of(get(), null);
         } catch (Exception e) {
-            return Pair.of(null, e);
+            return Result.of(null, e);
         }
     }
 
-    public Pair<T, Exception> gett(final long timeout, final TimeUnit unit) {
+    public Result<T, Exception> gett(final long timeout, final TimeUnit unit) {
         try {
-            return Pair.of(get(timeout, unit), null);
+            return Result.of(get(timeout, unit), null);
         } catch (Exception e) {
-            return Pair.of(null, e);
+            return Result.of(null, e);
         }
     }
 
@@ -209,14 +209,14 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public <U, E extends Exception> U getThenApply(final Try.BiFunction<? super T, ? super Exception, ? extends U, E> action) throws E {
-        final Pair<T, Exception> result = gett();
-        return action.apply(result.left, result.right);
+        final Result<T, Exception> result = gett();
+        return action.apply(result.orElse(null), result.getExceptionIfPresent());
     }
 
     public <U, E extends Exception> U getThenApply(final long timeout, final TimeUnit unit,
             final Try.BiFunction<? super T, ? super Exception, ? extends U, E> action) throws E {
-        final Pair<T, Exception> result = gett(timeout, unit);
-        return action.apply(result.left, result.right);
+        final Result<T, Exception> result = gett(timeout, unit);
+        return action.apply(result.orElse(null), result.getExceptionIfPresent());
     }
 
     public <E extends Exception> void getThenAccept(final Try.Consumer<? super T, E> action) throws InterruptedException, ExecutionException, E {
@@ -229,14 +229,14 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public <E extends Exception> void getThenAccept(final Try.BiConsumer<? super T, ? super Exception, E> action) throws E {
-        final Pair<T, Exception> result = gett();
-        action.accept(result.left, result.right);
+        final Result<T, Exception> result = gett();
+        action.accept(result.orElse(null), result.getExceptionIfPresent());
     }
 
     public <E extends Exception> void getThenAccept(final long timeout, final TimeUnit unit, final Try.BiConsumer<? super T, ? super Exception, E> action)
             throws E {
-        final Pair<T, Exception> result = gett(timeout, unit);
-        action.accept(result.left, result.right);
+        final Result<T, Exception> result = gett(timeout, unit);
+        action.accept(result.orElse(null), result.getExceptionIfPresent());
     }
 
     //    public void complete() throws InterruptedException, ExecutionException {
@@ -252,8 +252,8 @@ public class ContinuableFuture<T> implements Future<T> {
     //    }
     //
     //    public void complete(Try.BiConsumer<? super T, Exception, E> action)  {
-    //        final Pair<T, Exception> result = gett();
-    //        action.accept(result.left, result.right);
+    //        final Result<T, Exception> result = gett();
+    //        action.accept(result.orElse(null), result.getExceptionIfPresent());
     //    }
 
     <U, E extends Exception> ContinuableFuture<U> thenApply(final Try.Function<? super T, ? extends U, E> action) {
@@ -326,16 +326,16 @@ public class ContinuableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public U get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = gett();
+    //                final Result<T, Exception> result = gett();
     //
-    //                return action.apply(result.left, result.right);
+    //                return action.apply(result.orElse(null), result.getExceptionIfPresent());
     //            }
     //
     //            @Override
     //            public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = gett(timeout, unit);
+    //                final Result<T, Exception> result = gett(timeout, unit);
     //
-    //                return action.apply(result.left, result.right);
+    //                return action.apply(result.orElse(null), result.getExceptionIfPresent());
     //            }
     //        }, null, asyncExecutor) {
     //            @Override
@@ -435,10 +435,10 @@ public class ContinuableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public R get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = gett();
+    //                final Result<T, Exception> result = gett();
     //                final Pair<? extends U, Exception> result2 = other.gett();
     //
-    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result2.right));
+    //                return action.apply(Tuple.of(result.orElse(null), result.getExceptionIfPresent(), (U) result2.left, result2.right));
     //            }
     //
     //            @Override
@@ -447,10 +447,10 @@ public class ContinuableFuture<T> implements Future<T> {
     //                final long now = N.currentMillis();
     //                final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
     //
-    //                final Pair<T, Exception> result = ContinuableFuture.this.gett(timeout, unit);
+    //                final Result<T, Exception> result = ContinuableFuture.this.gett(timeout, unit);
     //                final Pair<? extends U, Exception> result2 = other.gett(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
     //
-    //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result2.right));
+    //                return action.apply(Tuple.of(result.orElse(null), result.getExceptionIfPresent(), (U) result2.left, result2.right));
     //            }
     //        }, null, asyncExecutor) {
     //            @Override
@@ -510,8 +510,8 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = gett();
-                action.accept(result.left, result.right);
+                final Result<T, Exception> result = gett();
+                action.accept(result.orElse(null), result.getExceptionIfPresent());
                 return null;
             }
         });
@@ -541,8 +541,8 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = gett();
-                return action.apply(result.left, result.right);
+                final Result<T, Exception> result = gett();
+                return action.apply(result.orElse(null), result.getExceptionIfPresent());
             }
         });
     }
@@ -622,9 +622,9 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = gett();
-                final Pair<U, Exception> result2 = other.gett();
-                action.accept(Tuple.of(result.left, result.right, result2.left, result2.right));
+                final Result<T, Exception> result = gett();
+                final Result<U, Exception> result2 = other.gett();
+                action.accept(Tuple.of(result.orElse(null), result.getExceptionIfPresent(), result2.orElse(null), result2.getExceptionIfPresent()));
 
                 return null;
             }
@@ -656,10 +656,10 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = gett();
-                final Pair<U, Exception> result2 = other.gett();
+                final Result<T, Exception> result = gett();
+                final Result<U, Exception> result2 = other.gett();
 
-                return action.apply(Tuple.of(result.left, result.right, result2.left, result2.right));
+                return action.apply(Tuple.of(result.orElse(null), result.getExceptionIfPresent(), result2.orElse(null), result2.getExceptionIfPresent()));
             }
         }, other);
     }
@@ -743,8 +743,8 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = Futures.anyOf(N.asList(ContinuableFuture.this, other)).gett();
-                action.accept(result.left, result.right);
+                final Result<T, Exception> result = Futures.anyOf(N.asList(ContinuableFuture.this, other)).gett();
+                action.accept(result.orElse(null), result.getExceptionIfPresent());
                 return null;
             }
         }, other);
@@ -778,9 +778,9 @@ public class ContinuableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = Futures.anyOf(N.asList(ContinuableFuture.this, other)).gett();
+                final Result<T, Exception> result = Futures.anyOf(N.asList(ContinuableFuture.this, other)).gett();
 
-                return action.apply(result.left, result.right);
+                return action.apply(result.orElse(null), result.getExceptionIfPresent());
             }
         }, other);
     }
@@ -945,11 +945,11 @@ public class ContinuableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public T get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = gett();
+    //                final Result<T, Exception> result = gett();
     //
     //                if (result.right != null) {
     //                    try {
-    //                        action.accept(result.left, result.right);
+    //                        action.accept(result.orElse(null), result.getExceptionIfPresent());
     //                    } catch (Exception e) {
     //                        // ignore.
     //                    }
@@ -962,18 +962,18 @@ public class ContinuableFuture<T> implements Future<T> {
     //                        throw N.toRuntimeException(result.right);
     //                    }
     //                } else {
-    //                    action.accept(result.left, result.right);
+    //                    action.accept(result.orElse(null), result.getExceptionIfPresent());
     //                    return result.left;
     //                }
     //            }
     //
     //            @Override
     //            public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = gett(timeout, unit);
+    //                final Result<T, Exception> result = gett(timeout, unit);
     //
     //                if (result.right != null) {
     //                    try {
-    //                        action.accept(result.left, result.right);
+    //                        action.accept(result.orElse(null), result.getExceptionIfPresent());
     //                    } catch (Exception e) {
     //                        // ignore.
     //                    }
@@ -986,7 +986,7 @@ public class ContinuableFuture<T> implements Future<T> {
     //                        throw N.toRuntimeException(result.right);
     //                    }
     //                } else {
-    //                    action.accept(result.left, result.right);
+    //                    action.accept(result.orElse(null), result.getExceptionIfPresent());
     //                    return result.left;
     //                }
     //            }
@@ -1012,14 +1012,14 @@ public class ContinuableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public U get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = gett();
-    //                return action.apply(result.left, result.right);
+    //                final Result<T, Exception> result = gett();
+    //                return action.apply(result.orElse(null), result.getExceptionIfPresent());
     //            }
     //
     //            @Override
     //            public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = gett(timeout, unit);
-    //                return action.apply(result.left, result.right);
+    //                final Result<T, Exception> result = gett(timeout, unit);
+    //                return action.apply(result.orElse(null), result.getExceptionIfPresent());
     //            }
     //        }, asyncExecutor);
     //    }
