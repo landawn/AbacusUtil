@@ -8,6 +8,8 @@
 
 * Refactoring `CodeGenerator`.
 
+* Rename `NonUniqueResultException` to `DuplicatedResultException`.
+
 * Improvements and bug fix.
 
 
