@@ -66,7 +66,7 @@ public final class NamedCQL {
         }
 
         if (isNamedCQLPrefix) {
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
             int countOfParameter = 0;
 
             for (String word : words) {
@@ -92,7 +92,7 @@ public final class NamedCQL {
             parameterCount = countOfParameter;
             pureCQL = sb.toString();
 
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         } else {
             pureCQL = cql;
             parameterCount = 0;
@@ -185,7 +185,7 @@ public final class NamedCQL {
         }
 
         if (isNamedCQLPrefix) {
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
             int countOfParameter = 0;
 
             for (String word : words) {
@@ -231,7 +231,7 @@ public final class NamedCQL {
             couchbaseParameterCount = countOfParameter;
             couchbasePureCQL = sb.toString();
 
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         } else {
             couchbaseParameterCount = 0;
             couchbasePureCQL = namedCQL;

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
@@ -1953,17 +1953,17 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     /**
      * 
      * @return
-     * @throws NonUniqueResultException if there are more than one elements.
+     * @throws DuplicatedResultException if there are more than one elements.
      * @throws E
      */
-    public Optional<T> onlyOne() throws NonUniqueResultException, E {
+    public Optional<T> onlyOne() throws DuplicatedResultException, E {
         Optional<T> result = Optional.empty();
 
         if (elements.hasNext()) {
             result = Optional.of(elements.next());
 
             if (elements.hasNext()) {
-                throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", elements.next()));
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", elements.next()));
             }
         }
 

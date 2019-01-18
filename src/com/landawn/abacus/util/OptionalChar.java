@@ -100,6 +100,16 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         }
     }
 
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<Character, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.CharFunction<T, E> mapper) throws E {
         Objects.requireNonNull(mapper);
 

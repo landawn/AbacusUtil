@@ -100,6 +100,16 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         }
     }
 
+    public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<Float, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalDouble.of(mapper.applyAsDouble(value));
+        } else {
+            return OptionalDouble.empty();
+        }
+    }
+
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.FloatFunction<T, E> mapper) throws E {
         Objects.requireNonNull(mapper);
 

@@ -15,7 +15,7 @@
 package com.landawn.abacus.logging;
 
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectFactory;
+import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -415,7 +415,7 @@ public abstract class AbstractLogger implements Logger {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 16);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -437,7 +437,7 @@ public abstract class AbstractLogger implements Logger {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -446,7 +446,7 @@ public abstract class AbstractLogger implements Logger {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 32);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 32);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -490,7 +490,7 @@ public abstract class AbstractLogger implements Logger {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -499,7 +499,7 @@ public abstract class AbstractLogger implements Logger {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 48);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 48);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -559,7 +559,7 @@ public abstract class AbstractLogger implements Logger {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -583,7 +583,7 @@ public abstract class AbstractLogger implements Logger {
         }
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16 * args.length);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 16 * args.length);
         int templateStart = 0;
         int i = 0;
 
@@ -617,7 +617,7 @@ public abstract class AbstractLogger implements Logger {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }

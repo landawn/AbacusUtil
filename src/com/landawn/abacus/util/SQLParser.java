@@ -104,7 +104,7 @@ public final class SQLParser {
 
     public static List<String> parse(String sql) {
         final int sqlLength = sql.length();
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
         final List<String> words = new ArrayList<>();
 
         char quoteChar = 0;
@@ -178,7 +178,7 @@ public final class SQLParser {
             }
         }
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return words;
     }
@@ -194,7 +194,7 @@ public final class SQLParser {
         }
 
         if ((subWords == null) || (subWords.length <= 1)) {
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
             final int sqlLength = sql.length();
             char quoteChar = 0;
 
@@ -273,7 +273,7 @@ public final class SQLParser {
                 }
             }
 
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         } else {
             result = indexWord(sql, subWords[0], fromIndex, caseSensitive);
 
@@ -300,7 +300,7 @@ public final class SQLParser {
 
     public static String nextWord(String sql, int fromIndex) {
         final int sqlLength = sql.length();
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         char quoteChar = 0;
 
@@ -352,7 +352,7 @@ public final class SQLParser {
         }
 
         String st = (sb.length() == 0) ? null : sb.toString();
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return st;
     }

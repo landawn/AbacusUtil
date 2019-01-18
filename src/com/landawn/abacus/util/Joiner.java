@@ -1144,7 +1144,7 @@ public class Joiner implements AutoCloseable {
                 buffer.append(delimiter);
             }
         } else {
-            buffer = (reuseStringBuilder ? ObjectFactory.createStringBuilder() : new StringBuilder()).append(prefix);
+            buffer = (reuseStringBuilder ? Objectory.createStringBuilder() : new StringBuilder()).append(prefix);
         }
         return buffer;
     }
@@ -1200,7 +1200,7 @@ public class Joiner implements AutoCloseable {
                 }
             } finally {
                 if (reuseStringBuilder) {
-                    ObjectFactory.recycle(buffer);
+                    Objectory.recycle(buffer);
                     buffer = null;
                 }
             }
@@ -1262,7 +1262,7 @@ public class Joiner implements AutoCloseable {
     @Override
     public void close() {
         if (buffer != null && reuseStringBuilder) {
-            ObjectFactory.recycle(buffer);
+            Objectory.recycle(buffer);
             buffer = null;
         }
     }

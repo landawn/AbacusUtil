@@ -22,7 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.Joiner;
@@ -370,13 +370,13 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public OptionalShort onlyOne() throws NonUniqueResultException {
+    public OptionalShort onlyOne() throws DuplicatedResultException {
         final ShortIterator iter = this.iteratorEx();
 
         final OptionalShort result = iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
 
         if (result.isPresent() && iter.hasNext()) {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextShort()));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextShort()));
         }
 
         return result;

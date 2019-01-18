@@ -68,7 +68,7 @@ public final class NamedSQL {
         final List<String> namedParameterList = new ArrayList<>();
 
         if (isNamedSQLPrefix) {
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
 
             for (String word : words) {
                 if (word.equals(WD.QUESTION_MARK)) {
@@ -94,7 +94,7 @@ public final class NamedSQL {
             pureSQL = sb.toString();
             namedParameters = ImmutableList.of(namedParameterList);
 
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         } else {
             pureSQL = sql;
             namedParameters = ImmutableList.empty();
@@ -191,7 +191,7 @@ public final class NamedSQL {
         }
 
         if (isNamedSQLPrefix) {
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
             int countOfParameter = 0;
 
             for (String word : words) {
@@ -240,7 +240,7 @@ public final class NamedSQL {
             couchbaseNamedParameters = ImmutableList.of(couchbaseNamedParameterList);
             couchbaseParameterCount = countOfParameter;
 
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         } else {
             couchbasePureSQL = namedSQL;
             couchbaseNamedParameters = ImmutableList.empty();

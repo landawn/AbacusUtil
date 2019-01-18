@@ -22,7 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleMatrix;
@@ -434,13 +434,13 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public OptionalDouble onlyOne() throws NonUniqueResultException {
+    public OptionalDouble onlyOne() throws DuplicatedResultException {
         final DoubleIterator iter = this.iteratorEx();
 
         final OptionalDouble result = iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
 
         if (result.isPresent() && iter.hasNext()) {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextDouble()));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextDouble()));
         }
 
         return result;

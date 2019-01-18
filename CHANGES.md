@@ -4,6 +4,10 @@
 
 * Refactoring `ContinuableFuture` with `Result<T, Throwable`.
 
+* Refactoring `HttpClient/OKHttpClient`.
+
+* Refactoring `CodeGenerator`.
+
 * Improvements and bug fix.
 
 

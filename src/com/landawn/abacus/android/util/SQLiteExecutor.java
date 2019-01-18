@@ -48,14 +48,14 @@ import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.Nullable;
-import com.landawn.abacus.util.ObjectFactory;
+import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.ObjectPool;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalBoolean;
@@ -508,7 +508,7 @@ public final class SQLiteExecutor {
      * @param id
      * @param selectPropNames
      * @return
-     * @throws NonUniqueResultException if more than one records are found.
+     * @throws DuplicatedResultException if more than one records are found.
      */
     public <T> Optional<T> get(Class<T> targetClass, long id, Collection<String> selectPropNames) {
         return Optional.ofNullable(gett(targetClass, id, selectPropNames));
@@ -525,14 +525,14 @@ public final class SQLiteExecutor {
      * @param id
      * @param selectPropNames
      * @return
-     * @throws NonUniqueResultException if more than one records are found.
+     * @throws DuplicatedResultException if more than one records are found.
      */
     public <T> T gett(Class<T> targetClass, long id, Collection<String> selectPropNames) {
         final Condition whereClause = L.eq(ID, id);
         final List<T> entities = list(targetClass, selectPropNames, whereClause, null, 0, 2);
 
         if (entities.size() > 1) {
-            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
+            throw new DuplicatedResultException("More than one records found by condition: " + whereClause.toString());
         }
 
         return (entities.size() > 0) ? entities.get(0) : null;
@@ -1464,7 +1464,7 @@ public final class SQLiteExecutor {
 
     /**
      * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}. 
-     * And throws {@code NonUniqueResultException} if more than one record found.
+     * And throws {@code DuplicatedResultException} if more than one record found.
      *
      * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
      * {@code String} value of the target column is {@code "true"}, case insensitive. or it's an integer with value > 0.
@@ -1479,11 +1479,11 @@ public final class SQLiteExecutor {
      * <br>or limit only:</br>
      * <li><code>SELECT * FROM account where id = ? LIMIT <i>limitValue</i></code></li>
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters 
-     * @throws NonUniqueResultException if more than one record found.
+     * @throws DuplicatedResultException if more than one record found.
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, Object... parameters) throws NonUniqueResultException {
+    public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, Object... parameters) throws DuplicatedResultException {
         N.checkArgNotNull(targetClass, "targetClass");
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1500,22 +1500,22 @@ public final class SQLiteExecutor {
         } else if (ds.size() == 1) {
             return Nullable.of(N.convert(ds.get(0, 0), targetClass));
         } else {
-            throw new NonUniqueResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
+            throw new DuplicatedResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
         }
     }
 
     /**
      * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}. 
-     * And throws {@code NonUniqueResultException} if more than one record found.
+     * And throws {@code DuplicatedResultException} if more than one record found.
      * 
      * @param targetClass
      * @param sql
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if more than one record found.
+     * @throws DuplicatedResultException if more than one record found.
      */
     @SafeVarargs
-    public final <V> Optional<V> queryForUniqueNonNull(final Class<V> targetClass, final String sql, Object... parameters) throws NonUniqueResultException {
+    public final <V> Optional<V> queryForUniqueNonNull(final Class<V> targetClass, final String sql, Object... parameters) throws DuplicatedResultException {
         N.checkArgNotNull(targetClass, "targetClass");
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1532,7 +1532,7 @@ public final class SQLiteExecutor {
         } else if (ds.size() == 1) {
             return Optional.of(N.convert(ds.get(0, 0), targetClass));
         } else {
-            throw new NonUniqueResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
+            throw new DuplicatedResultException("At least two results found: " + Strings.concat(ds.get(0, 0), ", ", ds.get(1, 0)));
         }
     }
 
@@ -2068,7 +2068,7 @@ public final class SQLiteExecutor {
             return expr;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             final List<String> words = SQLParser.parse(expr);
@@ -2088,7 +2088,7 @@ public final class SQLiteExecutor {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -2211,7 +2211,7 @@ public final class SQLiteExecutor {
             return interpretCondition(conditionList.get(0));
         } else {
             final List<String> argList = new ArrayList<>();
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
 
             try {
                 for (int i = 0; i < conditionList.size(); i++) {
@@ -2244,7 +2244,7 @@ public final class SQLiteExecutor {
 
                 return cmd;
             } finally {
-                ObjectFactory.recycle(sb);
+                Objectory.recycle(sb);
             }
         }
     }
@@ -2309,7 +2309,7 @@ public final class SQLiteExecutor {
             if (N.isNullOrEmpty(args)) {
                 return sql;
             } else {
-                final StringBuilder sb = ObjectFactory.createStringBuilder();
+                final StringBuilder sb = Objectory.createStringBuilder();
 
                 try {
                     sb.append(sql);
@@ -2331,7 +2331,7 @@ public final class SQLiteExecutor {
                     return sb.toString();
 
                 } finally {
-                    ObjectFactory.recycle(sb);
+                    Objectory.recycle(sb);
                 }
             }
         }

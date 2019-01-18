@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
@@ -2335,7 +2335,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> onlyOne() throws NonUniqueResultException {
+    public Optional<T> onlyOne() throws DuplicatedResultException {
         final int size = toIndex - fromIndex;
 
         if (size == 0) {
@@ -2343,7 +2343,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         } else if (size == 1) {
             return Optional.of(elements[fromIndex]);
         } else {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
         }
     }
 

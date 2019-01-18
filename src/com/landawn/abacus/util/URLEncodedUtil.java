@@ -304,14 +304,14 @@ public final class URLEncodedUtil {
     }
 
     public static String encode(final Object parameters, final Charset charset) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             encode(sb, parameters, charset);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -324,7 +324,7 @@ public final class URLEncodedUtil {
             return url;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             sb.append(url);
@@ -333,7 +333,7 @@ public final class URLEncodedUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 

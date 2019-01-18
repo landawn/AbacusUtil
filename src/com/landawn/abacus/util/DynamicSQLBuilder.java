@@ -20,8 +20,8 @@ package com.landawn.abacus.util;
  *
  */
 public class DynamicSQLBuilder {
-    private Select select = new Select(ObjectFactory.createStringBuilder());
-    private From from = new From(ObjectFactory.createStringBuilder());
+    private Select select = new Select(Objectory.createStringBuilder());
+    private From from = new From(Objectory.createStringBuilder());
     private Where where;
     private GroupBy groupBy;
     private Having having;
@@ -47,7 +47,7 @@ public class DynamicSQLBuilder {
 
     public Where where() {
         if (where == null) {
-            where = new Where(ObjectFactory.createStringBuilder());
+            where = new Where(Objectory.createStringBuilder());
         }
 
         return where;
@@ -55,7 +55,7 @@ public class DynamicSQLBuilder {
 
     public GroupBy groupBy() {
         if (groupBy == null) {
-            groupBy = new GroupBy(ObjectFactory.createStringBuilder());
+            groupBy = new GroupBy(Objectory.createStringBuilder());
         }
 
         return groupBy;
@@ -63,7 +63,7 @@ public class DynamicSQLBuilder {
 
     public Having having() {
         if (having == null) {
-            having = new Having(ObjectFactory.createStringBuilder());
+            having = new Having(Objectory.createStringBuilder());
         }
 
         return having;
@@ -71,7 +71,7 @@ public class DynamicSQLBuilder {
 
     public OrderBy orderBy() {
         if (orderBy == null) {
-            orderBy = new OrderBy(ObjectFactory.createStringBuilder());
+            orderBy = new OrderBy(Objectory.createStringBuilder());
         }
 
         return orderBy;
@@ -97,7 +97,7 @@ public class DynamicSQLBuilder {
 
     public DynamicSQLBuilder union(final String query) {
         if (moreParts == null) {
-            moreParts = ObjectFactory.createStringBuilder();
+            moreParts = Objectory.createStringBuilder();
         }
 
         moreParts.append(" UNION ").append(query);
@@ -107,7 +107,7 @@ public class DynamicSQLBuilder {
 
     public DynamicSQLBuilder unionAll(final String query) {
         if (moreParts == null) {
-            moreParts = ObjectFactory.createStringBuilder();
+            moreParts = Objectory.createStringBuilder();
         }
 
         moreParts.append(" UNION ALL ").append(query);
@@ -117,7 +117,7 @@ public class DynamicSQLBuilder {
 
     public DynamicSQLBuilder intersect(final String query) {
         if (moreParts == null) {
-            moreParts = ObjectFactory.createStringBuilder();
+            moreParts = Objectory.createStringBuilder();
         }
 
         moreParts.append(" INTERSECT ").append(query);
@@ -127,7 +127,7 @@ public class DynamicSQLBuilder {
 
     public DynamicSQLBuilder except(final String query) {
         if (moreParts == null) {
-            moreParts = ObjectFactory.createStringBuilder();
+            moreParts = Objectory.createStringBuilder();
         }
 
         moreParts.append(" EXCEPT ").append(query);
@@ -137,7 +137,7 @@ public class DynamicSQLBuilder {
 
     public DynamicSQLBuilder minus(final String query) {
         if (moreParts == null) {
-            moreParts = ObjectFactory.createStringBuilder();
+            moreParts = Objectory.createStringBuilder();
         }
 
         moreParts.append(" MINUS ").append(query);
@@ -150,25 +150,25 @@ public class DynamicSQLBuilder {
 
         if (where != null) {
             select.sb.append(" ").append(where.sb);
-            ObjectFactory.recycle(where.sb);
+            Objectory.recycle(where.sb);
             where = null;
         }
 
         if (groupBy != null) {
             select.sb.append(" ").append(groupBy.sb);
-            ObjectFactory.recycle(groupBy.sb);
+            Objectory.recycle(groupBy.sb);
             groupBy = null;
         }
 
         if (having != null) {
             select.sb.append(" ").append(having.sb);
-            ObjectFactory.recycle(having.sb);
+            Objectory.recycle(having.sb);
             having = null;
         }
 
         if (orderBy != null) {
             select.sb.append(" ").append(orderBy.sb);
-            ObjectFactory.recycle(orderBy.sb);
+            Objectory.recycle(orderBy.sb);
             orderBy = null;
         }
 
@@ -178,12 +178,12 @@ public class DynamicSQLBuilder {
 
         if (moreParts != null) {
             select.sb.append(moreParts);
-            ObjectFactory.recycle(moreParts);
+            Objectory.recycle(moreParts);
         }
 
         final String sql = select.sb.toString();
-        ObjectFactory.recycle(from.sb);
-        ObjectFactory.recycle(select.sb);
+        Objectory.recycle(from.sb);
+        Objectory.recycle(select.sb);
 
         select = null;
         from = null;

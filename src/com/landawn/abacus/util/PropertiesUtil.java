@@ -656,12 +656,12 @@ public final class PropertiesUtil {
     }
 
     public static void store(Properties<?, ?> properties, OutputStream os, String comments) {
-        BufferedWriter bw = ObjectFactory.createBufferedWriter(os);
+        BufferedWriter bw = Objectory.createBufferedWriter(os);
 
         try {
             store(properties, bw, comments);
         } finally {
-            ObjectFactory.recycle(bw);
+            Objectory.recycle(bw);
         }
     }
 
@@ -710,7 +710,7 @@ public final class PropertiesUtil {
 
     private static void storeToXML(Properties<?, ?> properties, OutputStream os, String rootElementName, boolean ignoreTypeInfo, boolean isFirstCall)
             throws IOException {
-        final BufferedXMLWriter bw = ObjectFactory.createBufferedXMLWriter(os);
+        final BufferedXMLWriter bw = Objectory.createBufferedXMLWriter(os);
 
         try {
             if (isFirstCall) {
@@ -808,7 +808,7 @@ public final class PropertiesUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(bw);
+            Objectory.recycle(bw);
         }
     }
 
@@ -874,7 +874,7 @@ public final class PropertiesUtil {
                 className = StringUtil.capitalize(root.getNodeName());
             }
 
-            String classFilePath = CodeGenerator.makePackageFolder(srcPath, packageName);
+            String classFilePath = ClassUtil.makePackageFolder(srcPath, packageName);
             File classFile = new File(classFilePath + className + ".java");
 
             if (classFile.exists()) {

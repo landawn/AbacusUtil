@@ -15,10 +15,10 @@
  */
 package com.landawn.abacus.util;
 
-import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.DRIVER;
-import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.PASSWORD;
-import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.URL;
-import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.USER;
+import static com.landawn.abacus.dataSource.DataSourceConfiguration.DRIVER;
+import static com.landawn.abacus.dataSource.DataSourceConfiguration.PASSWORD;
+import static com.landawn.abacus.dataSource.DataSourceConfiguration.URL;
+import static com.landawn.abacus.dataSource.DataSourceConfiguration.USER;
 import static com.landawn.abacus.util.IOUtil.DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER;
 
 import java.io.ByteArrayInputStream;
@@ -80,16 +80,15 @@ import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.SliceSelector;
 import com.landawn.abacus.Transaction;
 import com.landawn.abacus.Transaction.Status;
-import com.landawn.abacus.core.AbacusConfiguration;
-import com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration;
-import com.landawn.abacus.core.AbacusConfiguration.DataSourceManagerConfiguration;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.core.sql.dataSource.NonSliceSelector;
-import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
-import com.landawn.abacus.core.sql.dataSource.SQLDataSourceManager;
-import com.landawn.abacus.core.sql.dataSource.SimpleSourceSelector;
+import com.landawn.abacus.dataSource.DataSourceConfiguration;
+import com.landawn.abacus.dataSource.DataSourceManagerConfiguration;
+import com.landawn.abacus.dataSource.NonSliceSelector;
+import com.landawn.abacus.dataSource.SQLDataSource;
+import com.landawn.abacus.dataSource.SQLDataSourceManager;
+import com.landawn.abacus.dataSource.SimpleSourceSelector;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -238,6 +237,10 @@ public final class JdbcUtil {
         return createDataSourceManager(dataSourceXmlInputStream, CURRENT_DIR_PATH);
     }
 
+    private static final String PROPERTIES = "properties";
+
+    private static final String RESOURCE = "resource";
+
     private static DataSourceManager createDataSourceManager(final InputStream dataSourceXmlInputStream, final String dataSourceXmlFile)
             throws UncheckedIOException, UncheckedSQLException {
         DocumentBuilder domParser = XMLUtil.createDOMParser();
@@ -249,12 +252,11 @@ public final class JdbcUtil {
             Element rootElement = doc.getDocumentElement();
 
             final Map<String, String> props = new HashMap<>();
-            List<Element> propertiesElementList = XMLUtil.getElementsByTagName(rootElement, AbacusConfiguration.PROPERTIES);
+            List<Element> propertiesElementList = XMLUtil.getElementsByTagName(rootElement, PROPERTIES);
 
             if (N.notNullOrEmpty(propertiesElementList)) {
                 for (Element propertiesElement : propertiesElementList) {
-                    File resourcePropertiesFile = Configuration.findFileByFile(new File(dataSourceXmlFile),
-                            propertiesElement.getAttribute(AbacusConfiguration.RESOURCE));
+                    File resourcePropertiesFile = Configuration.findFileByFile(new File(dataSourceXmlFile), propertiesElement.getAttribute(RESOURCE));
                     java.util.Properties properties = new java.util.Properties();
                     InputStream is = null;
 
@@ -2575,7 +2577,7 @@ public final class JdbcUtil {
                 batchInterval);
 
         long result = 0;
-        final BufferedReader br = ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = Objectory.createBufferedReader(reader);
 
         try {
             while (offset-- > 0 && br.readLine() != null) {
@@ -2616,7 +2618,7 @@ public final class JdbcUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
 
         return result;
@@ -4321,14 +4323,14 @@ public final class JdbcUtil {
 
         /**
          * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
-         * And throws {@code NonUniqueResultException} if more than one record found.
+         * And throws {@code DuplicatedResultException} if more than one record found.
          * 
          * @param targetClass
          * @return
-         * @throws NonUniqueResultException if more than one record found.
+         * @throws DuplicatedResultException if more than one record found.
          * @throws SQLException
          */
-        public <V> Nullable<V> queryForUniqueResult(Class<V> targetClass) throws NonUniqueResultException, SQLException {
+        public <V> Nullable<V> queryForUniqueResult(Class<V> targetClass) throws DuplicatedResultException, SQLException {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
@@ -4336,7 +4338,7 @@ public final class JdbcUtil {
                 final Nullable<V> result = rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
 
                 if (result.isPresent() && rs.next()) {
-                    throw new NonUniqueResultException(
+                    throw new DuplicatedResultException(
                             "At least two results found: " + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
                 }
 
@@ -4348,14 +4350,14 @@ public final class JdbcUtil {
 
         /**
          * Returns an {@code Optional} describing the value in the first row/column if it exists, otherwise return an empty {@code Optional}.
-         * And throws {@code NonUniqueResultException} if more than one record found.
+         * And throws {@code DuplicatedResultException} if more than one record found.
          * 
          * @param targetClass
          * @return
-         * @throws NonUniqueResultException if more than one record found.
+         * @throws DuplicatedResultException if more than one record found.
          * @throws SQLException
          */
-        public <V> Optional<V> queryForUniqueNonNull(Class<V> targetClass) throws NonUniqueResultException, SQLException {
+        public <V> Optional<V> queryForUniqueNonNull(Class<V> targetClass) throws DuplicatedResultException, SQLException {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
@@ -4363,7 +4365,7 @@ public final class JdbcUtil {
                 final Optional<V> result = rs.next() ? Optional.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Optional.<V> empty();
 
                 if (result.isPresent() && rs.next()) {
-                    throw new NonUniqueResultException(
+                    throw new DuplicatedResultException(
                             "At least two results found: " + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
                 }
 
@@ -4409,10 +4411,10 @@ public final class JdbcUtil {
          * 
          * @param targetClass
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          */
-        public <T> Optional<T> get(final Class<T> targetClass) throws NonUniqueResultException, SQLException {
+        public <T> Optional<T> get(final Class<T> targetClass) throws DuplicatedResultException, SQLException {
             return Optional.ofNullable(gett(targetClass));
         }
 
@@ -4420,11 +4422,11 @@ public final class JdbcUtil {
          * 
          * @param recordGetter
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Optional<T> get(RecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+        public <T, E extends Exception> Optional<T> get(RecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
             return Optional.ofNullable(gett(recordGetter));
         }
 
@@ -4432,11 +4434,11 @@ public final class JdbcUtil {
          * 
          * @param recordGetter
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
             return Optional.ofNullable(gett(recordGetter));
         }
 
@@ -4444,10 +4446,10 @@ public final class JdbcUtil {
          * 
          * @param targetClass
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          */
-        public <T> T gett(final Class<T> targetClass) throws NonUniqueResultException, SQLException {
+        public <T> T gett(final Class<T> targetClass) throws DuplicatedResultException, SQLException {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
@@ -4456,7 +4458,7 @@ public final class JdbcUtil {
                     final T result = Objects.requireNonNull(get(targetClass, rs));
 
                     if (rs.next()) {
-                        throw new NonUniqueResultException("There are more than one record found by the query");
+                        throw new DuplicatedResultException("There are more than one record found by the query");
                     }
 
                     return result;
@@ -4472,11 +4474,11 @@ public final class JdbcUtil {
          * 
          * @param recordGetter
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> T gett(RecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+        public <T, E extends Exception> T gett(RecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
@@ -4485,7 +4487,7 @@ public final class JdbcUtil {
                     final T result = Objects.requireNonNull(recordGetter.apply(rs));
 
                     if (rs.next()) {
-                        throw new NonUniqueResultException("There are more than one record found by the query");
+                        throw new DuplicatedResultException("There are more than one record found by the query");
                     }
 
                     return result;
@@ -4502,11 +4504,11 @@ public final class JdbcUtil {
          * 
          * @param recordGetter
          * @return
-         * @throws NonUniqueResultException If there are more than one record found by the query
+         * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> T gett(BiRecordGetter<T, E> recordGetter) throws NonUniqueResultException, SQLException, E {
+        public <T, E extends Exception> T gett(BiRecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
@@ -4515,7 +4517,7 @@ public final class JdbcUtil {
                     final T result = Objects.requireNonNull(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs)));
 
                     if (rs.next()) {
-                        throw new NonUniqueResultException("There are more than one record found by the query");
+                        throw new DuplicatedResultException("There are more than one record found by the query");
                     }
 
                     return result;

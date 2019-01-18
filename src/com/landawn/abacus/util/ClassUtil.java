@@ -2073,7 +2073,7 @@ public final class ClassUtil {
     }
 
     public static void toCamelCase(final Map<String, Object> props) {
-        final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
+        final Map<String, Object> tmp = Objectory.createLinkedHashMap();
 
         for (Map.Entry<String, Object> entry : props.entrySet()) {
             tmp.put(ClassUtil.toCamelCase(entry.getKey()), entry.getValue());
@@ -2082,7 +2082,7 @@ public final class ClassUtil {
         props.clear();
         props.putAll(tmp);
 
-        ObjectFactory.recycle(tmp);
+        Objectory.recycle(tmp);
     }
 
     /**
@@ -2107,7 +2107,7 @@ public final class ClassUtil {
     }
 
     public static void toLowerCaseKeyWithUnderscore(final Map<String, Object> props) {
-        final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
+        final Map<String, Object> tmp = Objectory.createLinkedHashMap();
 
         for (Map.Entry<String, Object> entry : props.entrySet()) {
             tmp.put(ClassUtil.toLowerCaseWithUnderscore(entry.getKey()), entry.getValue());
@@ -2116,7 +2116,7 @@ public final class ClassUtil {
         props.clear();
         props.putAll(tmp);
 
-        ObjectFactory.recycle(tmp);
+        Objectory.recycle(tmp);
     }
 
     /**
@@ -2141,7 +2141,7 @@ public final class ClassUtil {
     }
 
     public static void toUpperCaseKeyWithUnderscore(final Map<String, Object> props) {
-        final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
+        final Map<String, Object> tmp = Objectory.createLinkedHashMap();
 
         for (Map.Entry<String, Object> entry : props.entrySet()) {
             tmp.put(ClassUtil.toUpperCaseWithUnderscore(entry.getKey()), entry.getValue());
@@ -2150,7 +2150,7 @@ public final class ClassUtil {
         props.clear();
         props.putAll(tmp);
 
-        ObjectFactory.recycle(tmp);
+        Objectory.recycle(tmp);
     }
 
     static Map<String, Method> checkPropGetMethodList(final Class<?> cls) {
@@ -2161,6 +2161,19 @@ public final class ClassUtil {
         }
 
         return getterMethodList;
+    }
+
+    static String makePackageFolder(String srcPath, final String pkgName) {
+        srcPath = (srcPath.endsWith("/") || srcPath.endsWith("\\")) ? srcPath : (srcPath + File.separator);
+
+        String classFilePath = (pkgName == null) ? srcPath : (srcPath + pkgName.replace('.', File.separatorChar) + File.separator);
+        File classFileFolder = new File(classFilePath);
+
+        if (!classFileFolder.exists()) {
+            classFileFolder.mkdirs();
+        }
+
+        return classFilePath;
     }
 
     //    private static Class[] getTypeArguments(Class cls) {

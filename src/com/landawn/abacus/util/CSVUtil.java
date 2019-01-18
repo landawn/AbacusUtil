@@ -154,7 +154,7 @@ public final class CSVUtil {
             final Try.Predicate<String[], E> filter) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
 
-        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
+        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : Objectory.createBufferedReader(csvReader);
 
         try {
             List<String> tmp = new ArrayList<>();
@@ -206,7 +206,7 @@ public final class CSVUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
     }
@@ -307,7 +307,7 @@ public final class CSVUtil {
             long offset, long count, final Try.Predicate<String[], E> filter) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
 
-        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
+        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : Objectory.createBufferedReader(csvReader);
         final EntityInfo entityInfo = ParserUtil.getEntityInfo(entityClass);
 
         try {
@@ -368,7 +368,7 @@ public final class CSVUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
     }
@@ -466,7 +466,7 @@ public final class CSVUtil {
             throw new IllegalArgumentException("columnTypeMap can't be null or empty");
         }
 
-        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
+        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : Objectory.createBufferedReader(csvReader);
 
         try {
             List<String> tmp = new ArrayList<>();
@@ -519,7 +519,7 @@ public final class CSVUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
     }
@@ -617,7 +617,7 @@ public final class CSVUtil {
             throw new IllegalArgumentException("columnTypeList can't be null or empty");
         }
 
-        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
+        final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : Objectory.createBufferedReader(csvReader);
         final Type<?>[] columnTypes = columnTypeList.toArray(new Type[columnTypeList.size()]);
 
         try {
@@ -663,7 +663,7 @@ public final class CSVUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
     }
@@ -954,7 +954,7 @@ public final class CSVUtil {
 
         long result = 0;
         final Type<Object> strType = N.typeOf(String.class);
-        final BufferedJSONWriter bw = out instanceof BufferedJSONWriter ? (BufferedJSONWriter) out : ObjectFactory.createBufferedJSONWriter(out);
+        final BufferedJSONWriter bw = out instanceof BufferedJSONWriter ? (BufferedJSONWriter) out : Objectory.createBufferedJSONWriter(out);
 
         try {
             final ResultSetMetaData rsmd = rs.getMetaData();
@@ -1046,7 +1046,7 @@ public final class CSVUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (bw != out) {
-                ObjectFactory.recycle(bw);
+                Objectory.recycle(bw);
             }
         }
 
@@ -1206,7 +1206,7 @@ public final class CSVUtil {
                 batchInterval);
 
         long result = 0;
-        final BufferedReader br = ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = Objectory.createBufferedReader(reader);
 
         try {
             if (skipTitle) {
@@ -1261,7 +1261,7 @@ public final class CSVUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
 
         return result;
@@ -1420,7 +1420,7 @@ public final class CSVUtil {
                 batchInterval);
 
         long result = 0;
-        final BufferedReader br = ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = Objectory.createBufferedReader(reader);
 
         try {
             List<String> tmp = new ArrayList<>();
@@ -1497,7 +1497,7 @@ public final class CSVUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
 
         return result;
@@ -1653,7 +1653,7 @@ public final class CSVUtil {
                 batchInterval);
 
         long result = 0;
-        final BufferedReader br = ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = Objectory.createBufferedReader(reader);
 
         try {
             List<String> tmp = new ArrayList<>();
@@ -1693,7 +1693,7 @@ public final class CSVUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
 
         return result;

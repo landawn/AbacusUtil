@@ -22,7 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
@@ -365,13 +365,13 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public OptionalByte onlyOne() throws NonUniqueResultException {
+    public OptionalByte onlyOne() throws DuplicatedResultException {
         final ByteIterator iter = this.iteratorEx();
 
         final OptionalByte result = iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
 
         if (result.isPresent() && iter.hasNext()) {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextByte()));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextByte()));
         }
 
         return result;

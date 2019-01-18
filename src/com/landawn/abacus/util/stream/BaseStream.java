@@ -31,7 +31,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
@@ -672,10 +672,10 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     /**
      * 
      * @return
-     * @throws NonUniqueResultException if there are more than one element in this stream.
+     * @throws DuplicatedResultException if there are more than one element in this stream.
      */
     @SequentialOnly
-    OT onlyOne() throws NonUniqueResultException;
+    OT onlyOne() throws DuplicatedResultException;
 
     /**
      * Returns an array containing the elements of this stream.

@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -1354,7 +1354,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public OptionalFloat onlyOne() throws NonUniqueResultException {
+    public OptionalFloat onlyOne() throws DuplicatedResultException {
         final int size = toIndex - fromIndex;
 
         if (size == 0) {
@@ -1362,7 +1362,7 @@ class ArrayFloatStream extends AbstractFloatStream {
         } else if (size == 1) {
             return OptionalFloat.of(elements[fromIndex]);
         } else {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
         }
     }
 

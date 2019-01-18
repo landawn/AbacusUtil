@@ -65,7 +65,7 @@ import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.core.RowDataSet;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
 import com.landawn.abacus.pool.PoolableWrapper;
@@ -512,17 +512,17 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Optional<T> get(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
+    public final <T> Optional<T> get(final Class<T> targetClass, final Object... ids) throws DuplicatedResultException {
         return get(targetClass, null, ids);
     }
 
     @SafeVarargs
     public final <T> Optional<T> get(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return get(targetClass, selectPropNames, ids2Cond(targetClass, ids));
     }
 
-    public <T> Optional<T> get(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
+    public <T> Optional<T> get(final Class<T> targetClass, final Condition whereCause) throws DuplicatedResultException {
         return get(targetClass, null, whereCause);
     }
 
@@ -532,24 +532,24 @@ public final class CassandraExecutor implements Closeable {
      * @param selectPropNames
      * @param whereCause
      * @return
-     * @throws NonUniqueResultException if more than one record found.
+     * @throws DuplicatedResultException if more than one record found.
      */
     public <T> Optional<T> get(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return Optional.ofNullable(gett(targetClass, selectPropNames, whereCause));
     }
 
     @SafeVarargs
-    public final <T> T gett(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
+    public final <T> T gett(final Class<T> targetClass, final Object... ids) throws DuplicatedResultException {
         return gett(targetClass, null, ids);
     }
 
     @SafeVarargs
-    public final <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids) throws NonUniqueResultException {
+    public final <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids) throws DuplicatedResultException {
         return gett(targetClass, selectPropNames, ids2Cond(targetClass, ids));
     }
 
-    public <T> T gett(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
+    public <T> T gett(final Class<T> targetClass, final Condition whereCause) throws DuplicatedResultException {
         return gett(targetClass, null, whereCause);
     }
 
@@ -559,9 +559,9 @@ public final class CassandraExecutor implements Closeable {
      * @param selectPropNames
      * @param whereCause
      * @return
-     * @throws NonUniqueResultException if more than one record found.
+     * @throws DuplicatedResultException if more than one record found.
      */
-    public <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) throws NonUniqueResultException {
+    public <T> T gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) throws DuplicatedResultException {
         final CP pair = prepareQuery(targetClass, selectPropNames, whereCause, 2);
         final ResultSet resultSet = execute(pair.cql, pair.parameters.toArray());
         final Row row = resultSet.one();
@@ -571,7 +571,7 @@ public final class CassandraExecutor implements Closeable {
         } else if (resultSet.isExhausted()) {
             return toEntity(targetClass, row);
         } else {
-            throw new NonUniqueResultException();
+            throw new DuplicatedResultException();
         }
     }
 
@@ -1278,7 +1278,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SafeVarargs
     public final <T> ContinuableFuture<Optional<T>> asyncGet(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
@@ -1324,7 +1324,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SafeVarargs
     public final <T> ContinuableFuture<T> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() throws Exception {

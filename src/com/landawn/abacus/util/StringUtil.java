@@ -148,14 +148,14 @@ public abstract class StringUtil {
             return str;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             sb.append(str);
 
             return sb.reverse().toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -260,7 +260,7 @@ public abstract class StringUtil {
                 return padStr + padStr + padStr + str;
 
             default: {
-                final StringBuilder sb = ObjectFactory.createStringBuilder();
+                final StringBuilder sb = Objectory.createStringBuilder();
 
                 try {
                     for (int i = 0; i < delta; i++) {
@@ -271,7 +271,7 @@ public abstract class StringUtil {
 
                     return sb.toString();
                 } finally {
-                    ObjectFactory.recycle(sb);
+                    Objectory.recycle(sb);
                 }
             }
         }
@@ -324,7 +324,7 @@ public abstract class StringUtil {
                 return str + padStr + padStr + padStr;
 
             default: {
-                StringBuilder sb = ObjectFactory.createStringBuilder();
+                StringBuilder sb = Objectory.createStringBuilder();
 
                 try {
                     sb.append(str);
@@ -335,7 +335,7 @@ public abstract class StringUtil {
 
                     return sb.toString();
                 } finally {
-                    ObjectFactory.recycle(sb);
+                    Objectory.recycle(sb);
                 }
             }
         }
@@ -501,7 +501,7 @@ public abstract class StringUtil {
             return str;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = 0, len = str.length(); i < len; i++) {
@@ -528,7 +528,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -610,7 +610,7 @@ public abstract class StringUtil {
             return str;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = 0, len = str.length(); i < len; i++) {
@@ -637,7 +637,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -653,7 +653,7 @@ public abstract class StringUtil {
 
         if (str.indexOf(WD._UNDERSCORE) >= 0) {
             String[] substrs = StringUtil.split(str, WD._UNDERSCORE);
-            final StringBuilder sb = ObjectFactory.createStringBuilder();
+            final StringBuilder sb = Objectory.createStringBuilder();
 
             try {
 
@@ -668,7 +668,7 @@ public abstract class StringUtil {
 
                 return sb.toString();
             } finally {
-                ObjectFactory.recycle(sb);
+                Objectory.recycle(sb);
             }
         }
 
@@ -807,7 +807,7 @@ public abstract class StringUtil {
             return str;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
         final char[] chars = getCharsForReadOnly(str);
 
         try {
@@ -828,7 +828,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -1030,7 +1030,7 @@ public abstract class StringUtil {
             return str;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
         final int substrLength = target.length();
 
         try {
@@ -1049,7 +1049,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -1467,7 +1467,7 @@ public abstract class StringUtil {
 
         final int len = str.length();
         final char[] chs = getCharsForReadOnly(str);
-        final List<String> list = ObjectFactory.createList();
+        final List<String> list = Objectory.createList();
 
         try {
             int i = 0, start = 0;
@@ -1496,7 +1496,7 @@ public abstract class StringUtil {
 
             return list.toArray(new String[list.size()]);
         } finally {
-            ObjectFactory.recycle(list);
+            Objectory.recycle(list);
         }
     }
 
@@ -1519,7 +1519,7 @@ public abstract class StringUtil {
         }
 
         final int len = str.length();
-        final List<String> list = ObjectFactory.createList();
+        final List<String> list = Objectory.createList();
         int cnt = 1;
         int i = 0, start = 0;
         boolean match = false;
@@ -1626,7 +1626,7 @@ public abstract class StringUtil {
 
             return list.toArray(new String[list.size()]);
         } finally {
-            ObjectFactory.recycle(list);
+            Objectory.recycle(list);
         }
     }
 
@@ -4090,6 +4090,14 @@ public abstract class StringUtil {
         return false;
     }
 
+    public static boolean equals(final String a, final String b) {
+        return (a == null) ? b == null : (b == null ? false : a.length() == b.length() && a.equals(b));
+    }
+
+    public static boolean equalsIgnoreCase(final String a, final String b) {
+        return (a == null) ? b == null : (b == null ? false : a.equalsIgnoreCase(b));
+    }
+
     /**
      * <p>
      * Compares two Strings, and returns the index at which the Stringss begin
@@ -4932,7 +4940,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -4945,7 +4953,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -4958,7 +4966,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -4977,7 +4985,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5008,7 +5016,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5021,7 +5029,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5034,7 +5042,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5053,7 +5061,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5084,7 +5092,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5097,7 +5105,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5110,7 +5118,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5129,7 +5137,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5160,7 +5168,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5173,7 +5181,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5186,7 +5194,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5205,7 +5213,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5236,7 +5244,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5249,7 +5257,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5262,7 +5270,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5281,7 +5289,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5312,7 +5320,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5325,7 +5333,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5338,7 +5346,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5357,7 +5365,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5388,7 +5396,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5401,7 +5409,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5414,7 +5422,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5433,7 +5441,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5464,7 +5472,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5477,7 +5485,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5490,7 +5498,7 @@ public abstract class StringUtil {
             return N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5509,7 +5517,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5546,7 +5554,7 @@ public abstract class StringUtil {
             return trim ? N.toString(a[fromIndex]).trim() : N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -5559,7 +5567,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5576,7 +5584,7 @@ public abstract class StringUtil {
             return trim ? N.toString(a[fromIndex]).trim() : N.toString(a[fromIndex]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (N.isNullOrEmpty(delimiter)) {
@@ -5595,7 +5603,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5630,7 +5638,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             int i = 0;
@@ -5650,7 +5658,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5665,7 +5673,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             if (c instanceof List && c instanceof RandomAccess) {
@@ -5715,7 +5723,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5783,7 +5791,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             int i = 0;
@@ -5805,7 +5813,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5821,7 +5829,7 @@ public abstract class StringUtil {
             return N.EMPTY_STRING;
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             int i = 0;
@@ -5843,7 +5851,7 @@ public abstract class StringUtil {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5855,84 +5863,84 @@ public abstract class StringUtil {
      * @return
      */
     public static String concat(final String a, final String b) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d, final String e) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).append(e).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d, final String e, final String f) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).append(e).append(f).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g,
             final String h) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).append(h).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
     public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g, final String h,
             final String i) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).append(h).append(i).toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -5944,7 +5952,7 @@ public abstract class StringUtil {
             return N.toString(a[0]);
         }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (String e : a) {
@@ -5952,7 +5960,7 @@ public abstract class StringUtil {
             }
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -6620,7 +6628,7 @@ public abstract class StringUtil {
         }
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16 * args.length);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 16 * args.length);
         int templateStart = 0;
         int i = 0;
         while (i < args.length) {
@@ -6646,7 +6654,7 @@ public abstract class StringUtil {
         }
 
         final String result = sb.toString();
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
         return result;
     }
 

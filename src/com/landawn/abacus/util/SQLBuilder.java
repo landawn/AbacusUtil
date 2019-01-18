@@ -200,7 +200,7 @@ public abstract class SQLBuilder {
                     + ") StringBuilder instances are created in SQLBuilder. The method sql()/pair() must be called to release resources and close SQLBuilder");
         }
 
-        this.sb = ObjectFactory.createStringBuilder();
+        this.sb = Objectory.createStringBuilder();
 
         this.namingPolicy = namingPolicy == null ? NamingPolicy.LOWER_CASE_WITH_UNDERSCORE : namingPolicy;
         this.sqlPolicy = sqlPolicy == null ? SQLPolicy.SQL : sqlPolicy;
@@ -793,7 +793,7 @@ public abstract class SQLBuilder {
     }
 
     private String fromCause(Collection<String> tableNames) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             for (String tableName : tableNames) {
@@ -806,7 +806,7 @@ public abstract class SQLBuilder {
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -817,7 +817,7 @@ public abstract class SQLBuilder {
         //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
         //        }
 
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
         String fromCause = null;
 
         try {
@@ -833,7 +833,7 @@ public abstract class SQLBuilder {
 
             fromCause = sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
 
         return from(tableName, fromCause);
@@ -1917,7 +1917,7 @@ public abstract class SQLBuilder {
         try {
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
             sb = null;
 
             activeStringBuilderCounter.decrementAndGet();

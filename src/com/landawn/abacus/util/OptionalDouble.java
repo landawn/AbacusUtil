@@ -104,6 +104,26 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         }
     }
 
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<Double, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
+    public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<Double, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalLong.of(mapper.applyAsLong(value));
+        } else {
+            return OptionalLong.empty();
+        }
+    }
+
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.DoubleFunction<T, E> mapper) throws E {
         Objects.requireNonNull(mapper);
 

@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.type.Type;
@@ -63,7 +63,7 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
-import com.landawn.abacus.util.ObjectFactory;
+import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
@@ -1467,13 +1467,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Optional<T> onlyOne() throws NonUniqueResultException {
+    public Optional<T> onlyOne() throws DuplicatedResultException {
         final Iterator<T> iter = this.iteratorEx();
 
         final Optional<T> result = iter.hasNext() ? Optional.of(iter.next()) : Optional.<T> empty();
 
         if (result.isPresent() && iter.hasNext()) {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.next()));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.next()));
         }
 
         return result;
@@ -2419,19 +2419,19 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E {
-        final BufferedWriter bw = ObjectFactory.createBufferedWriter(os);
+        final BufferedWriter bw = Objectory.createBufferedWriter(os);
 
         try {
             return persist(bw, toLine);
         } finally {
-            ObjectFactory.recycle(bw);
+            Objectory.recycle(bw);
         }
     }
 
     @Override
     public <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E {
         final Iterator<T> iter = iterator();
-        final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : ObjectFactory.createBufferedWriter(writer);
+        final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
         long cnt = 0;
 
         try {
@@ -2444,7 +2444,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             throw new UncheckedIOException(e);
         } finally {
             if (bw != writer) {
-                ObjectFactory.recycle(bw);
+                Objectory.recycle(bw);
             }
         }
 

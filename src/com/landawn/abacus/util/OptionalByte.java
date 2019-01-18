@@ -100,6 +100,16 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         }
     }
 
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<Byte, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.ByteFunction<T, E> mapper) throws E {
         Objects.requireNonNull(mapper);
 

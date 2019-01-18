@@ -55,10 +55,10 @@ import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.dataSource.SQLDataSource;
 import com.landawn.abacus.condition.Equal;
-import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -1398,7 +1398,7 @@ public class SQLExecutor implements Closeable {
      * @param sql
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Class<T> targetClass, final String sql, final Object... parameters) {
@@ -1423,7 +1423,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
@@ -1438,7 +1438,7 @@ public class SQLExecutor implements Closeable {
      * @param sql
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
@@ -1466,7 +1466,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
@@ -1480,7 +1480,7 @@ public class SQLExecutor implements Closeable {
      * @param recordGetter
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
@@ -1505,7 +1505,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final String sql, final StatementSetter statementSetter, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
@@ -1520,7 +1520,7 @@ public class SQLExecutor implements Closeable {
      * @param recordGetter
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Connection conn, final String sql, final JdbcUtil.RecordGetter<T, RuntimeException> recordGetter,
@@ -1549,7 +1549,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
     public final <T> Optional<T> get(final Connection conn, final String sql, final StatementSetter statementSetter,
@@ -1603,7 +1603,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
@@ -1671,7 +1671,7 @@ public class SQLExecutor implements Closeable {
      * @param jdbcSettings
      * @param parameters
      * @return
-     * @throws NonUniqueResultException if two or more records are found.
+     * @throws DuplicatedResultException if two or more records are found.
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
@@ -1694,7 +1694,7 @@ public class SQLExecutor implements Closeable {
                     result = Objects.requireNonNull(recordGetter.apply(rs));
 
                     if (rs.next()) {
-                        throw new NonUniqueResultException("More than one records found by sql: " + sql);
+                        throw new DuplicatedResultException("More than one records found by sql: " + sql);
                     }
                 }
 
@@ -2251,47 +2251,47 @@ public class SQLExecutor implements Closeable {
 
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final Object... parameters)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
-            final Object... parameters) throws NonUniqueResultException {
+            final Object... parameters) throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, sql, statementSetter, null, parameters);
     }
 
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) throws NonUniqueResultException {
+            final JdbcSettings jdbcSettings, final Object... parameters) throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql, final Object... parameters)
-            throws NonUniqueResultException {
+            throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, conn, sql, StatementSetter.DEFAULT, parameters);
     }
 
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
-            final StatementSetter statementSetter, final Object... parameters) throws NonUniqueResultException {
+            final StatementSetter statementSetter, final Object... parameters) throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, conn, sql, statementSetter, null, parameters);
     }
 
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql, final JdbcSettings jdbcSettings,
-            final Object... parameters) throws NonUniqueResultException {
+            final Object... parameters) throws DuplicatedResultException {
         return queryForUniqueResult(targetClass, conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
     /**
      * Returns a {@code Nullable} describing the value in the first row/column if it exists, otherwise return an empty {@code Nullable}.
-     * And throws {@code NonUniqueResultException} if more than one record found.
+     * And throws {@code DuplicatedResultException} if more than one record found.
      * <br />
      *
      * Special note for type conversion for {@code boolean} or {@code Boolean} type: {@code true} is returned if the
@@ -2308,12 +2308,12 @@ public class SQLExecutor implements Closeable {
      * @param statementSetter
      * @param jdbcSettings
      * @param parameters
-     * @throws NonUniqueResultException if more than one record found.
+     * @throws DuplicatedResultException if more than one record found.
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public final <V> Nullable<V> queryForUniqueResult(final Class<V> targetClass, final Connection conn, final String sql,
-            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) throws NonUniqueResultException {
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) throws DuplicatedResultException {
         return query(conn, sql, statementSetter, createUniqueResultExtractor(targetClass), jdbcSettings, parameters);
     }
 
@@ -2333,7 +2333,7 @@ public class SQLExecutor implements Closeable {
                         final Nullable<V> result = Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass));
 
                         if (result.isPresent() && rs.next()) {
-                            throw new NonUniqueResultException("At least two results found: "
+                            throw new DuplicatedResultException("At least two results found: "
                                     + Strings.concat(result.get(), ", ", N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)));
                         }
 
@@ -4924,32 +4924,32 @@ public class SQLExecutor implements Closeable {
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Object id)
-                throws NonUniqueResultException {
+                throws DuplicatedResultException {
             return queryForUniqueResult(targetValueClass, selectPropName, id2Cond(id, false));
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause)
-                throws NonUniqueResultException {
+                throws DuplicatedResultException {
             return queryForUniqueResult(targetValueClass, selectPropName, whereCause, null);
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Condition whereCause,
-                final JdbcSettings jdbcSettings) throws NonUniqueResultException {
+                final JdbcSettings jdbcSettings) throws DuplicatedResultException {
             return queryForUniqueResult(targetValueClass, null, selectPropName, whereCause, jdbcSettings);
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName, final Object id)
-                throws NonUniqueResultException {
+                throws DuplicatedResultException {
             return queryForUniqueResult(targetValueClass, conn, selectPropName, id2Cond(id, false));
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
-                final Condition whereCause) throws NonUniqueResultException {
+                final Condition whereCause) throws DuplicatedResultException {
             return queryForUniqueResult(targetValueClass, conn, selectPropName, whereCause, null);
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
-                final Condition whereCause, final JdbcSettings jdbcSettings) throws NonUniqueResultException {
+                final Condition whereCause, final JdbcSettings jdbcSettings) throws DuplicatedResultException {
             final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
             return sqlExecutor.queryForUniqueResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());

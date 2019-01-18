@@ -205,7 +205,7 @@ public final class Iterables {
      * 
      * @param iterable
      * @return
-     * throws NonUniqueResultException if there are more than one elements in the specified {@code iterable}.
+     * throws DuplicatedResultException if there are more than one elements in the specified {@code iterable}.
      */
     public static <T> Nullable<T> getOnlyElement(Iterable<? extends T> iterable) {
         if (iterable == null) {

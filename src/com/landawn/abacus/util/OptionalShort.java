@@ -100,6 +100,16 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         }
     }
 
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<Short, E> mapper) throws E {
+        Objects.requireNonNull(mapper);
+
+        if (isPresent) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
     public <T, E extends Exception> Nullable<T> mapToObj(final Try.ShortFunction<T, E> mapper) throws E {
         Objects.requireNonNull(mapper);
 

@@ -6494,7 +6494,7 @@ public final class N {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 16);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -6516,7 +6516,7 @@ public final class N {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -6525,7 +6525,7 @@ public final class N {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 32);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 32);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -6569,7 +6569,7 @@ public final class N {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -6578,7 +6578,7 @@ public final class N {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 48);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 48);
 
         String placeholder = "{}";
         int placeholderStart = template.indexOf(placeholder);
@@ -6638,7 +6638,7 @@ public final class N {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -6662,7 +6662,7 @@ public final class N {
         }
 
         // start substituting the arguments into the '%s' placeholders
-        final StringBuilder sb = ObjectFactory.createStringBuilder(template.length() + 16 * args.length);
+        final StringBuilder sb = Objectory.createStringBuilder(template.length() + 16 * args.length);
         int templateStart = 0;
         int i = 0;
 
@@ -6696,7 +6696,7 @@ public final class N {
 
         final String result = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return result;
     }
@@ -7825,14 +7825,14 @@ public final class N {
     }
 
     public static String toString(final boolean[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -7876,14 +7876,14 @@ public final class N {
     }
 
     public static String toString(final char[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -7927,14 +7927,14 @@ public final class N {
     }
 
     public static String toString(final byte[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -7978,14 +7978,14 @@ public final class N {
     }
 
     public static String toString(final short[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8029,14 +8029,14 @@ public final class N {
     }
 
     public static String toString(final int[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8080,14 +8080,14 @@ public final class N {
     }
 
     public static String toString(final long[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8131,14 +8131,14 @@ public final class N {
     }
 
     public static String toString(final float[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8182,14 +8182,14 @@ public final class N {
     }
 
     public static String toString(final double[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8233,14 +8233,14 @@ public final class N {
     }
 
     public static String toString(final Object[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         try {
             toString(sb, a, from, to);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
         }
     }
 
@@ -8288,16 +8288,16 @@ public final class N {
     }
 
     public static String deepToString(final Object[] a, final int from, final int to) {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
-        final Set<Object[]> set = ObjectFactory.createSet();
+        final StringBuilder sb = Objectory.createStringBuilder();
+        final Set<Object[]> set = Objectory.createSet();
 
         try {
             deepToString(sb, a, from, to, set);
 
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(set);
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(set);
+            Objectory.recycle(sb);
         }
     }
 

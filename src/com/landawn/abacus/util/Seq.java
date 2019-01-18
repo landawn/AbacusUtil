@@ -33,7 +33,7 @@ import java.util.RandomAccess;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -2119,15 +2119,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
     /**
      * 
      * @return
-     * @throws NonUniqueResultException if there are more than one element in this {@code Seq}.
+     * @throws DuplicatedResultException if there are more than one element in this {@code Seq}.
      */
-    public Nullable<T> onlyOne() throws NonUniqueResultException {
+    public Nullable<T> onlyOne() throws DuplicatedResultException {
         if (isEmpty()) {
             return Nullable.empty();
         } else if (size() == 1) {
             return first();
         } else {
-            throw new NonUniqueResultException(N.toString(coll));
+            throw new DuplicatedResultException(N.toString(coll));
         }
     }
 

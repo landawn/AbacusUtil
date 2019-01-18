@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collector.Characteristics;
 
 import com.landawn.abacus.DataSet;
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -1417,7 +1417,7 @@ public class Collectors {
         @Override
         public void accept(Holder<Optional<Object>> holder, Object val) {
             if (holder.value().isPresent()) {
-                throw new NonUniqueResultException("Duplicate values");
+                throw new DuplicatedResultException("Duplicate values");
             }
 
             holder.setValue(Optional.of(val));
@@ -1428,7 +1428,7 @@ public class Collectors {
         @Override
         public Holder<Optional<Object>> apply(Holder<Optional<Object>> t, Holder<Optional<Object>> u) {
             if (t.value().isPresent() && u.value().isPresent()) {
-                throw new NonUniqueResultException("Duplicate values");
+                throw new DuplicatedResultException("Duplicate values");
             }
 
             return t.value().isPresent() ? t : u;
@@ -1443,7 +1443,7 @@ public class Collectors {
     };
 
     /**
-     * {@code NonUniqueResultException} is threw if there are more than one values are collected.
+     * {@code DuplicatedResultException} is threw if there are more than one values are collected.
      * 
      * @return
      */
@@ -1458,7 +1458,7 @@ public class Collectors {
     }
 
     /**
-     * {@code NonUniqueResultException} is threw if there are more than one values are collected.
+     * {@code DuplicatedResultException} is threw if there are more than one values are collected.
      * 
      * @param predicate
      * @return

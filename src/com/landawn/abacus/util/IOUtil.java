@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -121,27 +120,11 @@ public final class IOUtil {
 
     static {
         String hostName = null;
-        final boolean IS_PLATFORM_ANDROID = System.getProperty("java.vendor").toUpperCase().contains("ANDROID")
-                || System.getProperty("java.vm.vendor").toUpperCase().contains("ANDROID");
 
-        // implementation for android support
-        if (IS_PLATFORM_ANDROID) {
-            try {
-                hostName = com.landawn.abacus.android.util.Async.SerialExecutor.execute(new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        return InetAddress.getLocalHost().getHostName();
-                    }
-                }).get();
-            } catch (Exception e) {
-                logger.error("Failed to get host name");
-            }
-        } else {
-            try {
-                hostName = InetAddress.getLocalHost().getHostName();
-            } catch (Exception e) {
-                logger.error("Failed to get host name");
-            }
+        try {
+            hostName = InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {
+            logger.error("Failed to get host name");
         }
 
         HOST_NAME = hostName;
@@ -489,7 +472,7 @@ public final class IOUtil {
         }
 
         ByteArrayOutputStream os = null;
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
         final int bufLength = buf.length;
 
         int totalCount = 0;
@@ -499,7 +482,7 @@ public final class IOUtil {
             while (totalCount < maxLen && EOF != (count = read(is, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
                 if (count == bufLength && count < maxLen) {
                     if (os == null) {
-                        os = ObjectFactory.createByteArrayOutputStream();
+                        os = Objectory.createByteArrayOutputStream();
                     }
                 }
 
@@ -515,8 +498,8 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
-            ObjectFactory.recycle(os);
+            Objectory.recycle(buf);
+            Objectory.recycle(os);
         }
     }
 
@@ -583,7 +566,7 @@ public final class IOUtil {
         }
 
         StringBuilder sb = null;
-        final char[] buf = ObjectFactory.createCharArrayBuffer();
+        final char[] buf = Objectory.createCharArrayBuffer();
         final int bufLength = buf.length;
 
         int totalCount = 0;
@@ -593,7 +576,7 @@ public final class IOUtil {
             while (totalCount < maxLen && EOF != (count = read(reader, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
                 if (count == bufLength && count < maxLen) {
                     if (sb == null) {
-                        sb = ObjectFactory.createStringBuilder();
+                        sb = Objectory.createStringBuilder();
                     }
                 }
 
@@ -615,8 +598,8 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(buf);
+            Objectory.recycle(sb);
         }
     }
 
@@ -699,7 +682,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final Reader reader, int lineIndex) throws UncheckedIOException {
-        final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : Objectory.createBufferedReader(reader);
 
         try {
             if (lineIndex == 0) {
@@ -714,7 +697,7 @@ public final class IOUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != reader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
     }
@@ -765,7 +748,7 @@ public final class IOUtil {
 
     public static List<String> readLines(final Reader reader, int offset, int count) throws UncheckedIOException {
         final List<String> res = new ArrayList<>();
-        final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
+        final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : Objectory.createBufferedReader(reader);
 
         try {
             while (offset-- > 0 && br.readLine() != null) {
@@ -781,7 +764,7 @@ public final class IOUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (br != reader) {
-                ObjectFactory.recycle(br);
+                Objectory.recycle(br);
             }
         }
 
@@ -1128,7 +1111,7 @@ public final class IOUtil {
 
     public static void writeLines(final Writer writer, final Object[] lines, final int offset, int count, final boolean flush) throws UncheckedIOException {
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
-        final Writer bw = isBufferedWriter ? writer : ObjectFactory.createBufferedWriter(writer);
+        final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
 
         try {
             int lineNum = 0;
@@ -1158,7 +1141,7 @@ public final class IOUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (!isBufferedWriter) {
-                ObjectFactory.recycle((BufferedWriter) bw);
+                Objectory.recycle((BufferedWriter) bw);
             }
         }
     }
@@ -1215,7 +1198,7 @@ public final class IOUtil {
     public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, int count, final boolean flush)
             throws UncheckedIOException {
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
-        final Writer bw = isBufferedWriter ? writer : ObjectFactory.createBufferedWriter(writer);
+        final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
 
         try {
             int lineNum = 0;
@@ -1245,7 +1228,7 @@ public final class IOUtil {
             throw new UncheckedIOException(e);
         } finally {
             if (!isBufferedWriter) {
-                ObjectFactory.recycle((BufferedWriter) bw);
+                Objectory.recycle((BufferedWriter) bw);
             }
         }
     }
@@ -1556,7 +1539,7 @@ public final class IOUtil {
      */
     public static long write(final OutputStream output, final InputStream input, final long offset, final long len, final boolean flush)
             throws UncheckedIOException {
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
 
         try {
             if (offset > 0) {
@@ -1585,7 +1568,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
         }
     }
 
@@ -1651,7 +1634,7 @@ public final class IOUtil {
      * @return
      */
     public static long write(final Writer output, final Reader input, final long offset, final long len, final boolean flush) throws UncheckedIOException {
-        final char[] buf = ObjectFactory.createCharArrayBuffer();
+        final char[] buf = Objectory.createCharArrayBuffer();
 
         try {
             if (offset > 0) {
@@ -1680,7 +1663,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
         }
     }
 
@@ -1954,7 +1937,7 @@ public final class IOUtil {
             return 0;
         }
 
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
         long remain = toSkip;
 
         try {
@@ -1973,7 +1956,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
         }
     }
 
@@ -1991,7 +1974,7 @@ public final class IOUtil {
             return 0;
         }
 
-        final char[] buf = ObjectFactory.createCharArrayBuffer();
+        final char[] buf = Objectory.createCharArrayBuffer();
         long remain = toSkip;
 
         try {
@@ -2010,7 +1993,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
         }
     }
 
@@ -2992,7 +2975,7 @@ public final class IOUtil {
 
         InputStream is = new FileInputStream(file);
 
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
 
         try {
             int count = 0;
@@ -3001,7 +2984,7 @@ public final class IOUtil {
                 zos.write(buf, 0, count);
             }
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
 
             closeQuietly(is);
         }
@@ -3013,7 +2996,7 @@ public final class IOUtil {
         OutputStream os = null;
         InputStream is = null;
 
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
         final int bufLength = buf.length;
 
         try {
@@ -3048,7 +3031,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
 
             closeQuietly(zip);
             closeQuietly(is);
@@ -3084,7 +3067,7 @@ public final class IOUtil {
         final long fileLength = file.length();
         int fileSerNum = 1;
 
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
         InputStream input = null;
         OutputStream output = null;
         try {
@@ -3116,7 +3099,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
 
             closeQuietly(input);
         }
@@ -3150,11 +3133,11 @@ public final class IOUtil {
         try {
             is = openFile(outputZipFile, file);
 
-            br = ObjectFactory.createBufferedReader(is);
+            br = Objectory.createBufferedReader(is);
 
             String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0')
                     + postfix;
-            bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
+            bw = Objectory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
 
             int lineCounter = 0;
             String line = null;
@@ -3166,19 +3149,19 @@ public final class IOUtil {
                 if ((lineCounter % lineNumOfPart) == 0) {
                     if (bw != null) {
                         close(bw);
-                        ObjectFactory.recycle(bw);
+                        Objectory.recycle(bw);
                         bw = null;
                     }
 
                     subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + StringUtil.padStart(N.stringOf(fileSerNum++), 4, '0')
                             + postfix;
-                    bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
+                    bw = Objectory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
                 }
             }
 
             if (bw != null) {
                 close(bw);
-                ObjectFactory.recycle(bw);
+                Objectory.recycle(bw);
                 bw = null;
             }
         } catch (IOException e) {
@@ -3186,13 +3169,13 @@ public final class IOUtil {
         } finally {
             if (bw != null) {
                 close(bw);
-                ObjectFactory.recycle(bw);
+                Objectory.recycle(bw);
             }
 
             closeQuietly(is);
             close(outputZipFile.value());
 
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
     }
 
@@ -3211,7 +3194,7 @@ public final class IOUtil {
         try {
             is = openFile(outputZipFile, file);
 
-            br = ObjectFactory.createBufferedReader(is);
+            br = Objectory.createBufferedReader(is);
 
             int cnt = 0;
             String line = null;
@@ -3229,7 +3212,7 @@ public final class IOUtil {
             closeQuietly(is);
             closeQuietly(outputZipFile.value());
 
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
     }
 
@@ -3245,7 +3228,7 @@ public final class IOUtil {
      * @return the total bytes have been merged into the destination file.
      */
     public static long merge(final Collection<File> sourceFiles, final File destFile) throws UncheckedIOException {
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+        final byte[] buf = Objectory.createByteArrayBuffer();
 
         long totalCount = 0;
         OutputStream output = null;
@@ -3273,7 +3256,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            ObjectFactory.recycle(buf);
+            Objectory.recycle(buf);
 
             close(output);
         }
@@ -3809,12 +3792,12 @@ public final class IOUtil {
     public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final long lineOffset, final long count,
             final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete)
             throws UncheckedIOException, E, E2 {
-        final BufferedReader br = ObjectFactory.createBufferedReader(is);
+        final BufferedReader br = Objectory.createBufferedReader(is);
 
         try {
             parse(br, lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
         } finally {
-            ObjectFactory.recycle(br);
+            Objectory.recycle(br);
         }
     }
 

@@ -125,7 +125,7 @@ public abstract class CQLBuilder {
                     + ") StringBuilder instances are created in CQLBuilder. The method cql()/pair() must be called to release resources and close CQLBuilder");
         }
 
-        this.sb = ObjectFactory.createStringBuilder();
+        this.sb = Objectory.createStringBuilder();
 
         this.namingPolicy = namingPolicy == null ? NamingPolicy.LOWER_CASE_WITH_UNDERSCORE : namingPolicy;
         this.cqlPolicy = cqlPolicy == null ? CQLPolicy.CQL : cqlPolicy;
@@ -1203,7 +1203,7 @@ public abstract class CQLBuilder {
         try {
             return sb.toString();
         } finally {
-            ObjectFactory.recycle(sb);
+            Objectory.recycle(sb);
             sb = null;
 
             activeStringBuilderCounter.decrementAndGet();

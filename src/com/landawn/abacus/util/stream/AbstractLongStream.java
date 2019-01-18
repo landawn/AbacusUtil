@@ -22,7 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.Joiner;
@@ -369,13 +369,13 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public OptionalLong onlyOne() throws NonUniqueResultException {
+    public OptionalLong onlyOne() throws DuplicatedResultException {
         final LongIterator iter = this.iteratorEx();
 
         final OptionalLong result = iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
 
         if (result.isPresent() && iter.hasNext()) {
-            throw new NonUniqueResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextLong()));
+            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextLong()));
         }
 
         return result;

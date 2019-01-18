@@ -2199,7 +2199,7 @@ public final class Sheet<R, C, E> implements Cloneable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = ObjectFactory.createStringBuilder();
+        final StringBuilder sb = Objectory.createStringBuilder();
 
         sb.append("{rowKeySet=");
         sb.append(_rowKeySet);
@@ -2233,7 +2233,7 @@ public final class Sheet<R, C, E> implements Cloneable {
 
         String str = sb.toString();
 
-        ObjectFactory.recycle(sb);
+        Objectory.recycle(sb);
 
         return str;
     }

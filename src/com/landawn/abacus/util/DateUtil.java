@@ -614,12 +614,12 @@ public final class DateUtil {
 
     public static String format(final Calendar c, final String format, final TimeZone timeZone) {
         if ((format == null) && (timeZone == null)) {
-            final BufferedWriter cbuff = ObjectFactory.createBufferedWriter();
+            final BufferedWriter cbuff = Objectory.createBufferedWriter();
             fastDateFormat(cbuff, c.getTimeInMillis(), false);
 
             String str = cbuff.toString();
 
-            ObjectFactory.recycle(cbuff);
+            Objectory.recycle(cbuff);
 
             return str;
         }
@@ -649,13 +649,13 @@ public final class DateUtil {
 
     public static String format(final XMLGregorianCalendar c, final String format, final TimeZone timeZone) {
         if ((format == null) && (timeZone == null)) {
-            final BufferedWriter cbuff = ObjectFactory.createBufferedWriter();
+            final BufferedWriter cbuff = Objectory.createBufferedWriter();
 
             fastDateFormat(cbuff, c.toGregorianCalendar().getTimeInMillis(), false);
 
             String str = cbuff.toString();
 
-            ObjectFactory.recycle(cbuff);
+            Objectory.recycle(cbuff);
 
             return str;
         }
@@ -1857,13 +1857,13 @@ public final class DateUtil {
 
         if ((format == null) && (timeZone == null)) {
             if (writer == null) {
-                final BufferedWriter bw = ObjectFactory.createBufferedWriter();
+                final BufferedWriter bw = Objectory.createBufferedWriter();
 
                 fastDateFormat(bw, date.getTime(), isTimestamp);
 
                 String str = bw.toString();
 
-                ObjectFactory.recycle(bw);
+                Objectory.recycle(bw);
 
                 return str;
             } else {

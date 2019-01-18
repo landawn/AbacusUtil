@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1924,9 +1924,9 @@ public final class Iterators {
      * 
      * @param iter
      * @return
-     * throws NonUniqueResultException if there are more than one elements in the specified {@code iter}.
+     * throws DuplicatedResultException if there are more than one elements in the specified {@code iter}.
      */
-    public static <T> Nullable<T> getOnlyElement(final Iterator<? extends T> iter) throws NonUniqueResultException {
+    public static <T> Nullable<T> getOnlyElement(final Iterator<? extends T> iter) throws DuplicatedResultException {
         if (iter == null) {
             return Nullable.empty();
         }
@@ -1934,7 +1934,7 @@ public final class Iterators {
         final T first = iter.next();
 
         if (iter.hasNext()) {
-            throw new NonUniqueResultException("Expected at most one element but was: [" + StringUtil.concat(first, ", ", iter.next(), "...]"));
+            throw new DuplicatedResultException("Expected at most one element but was: [" + StringUtil.concat(first, ", ", iter.next(), "...]"));
         }
 
         return Nullable.of(first);
