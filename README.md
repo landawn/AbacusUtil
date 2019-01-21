@@ -136,7 +136,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [DataSet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DataSet_view.html), 
 [SQLExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLExecutor_view.html), 
 [Mapper](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Mapper_view.html), 
-[PreparedQuery](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/PreparedQuery_view.html),  
+[PreparedQuery](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/PreparedQuery_view.html), 
 [SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
 [DynamicSQLBuilder](https://static.javadoc.io/com.landawn/abacus-util/1.3.29/com/landawn/abacus/util/DynamicSQLBuilder.html), 
 [ConditionFactory(L)](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ConditionFactory_view.html)...
