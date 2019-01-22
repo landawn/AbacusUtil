@@ -2107,7 +2107,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return N.EMPTY_STRING;
         }
 
-        try (final Joiner joiner = Joiner.with(delimiter).reuseStringBuilder(true)) {
+        try (final Joiner joiner = Joiner.with(delimiter).reuseCachedBuffer(true)) {
             for (T e : coll) {
                 joiner.append(e);
             }

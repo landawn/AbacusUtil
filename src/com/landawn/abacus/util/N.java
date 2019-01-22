@@ -7744,7 +7744,7 @@ public final class N {
             return typeOf(obj.getClass()).toString(obj);
         } else if (obj instanceof Iterator) {
             final Iterator<?> iter = (Iterator<?>) obj;
-            final Joiner joiner = Joiner.with(", ", "[", "]").reuseStringBuilder(true);
+            final Joiner joiner = Joiner.with(", ", "[", "]").reuseCachedBuffer(true);
 
             while (iter.hasNext()) {
                 joiner.append(N.toString(iter.next()));

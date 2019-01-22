@@ -2252,7 +2252,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
         final IteratorEx<T> iter = this.iteratorEx();
 
         while (iter.hasNext()) {

@@ -1668,7 +1668,7 @@ public class Collectors {
         final Supplier<Joiner> supplier = new Supplier<Joiner>() {
             @Override
             public Joiner get() {
-                return Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+                return Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             }
         };
 

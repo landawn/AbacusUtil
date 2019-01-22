@@ -5536,6 +5536,80 @@ public final class Fn extends Comparators {
         }
     }
 
+    public static final class Entries {
+        private Entries() {
+            // singleton.
+        }
+
+        public static <K, V, T> Function<Map.Entry<K, V>, T> f(final BiFunction<? super K, ? super V, ? extends T> f) {
+            N.checkArgNotNull(f, "BiFunction");
+
+            return new Function<Map.Entry<K, V>, T>() {
+                @Override
+                public T apply(Entry<K, V> e) {
+                    return f.apply(e.getKey(), e.getValue());
+                }
+            };
+        }
+
+        public static <K, V> Predicate<Map.Entry<K, V>> p(final BiPredicate<? super K, ? super V> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+
+            return new Predicate<Map.Entry<K, V>>() {
+                @Override
+                public boolean test(Entry<K, V> e) {
+                    return p.test(e.getKey(), e.getValue());
+                }
+
+            };
+        }
+
+        public static <K, V> Consumer<Map.Entry<K, V>> c(final BiConsumer<? super K, ? super V> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+
+            return new Consumer<Map.Entry<K, V>>() {
+                @Override
+                public void accept(Entry<K, V> e) {
+                    c.accept(e.getKey(), e.getValue());
+                }
+            };
+        }
+
+        public static <K, V, T, E extends Exception> Try.Function<Map.Entry<K, V>, T, E> ef(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
+            N.checkArgNotNull(f, "BiFunction");
+
+            return new Try.Function<Map.Entry<K, V>, T, E>() {
+                @Override
+                public T apply(Entry<K, V> e) throws E {
+                    return f.apply(e.getKey(), e.getValue());
+                }
+            };
+        }
+
+        public static <K, V, E extends Exception> Try.Predicate<Map.Entry<K, V>, E> ep(final Try.BiPredicate<? super K, ? super V, E> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+
+            return new Try.Predicate<Map.Entry<K, V>, E>() {
+                @Override
+                public boolean test(Entry<K, V> e) throws E {
+                    return p.test(e.getKey(), e.getValue());
+                }
+
+            };
+        }
+
+        public static <K, V, E extends Exception> Try.Consumer<Map.Entry<K, V>, E> ec(final Try.BiConsumer<? super K, ? super V, E> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+
+            return new Try.Consumer<Map.Entry<K, V>, E>() {
+                @Override
+                public void accept(Entry<K, V> e) throws E {
+                    c.accept(e.getKey(), e.getValue());
+                }
+            };
+        }
+    }
+
     public static final class Pairs {
         @SuppressWarnings("rawtypes")
         private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {

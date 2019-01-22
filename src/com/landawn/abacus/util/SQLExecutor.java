@@ -3982,7 +3982,7 @@ public class SQLExecutor implements Closeable {
                 sql = sql.substring(0, sql.lastIndexOf('=')) + "IN ";
 
                 if (ids.size() >= batchSize) {
-                    final Joiner joiner = Joiner.with(", ", "(", ")").reuseStringBuilder(true);
+                    final Joiner joiner = Joiner.with(", ", "(", ")").reuseCachedBuffer(true);
 
                     for (int i = 0; i < batchSize; i++) {
                         joiner.append('?');
@@ -3997,7 +3997,7 @@ public class SQLExecutor implements Closeable {
 
                 if (ids.size() % batchSize != 0) {
                     final int remaining = ids.size() % batchSize;
-                    final Joiner joiner = Joiner.with(", ", "(", ")").reuseStringBuilder(true);
+                    final Joiner joiner = Joiner.with(", ", "(", ")").reuseCachedBuffer(true);
 
                     for (int i = 0; i < remaining; i++) {
                         joiner.append('?');

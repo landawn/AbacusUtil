@@ -209,7 +209,7 @@ public abstract class StringUtil {
 
         N.reverse(strs);
 
-        return Joiner.with(delimiter).reuseStringBuilder(true).appendAll(strs).toString();
+        return Joiner.with(delimiter).reuseCachedBuffer(true).appendAll(strs).toString();
     }
 
     public static String padStart(final String str, final int minLength) {

@@ -55,8 +55,8 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.Nullable;
-import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.ObjectPool;
+import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalBoolean;
 import com.landawn.abacus.util.OptionalByte;
@@ -497,7 +497,7 @@ public final class SQLiteExecutor {
         return toContentValues(obj, ignoredPropNames, namingPolicy, false);
     }
 
-    public <T> Optional<T> get(Class<T> targetClass, long id) {
+    public <T> Optional<T> get(Class<T> targetClass, long id) throws DuplicatedResultException {
         return get(targetClass, id, null);
     }
 
@@ -510,11 +510,11 @@ public final class SQLiteExecutor {
      * @return
      * @throws DuplicatedResultException if more than one records are found.
      */
-    public <T> Optional<T> get(Class<T> targetClass, long id, Collection<String> selectPropNames) {
+    public <T> Optional<T> get(Class<T> targetClass, long id, Collection<String> selectPropNames) throws DuplicatedResultException {
         return Optional.ofNullable(gett(targetClass, id, selectPropNames));
     }
 
-    public <T> T gett(Class<T> targetClass, long id) {
+    public <T> T gett(Class<T> targetClass, long id) throws DuplicatedResultException {
         return gett(targetClass, id, null);
     }
 
@@ -527,7 +527,7 @@ public final class SQLiteExecutor {
      * @return
      * @throws DuplicatedResultException if more than one records are found.
      */
-    public <T> T gett(Class<T> targetClass, long id, Collection<String> selectPropNames) {
+    public <T> T gett(Class<T> targetClass, long id, Collection<String> selectPropNames) throws DuplicatedResultException {
         final Condition whereClause = L.eq(ID, id);
         final List<T> entities = list(targetClass, selectPropNames, whereClause, null, 0, 2);
 

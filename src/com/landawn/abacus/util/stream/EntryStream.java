@@ -170,14 +170,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK> EntryStream<K, V> filter(final BiPredicate<? super K, ? super V> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> entry) {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
 
-        return of(s.filter(predicate2));
+        return of(s.filter(Fn.Entries.p(predicate)));
     }
 
     @ParallelSupported
@@ -201,14 +195,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK> EntryStream<K, V> removeIf(final BiPredicate<? super K, ? super V> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> entry) {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return of(s.removeIf(predicate2));
+        return of(s.removeIf(Fn.Entries.p(predicate)));
     }
 
     @ParallelSupported
@@ -218,14 +205,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK> EntryStream<K, V> takeWhile(final BiPredicate<? super K, ? super V> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> entry) {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return of(s.takeWhile(predicate2));
+        return of(s.takeWhile(Fn.Entries.p(predicate)));
     }
 
     @ParallelSupported
@@ -235,14 +215,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK> EntryStream<K, V> dropWhile(final BiPredicate<? super K, ? super V> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> entry) {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return of(s.dropWhile(predicate2));
+        return of(s.dropWhile(Fn.Entries.p(predicate)));
     }
 
     @ParallelSupported
@@ -257,14 +230,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, Map.Entry<KK, VV>> mapper) {
-        final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper2 = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
-            @Override
-            public Entry<KK, VV> apply(Map.Entry<K, V> entry) {
-                return mapper.apply(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return map(mapper2);
+        return map(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
@@ -324,12 +290,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK, VV> EntryStream<KK, VV> flatMap(final BiFunction<? super K, ? super V, ? extends EntryStream<KK, VV>> mapper) {
-        return flatMap(new Function<Map.Entry<K, V>, EntryStream<KK, VV>>() {
-            @Override
-            public EntryStream<KK, VV> apply(Entry<K, V> entry) {
-                return mapper.apply(entry.getKey(), entry.getValue());
-            }
-        });
+        return flatMap(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
@@ -339,12 +300,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK, VV> EntryStream<KK, VV> flattMap(final BiFunction<? super K, ? super V, ? extends Stream<? extends Map.Entry<KK, VV>>> mapper) {
-        return flattMap(new Function<Map.Entry<K, V>, Stream<? extends Map.Entry<KK, VV>>>() {
-            @Override
-            public Stream<? extends Map.Entry<KK, VV>> apply(Entry<K, V> entry) {
-                return mapper.apply(entry.getKey(), entry.getValue());
-            }
-        });
+        return flattMap(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
@@ -354,12 +310,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <KK, VV> EntryStream<KK, VV> flatMapp(final BiFunction<? super K, ? super V, ? extends Map<KK, VV>> mapper) {
-        return flatMapp(new Function<Map.Entry<K, V>, Map<KK, VV>>() {
-            @Override
-            public Map<KK, VV> apply(Entry<K, V> entry) {
-                return mapper.apply(entry.getKey(), entry.getValue());
-            }
-        });
+        return flatMapp(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
@@ -844,14 +795,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public EntryStream<K, V> peek(final BiConsumer<? super K, ? super V> action) {
-        final Consumer<Map.Entry<K, V>> action2 = new Consumer<Map.Entry<K, V>>() {
-            @Override
-            public void accept(Entry<K, V> entry) {
-                action.accept(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return of(s.peek(action2));
+        return of(s.peek(Fn.Entries.c(action)));
     }
 
     @ParallelSupported
@@ -861,14 +805,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> void forEach(final Try.BiConsumer<? super K, ? super V, E> action) throws E {
-        final Try.Consumer<Map.Entry<K, V>, E> action2 = new Try.Consumer<Map.Entry<K, V>, E>() {
-            @Override
-            public void accept(Entry<K, V> entry) throws E {
-                action.accept(entry.getKey(), entry.getValue());
-            }
-        };
-
-        s.forEach(action2);
+        s.forEach(Fn.Entries.ec(action));
     }
 
     @ParallelSupported
@@ -920,14 +857,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> boolean anyMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
-            @Override
-            public boolean test(Entry<K, V> entry) throws E {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return s.anyMatch(predicate2);
+        return s.anyMatch(Fn.Entries.ep(predicate));
     }
 
     @ParallelSupported
@@ -937,14 +867,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> boolean allMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
-            @Override
-            public boolean test(Entry<K, V> entry) throws E {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return s.allMatch(predicate2);
+        return s.allMatch(Fn.Entries.ep(predicate));
     }
 
     @ParallelSupported
@@ -954,14 +877,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> boolean noneMatch(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
-            @Override
-            public boolean test(Entry<K, V> entry) throws E {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return s.noneMatch(predicate2);
+        return s.noneMatch(Fn.Entries.ep(predicate));
     }
 
     @ParallelSupported
@@ -971,14 +887,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> Optional<Map.Entry<K, V>> findFirst(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
-            @Override
-            public boolean test(Entry<K, V> entry) throws E {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return s.findFirst(predicate2);
+        return s.findFirst(Fn.Entries.ep(predicate));
     }
 
     @ParallelSupported
@@ -988,14 +897,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @ParallelSupported
     public <E extends Exception> Optional<Map.Entry<K, V>> findAny(final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        final Try.Predicate<Map.Entry<K, V>, E> predicate2 = new Try.Predicate<Map.Entry<K, V>, E>() {
-            @Override
-            public boolean test(Entry<K, V> entry) throws E {
-                return predicate.test(entry.getKey(), entry.getValue());
-            }
-        };
-
-        return s.findAny(predicate2);
+        return s.findAny(Fn.Entries.ep(predicate));
     }
 
     @SequentialOnly
@@ -1040,6 +942,30 @@ public final class EntryStream<K, V> implements AutoCloseable {
         };
 
         return BiIterator.generate(hasNext, output);
+    }
+
+    public <T> List<T> toList(final Function<? super Map.Entry<K, V>, ? extends T> mapper) {
+        return s.<T> map(mapper).toList();
+    }
+
+    public <T> List<T> toList(final BiFunction<? super K, ? super V, ? extends T> mapper) {
+        return s.<T> map(Fn.Entries.f(mapper)).toList();
+    }
+
+    public <T> Set<T> toSet(final Function<? super Map.Entry<K, V>, ? extends T> mapper) {
+        return s.<T> map(mapper).toSet();
+    }
+
+    public <T> Set<T> toSet(final BiFunction<? super K, ? super V, ? extends T> mapper) {
+        return s.<T> map(Fn.Entries.f(mapper)).toSet();
+    }
+
+    public <T, CC extends Collection<T>> CC toCollection(final Function<? super Map.Entry<K, V>, ? extends T> mapper, final Supplier<? extends CC> supplier) {
+        return s.<T> map(mapper).toCollection(supplier);
+    }
+
+    public <T, CC extends Collection<T>> CC toCollection(final BiFunction<? super K, ? super V, ? extends T> mapper, final Supplier<? extends CC> supplier) {
+        return s.<T> map(Fn.Entries.f(mapper)).toCollection(supplier);
     }
 
     /**
@@ -1465,7 +1391,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @SequentialOnly
     public String join(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseStringBuilder(true);
+        final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
         final Iterator<Entry<K, V>> iter = this.iterator();
 
         while (iter.hasNext()) {

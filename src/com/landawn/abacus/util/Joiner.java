@@ -30,46 +30,10 @@ import java.util.Map;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
- * <br />
  * 
- * {@code StringJoiner} is used to construct a sequence of characters separated
- * by a delimiter and optionally starting with a supplied prefix
- * and ending with a supplied suffix.
- * <p>
- * Prior to adding something to the {@code StringJoiner}, its
- * {@code sj.toString()} method will, by default, return {@code prefix + suffix}.
- * However, if the {@code setEmptyValue} method is called, the {@code emptyValue}
- * supplied will be returned instead. This can be used, for example, when
- * creating a string using set notation to indicate an empty set, i.e.
- * <code>"{}"</code>, where the {@code prefix} is <code>"{"</code>, the
- * {@code suffix} is <code>"}"</code> and nothing has been added to the
- * {@code StringJoiner}.
+ * @author haiyangl
  *
- * @apiNote
- * <p>The String {@code "[George:Sally:Fred]"} may be constructed as follows:
- *
- * <pre> {@code
- * StringJoiner sj = new StringJoiner(":", "[", "]");
- * sj.add("George").add("Sally").add("Fred");
- * String desiredString = sj.toString();
- * }</pre>
- * <p>
- * A {@code StringJoiner} may be employed to create formatted output from a
- * {@link java.util.stream.Stream} using
- * {@link java.util.stream.Collectors#joining(CharSequence)}. For example:
- *
- * <pre> {@code
- * List<Integer> numbers = Arrays.asList(1, 2, 3, 4);
- * String commaSeparatedNumbers = numbers.stream()
- *     .map(i -> i.toString())
- *     .collect(Collectors.joining(", "));
- * }</pre>
- *
- * @see java.util.stream.Collectors#joining(CharSequence)
- * @see java.util.stream.Collectors#joining(CharSequence, CharSequence, CharSequence)
- * @since  1.8
-*/
+ */
 public class Joiner implements AutoCloseable {
     public static final String DEFAULT_DELIMITER = N.ELEMENT_SEPARATOR;
     public static final String DEFAULT_KEY_VALUE_DELIMITER = "=";
@@ -82,7 +46,7 @@ public class Joiner implements AutoCloseable {
     private final boolean isEmptyKeyValueDelimiter;
     private boolean trim = false;
     private boolean skipNull = false;
-    private boolean reuseStringBuilder = false;
+    private boolean useCachedBuffer = false;
     private String nullText = N.NULL_STRING;
 
     /*
@@ -230,13 +194,31 @@ public class Joiner implements AutoCloseable {
      * 
      * @param reuseStringBuilder
      * @return
+     * @deprecated replaced by {@code #reuseCachedBuffer(boolean)}
      */
+    @Deprecated
     public Joiner reuseStringBuilder(boolean reuseStringBuilder) {
         if (buffer != null) {
             throw new IllegalStateException("Can't reset because the StringBuilder has been created");
         }
 
-        this.reuseStringBuilder = reuseStringBuilder;
+        this.useCachedBuffer = reuseStringBuilder;
+
+        return this;
+    }
+
+    /**
+     * Improving performance by set {@code useCachedBuffer=true}, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} or {@code close()} to recycle the cached buffer.
+     * 
+     * @param useCachedBuffer
+     * @return
+     */
+    public Joiner reuseCachedBuffer(boolean useCachedBuffer) {
+        if (buffer != null) {
+            throw new IllegalStateException("Can't reset because the buffer has been created");
+        }
+
+        this.useCachedBuffer = useCachedBuffer;
 
         return this;
     }
@@ -1144,7 +1126,7 @@ public class Joiner implements AutoCloseable {
                 buffer.append(delimiter);
             }
         } else {
-            buffer = (reuseStringBuilder ? Objectory.createStringBuilder() : new StringBuilder()).append(prefix);
+            buffer = (useCachedBuffer ? Objectory.createStringBuilder() : new StringBuilder()).append(prefix);
         }
         return buffer;
     }
@@ -1199,7 +1181,7 @@ public class Joiner implements AutoCloseable {
                     return result;
                 }
             } finally {
-                if (reuseStringBuilder) {
+                if (useCachedBuffer) {
                     Objectory.recycle(buffer);
                     buffer = null;
                 }
@@ -1261,7 +1243,7 @@ public class Joiner implements AutoCloseable {
 
     @Override
     public void close() {
-        if (buffer != null && reuseStringBuilder) {
+        if (buffer != null && useCachedBuffer) {
             Objectory.recycle(buffer);
             buffer = null;
         }

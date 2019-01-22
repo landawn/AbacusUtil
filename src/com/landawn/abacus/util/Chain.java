@@ -66,6 +66,72 @@ public final class Chain {
     }
 
     /**
+     * Compares two {@code boolean} values, considering {@code false} to be less
+     * than {@code true}, <i>if</i> the result of this comparison chain has not
+     * already been determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code ComparisonChain}
+     *
+     */
+    public static ComparisonChain compareFalseLess(boolean left, boolean right) {
+        return new ComparisonChain().compareFalseLess(left, right);
+    }
+
+    /**
+     * Compares two {@code boolean} values, considering {@code true} to be less
+     * than {@code false}, <i>if</i> the result of this comparison chain has not
+     * already been determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code ComparisonChain}
+     */
+    public static ComparisonChain compareTrueLess(boolean left, boolean right) {
+        return new ComparisonChain().compareTrueLess(left, right);
+    }
+
+    /**
+     * Compares two {@code char} values as specified by {@link N#compare},
+     * <i>if</i> the result of this comparison chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code ComparisonChain}
+     */
+    public static ComparisonChain compare(char left, char right) {
+        return new ComparisonChain().compare(left, right);
+    }
+
+    /**
+     * Compares two {@code byte} values as specified by {@link N#compare},
+     * <i>if</i> the result of this comparison chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code ComparisonChain}
+     */
+    public static ComparisonChain compare(byte left, byte right) {
+        return new ComparisonChain().compare(left, right);
+    }
+
+    /**
+     * Compares two {@code short} values as specified by {@link N#compare},
+     * <i>if</i> the result of this comparison chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code ComparisonChain}
+     */
+    public static ComparisonChain compare(short left, short right) {
+        return new ComparisonChain().compare(left, right);
+    }
+
+    /**
      * Compares two {@code int} values as specified by {@link N#compare},
      * <i>if</i> the result of this comparison chain has not already been
      * determined.
@@ -118,33 +184,6 @@ public final class Chain {
     }
 
     /**
-     * Compares two {@code boolean} values, considering {@code false} to be less
-     * than {@code true}, <i>if</i> the result of this comparison chain has not
-     * already been determined.
-     * 
-     * @param left
-     * @param right
-     * @return {@code ComparisonChain}
-     *
-     */
-    public static ComparisonChain compareFalseLess(boolean left, boolean right) {
-        return new ComparisonChain().compareFalseLess(left, right);
-    }
-
-    /**
-     * Compares two {@code boolean} values, considering {@code true} to be less
-     * than {@code false}, <i>if</i> the result of this comparison chain has not
-     * already been determined.
-     * 
-     * @param left
-     * @param right
-     * @return {@code ComparisonChain}
-     */
-    public static ComparisonChain compareTrueLess(boolean left, boolean right) {
-        return new ComparisonChain().compareTrueLess(left, right);
-    }
-
-    /**
      * Compares two comparable objects as specified by {@link
      * N#equals(Object, Object)}, <i>if</i> the result of this equivalence chain
      * has not already been determined.
@@ -159,6 +198,58 @@ public final class Chain {
 
     public static <T, E extends Exception> EquivalenceChain equals(T left, T right, Try.BiFunction<? super T, ? super T, Boolean, E> func) throws E {
         return new EquivalenceChain().equals(left, right, func);
+    }
+
+    /**
+     * Compares two {@code boolean} values as specified by {@code left == right},
+     * <i>if</i> the result of this equivalence chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code EquivalenceChain}
+     */
+    public static EquivalenceChain equals(boolean left, boolean right) {
+        return new EquivalenceChain().equals(left, right);
+    }
+
+    /**
+     * Compares two {@code char} values as specified by {@code left == right},
+     * <i>if</i> the result of this equivalence chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code EquivalenceChain}
+     */
+    public static EquivalenceChain equals(char left, char right) {
+        return new EquivalenceChain().equals(left, right);
+    }
+
+    /**
+     * Compares two {@code byte} values as specified by {@code left == right},
+     * <i>if</i> the result of this equivalence chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code EquivalenceChain}
+     */
+    public static EquivalenceChain equals(byte left, byte right) {
+        return new EquivalenceChain().equals(left, right);
+    }
+
+    /**
+     * Compares two {@code short} values as specified by {@code left == right},
+     * <i>if</i> the result of this equivalence chain has not already been
+     * determined.
+     * 
+     * @param left
+     * @param right
+     * @return {@code EquivalenceChain}
+     */
+    public static EquivalenceChain equals(short left, short right) {
+        return new EquivalenceChain().equals(left, right);
     }
 
     /**
@@ -214,19 +305,6 @@ public final class Chain {
     }
 
     /**
-     * Compares two {@code boolean} values as specified by {@code left == right},
-     * <i>if</i> the result of this equivalence chain has not already been
-     * determined.
-     * 
-     * @param left
-     * @param right
-     * @return {@code EquivalenceChain}
-     */
-    public static EquivalenceChain equals(boolean left, boolean right) {
-        return new EquivalenceChain().equals(left, right);
-    }
-
-    /**
      * Add the hash code of the specified {@code value} to result.
      * 
      * @param value
@@ -238,6 +316,46 @@ public final class Chain {
 
     public static <T, E extends Exception> HashCodeChain hash(T value, Try.ToIntFunction<? super T, E> func) throws E {
         return new HashCodeChain().hash(value, func);
+    }
+
+    /**
+     * Add the hash code of the specified {@code value} to result.
+     * 
+     * @param value
+     * @return this
+     */
+    public static HashCodeChain hash(boolean value) {
+        return new HashCodeChain().hash(value);
+    }
+
+    /**
+     * Add the hash code of the specified {@code value} to result.
+     * 
+     * @param value
+     * @return this
+     */
+    public static HashCodeChain hash(char value) {
+        return new HashCodeChain().hash(value);
+    }
+
+    /**
+     * Add the hash code of the specified {@code value} to result.
+     * 
+     * @param value
+     * @return this
+     */
+    public static HashCodeChain hash(byte value) {
+        return new HashCodeChain().hash(value);
+    }
+
+    /**
+     * Add the hash code of the specified {@code value} to result.
+     * 
+     * @param value
+     * @return this
+     */
+    public static HashCodeChain hash(short value) {
+        return new HashCodeChain().hash(value);
     }
 
     /**
@@ -277,16 +395,6 @@ public final class Chain {
      * @return this
      */
     public static HashCodeChain hash(double value) {
-        return new HashCodeChain().hash(value);
-    }
-
-    /**
-     * Add the hash code of the specified {@code value} to result.
-     * 
-     * @param value
-     * @return this
-     */
-    public static HashCodeChain hash(boolean value) {
         return new HashCodeChain().hash(value);
     }
 
@@ -335,6 +443,91 @@ public final class Chain {
 
             if (result == 0) {
                 result = func.apply(left, right);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code boolean} values, considering {@code false} to be less
+         * than {@code true}, <i>if</i> the result of this comparison chain has not
+         * already been determined.
+         *
+         * @param left
+         * @param right
+         * @return this
+         */
+        public ComparisonChain compareFalseLess(boolean left, boolean right) {
+            if (result == 0) {
+                result = left == right ? 0 : (left ? -1 : 1);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code boolean} values, considering {@code true} to be less
+         * than {@code false}, <i>if</i> the result of this comparison chain has not
+         * already been determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public ComparisonChain compareTrueLess(boolean left, boolean right) {
+            if (result == 0) {
+                result = left == right ? 0 : (left ? 1 : -1);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code char} values as specified by {@link N#compare},
+         * <i>if</i> the result of this comparison chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public ComparisonChain compare(char left, char right) {
+            if (result == 0) {
+                result = N.compare(left, right);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code byte} values as specified by {@link N#compare},
+         * <i>if</i> the result of this comparison chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public ComparisonChain compare(byte left, byte right) {
+            if (result == 0) {
+                result = N.compare(left, right);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code short} values as specified by {@link N#compare},
+         * <i>if</i> the result of this comparison chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public ComparisonChain compare(short left, short right) {
+            if (result == 0) {
+                result = N.compare(left, right);
             }
 
             return this;
@@ -408,40 +601,6 @@ public final class Chain {
             return this;
         }
 
-        /**
-         * Compares two {@code boolean} values, considering {@code false} to be less
-         * than {@code true}, <i>if</i> the result of this comparison chain has not
-         * already been determined.
-         *
-         * @param left
-         * @param right
-         * @return this
-         */
-        public ComparisonChain compareFalseLess(boolean left, boolean right) {
-            if (result == 0) {
-                result = left == right ? 0 : (left ? -1 : 1);
-            }
-
-            return this;
-        }
-
-        /**
-         * Compares two {@code boolean} values, considering {@code true} to be less
-         * than {@code false}, <i>if</i> the result of this comparison chain has not
-         * already been determined.
-         * 
-         * @param left
-         * @param right
-         * @return this
-         */
-        public ComparisonChain compareTrueLess(boolean left, boolean right) {
-            if (result == 0) {
-                result = left == right ? 0 : (left ? 1 : -1);
-            }
-
-            return this;
-        }
-
         public int result() {
             return result;
         }
@@ -476,6 +635,74 @@ public final class Chain {
 
             if (result) {
                 result = func.apply(left, right);
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code boolean} values as specified by {@code left == right},
+         * <i>if</i> the result of this equivalence chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public EquivalenceChain equals(boolean left, boolean right) {
+            if (result) {
+                result = left == right;
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code char} values as specified by {@code left == right},
+         * <i>if</i> the result of this equivalence chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public EquivalenceChain equals(char left, char right) {
+            if (result) {
+                result = left == right;
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code byte} values as specified by {@code left == right},
+         * <i>if</i> the result of this equivalence chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public EquivalenceChain equals(byte left, byte right) {
+            if (result) {
+                result = left == right;
+            }
+
+            return this;
+        }
+
+        /**
+         * Compares two {@code int} values as specified by {@code left == right},
+         * <i>if</i> the result of this equivalence chain has not already been
+         * determined.
+         * 
+         * @param left
+         * @param right
+         * @return this
+         */
+        public EquivalenceChain equals(short left, short right) {
+            if (result) {
+                result = left == right;
             }
 
             return this;
@@ -549,23 +776,6 @@ public final class Chain {
             return this;
         }
 
-        /**
-         * Compares two {@code boolean} values as specified by {@code left == right},
-         * <i>if</i> the result of this equivalence chain has not already been
-         * determined.
-         * 
-         * @param left
-         * @param right
-         * @return this
-         */
-        public EquivalenceChain equals(boolean left, boolean right) {
-            if (result) {
-                result = left == right;
-            }
-
-            return this;
-        }
-
         public boolean result() {
             return result;
         }
@@ -594,6 +804,54 @@ public final class Chain {
             N.checkArgNotNull(func, "func");
 
             result = result * 31 + func.applyAsInt(value);
+
+            return this;
+        }
+
+        /**
+         * Add the hash code of the specified {@code value} to result.
+         * 
+         * @param value
+         * @return this
+         */
+        public HashCodeChain hash(boolean value) {
+            result = result * 31 + (value ? 1231 : 1237);
+
+            return this;
+        }
+
+        /**
+         * Add the hash code of the specified {@code value} to result.
+         * 
+         * @param value
+         * @return this
+         */
+        public HashCodeChain hash(char value) {
+            result = result * 31 + N.hashCode(value);
+
+            return this;
+        }
+
+        /**
+         * Add the hash code of the specified {@code value} to result.
+         * 
+         * @param value
+         * @return this
+         */
+        public HashCodeChain hash(byte value) {
+            result = result * 31 + N.hashCode(value);
+
+            return this;
+        }
+
+        /**
+         * Add the hash code of the specified {@code value} to result.
+         * 
+         * @param value
+         * @return this
+         */
+        public HashCodeChain hash(short value) {
+            result = result * 31 + N.hashCode(value);
 
             return this;
         }
@@ -642,18 +900,6 @@ public final class Chain {
          */
         public HashCodeChain hash(double value) {
             result = result * 31 + N.hashCode(value);
-
-            return this;
-        }
-
-        /**
-         * Add the hash code of the specified {@code value} to result.
-         * 
-         * @param value
-         * @return this
-         */
-        public HashCodeChain hash(boolean value) {
-            result = result * 31 + (value ? 1231 : 1237);
 
             return this;
         }

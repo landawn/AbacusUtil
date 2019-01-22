@@ -913,7 +913,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
         final ShortIteratorEx iter = this.iteratorEx();
 
         while (iter.hasNext()) {

@@ -2149,11 +2149,11 @@ public final class Sheet<R, C, E> implements Cloneable {
 
     public void println() {
         final int columnLength = columnLength();
-        N.println(Joiner.with(", ", "       ", "").reuseStringBuilder(true).appendAll(_columnKeySet).toString());
+        N.println(Joiner.with(", ", "       ", "").reuseCachedBuffer(true).appendAll(_columnKeySet).toString());
 
         int i = 0;
         for (R rowKey : _rowKeySet) {
-            final Joiner joiner = Joiner.with(", ").reuseStringBuilder(true);
+            final Joiner joiner = Joiner.with(", ").reuseCachedBuffer(true);
             joiner.append(rowKey);
 
             if (this._initialized) {

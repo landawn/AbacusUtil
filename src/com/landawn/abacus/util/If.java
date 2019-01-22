@@ -49,10 +49,8 @@ public final class If {
      * {@code true} for {@code index >= 0}, {@code false} for {@code index < 0}.
      * 
      * @param index
-     * @return
-     * @deprecated replaced with {@link Index#of(Object[], Object)}
+     * @return 
      */
-    @Deprecated
     public static If exists(final int index) {
         return index >= 0 ? TRUE : FALSE;
     }

@@ -919,7 +919,7 @@ public class ContinuableFuture<T> implements Future<T> {
             return this;
         }
 
-        return with(asyncExecutor, delay, TimeUnit.MILLISECONDS);
+        return with(asyncExecutor, delay, unit);
     }
 
     public ContinuableFuture<T> with(Executor executor) {
@@ -931,7 +931,8 @@ public class ContinuableFuture<T> implements Future<T> {
         N.checkArgNotNull(executor);
 
         return new ContinuableFuture<T>(new Future<T>() {
-            private final long delayEndTime = DateUtil.currentMillis() + unit.toMillis(delay);
+            private final long delayInMillis = unit.toMillis(delay);
+            private final long startTime = DateUtil.currentMillis();
             private volatile boolean isDelayed = false;
 
             @Override
@@ -973,7 +974,7 @@ public class ContinuableFuture<T> implements Future<T> {
                 if (isDelayed == false) {
                     isDelayed = true;
 
-                    N.sleep(delayEndTime - DateUtil.currentMillis());
+                    N.sleepUninterruptibly(delayInMillis - (DateUtil.currentMillis() - startTime));
                 }
             }
         }, null, executor) {

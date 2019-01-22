@@ -913,7 +913,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
         final IntIteratorEx iter = this.iteratorEx();
 
         while (iter.hasNext()) {
