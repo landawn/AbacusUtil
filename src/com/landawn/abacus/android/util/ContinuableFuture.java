@@ -548,51 +548,51 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunOnUI(final Try.Runnable<E> action) {
-        return withUIExecutor().thenRun(action);
+        return thenUseUIExecutor().thenRun(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunOnUI(final Try.Consumer<? super T, E> action) {
-        return withUIExecutor().thenRun(action);
+        return thenUseUIExecutor().thenRun(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunOnUI(final Try.BiConsumer<? super T, Exception, E> action) {
-        return withUIExecutor().thenRun(action);
+        return thenUseUIExecutor().thenRun(action);
     }
 
     public <R> ContinuableFuture<R> thenCallOnUI(final Callable<R> action) {
-        return withUIExecutor().thenCall(action);
+        return thenUseUIExecutor().thenCall(action);
     }
 
     public <R, E extends Exception> ContinuableFuture<R> thenCallOnUI(final Try.Function<? super T, R, E> action) {
-        return withUIExecutor().thenCall(action);
+        return thenUseUIExecutor().thenCall(action);
     }
 
     public <R, E extends Exception> ContinuableFuture<R> thenCallOnUI(final Try.BiFunction<? super T, Exception, R, E> action) {
-        return withUIExecutor().thenCall(action);
+        return thenUseUIExecutor().thenCall(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunByTP(final Try.Runnable<E> action) {
-        return withTPExecutor().thenRun(action);
+        return thenUseTPExecutor().thenRun(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunByTP(final Try.Consumer<? super T, E> action) {
-        return withTPExecutor().thenRun(action);
+        return thenUseTPExecutor().thenRun(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> thenRunByTP(final Try.BiConsumer<? super T, Exception, E> action) {
-        return withTPExecutor().thenRun(action);
+        return thenUseTPExecutor().thenRun(action);
     }
 
     public <R> ContinuableFuture<R> thenCallByTP(final Callable<R> action) {
-        return withTPExecutor().thenCall(action);
+        return thenUseTPExecutor().thenCall(action);
     }
 
     public <R, E extends Exception> ContinuableFuture<R> thenCallByTP(final Try.Function<? super T, R, E> action) {
-        return withTPExecutor().thenCall(action);
+        return thenUseTPExecutor().thenCall(action);
     }
 
     public <R, E extends Exception> ContinuableFuture<R> thenCallByTP(final Try.BiFunction<? super T, Exception, R, E> action) {
-        return withTPExecutor().thenCall(action);
+        return thenUseTPExecutor().thenCall(action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> runAfterBoth(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
@@ -665,55 +665,55 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public <E extends Exception> ContinuableFuture<Void> runOnUIAfterBoth(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+        return thenUseUIExecutor().runAfterBoth(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runOnUIAfterBoth(final ContinuableFuture<U> other, final Try.BiConsumer<T, U, E> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+        return thenUseUIExecutor().runAfterBoth(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runOnUIAfterBoth(final ContinuableFuture<U> other,
             final Try.Consumer<Tuple4<T, Exception, U, Exception>, E> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+        return thenUseUIExecutor().runAfterBoth(other, action);
     }
 
     public <R> ContinuableFuture<R> callOnUIAfterBoth(final ContinuableFuture<?> other, final Callable<R> action) {
-        return withUIExecutor().callAfterBoth(other, action);
+        return thenUseUIExecutor().callAfterBoth(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callOnUIAfterBoth(final ContinuableFuture<U> other, final Try.BiFunction<T, U, R, E> action) {
-        return withUIExecutor().callAfterBoth(other, action);
+        return thenUseUIExecutor().callAfterBoth(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callOnUIAfterBoth(final ContinuableFuture<U> other,
             final Try.Function<Tuple4<T, Exception, U, Exception>, R, E> action) {
-        return withUIExecutor().callAfterBoth(other, action);
+        return thenUseUIExecutor().callAfterBoth(other, action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> runByTPAfterBoth(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+        return thenUseTPExecutor().runAfterBoth(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runByTPAfterBoth(final ContinuableFuture<U> other, final Try.BiConsumer<T, U, E> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+        return thenUseTPExecutor().runAfterBoth(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runByTPAfterBoth(final ContinuableFuture<U> other,
             final Try.Consumer<Tuple4<T, Exception, U, Exception>, E> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+        return thenUseTPExecutor().runAfterBoth(other, action);
     }
 
     public <R> ContinuableFuture<R> callByTPAfterBoth(final ContinuableFuture<?> other, final Callable<R> action) {
-        return withTPExecutor().callAfterBoth(other, action);
+        return thenUseTPExecutor().callAfterBoth(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callByTPAfterBoth(final ContinuableFuture<U> other, final Try.BiFunction<T, U, R, E> action) {
-        return withTPExecutor().callAfterBoth(other, action);
+        return thenUseTPExecutor().callAfterBoth(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callByTPAfterBoth(final ContinuableFuture<U> other,
             final Try.Function<Tuple4<T, Exception, U, Exception>, R, E> action) {
-        return withTPExecutor().callAfterBoth(other, action);
+        return thenUseTPExecutor().callAfterBoth(other, action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> runAfterEither(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
@@ -786,59 +786,59 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public <E extends Exception> ContinuableFuture<Void> runOnUIAfterEither(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
-        return withUIExecutor().runAfterEither(other, action);
+        return thenUseUIExecutor().runAfterEither(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runOnUIAfterEither(final ContinuableFuture<? extends T> other,
             final Try.Consumer<? super T, E> action) {
-        return withUIExecutor().runAfterEither(other, action);
+        return thenUseUIExecutor().runAfterEither(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runOnUIAfterEither(final ContinuableFuture<? extends T> other,
             final Try.BiConsumer<? super T, Exception, E> action) {
-        return withUIExecutor().runAfterEither(other, action);
+        return thenUseUIExecutor().runAfterEither(other, action);
     }
 
     public <R> ContinuableFuture<R> callOnUIAfterEither(final ContinuableFuture<?> other, final Callable<R> action) {
-        return withUIExecutor().callAfterEither(other, action);
+        return thenUseUIExecutor().callAfterEither(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callOnUIAfterEither(final ContinuableFuture<? extends T> other,
             final Try.Function<? super T, R, E> action) {
-        return withUIExecutor().callAfterEither(other, action);
+        return thenUseUIExecutor().callAfterEither(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callOnUIAfterEither(final ContinuableFuture<? extends T> other,
             final Try.BiFunction<? super T, Exception, R, E> action) {
-        return withUIExecutor().callAfterEither(other, action);
+        return thenUseUIExecutor().callAfterEither(other, action);
     }
 
     public <E extends Exception> ContinuableFuture<Void> runByTPAfterEither(final ContinuableFuture<?> other, final Try.Runnable<E> action) {
-        return withTPExecutor().runAfterEither(other, action);
+        return thenUseTPExecutor().runAfterEither(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runByTPAfterEither(final ContinuableFuture<? extends T> other,
             final Try.Consumer<? super T, E> action) {
-        return withTPExecutor().runAfterEither(other, action);
+        return thenUseTPExecutor().runAfterEither(other, action);
     }
 
     public <U, E extends Exception> ContinuableFuture<Void> runByTPAfterEither(final ContinuableFuture<? extends T> other,
             final Try.BiConsumer<? super T, Exception, E> action) {
-        return withTPExecutor().runAfterEither(other, action);
+        return thenUseTPExecutor().runAfterEither(other, action);
     }
 
     public <R> ContinuableFuture<R> callByTPAfterEither(final ContinuableFuture<?> other, final Callable<R> action) {
-        return withTPExecutor().callAfterEither(other, action);
+        return thenUseTPExecutor().callAfterEither(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callByTPAfterEither(final ContinuableFuture<? extends T> other,
             final Try.Function<? super T, R, E> action) {
-        return withTPExecutor().callAfterEither(other, action);
+        return thenUseTPExecutor().callAfterEither(other, action);
     }
 
     public <U, R, E extends Exception> ContinuableFuture<R> callByTPAfterEither(final ContinuableFuture<? extends T> other,
             final Try.BiFunction<? super T, Exception, R, E> action) {
-        return withTPExecutor().callAfterEither(other, action);
+        return thenUseTPExecutor().callAfterEither(other, action);
     }
 
     //    /**
@@ -1040,20 +1040,20 @@ public class ContinuableFuture<T> implements Future<T> {
         return new ContinuableFuture<>(futureTask, upFutures, asyncExecutor);
     }
 
-    public ContinuableFuture<T> delayed(long delay, TimeUnit unit) {
+    public ContinuableFuture<T> thenDelay(long delay, TimeUnit unit) {
         if (delay <= 0) {
             return this;
         }
 
-        return with(asyncExecutor, delay, TimeUnit.MILLISECONDS);
+        return with(asyncExecutor, delay, unit);
     }
 
-    public ContinuableFuture<T> with(Executor executor) {
+    public ContinuableFuture<T> thenUse(Executor executor) {
         return with(executor, 0, TimeUnit.MILLISECONDS);
     }
 
     @Deprecated
-    public ContinuableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
+    ContinuableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
         N.checkArgNotNull(executor);
 
         return new ContinuableFuture<T>(new Future<T>() {
@@ -1116,34 +1116,19 @@ public class ContinuableFuture<T> implements Future<T> {
         };
     }
 
-    public ContinuableFuture<T> withUIExecutor() {
-        return with(Async.UI_EXECUTOR);
+    public ContinuableFuture<T> thenUseUIExecutor() {
+        return thenUse(Async.UI_EXECUTOR);
     }
 
-    @Deprecated
-    public ContinuableFuture<T> withUIExecutor(final long delay) {
-        return with(Async.UI_EXECUTOR, delay, TimeUnit.MILLISECONDS);
-    }
-
-    public ContinuableFuture<T> withSerialExecutor() {
-        return with(Async.SERIAL_EXECUTOR);
-    }
-
-    @Deprecated
-    public ContinuableFuture<T> withSerialExecutor(final long delay) {
-        return with(Async.SERIAL_EXECUTOR, delay, TimeUnit.MILLISECONDS);
+    public ContinuableFuture<T> thenUseSerialExecutor() {
+        return thenUse(Async.SERIAL_EXECUTOR);
     }
 
     /**
      * With Thread Pool Executor.
      * @return
      */
-    public ContinuableFuture<T> withTPExecutor() {
-        return with(Async.TP_EXECUTOR);
-    }
-
-    @Deprecated
-    public ContinuableFuture<T> withTPExecutor(final long delay) {
-        return with(Async.TP_EXECUTOR, delay, TimeUnit.MILLISECONDS);
+    public ContinuableFuture<T> thenUseTPExecutor() {
+        return thenUse(Async.TP_EXECUTOR);
     }
 }

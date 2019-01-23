@@ -1,3 +1,14 @@
+### 1.3.30
+
+* Rename `ContinuableFuture.delayed(...)` to `ContinuableFuture.thenDelay(...)`.
+
+* Rename `ContinuableFuture.with(Executor)` to `ContinuableFuture.thenUse(Executor)`.
+
+* Rename `Futures.zip(...)` to `Futures.compose(...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.29
 
 * Add `Result<T, Throwable>`.

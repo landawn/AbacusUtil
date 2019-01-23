@@ -914,7 +914,7 @@ public class ContinuableFuture<T> implements Future<T> {
         return new ContinuableFuture<>(futureTask, upFutures, asyncExecutor);
     }
 
-    public ContinuableFuture<T> delayed(long delay, TimeUnit unit) {
+    public ContinuableFuture<T> thenDelay(long delay, TimeUnit unit) {
         if (delay <= 0) {
             return this;
         }
@@ -922,12 +922,12 @@ public class ContinuableFuture<T> implements Future<T> {
         return with(asyncExecutor, delay, unit);
     }
 
-    public ContinuableFuture<T> with(Executor executor) {
+    public ContinuableFuture<T> thenUse(Executor executor) {
         return with(executor, 0, TimeUnit.MILLISECONDS);
     }
 
     @Deprecated
-    public ContinuableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
+    ContinuableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
         N.checkArgNotNull(executor);
 
         return new ContinuableFuture<T>(new Future<T>() {
