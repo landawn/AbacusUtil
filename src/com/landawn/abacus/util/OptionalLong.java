@@ -65,15 +65,17 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.LongConsumer<E> action) throws E {
+    public <E extends Exception> OptionalLong ifPresent(Try.LongConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.LongConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalLong ifPresentOrElse(Try.LongConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -82,6 +84,8 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalLong filter(Try.LongPredicate<E> predicate) throws E {

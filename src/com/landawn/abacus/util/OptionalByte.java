@@ -61,15 +61,17 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.ByteConsumer<E> action) throws E {
+    public <E extends Exception> OptionalByte ifPresent(Try.ByteConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.ByteConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalByte ifPresentOrElse(Try.ByteConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -78,6 +80,8 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalByte filter(Try.BytePredicate<E> predicate) throws E {

@@ -70,15 +70,32 @@ public final class Optional<T> {
         return value == null;
     }
 
-    public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
+    /**
+     * 
+     * @param action
+     * @return itself
+     * @throws E
+     */
+    public <E extends Exception> Optional<T> ifPresent(Try.Consumer<? super T, E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent()) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    /**
+     * 
+     * @param action
+     * @param emptyAction
+     * @return itself
+     * @throws E
+     * @throws E2
+     */
+    public <E extends Exception, E2 extends Exception> Optional<T> ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction)
+            throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -87,6 +104,8 @@ public final class Optional<T> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> Optional<T> filter(Try.Predicate<? super T, E> predicate) throws E {

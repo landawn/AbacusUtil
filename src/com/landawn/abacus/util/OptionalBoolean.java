@@ -61,15 +61,18 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.BooleanConsumer<E> action) throws E {
+    public <E extends Exception> OptionalBoolean ifPresent(Try.BooleanConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.BooleanConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalBoolean ifPresentOrElse(Try.BooleanConsumer<E> action, Try.Runnable<E2> emptyAction)
+            throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -78,6 +81,8 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalBoolean filter(Try.BooleanPredicate<E> predicate) throws E {

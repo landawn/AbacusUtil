@@ -65,15 +65,17 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.IntConsumer<E> action) throws E {
+    public <E extends Exception> OptionalInt ifPresent(Try.IntConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.IntConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalInt ifPresentOrElse(Try.IntConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -82,6 +84,8 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalInt filter(Try.IntPredicate<E> predicate) throws E {

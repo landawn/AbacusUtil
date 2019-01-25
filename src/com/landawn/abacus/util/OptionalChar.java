@@ -61,15 +61,17 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.CharConsumer<E> action) throws E {
+    public <E extends Exception> OptionalChar ifPresent(Try.CharConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent()) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.CharConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalChar ifPresentOrElse(Try.CharConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -78,6 +80,8 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalChar filter(Try.CharPredicate<E> predicate) throws E {

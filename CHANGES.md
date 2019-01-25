@@ -6,6 +6,8 @@
 
 * Rename `Futures.zip(...)` to `Futures.compose(...)`.
 
+* Rename `Headers` to `HttpHeaders`.
+
 * Improvements and bug fix.
 
 

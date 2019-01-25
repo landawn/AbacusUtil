@@ -61,15 +61,17 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.ShortConsumer<E> action) throws E {
+    public <E extends Exception> OptionalShort ifPresent(Try.ShortConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.ShortConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalShort ifPresentOrElse(Try.ShortConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -78,6 +80,8 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalShort filter(Try.ShortPredicate<E> predicate) throws E {

@@ -61,15 +61,17 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         return isPresent;
     }
 
-    public <E extends Exception> void ifPresent(Try.FloatConsumer<E> action) throws E {
+    public <E extends Exception> OptionalFloat ifPresent(Try.FloatConsumer<E> action) throws E {
         Objects.requireNonNull(action);
 
         if (isPresent) {
             action.accept(value);
         }
+
+        return this;
     }
 
-    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.FloatConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
+    public <E extends Exception, E2 extends Exception> OptionalFloat ifPresentOrElse(Try.FloatConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         Objects.requireNonNull(action);
         Objects.requireNonNull(emptyAction);
 
@@ -78,6 +80,8 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         } else {
             emptyAction.run();
         }
+
+        return this;
     }
 
     public <E extends Exception> OptionalFloat filter(Try.FloatPredicate<E> predicate) throws E {
