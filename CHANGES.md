@@ -8,6 +8,10 @@
 
 * Rename `Headers` to `HttpHeaders`.
 
+* Rename `JdbcSettings.get/setColumnIndexes` to `JdbcSettings.get/setReturnedColumnIndexes`.
+
+* Rename `JdbcSettings.get/setColumnNames` to `JdbcSettings.get/setReturnedColumnNames`.
+
 * Improvements and bug fix.
 
 

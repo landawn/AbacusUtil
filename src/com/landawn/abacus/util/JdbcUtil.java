@@ -114,12 +114,19 @@ import com.landawn.abacus.util.stream.Collector;
  *
  * @since 0.8
  * 
- * @author Haiyang Li
+ * @author Haiyang Li 
  * 
- * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html</a>
- * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/7/docs/api/java/sql/Statement.html</a>
- * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html</a>
- * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html</a>
+ * @see {@link com.landawn.abacus.annotation.ReadOnly}
+ * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+ * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+ * @see {@link com.landawn.abacus.annotation.Transient}
+ * @see {@link com.landawn.abacus.annotation.Table}
+ * @see {@link com.landawn.abacus.annotation.Column}
+ * 
+ * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+ * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+ * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+ * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
  */
 public final class JdbcUtil {
     private static final Logger logger = LoggerFactory.getLogger(JdbcUtil.class);
@@ -5379,7 +5386,18 @@ public final class JdbcUtil {
      * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
      * 
      * @author haiyangl
-     *
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
      */
     public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
 
@@ -5408,7 +5426,18 @@ public final class JdbcUtil {
      * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
      * 
      * @author haiyangl
-     *
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
      */
     public static class PreparedCallableQuery extends AbstractPreparedQuery<CallableStatement, PreparedCallableQuery> {
         private final CallableStatement stmt;
