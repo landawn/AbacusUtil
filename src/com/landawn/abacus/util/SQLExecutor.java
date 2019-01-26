@@ -55,8 +55,8 @@ import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
-import com.landawn.abacus.dataSource.SQLDataSource;
 import com.landawn.abacus.condition.Equal;
+import com.landawn.abacus.dataSource.SQLDataSource;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -8175,10 +8175,21 @@ public class SQLExecutor implements Closeable {
             return this;
         }
 
+        /**
+         * 
+         * @return
+         * @see {@link Connection#prepareStatement(String, int[])}
+         */
         public int[] getColumnIndexes() {
             return columnIndexes;
         }
 
+        /**
+         * 
+         * @param columnIndexes
+         * @return
+         * @see {@link Connection#prepareStatement(String, int[])}
+         */
         public JdbcSettings setColumnIndexes(final int[] columnIndexes) {
             assertNotFrozen();
 
@@ -8187,10 +8198,21 @@ public class SQLExecutor implements Closeable {
             return this;
         }
 
+        /**
+         * 
+         * @return
+         * @see {@link Connection#prepareStatement(String, String[])}
+         */
         public String[] getColumnNames() {
             return columnNames;
         }
 
+        /**
+         * 
+         * @param columnNames
+         * @return
+         * @see {@link Connection#prepareStatement(String, String[])}
+         */
         public JdbcSettings setColumnNames(final String[] columnNames) {
             assertNotFrozen();
 

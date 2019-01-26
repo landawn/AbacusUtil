@@ -42,8 +42,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.DuplicatedResultException;
-import com.landawn.abacus.exception.UncheckedIOException;
-import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
@@ -2401,14 +2399,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception> long persist(File file, Try.Function<? super T, String, E> toLine) throws E {
-        Writer writer = null;
-
-        try {
-            writer = new FileWriter(file);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public long persist(File file, Try.Function<? super T, String, IOException> toLine) throws IOException {
+        final Writer writer = new FileWriter(file);
 
         try {
             return persist(writer, toLine);
@@ -2418,7 +2410,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E {
+    public long persist(OutputStream os, Try.Function<? super T, String, IOException> toLine) throws IOException {
         final BufferedWriter bw = Objectory.createBufferedWriter(os);
 
         try {
@@ -2429,7 +2421,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E {
+    public long persist(Writer writer, Try.Function<? super T, String, IOException> toLine) throws IOException {
         final Iterator<T> iter = iterator();
         final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
         long cnt = 0;
@@ -2440,8 +2432,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                 bw.write(IOUtil.LINE_SEPARATOR);
                 cnt++;
             }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         } finally {
             if (bw != writer) {
                 Objectory.recycle(bw);
@@ -2453,15 +2443,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
         PreparedStatement stmt = null;
 
         try {
             stmt = conn.prepareStatement(insertSQL);
 
             return persist(stmt, batchSize, batchInterval, stmtSetter);
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(stmt);
         }
@@ -2469,35 +2457,31 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
 
         final Iterator<T> iter = iterator();
 
         long cnt = 0;
-        try {
-            while (iter.hasNext()) {
-                stmtSetter.accept(stmt, iter.next());
+        while (iter.hasNext()) {
+            stmtSetter.accept(stmt, iter.next());
 
-                stmt.addBatch();
+            stmt.addBatch();
 
-                if ((++cnt % batchSize) == 0) {
-                    stmt.executeBatch();
-                    stmt.clearBatch();
-
-                    if (batchInterval > 0) {
-                        N.sleep(batchInterval);
-                    }
-                }
-            }
-
-            if ((cnt % batchSize) > 0) {
+            if ((++cnt % batchSize) == 0) {
                 stmt.executeBatch();
                 stmt.clearBatch();
+
+                if (batchInterval > 0) {
+                    N.sleep(batchInterval);
+                }
             }
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
+        }
+
+        if ((cnt % batchSize) > 0) {
+            stmt.executeBatch();
+            stmt.clearBatch();
         }
 
         return cnt;

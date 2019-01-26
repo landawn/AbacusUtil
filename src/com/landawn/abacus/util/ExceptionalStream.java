@@ -420,11 +420,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 final long m = hasNext ? n - 1 : n;
 
-                try {
-                    JdbcUtil.skip(resultSet, m);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
+                JdbcUtil.skip(resultSet, m);
 
                 hasNext = false;
             }
@@ -481,11 +477,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 final long m = hasNext ? n - 1 : n;
 
-                try {
-                    JdbcUtil.skip(resultSet, m);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
+                JdbcUtil.skip(resultSet, m);
 
                 hasNext = false;
             }
@@ -537,11 +529,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 final long m = hasNext ? n - 1 : n;
 
-                try {
-                    JdbcUtil.skip(resultSet, m);
-                } catch (SQLException e) {
-                    throw new UncheckedSQLException(e);
-                }
+                JdbcUtil.skip(resultSet, m);
 
                 hasNext = false;
             }

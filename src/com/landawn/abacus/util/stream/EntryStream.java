@@ -1454,7 +1454,9 @@ public final class EntryStream<K, V> implements AutoCloseable {
     /**
      * @return
      * @see #mapER(Function, Function)
+     * @deprecated
      */
+    @Deprecated
     @Beta
     @SequentialOnly
     public EntryStream<V, K> inversedER() {
@@ -1489,7 +1491,9 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param keyMapper
      * @param valueMapper
      * @return
+     * @deprecated
      */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <KK, VV> EntryStream<KK, VV> mapER(final Function<? super Map.Entry<K, V>, KK> keyMapper, final Function<? super Map.Entry<K, V>, VV> valueMapper) {
@@ -1509,6 +1513,15 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return map(mapper);
     }
 
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <KK, VV> EntryStream<KK, VV> mapER(final BiFunction<? super K, ? super V, KK> keyMapper, final BiFunction<? super K, ? super V, VV> valueMapper) {
@@ -1534,7 +1547,9 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param keyMapper
      * @return
      * @see #mapER(Function, Function)
+     * @deprecated
      */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, ? extends Stream<KK>> keyMapper) {
@@ -1558,6 +1573,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flattMap(mapper2);
     }
 
+    /**
+     * 
+     * @param keyMapper
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <KK> EntryStream<KK, V> flattMapKeyER(final Function<? super K, ? extends Collection<KK>> keyMapper) {
@@ -1586,7 +1609,9 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param valueMapper
      * @return
      * @see #mapER(Function, Function)
+     * @deprecated
      */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, ? extends Stream<VV>> valueMapper) {
@@ -1610,6 +1635,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flattMap(mapper2);
     }
 
+    /**
+     * 
+     * @param valueMapper
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
     @Beta
     @SequentialOnly
     public <VV> EntryStream<K, VV> flattMapValueER(final Function<? super V, ? extends Collection<VV>> valueMapper) {

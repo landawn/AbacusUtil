@@ -25,6 +25,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
@@ -1963,21 +1964,21 @@ public abstract class Stream<T>
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
     @SequentialOnly
-    public abstract <E extends Exception> long persist(File file, Try.Function<? super T, String, E> toLine) throws E;
+    public abstract long persist(File file, Try.Function<? super T, String, IOException> toLine) throws IOException;
 
     @SequentialOnly
-    public abstract <E extends Exception> long persist(OutputStream os, Try.Function<? super T, String, E> toLine) throws E;
+    public abstract long persist(OutputStream os, Try.Function<? super T, String, IOException> toLine) throws IOException;
 
     @SequentialOnly
-    public abstract <E extends Exception> long persist(Writer writer, Try.Function<? super T, String, E> toLine) throws E;
+    public abstract long persist(Writer writer, Try.Function<? super T, String, IOException> toLine) throws IOException;
 
     @SequentialOnly
     public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException;
 
     @SequentialOnly
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException;
 
     @SequentialOnly
     public abstract java.util.stream.Stream<T> toJdkStream();
@@ -2011,7 +2012,9 @@ public abstract class Stream<T>
      * @param keyMapper
      * @param valueMapper
      * @return
+     * @deprecated
      */
+    @Deprecated
     @Beta
     @SequentialOnly
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
