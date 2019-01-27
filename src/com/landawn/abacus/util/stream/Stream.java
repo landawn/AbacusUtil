@@ -6633,7 +6633,7 @@ public abstract class Stream<T>
     //     * @param a
     //     * @param b
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
@@ -6657,7 +6657,7 @@ public abstract class Stream<T>
     //     * @param b
     //     * @param c
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
@@ -6696,7 +6696,7 @@ public abstract class Stream<T>
     //     * @param a
     //     * @param b
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
@@ -6722,7 +6722,7 @@ public abstract class Stream<T>
     //     * @param b
     //     * @param c
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
@@ -6761,7 +6761,7 @@ public abstract class Stream<T>
      * @param a
      * @param b
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b,
@@ -6861,7 +6861,7 @@ public abstract class Stream<T>
      * @param b
      * @param c
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
@@ -6987,7 +6987,7 @@ public abstract class Stream<T>
      * @param a
      * @param b
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction,
@@ -7013,7 +7013,7 @@ public abstract class Stream<T>
      * @param b
      * @param c
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
@@ -7071,7 +7071,7 @@ public abstract class Stream<T>
      * @param b
      * @param c
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
@@ -7120,7 +7120,7 @@ public abstract class Stream<T>
      * @param b
      * @param c
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
@@ -7246,7 +7246,7 @@ public abstract class Stream<T>
     //     * @param valueForNoneA
     //     * @param valueForNoneB
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
@@ -7293,7 +7293,7 @@ public abstract class Stream<T>
     //     * @param valueForNoneB
     //     * @param valueForNoneC
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
@@ -7336,7 +7336,7 @@ public abstract class Stream<T>
     //     * @param valueForNoneA
     //     * @param valueForNoneB
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
@@ -7383,7 +7383,7 @@ public abstract class Stream<T>
     //     * @param valueForNoneB
     //     * @param valueForNoneC
     //     * @param zipFunction
-    //     * @param queueSize for each iterator. Default value is 8
+    //     * @param queueSize for each iterator. Default value is 32
     //     * @return
     //     */
     //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
@@ -7427,7 +7427,7 @@ public abstract class Stream<T>
      * @param valueForNoneA
      * @param valueForNoneB
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final A valueForNoneA, final B valueForNoneB,
@@ -7543,7 +7543,7 @@ public abstract class Stream<T>
      * @param valueForNoneB
      * @param valueForNoneC
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
@@ -7666,7 +7666,7 @@ public abstract class Stream<T>
      * @param valueForNoneA
      * @param valueForNoneB
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
@@ -7713,7 +7713,7 @@ public abstract class Stream<T>
      * @param valueForNoneB
      * @param valueForNoneC
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
@@ -7779,7 +7779,7 @@ public abstract class Stream<T>
      * @param c
      * @param valuesForNone
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final List<? extends T> valuesForNone,
@@ -7834,7 +7834,7 @@ public abstract class Stream<T>
      * @param c
      * @param valuesForNone
      * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final List<? extends T> valuesForNone,

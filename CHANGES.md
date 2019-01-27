@@ -1,3 +1,10 @@
+### 1.3.31
+
+* Move `box/unbox/unboxOrDefault/unboxOrGet` from `Array` to `Primitives`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.30
 
 * Rename `ContinuableFuture.delayed(...)` to `ContinuableFuture.thenDelay(...)`.

@@ -26,7 +26,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -39,6 +38,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.Primitives;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -904,7 +904,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                             queue.offer(elements.nextFloat());
                         }
 
-                        aar = Array.unbox(N.EMPTY_FLOAT_OBJ_ARRAY);
+                        aar = Primitives.unbox(N.EMPTY_FLOAT_OBJ_ARRAY);
                     } else {
                         final Queue<Float> heap = new PriorityQueue<>(n, comparator);
 
@@ -922,7 +922,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                             }
                         }
 
-                        aar = Array.unbox(heap.toArray(N.EMPTY_FLOAT_OBJ_ARRAY));
+                        aar = Primitives.unbox(heap.toArray(N.EMPTY_FLOAT_OBJ_ARRAY));
                     }
 
                     to = aar.length;

@@ -1854,7 +1854,7 @@ public final class f {
     }
 
     public static Boolean[] box(final boolean[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Boolean[][] box(final boolean[][] a) {
@@ -1888,11 +1888,11 @@ public final class f {
     }
 
     public static boolean[] unbox(final Boolean[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static boolean[] unbox(final Boolean[] a, final boolean valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static boolean[][] unbox(final Boolean[][] a) {
@@ -2576,7 +2576,7 @@ public final class f {
     }
 
     public static Character[] box(final char[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Character[][] box(final char[][] a) {
@@ -2610,11 +2610,11 @@ public final class f {
     }
 
     public static char[] unbox(final Character[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static char[] unbox(final Character[] a, final char valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static char[][] unbox(final Character[][] a) {
@@ -4551,7 +4551,7 @@ public final class f {
     }
 
     public static Byte[] box(final byte[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Byte[][] box(final byte[][] a) {
@@ -4585,11 +4585,11 @@ public final class f {
     }
 
     public static byte[] unbox(final Byte[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static byte[] unbox(final Byte[] a, final byte valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static byte[][] unbox(final Byte[][] a) {
@@ -6531,7 +6531,7 @@ public final class f {
     }
 
     public static Short[] box(final short[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Short[][] box(final short[][] a) {
@@ -6565,11 +6565,11 @@ public final class f {
     }
 
     public static short[] unbox(final Short[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static short[] unbox(final Short[] a, final short valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static short[][] unbox(final Short[][] a) {
@@ -8500,7 +8500,7 @@ public final class f {
     }
 
     public static Integer[] box(final int[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Integer[][] box(final int[][] a) {
@@ -8534,11 +8534,11 @@ public final class f {
     }
 
     public static int[] unbox(final Integer[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static int[] unbox(final Integer[] a, final int valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static int[][] unbox(final Integer[][] a) {
@@ -10475,7 +10475,7 @@ public final class f {
     }
 
     public static Long[] box(final long[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Long[][] box(final long[][] a) {
@@ -10509,11 +10509,11 @@ public final class f {
     }
 
     public static long[] unbox(final Long[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static long[] unbox(final Long[] a, final long valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static long[][] unbox(final Long[][] a) {
@@ -12455,7 +12455,7 @@ public final class f {
     }
 
     public static Float[] box(final float[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Float[][] box(final float[][] a) {
@@ -12489,11 +12489,11 @@ public final class f {
     }
 
     public static float[] unbox(final Float[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static float[] unbox(final Float[] a, final float valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static float[][] unbox(final Float[][] a) {
@@ -14438,7 +14438,7 @@ public final class f {
     }
 
     public static Double[] box(final double[] a) {
-        return Array.box(a);
+        return Primitives.box(a);
     }
 
     public static Double[][] box(final double[][] a) {
@@ -14472,11 +14472,11 @@ public final class f {
     }
 
     public static double[] unbox(final Double[] a) {
-        return Array.unbox(a);
+        return Primitives.unbox(a);
     }
 
     public static double[] unbox(final Double[] a, final double valueForNul) {
-        return Array.unbox(a, valueForNul);
+        return Primitives.unbox(a, valueForNul);
     }
 
     public static double[][] unbox(final Double[][] a) {

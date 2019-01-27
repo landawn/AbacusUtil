@@ -26,7 +26,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -35,6 +34,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.Primitives;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
@@ -718,7 +718,7 @@ class IteratorShortStream extends AbstractShortStream {
                             queue.offer(elements.nextShort());
                         }
 
-                        aar = Array.unbox(N.EMPTY_SHORT_OBJ_ARRAY);
+                        aar = Primitives.unbox(N.EMPTY_SHORT_OBJ_ARRAY);
                     } else {
                         final Queue<Short> heap = new PriorityQueue<>(n, comparator);
 
@@ -736,7 +736,7 @@ class IteratorShortStream extends AbstractShortStream {
                             }
                         }
 
-                        aar = Array.unbox(heap.toArray(N.EMPTY_SHORT_OBJ_ARRAY));
+                        aar = Primitives.unbox(heap.toArray(N.EMPTY_SHORT_OBJ_ARRAY));
                     }
 
                     to = aar.length;
