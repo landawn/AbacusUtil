@@ -38,7 +38,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.ContinuableFuture;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.MutableInt;
@@ -620,15 +620,15 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream of(final Byte[] a) {
-        return Stream.of(a).mapToByte(Fn.unboxB());
+        return Stream.of(a).mapToByte(Fnn.unboxB());
     }
 
     public static ByteStream of(final Byte[] a, final int startIndex, final int endIndex) {
-        return Stream.of(a, startIndex, endIndex).mapToByte(Fn.unboxB());
+        return Stream.of(a, startIndex, endIndex).mapToByte(Fnn.unboxB());
     }
 
     public static ByteStream of(final Collection<Byte> c) {
-        return Stream.of(c).mapToByte(Fn.unboxB());
+        return Stream.of(c).mapToByte(Fnn.unboxB());
     }
 
     public static ByteStream of(final ByteIterator iterator) {

@@ -2,6 +2,10 @@
 
 * Move `box/unbox/unboxOrDefault/unboxOrGet` from `Array` to `Primitives`.
 
+* Move `unboxS/I/B/...` from `Fn` to `Fnn`.
+
+* Remove `Collectors` related methods from `Fn`.
+
 * Improvements and bug fix.
 
 

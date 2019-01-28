@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DateUtil;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
@@ -702,15 +702,15 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream of(final Long[] a) {
-        return Stream.of(a).mapToLong(Fn.unboxL());
+        return Stream.of(a).mapToLong(Fnn.unboxL());
     }
 
     public static LongStream of(final Long[] a, final int startIndex, final int endIndex) {
-        return Stream.of(a, startIndex, endIndex).mapToLong(Fn.unboxL());
+        return Stream.of(a, startIndex, endIndex).mapToLong(Fnn.unboxL());
     }
 
     public static LongStream of(final Collection<Long> c) {
-        return Stream.of(c).mapToLong(Fn.unboxL());
+        return Stream.of(c).mapToLong(Fnn.unboxL());
     }
 
     public static LongStream of(final LongIterator iterator) {

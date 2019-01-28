@@ -39,7 +39,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.MutableInt;
@@ -748,15 +748,15 @@ public abstract class FloatStream
     }
 
     public static FloatStream of(final Float[] a) {
-        return Stream.of(a).mapToFloat(Fn.unboxF());
+        return Stream.of(a).mapToFloat(Fnn.unboxF());
     }
 
     public static FloatStream of(final Float[] a, final int startIndex, final int endIndex) {
-        return Stream.of(a, startIndex, endIndex).mapToFloat(Fn.unboxF());
+        return Stream.of(a, startIndex, endIndex).mapToFloat(Fnn.unboxF());
     }
 
     public static FloatStream of(final Collection<Float> c) {
-        return Stream.of(c).mapToFloat(Fn.unboxF());
+        return Stream.of(c).mapToFloat(Fnn.unboxF());
     }
 
     public static FloatStream of(final FloatIterator iterator) {

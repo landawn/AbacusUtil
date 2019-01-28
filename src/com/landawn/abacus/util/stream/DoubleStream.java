@@ -40,7 +40,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.MutableInt;
@@ -739,15 +739,15 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream of(final Double[] a) {
-        return Stream.of(a).mapToDouble(Fn.unboxD());
+        return Stream.of(a).mapToDouble(Fnn.unboxD());
     }
 
     public static DoubleStream of(final Double[] a, final int startIndex, final int endIndex) {
-        return Stream.of(a, startIndex, endIndex).mapToDouble(Fn.unboxD());
+        return Stream.of(a, startIndex, endIndex).mapToDouble(Fnn.unboxD());
     }
 
     public static DoubleStream of(final Collection<Double> c) {
-        return Stream.of(c).mapToDouble(Fn.unboxD());
+        return Stream.of(c).mapToDouble(Fnn.unboxD());
     }
 
     public static DoubleStream of(final DoubleIterator iterator) {

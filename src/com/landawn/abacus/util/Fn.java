@@ -104,10 +104,7 @@ import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.function.UnaryOperator;
-import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.SequentialOnly;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Factory utility class for functional interfaces.
@@ -1621,34 +1618,6 @@ public final class Fn extends Comparators {
         };
     }
 
-    public static ToByteFunction<Byte> unboxB() {
-        return ToByteFunction.UNBOX;
-    }
-
-    public static ToCharFunction<Character> unboxC() {
-        return ToCharFunction.UNBOX;
-    }
-
-    public static ToShortFunction<Short> unboxS() {
-        return ToShortFunction.UNBOX;
-    }
-
-    public static ToIntFunction<Integer> unboxI() {
-        return ToIntFunction.UNBOX;
-    }
-
-    public static ToLongFunction<Long> unboxL() {
-        return ToLongFunction.UNBOX;
-    }
-
-    public static ToFloatFunction<Float> unboxF() {
-        return ToFloatFunction.UNBOX;
-    }
-
-    public static ToDoubleFunction<Double> unboxD() {
-        return ToDoubleFunction.UNBOX;
-    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T extends Number> ToIntFunction<T> numToInt() {
         return (ToIntFunction) ToIntFunction.FROM_NUM;
@@ -2490,479 +2459,6 @@ public final class Fn extends Comparators {
     @Deprecated
     static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
         return BiConsumers.<K, V, M> ofPutAll();
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toList()
-     */
-    public static <T> Collector<T, ?, List<T>> toList() {
-        return Collectors.toList();
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toImmutableList()
-     */
-    public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
-        return Collectors.toImmutableList();
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toSet()
-     */
-    public static <T> Collector<T, ?, Set<T>> toSet() {
-        return Collectors.toSet();
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toImmutableSet()
-     */
-    public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
-        return Collectors.toImmutableSet();
-    }
-
-    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<? extends C> collectionFactory) {
-        return Collectors.toCollection(collectionFactory);
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toMap()
-     */
-    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
-        return Collectors.toMap();
-    }
-
-    /**
-     * 
-     * @param mergeFunction
-     * @return
-     * @see Collectors#toMap(BinaryOperator)
-     */
-    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
-        return Collectors.toMap(mergeFunction);
-    }
-
-    /**
-     * 
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Supplier)
-     */
-    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
-        return Collectors.toMap(mapFactory);
-    }
-
-    /**
-     * 
-     * @param mergeFunction
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(BinaryOperator, Supplier)
-     */
-    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
-        return Collectors.toMap(mergeFunction, mapFactory);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMap(Function, Function)
-     */
-    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
-        return Collectors.toMap(keyExtractor, valueMapper);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mergeFunction
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator)
-     */
-    public static <T, K, V> Collector<T, ?, Map<K, V>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction) {
-        return Collectors.toMap(keyExtractor, valueMapper, mergeFunction);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, Supplier)
-     */
-    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
-        return Collectors.toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mergeFunction
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
-        return Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public static <T, K, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
-            final Collector<? super T, A, D> downstream) {
-        return Collectors.toMap(classifier, downstream);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
-            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
-        return Collectors.toMap(classifier, downstream, mapFactory);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param valueMapper
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public static <T, K, U, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream) {
-        return Collectors.toMap(classifier, valueMapper, downstream);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param valueMapper
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public static <T, K, U, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
-        return Collectors.toMap(classifier, valueMapper, downstream, mapFactory);
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#toImmutableMap()
-     */
-    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
-        return Collectors.toImmutableMap(Fn.IDENTITY, Fn.IDENTITY);
-    }
-
-    /**
-     * 
-     * @param mergeFunction
-     * @return
-     * @see Collectors#toImmutableMap(BinaryOperator)
-     */
-    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap(final BinaryOperator<V> mergeFunction) {
-        return Collectors.toImmutableMap(Fn.IDENTITY, Fn.IDENTITY, mergeFunction);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toImmutableMap(Function, Function)
-     */
-    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends V> valueMapper) {
-        return Collectors.toImmutableMap(keyExtractor, valueMapper);
-    }
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mergeFunction
-     * @return
-     * @see Collectors#toImmutableMap(Function, Function, BinaryOperator)
-     */
-    public static <T, K, V> Collector<T, ?, ImmutableMap<K, V>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return Collectors.toImmutableMap(keyExtractor, valueMapper, mergeFunction);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public static <T, K> Collector<T, ?, Map<K, List<T>>> groupingBy(Function<? super T, ? extends K> classifier) {
-        return Collectors.groupingBy(classifier);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public static <T, K, M extends Map<K, List<T>>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
-            final Supplier<M> mapFactory) {
-        return Collectors.groupingBy(classifier, mapFactory);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(final Function<? super T, ? extends K> classifier,
-            final Collector<? super T, A, D> downstream) {
-        return Collectors.groupingBy(classifier, downstream);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
-            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
-        return Collectors.groupingBy(classifier, downstream, mapFactory);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public static <T, K> Collector<T, ?, Map<K, Long>> countingBy(Function<? super T, ? extends K> classifier) {
-        return groupingBy(classifier, Collectors.counting());
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public static <T, K, M extends Map<K, Long>> Collector<T, ?, M> countingBy(final Function<? super T, ? extends K> classifier,
-            final Supplier<M> mapFactory) {
-        return groupingBy(classifier, Collectors.counting(), mapFactory);
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public static <T, K> Collector<T, ?, Map<K, Integer>> countingIntBy(Function<? super T, ? extends K> classifier) {
-        return groupingBy(classifier, Collectors.countingInt());
-    }
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public static <T, K, M extends Map<K, Integer>> Collector<T, ?, M> countingIntBy(final Function<? super T, ? extends K> classifier,
-            final Supplier<M> mapFactory) {
-        return groupingBy(classifier, Collectors.countingInt(), mapFactory);
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#counting()
-     */
-    public static <T> Collector<T, ?, Long> counting() {
-        return Collectors.counting();
-    }
-
-    /**
-     * 
-     * @return
-     * @see Collectors#countingInt()
-     */
-    public static <T> Collector<T, ?, Integer> countingInt() {
-        return Collectors.countingInt();
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#summingInt(ToIntFunction)
-     */
-    public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
-        return Collectors.summingInt(mapper);
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#summingLong(ToLongFunction)
-     */
-    public static <T> Collector<T, ?, Long> summingLong(final ToLongFunction<? super T> mapper) {
-        return Collectors.summingLong(mapper);
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#summarizingDouble(ToDoubleFunction)
-     */
-    public static <T> Collector<T, ?, Double> summingDouble(final ToDoubleFunction<? super T> mapper) {
-        return Collectors.summingDouble(mapper);
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#averagingInt(ToIntFunction)
-     */
-    public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
-        return Collectors.averagingInt(mapper);
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#averagingLong(ToLongFunction)
-     */
-    public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
-        return Collectors.averagingLong(mapper);
-    }
-
-    /**
-     * 
-     * @param mapper
-     * @return
-     * @see Collectors#averagingDouble(ToDoubleFunction)
-     */
-    public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
-        return Collectors.averagingDouble(mapper);
-    }
-
-    public static <T> Collector<T, ?, List<T>> filtering(final Predicate<? super T> predicate) {
-        return Collectors.filtering(predicate);
-    }
-
-    public static <T, A, R> Collector<T, ?, R> filtering(final Predicate<? super T> predicate, final Collector<? super T, A, R> downstream) {
-        return Collectors.filtering(predicate, downstream);
-    }
-
-    public static <T, U> Collector<T, ?, List<U>> mapping(final Function<? super T, ? extends U> mapper) {
-        return Collectors.mapping(mapper);
-    }
-
-    public static <T, U, A, R> Collector<T, ?, R> mapping(final Function<? super T, ? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(mapper, downstream);
-    }
-
-    public static <T, U> Collector<T, ?, List<U>> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper) {
-        return Collectors.flatMapping(mapper);
-    }
-
-    public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
-            final Collector<? super U, A, R> downstream) {
-        return Collectors.flatMapping(mapper, downstream);
-    }
-
-    public static <T, U> Collector<T, ?, List<U>> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper) {
-        return Collectors.flattMapping(mapper);
-    }
-
-    public static <T, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper,
-            final Collector<? super U, A, R> downstream) {
-        return Collectors.flattMapping(mapper, downstream);
-    }
-
-    public static <T, A1, A2, R1, R2> Collector<T, Tuple2<A1, A2>, Tuple2<R1, R2>> combine(final Collector<? super T, A1, R1> collector1,
-            final Collector<? super T, A2, R2> collector2) {
-        return Collectors.combine(collector1, collector2);
-    }
-
-    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final Collector<? super T, A1, R1> collector1,
-            final Collector<? super T, A2, R2> collector2, final BiFunction<? super R1, ? super R2, R> finisher) {
-        return Collectors.combine(collector1, collector2, finisher);
-    }
-
-    public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(final Collector<? super T, A1, R1> collector1,
-            final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3) {
-        return Collectors.combine(collector1, collector2, collector3);
-    }
-
-    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final Collector<? super T, A1, R1> collector1,
-            final Collector<? super T, A2, R2> collector2, final Collector<? super T, A3, R3> collector3,
-            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
-        return Collectors.combine(collector1, collector2, collector3, finisher);
-    }
-
-    public static <T, A1, A2, R1, R2> Collector<T, Tuple2<A1, A2>, Tuple2<R1, R2>> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
-            final java.util.stream.Collector<? super T, A2, R2> collector2) {
-        return Collectors.combine(collector1, collector2);
-    }
-
-    public static <T, A1, A2, R1, R2, R> Collector<T, Tuple2<A1, A2>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
-            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.function.BiFunction<? super R1, ? super R2, R> finisher) {
-        return Collectors.combine(collector1, collector2, finisher);
-    }
-
-    public static <T, A1, A2, A3, R1, R2, R3> Collector<T, Tuple3<A1, A2, A3>, Tuple3<R1, R2, R3>> combine(
-            final java.util.stream.Collector<? super T, A1, R1> collector1, final java.util.stream.Collector<? super T, A2, R2> collector2,
-            final java.util.stream.Collector<? super T, A3, R3> collector3) {
-        return Collectors.combine(collector1, collector2, collector3);
-    }
-
-    public static <T, A1, A2, A3, R1, R2, R3, R> Collector<T, Tuple3<A1, A2, A3>, R> combine(final java.util.stream.Collector<? super T, A1, R1> collector1,
-            final java.util.stream.Collector<? super T, A2, R2> collector2, final java.util.stream.Collector<? super T, A3, R3> collector3,
-            final TriFunction<? super R1, ? super R2, ? super R3, R> finisher) {
-        return Collectors.combine(collector1, collector2, collector3, finisher);
     }
 
     static <K, V, E extends Exception> void merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction)
@@ -5608,6 +5104,51 @@ public final class Fn extends Comparators {
                 }
             };
         }
+
+        public static <K, V, T, E extends Exception> Function<Map.Entry<K, V>, T> ff(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
+            N.checkArgNotNull(f, "BiFunction");
+
+            return new Function<Map.Entry<K, V>, T>() {
+                @Override
+                public T apply(Entry<K, V> e) {
+                    try {
+                        return f.apply(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
+
+        public static <K, V, E extends Exception> Predicate<Map.Entry<K, V>> pp(final Try.BiPredicate<? super K, ? super V, E> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+
+            return new Predicate<Map.Entry<K, V>>() {
+                @Override
+                public boolean test(Entry<K, V> e) {
+                    try {
+                        return p.test(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
+
+        public static <K, V, E extends Exception> Consumer<Map.Entry<K, V>> cc(final Try.BiConsumer<? super K, ? super V, E> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+
+            return new Consumer<Map.Entry<K, V>>() {
+                @Override
+                public void accept(Entry<K, V> e) {
+                    try {
+                        c.accept(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
     }
 
     public static final class Pairs {
@@ -5680,6 +5221,34 @@ public final class Fn extends Comparators {
 
         private Fnn() {
             // utility class
+        }
+
+        public static ToByteFunction<Byte> unboxB() {
+            return ToByteFunction.UNBOX;
+        }
+
+        public static ToCharFunction<Character> unboxC() {
+            return ToCharFunction.UNBOX;
+        }
+
+        public static ToShortFunction<Short> unboxS() {
+            return ToShortFunction.UNBOX;
+        }
+
+        public static ToIntFunction<Integer> unboxI() {
+            return ToIntFunction.UNBOX;
+        }
+
+        public static ToLongFunction<Long> unboxL() {
+            return ToLongFunction.UNBOX;
+        }
+
+        public static ToFloatFunction<Float> unboxF() {
+            return ToFloatFunction.UNBOX;
+        }
+
+        public static ToDoubleFunction<Double> unboxD() {
+            return ToDoubleFunction.UNBOX;
         }
 
         public static CharPredicate cp(final CharPredicate p) {

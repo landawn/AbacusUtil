@@ -38,7 +38,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.ContinuableFuture;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.MutableInt;
@@ -670,15 +670,15 @@ public abstract class CharStream
     }
 
     public static CharStream of(final Character[] a) {
-        return Stream.of(a).mapToChar(Fn.unboxC());
+        return Stream.of(a).mapToChar(Fnn.unboxC());
     }
 
     public static CharStream of(final Character[] a, final int startIndex, final int endIndex) {
-        return Stream.of(a, startIndex, endIndex).mapToChar(Fn.unboxC());
+        return Stream.of(a, startIndex, endIndex).mapToChar(Fnn.unboxC());
     }
 
     public static CharStream of(final Collection<Character> c) {
-        return Stream.of(c).mapToChar(Fn.unboxC());
+        return Stream.of(c).mapToChar(Fnn.unboxC());
     }
 
     public static CharStream of(final CharIterator iterator) {
