@@ -196,7 +196,15 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public T getNow(T defaultValue) {
-        return getNow(defaultValue);
+        if (isDone()) {
+            try {
+                return get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw N.toRuntimeException(e);
+            }
+        }
+
+        return defaultValue;
     }
 
     public <U, E extends Exception> U getThenApply(final Try.Function<? super T, ? extends U, E> action) throws InterruptedException, ExecutionException, E {

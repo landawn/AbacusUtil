@@ -3769,8 +3769,11 @@ public class SQLExecutor implements Closeable {
         }
 
         private void checkId(final Object id) {
-            N.checkArgument(idPropNameList.size() > 1 || !(id instanceof Map || N.isEntity(id.getClass())),
-                    "Input 'id' can not be Map or entity for single id ");
+            N.checkArgument(idPropNameList.size() > 1 || !(id instanceof Map || isEntity(id)), "Input 'id' can not be Map or entity for single id ");
+        }
+
+        private boolean isEntity(Object obj) {
+            return obj != null && N.isEntity(obj.getClass());
         }
 
         private Condition id2Cond(final Object id, boolean isIdOrEntity) {
@@ -3781,7 +3784,7 @@ public class SQLExecutor implements Closeable {
             if (idPropNameList.size() == 1) {
                 if (id instanceof Map) {
                     return L.eq(idPropName, ((Map<String, Object>) id).get(idPropName));
-                } else if (N.isEntity(id.getClass())) {
+                } else if (isEntity(id)) {
                     return L.eq(idPropName, ClassUtil.getPropValue(id, idPropName));
                 } else {
                     return L.eq(idPropName, id);
@@ -3790,7 +3793,7 @@ public class SQLExecutor implements Closeable {
 
             if (id instanceof Map) {
                 return L.eqAnd((Map<String, Object>) id);
-            } else if (N.isEntity(id.getClass())) {
+            } else if (isEntity(id)) {
                 return L.eqAnd(id, idPropNameList);
             } else {
                 throw new IllegalArgumentException("Not supported id type: " + (id == null ? "null" : ClassUtil.getClassName(id.getClass())));
@@ -3985,7 +3988,7 @@ public class SQLExecutor implements Closeable {
                 return new ArrayList<>();
             }
 
-            N.checkArgument(idPropNameList.size() > 1 || !(ids.get(0) instanceof Map || N.isEntity(ids.get(0).getClass())),
+            N.checkArgument(idPropNameList.size() > 1 || !(ids.get(0) instanceof Map || isEntity(ids.get(0))),
                     "Input 'ids' can not be Maps or entities for single id ");
 
             final List<T> entities = new ArrayList<>(ids.size());
@@ -5302,7 +5305,7 @@ public class SQLExecutor implements Closeable {
 
         @SuppressWarnings("deprecation")
         private <E> void postAdd(final T entity, final E idVal) {
-            if (idVal != null && N.isEntity(entity.getClass())) {
+            if (idVal != null && isEntity(entity)) {
                 ClassUtil.setPropValue(entity, idPropName, idVal);
             }
 
