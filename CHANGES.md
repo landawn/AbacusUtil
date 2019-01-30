@@ -1,3 +1,16 @@
+### 1.3.32
+ 
+* Remove `Result.__()`.
+
+* Remove `DataSet.copyThen()`.
+
+* Rename `DataSet.__()` to `DataSet.builder()`.
+
+* Switch method name: `DataSet.split(...)` to `DataSet.splitt(...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.31
 
 * Move `box/unbox/unboxOrDefault/unboxOrGet` from `Array` to `Primitives`.

@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -120,11 +121,27 @@ public final class IOUtil {
 
     static {
         String hostName = null;
+        final boolean IS_PLATFORM_ANDROID = System.getProperty("java.vendor").toUpperCase().contains("ANDROID")
+                || System.getProperty("java.vm.vendor").toUpperCase().contains("ANDROID");
 
-        try {
-            hostName = InetAddress.getLocalHost().getHostName();
-        } catch (Exception e) {
-            logger.error("Failed to get host name");
+        // implementation for android support
+        if (IS_PLATFORM_ANDROID) {
+            try {
+                hostName = com.landawn.abacus.android.util.Async.SerialExecutor.execute(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return InetAddress.getLocalHost().getHostName();
+                    }
+                }).get();
+            } catch (Exception e) {
+                logger.error("Failed to get host name");
+            }
+        } else {
+            try {
+                hostName = InetAddress.getLocalHost().getHostName();
+            } catch (Exception e) {
+                logger.error("Failed to get host name");
+            }
         }
 
         HOST_NAME = hostName;

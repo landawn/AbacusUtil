@@ -116,9 +116,15 @@ public final class Result<T, E extends Throwable> {
         return exception;
     }
 
-    public Nullable<T> __() {
-        return exception == null ? Nullable.of(value) : Nullable.<T> empty();
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @deprecated
+    //     */
+    //    @Deprecated
+    //    public Nullable<T> toNullable() {
+    //        return exception == null ? Nullable.of(value) : Nullable.<T> empty();
+    //    }
 
     public Tuple2<T, E> toTuple() {
         return Tuple.of(value, exception);

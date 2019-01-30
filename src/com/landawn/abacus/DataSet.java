@@ -4281,7 +4281,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    List<DataSet> split(int size);
+    List<DataSet> splitt(int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4290,7 +4290,7 @@ public interface DataSet {
      * @param columnNames
      * @return
      */
-    List<DataSet> split(Collection<String> columnNames, int size);
+    List<DataSet> splitt(Collection<String> columnNames, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4300,7 +4300,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    List<DataSet> split(int fromRowIndex, int toRowIndex, int size);
+    List<DataSet> splitt(int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4311,7 +4311,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    List<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    List<DataSet> splitt(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     //    /**
     //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4429,7 +4429,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    Stream<DataSet> splitt(int size);
+    Stream<DataSet> split(int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4438,7 +4438,7 @@ public interface DataSet {
      * @param columnNames
      * @return
      */
-    Stream<DataSet> splitt(Collection<String> columnNames, int size);
+    Stream<DataSet> split(Collection<String> columnNames, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4448,7 +4448,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    Stream<DataSet> splitt(int fromRowIndex, int toRowIndex, int size);
+    Stream<DataSet> split(int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -4459,7 +4459,7 @@ public interface DataSet {
      * @param size
      * @return
      */
-    Stream<DataSet> splitt(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    Stream<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns the copy of this <code>DataSet</code>.
@@ -4498,8 +4498,6 @@ public interface DataSet {
      * @return a copy of this DataSet
      */
     DataSet copy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    <E extends Exception> DataSet copyThen(Try.Consumer<? super DataSet, E> action) throws E;
 
     /**
      * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
@@ -4738,7 +4736,7 @@ public interface DataSet {
 
     <T> Sheet<Integer, String, T> toSheet();
 
-    DataSetBuilder __();
+    DataSetBuilder builder();
 
     /**
      * it's same as: N.println(toString());
