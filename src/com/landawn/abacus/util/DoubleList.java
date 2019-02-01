@@ -1259,13 +1259,6 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     @Override
-    public <E extends Exception> DoubleList copyThen(Try.Consumer<DoubleList, E> action) throws E {
-        final DoubleList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

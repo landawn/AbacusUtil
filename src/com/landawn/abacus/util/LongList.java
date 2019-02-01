@@ -1275,13 +1275,6 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
     }
 
     @Override
-    public <E extends Exception> LongList copyThen(Try.Consumer<LongList, E> action) throws E {
-        final LongList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

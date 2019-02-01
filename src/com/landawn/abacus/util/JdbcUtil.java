@@ -1507,7 +1507,7 @@ public final class JdbcUtil {
      * @param sql
      * @param parametersListList
      * @return
-     * @throws SQLException
+     * @throws UncheckedSQLException
      */
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList) throws SQLException {
         return executeBatchUpdate(conn, sql, parametersListList, JdbcSettings.DEFAULT_BATCH_SIZE);
@@ -1520,7 +1520,7 @@ public final class JdbcUtil {
      * @param parametersListList
      * @param batchSize.
      * @return 
-     * @throws SQLException
+     * @throws UncheckedSQLException
      */
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize) throws SQLException {
         N.checkArgNotNull(conn);

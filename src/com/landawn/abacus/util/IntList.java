@@ -1343,13 +1343,6 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
     }
 
     @Override
-    public <E extends Exception> IntList copyThen(Try.Consumer<IntList, E> action) throws E {
-        final IntList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<IntList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

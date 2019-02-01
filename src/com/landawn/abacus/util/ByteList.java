@@ -1257,13 +1257,6 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     @Override
-    public <E extends Exception> ByteList copyThen(Try.Consumer<ByteList, E> action) throws E {
-        final ByteList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

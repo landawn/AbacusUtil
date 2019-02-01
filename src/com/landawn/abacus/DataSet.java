@@ -3400,7 +3400,7 @@ public interface DataSet {
     /**
      *
      * @param columnNames
-     * @param filter
+     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
      * @return
      */
     <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
@@ -3419,7 +3419,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter
+     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
      * @return
      */
     <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
@@ -3429,7 +3429,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter
+     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
      * @param max
      * @return
      */

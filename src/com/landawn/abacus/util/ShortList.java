@@ -1275,13 +1275,6 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     }
 
     @Override
-    public <E extends Exception> ShortList copyThen(Try.Consumer<ShortList, E> action) throws E {
-        final ShortList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<ShortList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

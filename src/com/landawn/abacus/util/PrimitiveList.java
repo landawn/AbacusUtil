@@ -167,14 +167,6 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     public abstract L copy(final int from, final int to, final int step);
 
     /**
-     * 
-     * @param action
-     * @return the copy of this list.
-     * @throws E
-     */
-    public abstract <E extends Exception> L copyThen(Try.Consumer<L, E> action) throws E;
-
-    /**
      * Returns consecutive sub lists of this list, each of the same size (the final list may be smaller),
      * or an empty List if the specified list is null or empty.
      *

@@ -2,11 +2,13 @@
  
 * Remove `Result.__()`.
 
-* Remove `DataSet.copyThen()`.
+* Remove `copyThen(...)` from `DataSet/IntList/LongList/DoubleList/...`.
 
 * Rename `DataSet.__()` to `DataSet.builder()`.
 
 * Switch method name: `DataSet.split(...)` to `DataSet.splitt(...)`.
+
+* Refactoring: `Fn`.
 
 * Improvements and bug fix.
 

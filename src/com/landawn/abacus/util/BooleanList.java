@@ -1167,13 +1167,6 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
     }
 
     @Override
-    public <E extends Exception> BooleanList copyThen(Try.Consumer<BooleanList, E> action) throws E {
-        final BooleanList copy = copy();
-        action.accept(copy);
-        return copy;
-    }
-
-    @Override
     public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 

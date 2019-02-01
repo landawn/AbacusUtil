@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -35,15 +34,12 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.PaginatedDataSet;
 import com.landawn.abacus.exception.UncheckedIOException;
-import com.landawn.abacus.metadata.EntityDefinition;
-import com.landawn.abacus.metadata.Property;
 import com.landawn.abacus.parser.JSONParser;
 import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
 import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.Parser;
 import com.landawn.abacus.parser.ParserFactory;
-import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.XMLConstants;
 import com.landawn.abacus.parser.XMLParser;
 import com.landawn.abacus.parser.XMLSerializationConfig;
@@ -2118,185 +2114,6 @@ public class RowDataSet implements DataSet, Cloneable {
         }
 
         return (List<T>) rowList;
-    }
-
-    <T> T row2Entity(final Class<T> targetClass, final EntityDefinition entityDef, final int rowNum) {
-        final List<T> entities = row2Entity(targetClass, entityDef, rowNum, rowNum + 1);
-
-        return N.isNullOrEmpty(entities) ? null : entities.get(0);
-    }
-
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    <T> List<T> row2Entity(final Class<T> targetClass, final EntityDefinition entityDef, final int fromRowIndex, final int toRowIndex) {
-        // TODO [performance improvement]. how to improve performance?
-
-        checkRowIndex(fromRowIndex, toRowIndex);
-
-        final List<T> entities = new ArrayList<>(toRowIndex - fromRowIndex);
-
-        if (toRowIndex == fromRowIndex) {
-            return entities;
-        }
-
-        final String entityName = entityDef.getName();
-        final int[] entityPropIndexes = new int[_columnNameList.size()];
-        final List<Property> propList = new ArrayList<>(entityPropIndexes.length);
-
-        int columnIndex = -1;
-        Property prop = null;
-
-        for (String propName : _columnNameList) {
-            prop = entityDef.getProperty(propName);
-
-            if ((prop != null) && (prop.getEntityDefinition() == entityDef)) {
-                columnIndex = getColumnIndex(propName);
-                entityPropIndexes[propList.size()] = columnIndex;
-                propList.add(prop);
-            }
-        }
-
-        final boolean isMapEntity = MapEntity.class.isAssignableFrom(targetClass);
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-        MapEntity mapEntity = null;
-
-        Object entity = null;
-
-        for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
-            entity = N.newEntity(targetClass, entityName);
-            mapEntity = isMapEntity ? (MapEntity) entity : null;
-
-            if (propList.size() > 0) {
-                boolean hasNonNullPropValue = false;
-
-                Object propValue = null;
-
-                for (int i = 0, size = propList.size(); i < size; i++) {
-                    prop = propList.get(i);
-                    propValue = _columnList.get(entityPropIndexes[i]).get(rowIndex);
-
-                    if (propValue == null) {
-                        propValue = N.defaultValueOf(prop.getType().clazz());
-                    } else {
-                        if (prop.isCollection() && !(propValue instanceof Collection)) {
-                            propValue = prop.asCollection(propValue);
-                        }
-
-                        hasNonNullPropValue = true;
-                    }
-
-                    if (isMapEntity) {
-                        mapEntity.set(prop.getName(), propValue);
-                    } else {
-                        setPropValueByMethod(entity, prop, propValue);
-                    }
-                }
-
-                if (hasNonNullPropValue) {
-                    if (isDirtyMarker) {
-                        ((DirtyMarker) entity).markDirty(false);
-                    }
-                } else {
-                    entity = null;
-                }
-            }
-
-            entities.add((T) entity);
-        }
-
-        return entities;
-    }
-
-    private static void setPropValueByMethod(final Object entity, final Property prop, Object propValue) {
-        if (propValue == null) {
-            propValue = N.defaultValueOf(prop.getType().clazz());
-        }
-
-        // N.setPropValue(entity, prop.getSetMethod(entity.getClass()), propValue);
-        ParserUtil.getEntityInfo(entity.getClass()).setPropValue(entity, prop.getName(), propValue);
-    }
-
-    void combine(final Property prop, final String... idPropNames) {
-        // TODO [performance improvement]. How to improve performance?
-
-        checkFrozen();
-
-        final String byPropName = prop.getName();
-        final int columnIndex = checkColumnName(byPropName);
-
-        if (idPropNames.length == 0) {
-            throw new IllegalArgumentException("'idPropNames' can't be empty");
-        }
-
-        final int[] idPropIndexes = new int[idPropNames.length];
-
-        for (int i = 0; i < idPropIndexes.length; i++) {
-            idPropIndexes[i] = checkColumnName(idPropNames[i]);
-        }
-
-        final int size = size();
-
-        if (size == 0) {
-            return;
-        }
-
-        final int columnCount = _columnList.size();
-        final List<List<Object>> newColumnList = new ArrayList<>(columnCount);
-
-        for (int i = 0; i < columnCount; i++) {
-            newColumnList.add(new ArrayList<>(size));
-        }
-
-        final Map<Object, Set<Object>> idPropValueSetMap = new HashMap<>();
-
-        Object id = null;
-        List<Object> idList = null;
-        Set<Object> propValueSet = null;
-        Object propValue = null;
-
-        for (int i = 0; i < size; i++) {
-            if (idPropIndexes.length == 1) {
-                id = _columnList.get(idPropIndexes[0]).get(i);
-            } else {
-                idList = new ArrayList<>();
-
-                for (int index : idPropIndexes) {
-                    idList.add(_columnList.get(index).get(i));
-                }
-
-                id = idList;
-            }
-
-            propValueSet = idPropValueSetMap.get(id);
-
-            if (propValueSet == null) {
-                propValueSet = new LinkedHashSet<>();
-                idPropValueSetMap.put(id, propValueSet);
-
-                for (int k = 0; k < columnCount; k++) {
-                    newColumnList.get(k).add(_columnList.get(k).get(i));
-                }
-
-                newColumnList.get(columnIndex).set(newColumnList.get(columnIndex).size() - 1, propValueSet);
-            }
-
-            propValue = _columnList.get(columnIndex).get(i);
-
-            if (propValue != null) {
-                propValueSet.add(propValue);
-            }
-        }
-
-        final int newSize = newColumnList.get(0).size();
-
-        for (int i = 0; i < newSize; i++) {
-            newColumnList.get(columnIndex).set(i, prop.asCollection((Collection<?>) newColumnList.get(columnIndex).get(i)));
-        }
-
-        _columnList = newColumnList;
-
-        _currentRowNum = 0;
-
-        modCount++;
     }
 
     @Override

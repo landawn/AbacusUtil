@@ -17,7 +17,6 @@
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.Tuple.Tuple2;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -49,7 +48,8 @@ public final class Result<T, E extends Throwable> {
         return exception == null;
     }
 
-    public void ifFailureOrElse(final Consumer<? super E> actionOnFailure, final Consumer<? super T> actionOnSuccess) {
+    public <E2 extends Exception, E3 extends Exception> void ifFailureOrElse(final Try.Consumer<? super E, E2> actionOnFailure,
+            final Try.Consumer<? super T, E3> actionOnSuccess) throws E2, E3 {
         N.checkArgNotNull(actionOnFailure, "actionOnFailure");
         N.checkArgNotNull(actionOnSuccess, "actionOnSuccess");
 
@@ -60,7 +60,8 @@ public final class Result<T, E extends Throwable> {
         }
     }
 
-    public void ifSuccessOrElse(final Consumer<? super T> actionOnSuccess, final Consumer<? super E> actionOnFailure) {
+    public <E2 extends Exception, E3 extends Exception> void ifSuccessOrElse(final Try.Consumer<? super T, E2> actionOnSuccess,
+            final Try.Consumer<? super E, E3> actionOnFailure) throws E2, E3 {
         N.checkArgNotNull(actionOnSuccess, "actionOnSuccess");
         N.checkArgNotNull(actionOnFailure, "actionOnFailure");
 
