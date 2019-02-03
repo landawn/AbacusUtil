@@ -206,7 +206,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util/1.3.31/com/landawn/abacus/util/SafeInitializer.html),
 [Stopwatch](https://static.javadoc.io/com.landawn/abacus-util/1.3.31/com/landawn/abacus/util/Stopwatch.html),
 [RateLimiter](https://static.javadoc.io/com.landawn/abacus-util/1.3.31/com/landawn/abacus/util/RateLimiter.html),
-[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.3.31/com/landawn/abacus/util/Traverser.html)(from JDK8, Apache commons, Google Guava...) ...
+[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.3.31/com/landawn/abacus/util/Traverser.html)(from Apache commons, Google Guava...) ...
 
 
 ## Download/Installation & [Changes](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md):

@@ -64,6 +64,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
+import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.JdbcUtil.PreparedQuery;
@@ -904,7 +905,7 @@ public class SQLExecutor implements Closeable {
 
             if (len <= batchSize) {
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, N.asArray(parametersList.get(i)));
                     stmt.addBatch();
                 }
 
@@ -913,7 +914,7 @@ public class SQLExecutor implements Closeable {
                 int num = 0;
 
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, N.asArray(parametersList.get(i)));
                     stmt.addBatch();
                     num++;
 
@@ -1208,7 +1209,7 @@ public class SQLExecutor implements Closeable {
 
             if (len <= batchSize) {
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, N.asArray(parametersList.get(i)));
                     stmt.addBatch();
                 }
 
@@ -1217,7 +1218,7 @@ public class SQLExecutor implements Closeable {
                 int num = 0;
 
                 for (int i = 0; i < len; i++) {
-                    statementSetter.setParameters(namedSQL, stmt, parametersList.get(i));
+                    statementSetter.setParameters(namedSQL, stmt, N.asArray(parametersList.get(i)));
                     stmt.addBatch();
                     num++;
 
@@ -7592,7 +7593,7 @@ public class SQLExecutor implements Closeable {
             }
         };
 
-        public void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object... parameters) throws SQLException;
+        public void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object[] parameters) throws SQLException;
     }
 
     /**
@@ -7631,7 +7632,7 @@ public class SQLExecutor implements Closeable {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
                 final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
-            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+            return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
         /**
@@ -7772,7 +7773,7 @@ public class SQLExecutor implements Closeable {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
-            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+            return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
         /**
@@ -7990,8 +7991,7 @@ public class SQLExecutor implements Closeable {
 
     public static abstract class AbstractStatementSetter implements StatementSetter {
         @Override
-        @SafeVarargs
-        public final void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object... parameters) throws SQLException {
+        public void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object[] parameters) throws SQLException {
             final int parameterCount = namedSQL.getParameterCount();
 
             if (parameterCount == 0) {

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2019 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import java.io.BufferedReader;
@@ -33,6 +47,12 @@ import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
+/**
+ * 
+ * @since 1.3
+ * 
+ * @author Haiyang Li
+ */
 public class ExceptionalStream<T, E extends Exception> implements AutoCloseable {
     @SuppressWarnings("rawtypes")
     private static final ExceptionalStream EMPTY = new ExceptionalStream(new ExceptionalIterator() {
@@ -988,7 +1008,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Supplier<? extends Map<K, List<T>>> mapFactory) {
-        return groupBy(classifier, Fn.EE.<T, E> identity(), mapFactory);
+        return groupBy(classifier, Fn.FN.<T, E> identity(), mapFactory);
     }
 
     /**
@@ -1053,9 +1073,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param mergeFunction
      * @param mapFactory
      * @return
-     * @see {@link Fn.EE#throwingMerger()}
-     * @see {@link Fn.EE#replacingMerger()}
-     * @see {@link Fn.EE#ignoringMerger()}
+     * @see {@link Fn.FN#throwingMerger()}
+     * @see {@link Fn.FN#replacingMerger()}
+     * @see {@link Fn.FN#ignoringMerger()}
      */
     public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
@@ -1095,7 +1115,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <K, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) throws E {
-        return groupBy(keyExtractor, Fn.EE.<T, E> identity(), downstream, mapFactory);
+        return groupBy(keyExtractor, Fn.FN.<T, E> identity(), downstream, mapFactory);
     }
 
     public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
@@ -1716,9 +1736,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @return
      * @throws E
      * @throws IllegalStateException if there are duplicated keys.
-     * @see {@link Fn.EE#throwingMerger()}
-     * @see {@link Fn.EE#replacingMerger()}
-     * @see {@link Fn.EE#ignoringMerger()}
+     * @see {@link Fn.FN#throwingMerger()}
+     * @see {@link Fn.FN#replacingMerger()}
+     * @see {@link Fn.FN#ignoringMerger()}
      */
     public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper) throws E, IllegalStateException {
@@ -1733,13 +1753,13 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @return
      * @throws E
      * @throws IllegalStateException if there are duplicated keys.
-     * @see {@link Fn.EE#throwingMerger()}
-     * @see {@link Fn.EE#replacingMerger()}
-     * @see {@link Fn.EE#ignoringMerger()}
+     * @see {@link Fn.FN#throwingMerger()}
+     * @see {@link Fn.FN#replacingMerger()}
+     * @see {@link Fn.FN#ignoringMerger()}
      */
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<M> mapFactory) throws E, IllegalStateException {
-        return toMap(keyExtractor, valueMapper, Fn.EE.<V, E> throwingMerger(), mapFactory);
+        return toMap(keyExtractor, valueMapper, Fn.FN.<V, E> throwingMerger(), mapFactory);
     }
 
     /**
@@ -1749,9 +1769,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param mergeFunction
      * @return
      * @throws E
-     * @see {@link Fn.EE#throwingMerger()}
-     * @see {@link Fn.EE#replacingMerger()}
-     * @see {@link Fn.EE#ignoringMerger()}
+     * @see {@link Fn.FN#throwingMerger()}
+     * @see {@link Fn.FN#replacingMerger()}
+     * @see {@link Fn.FN#ignoringMerger()}
      */
     public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction) throws E {
@@ -1766,9 +1786,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param mapFactory
      * @return
      * @throws E
-     * @see {@link Fn.EE#throwingMerger()}
-     * @see {@link Fn.EE#replacingMerger()}
-     * @see {@link Fn.EE#ignoringMerger()}
+     * @see {@link Fn.FN#throwingMerger()}
+     * @see {@link Fn.FN#replacingMerger()}
+     * @see {@link Fn.FN#ignoringMerger()}
      */
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
@@ -1811,7 +1831,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public <K, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) throws E {
-        return toMap(keyExtractor, Fn.EE.<T, E> identity(), downstream, mapFactory);
+        return toMap(keyExtractor, Fn.FN.<T, E> identity(), downstream, mapFactory);
     }
 
     /**
@@ -1892,7 +1912,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see Collectors#groupingBy(Function, Supplier)
      */
     public <K, M extends Map<K, List<T>>> M groupTo(final Try.Function<? super T, ? extends K, ? extends E> classifier, final Supplier<M> mapFactory) throws E {
-        final Try.Function<T, T, E> valueMapper = Fn.EE.identity();
+        final Try.Function<T, T, E> valueMapper = Fn.FN.identity();
 
         return groupTo(classifier, valueMapper, mapFactory);
     }

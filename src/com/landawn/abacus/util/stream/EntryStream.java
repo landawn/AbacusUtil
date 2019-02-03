@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 HaiYang Li
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -58,11 +58,8 @@ import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.BaseStream.Splitor;
 
-/**
+/** 
  * 
- * @since 0.9
- * 
- * @author Haiyang Li
  */
 public final class EntryStream<K, V> implements AutoCloseable {
 

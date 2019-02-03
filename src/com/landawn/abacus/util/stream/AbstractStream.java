@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 HaiYang Li
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -85,12 +85,8 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
- * This class is a sequential, stateful and immutable stream implementation.
  *
- * @param <T>
- * @since 0.8
- * 
- * @author Haiyang Li
+ * @param <T> 
  */
 abstract class AbstractStream<T> extends Stream<T> {
 

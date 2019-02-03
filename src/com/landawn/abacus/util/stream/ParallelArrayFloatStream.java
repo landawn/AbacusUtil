@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 HaiYang Li
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -26,6 +26,7 @@ import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.KahanSummation;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -57,11 +58,7 @@ import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
- * This class is a sequential, stateful and immutable stream implementation.
- *
- * @since 0.8
  * 
- * @author Haiyang Li
  */
 final class ParallelArrayFloatStream extends ArrayFloatStream {
     private final int maxThreadNum;
@@ -790,71 +787,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             return super.sum();
         }
 
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[3];
-            }
-        };
-
-        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, float f) {
-                Collectors.sumWithCompensation(ll, f);
-                ll[2] += f;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-            }
-        };
-
-        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<ContinuableFuture<double[]>> futureList = new ArrayList<>(threadNum);
-        final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
-
-        for (int i = 0; i < threadNum; i++) {
-            final int sliceIndex = i;
-
-            futureList.add(asyncExecutor.execute(new Callable<double[]>() {
-                @Override
-                public double[] call() {
-                    int cursor = fromIndex + sliceIndex * sliceSize;
-                    final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-
-                    double[] container = supplier.get();
-
-                    while (cursor < to) {
-                        accumulator.accept(container, elements[cursor++]);
-                    }
-
-                    return container;
-                }
-            }));
-        }
-
-        double[] summation = null;
-
-        try {
-            for (ContinuableFuture<double[]> future : futureList) {
-                final double[] tmp = future.get();
-
-                if (summation == null) {
-                    summation = tmp;
-                } else {
-                    combiner.accept(summation, tmp);
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        }
-
-        return Collectors.computeFinalSum(summation);
+        return summation().sum();
     }
 
     @Override
@@ -865,46 +798,45 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             return super.average();
         }
 
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
+        return summation().average();
+    }
+
+    private KahanSummation summation() {
+        final Supplier<KahanSummation> supplier = new Supplier<KahanSummation>() {
             @Override
-            public double[] get() {
-                return new double[4];
+            public KahanSummation get() {
+                return new KahanSummation();
             }
         };
 
-        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
+        final ObjFloatConsumer<KahanSummation> accumulator = new ObjFloatConsumer<KahanSummation>() {
             @Override
-            public void accept(double[] ll, float f) {
-                ll[2]++;
-                Collectors.sumWithCompensation(ll, f);
-                ll[3] += f;
+            public void accept(KahanSummation a, float value) {
+                a.add(value);
             }
         };
 
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+        final BiConsumer<KahanSummation, KahanSummation> combiner = new BiConsumer<KahanSummation, KahanSummation>() {
             @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-                ll[3] += rr[3];
+            public void accept(KahanSummation a, KahanSummation b) {
+                a.combine(b);
             }
         };
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<ContinuableFuture<double[]>> futureList = new ArrayList<>(threadNum);
+        final List<ContinuableFuture<KahanSummation>> futureList = new ArrayList<>(threadNum);
         final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < threadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(asyncExecutor.execute(new Callable<double[]>() {
+            futureList.add(asyncExecutor.execute(new Callable<KahanSummation>() {
                 @Override
-                public double[] call() {
+                public KahanSummation call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    double[] container = supplier.get();
+                    KahanSummation container = supplier.get();
 
                     while (cursor < to) {
                         accumulator.accept(container, elements[cursor++]);
@@ -915,23 +847,22 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }));
         }
 
-        double[] avg = null;
+        KahanSummation summation = null;
 
         try {
-            for (ContinuableFuture<double[]> future : futureList) {
-                final double[] tmp = future.get();
+            for (ContinuableFuture<KahanSummation> future : futureList) {
+                final KahanSummation tmp = future.get();
 
-                if (avg == null) {
-                    avg = tmp;
+                if (summation == null) {
+                    summation = tmp;
                 } else {
-                    combiner.accept(avg, tmp);
+                    combiner.accept(summation, tmp);
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
-
-        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
+        return summation;
     }
 
     @Override

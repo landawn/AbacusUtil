@@ -30,6 +30,7 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Joiner;
+import com.landawn.abacus.util.KahanSummation;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableDouble;
 import com.landawn.abacus.util.MutableLong;
@@ -56,11 +57,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 
 /**
- * This class is a sequential, stateful and immutable stream implementation.
- *
- * @since 0.8
  * 
- * @author Haiyang Li
  */
 abstract class AbstractDoubleStream extends DoubleStream {
 
@@ -347,66 +344,26 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public double sum() {
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
+        return summation().sum();
+    }
+
+    private KahanSummation summation() {
+        final KahanSummation summation = new KahanSummation();
+
+        final DoubleConsumer action = new DoubleConsumer() {
             @Override
-            public double[] get() {
-                return new double[3];
+            public void accept(double t) {
+                summation.add(t);
             }
         };
 
-        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, double d) {
-                Collectors.sumWithCompensation(ll, d);
-                ll[2] += d;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-            }
-        };
-
-        final double[] summation = collect(supplier, accumulator, combiner);
-
-        return Collectors.computeFinalSum(summation);
+        this.forEach(action);
+        return summation;
     }
 
     @Override
     public OptionalDouble average() {
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[4];
-            }
-        };
-
-        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, double d) {
-                ll[2]++;
-                Collectors.sumWithCompensation(ll, d);
-                ll[3] += d;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-                ll[3] += rr[3];
-            }
-        };
-
-        final double[] avg = collect(supplier, accumulator, combiner);
-
-        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
+        return summation().average();
     }
 
     @Override

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.util.DateUtil;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.MoreExecutors;
 import com.landawn.abacus.util.Retry;
 import com.landawn.abacus.util.Try;
@@ -73,7 +73,7 @@ public class Async {
      * @return
      */
     static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action) {
-        return execute(new FutureTask<Void>(Fn.toCallable(action)), SERIAL_EXECUTOR);
+        return execute(new FutureTask<Void>(FN.toCallable(action)), SERIAL_EXECUTOR);
     }
 
     static ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {
@@ -157,7 +157,7 @@ public class Async {
      * @return
      */
     static ContinuableFuture<Void> executeWithThreadPool(final Try.Runnable<? extends Exception> action) {
-        return execute(new FutureTask<Void>(Fn.toCallable(action)), TP_EXECUTOR);
+        return execute(new FutureTask<Void>(FN.toCallable(action)), TP_EXECUTOR);
     }
 
     static ContinuableFuture<Void> executeWithThreadPool(final Try.Runnable<? extends Exception> action, final long delay) {
@@ -252,7 +252,7 @@ public class Async {
      * @return
      */
     static ContinuableFuture<Void> executeOnUiThread(final Try.Runnable<? extends Exception> action, final long delay) {
-        return execute(new FutureTask<Void>(Fn.toCallable(action)), _UI_EXECUTOR, delay);
+        return execute(new FutureTask<Void>(FN.toCallable(action)), _UI_EXECUTOR, delay);
     }
 
     /**

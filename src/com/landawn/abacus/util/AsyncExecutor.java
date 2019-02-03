@@ -35,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Predicate;
 
@@ -119,7 +120,7 @@ public class AsyncExecutor {
     }
 
     public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> command) {
-        return execute(new FutureTask<Void>(Fn.toCallable(command)));
+        return execute(new FutureTask<Void>(FN.toCallable(command)));
     }
 
     public ContinuableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final long delay) {

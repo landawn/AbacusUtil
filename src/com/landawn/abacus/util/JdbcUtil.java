@@ -98,6 +98,7 @@ import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
+import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.StringUtil.Strings;
@@ -1442,7 +1443,7 @@ public final class JdbcUtil {
         final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
 
         for (Object parameters : parametersList) {
-            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
             stmt.addBatch();
         }
 
@@ -1454,7 +1455,7 @@ public final class JdbcUtil {
         final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
 
         for (Object parameters : parametersList) {
-            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
+            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
             stmt.addBatch();
         }
 
@@ -1507,7 +1508,7 @@ public final class JdbcUtil {
      * @param sql
      * @param parametersListList
      * @return
-     * @throws UncheckedSQLException
+     * @throws SQLException
      */
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList) throws SQLException {
         return executeBatchUpdate(conn, sql, parametersListList, JdbcSettings.DEFAULT_BATCH_SIZE);
@@ -1520,7 +1521,7 @@ public final class JdbcUtil {
      * @param parametersListList
      * @param batchSize.
      * @return 
-     * @throws UncheckedSQLException
+     * @throws SQLException
      */
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize) throws SQLException {
         N.checkArgNotNull(conn);
@@ -1541,7 +1542,7 @@ public final class JdbcUtil {
             int idx = 0;
 
             for (Object parameters : parametersListList) {
-                SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
+                SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
                 stmt.addBatch();
 
                 if (++idx % batchSize == 0) {
@@ -3175,7 +3176,7 @@ public final class JdbcUtil {
                 return true;
             }
 
-            String msg = e.getMessage();
+            final String msg = N.defaultIfNull(e.getMessage(), "").toLowerCase();
             return N.notNullOrEmpty(msg) && (msg.contains("not exist") || msg.contains("doesn't exist") || msg.contains("not found"));
         } else if (e instanceof UncheckedSQLException) {
             UncheckedSQLException sqlException = (UncheckedSQLException) e;
@@ -3184,7 +3185,7 @@ public final class JdbcUtil {
                 return true;
             }
 
-            String msg = e.getMessage();
+            final String msg = N.defaultIfNull(e.getMessage(), "").toLowerCase();
             return N.notNullOrEmpty(msg) && (msg.contains("not exist") || msg.contains("doesn't exist") || msg.contains("not found"));
         }
 
@@ -6408,7 +6409,7 @@ public final class JdbcUtil {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
                 final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
-            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+            return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
         /**
@@ -6582,7 +6583,7 @@ public final class JdbcUtil {
         public static <K, V, M extends Map<K, V>> BiResultExtractor<M, RuntimeException> toMap(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
-            return toMap(keyExtractor, valueExtractor, Fn.EE.throwingMerger(), supplier);
+            return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
         /**

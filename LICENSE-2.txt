@@ -1,2 +1,0 @@
-All libraries (excluding abacus-util-*.jar) in this project are under the specific LICENSES. 
-Please refer to documentation or web site for the detailed information.

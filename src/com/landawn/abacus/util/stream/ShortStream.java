@@ -1,26 +1,15 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.landawn.abacus.util.stream;
 
@@ -70,10 +59,8 @@ import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToShortFunction;
 
-/**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
- * <br />
- *
+/** 
+ * 
  * @see Stream
  */
 public abstract class ShortStream
@@ -85,64 +72,12 @@ public abstract class ShortStream
         super(sorted, null, closeHandlers);
     }
 
-    /**
-     * Returns a stream consisting of the results of applying the given
-     * function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract ShortStream map(ShortUnaryOperator mapper);
 
-    /**
-     * Returns a {@code IntStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract IntStream mapToInt(ShortToIntFunction mapper);
 
-    /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract <U> Stream<U> mapToObj(ShortFunction<? extends U> mapper);
 
-    /**
-     * Returns a stream consisting of the results of replacing each element of
-     * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces an
-     *               {@code ShortStream} of new values
-     * @return the new stream
-     * @see Stream#flatMap(Function)
-     */
     public abstract ShortStream flatMap(ShortFunction<? extends ShortStream> mapper);
 
     public abstract ShortStream flattMap(ShortFunction<short[]> mapper);
@@ -293,134 +228,10 @@ public abstract class ShortStream
 
     public abstract ShortMatrix toMatrix();
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using the provided identity value and an
-     * <a href="package-summary.html#Associativity">associative</a>
-     * accumulation function, and returns the reduced value.  This is equivalent
-     * to:
-     * <pre>{@code
-     *     int result = identity;
-     *     for (int element : this stream)
-     *         result = accumulator.applyAsShort(result, element)
-     *     return result;
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code identity} value must be an identity for the accumulator
-     * function. This means that for all {@code x},
-     * {@code accumulator.apply(identity, x)} is equal to {@code x}.
-     * The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Sum, min, max, and average are all special cases of reduction.
-     * Summing a stream of numbers can be expressed as:
-     *
-     * <pre>{@code
-     *     int sum = integers.reduce(0, (a, b) -> a+b);
-     * }</pre>
-     *
-     * or more compactly:
-     *
-     * <pre>{@code
-     *     int sum = integers.reduce(0, Shorteger::sum);
-     * }</pre>
-     *
-     * <p>While this may seem a more roundabout way to perform an aggregation
-     * compared to simply mutating a running total in a loop, reduction
-     * operations parallelize more gracefully, without needing additional
-     * synchronization and with greatly reduced risk of data races.
-     *
-     * @param identity the identity value for the accumulating function
-     * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *           <a href="package-summary.html#Statelessness">stateless</a>
-     *           function for combining two values
-     * @return the result of the reduction
-     * @see #sum()
-     * @see #min()
-     * @see #max()
-     * @see #average()
-     */
     public abstract short reduce(short identity, ShortBinaryOperator op);
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using an
-     * <a href="package-summary.html#Associativity">associative</a> accumulation
-     * function, and returns an {@code OptionalShort} describing the reduced value,
-     * if any. This is equivalent to:
-     * <pre>{@code
-     *     boolean foundAny = false;
-     *     int result = null;
-     *     for (int element : this stream) {
-     *         if (!foundAny) {
-     *             foundAny = true;
-     *             result = element;
-     *         }
-     *         else
-     *             result = accumulator.applyAsShort(result, element);
-     *     }
-     *     return foundAny ? OptionalShort.of(result) : OptionalShort.empty();
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *           <a href="package-summary.html#Statelessness">stateless</a>
-     *           function for combining two values
-     * @return the result of the reduction
-     * @see #reduce(int, ShortBinaryOperator)
-     */
     public abstract OptionalShort reduce(ShortBinaryOperator op);
 
-    /**
-     * Performs a <a href="package-summary.html#MutableReduction">mutable
-     * reduction</a> operation on the elements of this stream.  A mutable
-     * reduction is one in which the reduced value is a mutable result container,
-     * such as an {@code ArrayList}, and elements are incorporated by updating
-     * the state of the result rather than by replacing the result.  This
-     * produces a result equivalent to:
-     * <pre>{@code
-     *     R result = supplier.get();
-     *     for (int element : this stream)
-     *         accumulator.accept(result, element);
-     *     return result;
-     * }</pre>
-     *
-     * <p>Like {@link #reduce(int, ShortBinaryOperator)}, {@code collect} operations
-     * can be parallelized without requiring additional synchronization.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param <R> type of the result
-     * @param supplier a function that creates a new result container. For a
-     *                 parallel execution, this function may be called
-     *                 multiple times and must return a fresh value each time.
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonShorterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values, which must be
-     *                    compatible with the accumulator function
-     * @return the result of the reduction
-     * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
-     */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
@@ -494,37 +305,8 @@ public abstract class ShortStream
     //    @Deprecated
     //    public abstract Pair<ShortStream, OptionalShort> headAndTaill();
 
-    /**
-     * Returns an {@code OptionalShort} describing the minimum element of this
-     * stream, or an empty optional if this stream is empty.  This is a special
-     * case of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(Shorteger::min);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return an {@code OptionalShort} containing the minimum element of this
-     * stream, or an empty {@code OptionalShort} if the stream is empty
-     */
     public abstract OptionalShort min();
 
-    /**
-     * Returns an {@code OptionalShort} describing the maximum element of this
-     * stream, or an empty optional if this stream is empty.  This is a special
-     * case of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(Shorteger::max);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an {@code OptionalShort} containing the maximum element of this
-     * stream, or an empty {@code OptionalShort} if the stream is empty
-     */
     public abstract OptionalShort max();
 
     /**
@@ -559,28 +341,8 @@ public abstract class ShortStream
     public abstract ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
             ShortTriFunction<Short> zipFunction);
 
-    /**
-     * Returns a {@code LongStream} consisting of the elements of this stream,
-     * converted to {@code long}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code LongStream} consisting of the elements of this stream,
-     * converted to {@code long}
-     */
     public abstract IntStream asIntStream();
 
-    /**
-     * Returns a {@code Stream} consisting of the elements of this stream,
-     * each boxed to an {@code Shorteger}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code Stream} consistent of the elements of this stream,
-     * each boxed to an {@code Shorteger}
-     */
     public abstract Stream<Short> boxed();
 
     @Override

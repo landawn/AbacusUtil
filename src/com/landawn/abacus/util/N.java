@@ -112,9 +112,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.stream.DoubleStream;
-import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1590,80 +1587,80 @@ public final class N {
     //        return new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
     //    }
 
-    /**
-     * 
-     * @param arrayClass
-     * @param c
-     * @return
-     * @deprecated replaced by {@code N#toArray(Class, Collection)}
-     */
-    @Deprecated
-    public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
-        if (c == null) {
-            return N.newArray(arrayClass.getComponentType(), 0);
-        }
-
-        return (T) N.typeOf(arrayClass).collection2Array(c);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @deprecated replaced by {@code N#toList(Object[])}
-     */
-    @Deprecated
-    public static <T> List<T> array2List(final Object a) {
-        if (a == null) {
-            return asList();
-        }
-
-        final List<T> c = asList();
-
-        N.typeOf(a.getClass()).array2Collection(c, a);
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @deprecated replaced by {@code N#toSet(Object[])}
-     */
-    @Deprecated
-    public static <T> Set<T> array2Set(final Object a) {
-        if (a == null) {
-            return asSet();
-        }
-
-        final Set<T> c = asSet();
-
-        N.typeOf(a.getClass()).array2Collection(c, a);
-
-        return c;
-    }
-
-    /**
-     * The input collection is returned
-     * @param c
-     * @param a
-     * @return the input collection.
-     * @deprecated replaced by {@code N#toCollection(Object[], IntFunction)}
-     */
-    @Deprecated
-    @SuppressWarnings({ "unchecked" })
-    public static <C extends Collection<?>> C array2Collection(final Object a, final IntFunction<? extends C> supplier) {
-        if (a == null) {
-            return supplier.apply(0);
-        }
-
-        final C c = supplier.apply(Array.getLength(a));
-
-        N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
-
-        return c;
-    }
+    //    /**
+    //     * 
+    //     * @param arrayClass
+    //     * @param c
+    //     * @return
+    //     * @deprecated replaced by {@code N#toArray(Class, Collection)}
+    //     */
+    //    @Deprecated
+    //    public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
+    //        if (c == null) {
+    //            return N.newArray(arrayClass.getComponentType(), 0);
+    //        }
+    //
+    //        return (T) N.typeOf(arrayClass).collection2Array(c);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param a
+    //     * @return
+    //     * @deprecated replaced by {@code N#toList(Object[])}
+    //     */
+    //    @Deprecated
+    //    public static <T> List<T> array2List(final Object a) {
+    //        if (a == null) {
+    //            return asList();
+    //        }
+    //
+    //        final List<T> c = asList();
+    //
+    //        N.typeOf(a.getClass()).array2Collection(c, a);
+    //
+    //        return c;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param a
+    //     * @return
+    //     * @deprecated replaced by {@code N#toSet(Object[])}
+    //     */
+    //    @Deprecated
+    //    public static <T> Set<T> array2Set(final Object a) {
+    //        if (a == null) {
+    //            return asSet();
+    //        }
+    //
+    //        final Set<T> c = asSet();
+    //
+    //        N.typeOf(a.getClass()).array2Collection(c, a);
+    //
+    //        return c;
+    //    }
+    //
+    //    /**
+    //     * The input collection is returned
+    //     * @param c
+    //     * @param a
+    //     * @return the input collection.
+    //     * @deprecated replaced by {@code N#toCollection(Object[], IntFunction)}
+    //     */
+    //    @Deprecated
+    //    @SuppressWarnings({ "unchecked" })
+    //    public static <C extends Collection<?>> C array2Collection(final Object a, final IntFunction<? extends C> supplier) {
+    //        if (a == null) {
+    //            return supplier.apply(0);
+    //        }
+    //
+    //        final C c = supplier.apply(Array.getLength(a));
+    //
+    //        N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
+    //
+    //        return c;
+    //    }
 
     /**
      * Returns an empty array if the specified collection is null or empty.
@@ -3597,35 +3594,35 @@ public final class N {
         return Collections.singletonMap(key, value);
     }
 
-    /**
-     * Try to convert the specified {@code obj} to the specified
-     * {@code targetClass}. Default value of {@code targetClass} is returned if
-     * {@code src} is null. An instance of {@code targetClass} is returned if
-     * convert successfully
-     *
-     * @param targetClass
-     * @param obj
-     * @return
-     * @throws ClassCastException
-     * @Deprecated replaced by {@link N#convert(Object, Class)}.
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static <T> T as(final Class<? extends T> targetClass, final Object obj) {
-        return convert(obj, targetClass);
-    }
-
-    /**
-     * 
-     * @param targetType
-     * @param obj
-     * @return
-     * @Deprecated replaced by {@link N#convert(Object, Type)}.
-     */
-    @Deprecated
-    public static <T> T as(final Type<? extends T> targetType, final Object obj) {
-        return convert(obj, targetType);
-    }
+    //    /**
+    //     * Try to convert the specified {@code obj} to the specified
+    //     * {@code targetClass}. Default value of {@code targetClass} is returned if
+    //     * {@code src} is null. An instance of {@code targetClass} is returned if
+    //     * convert successfully
+    //     *
+    //     * @param targetClass
+    //     * @param obj
+    //     * @return
+    //     * @throws ClassCastException
+    //     * @Deprecated replaced by {@link N#convert(Object, Class)}.
+    //     */
+    //    @Deprecated
+    //    @SuppressWarnings("unchecked")
+    //    public static <T> T as(final Class<? extends T> targetClass, final Object obj) {
+    //        return convert(obj, targetClass);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param targetType
+    //     * @param obj
+    //     * @return
+    //     * @Deprecated replaced by {@link N#convert(Object, Type)}.
+    //     */
+    //    @Deprecated
+    //    public static <T> T as(final Type<? extends T> targetType, final Object obj) {
+    //        return convert(obj, targetType);
+    //    }
 
     /**
      * Try to convert the specified {@code obj} to the specified
@@ -3889,87 +3886,87 @@ public final class N {
     }
 
     /**
-     * @param src
+     * @param binaryData
      * @return
      */
-    public static String base64Encode(final byte[] src) {
-        if (N.isNullOrEmpty(src)) {
+    public static String base64Encode(final byte[] binaryData) {
+        if (N.isNullOrEmpty(binaryData)) {
             return N.EMPTY_STRING;
         }
 
-        return Base64.getEncoder().encodeToString(src);
+        return Base64.encodeBase64String(binaryData);
     }
 
     /**
-     * @param src
+     * @param binaryData
      * @return
      */
-    public static byte[] base64Decode(final String src) {
-        if (N.isNullOrEmpty(src)) {
+    public static String base64EncodeChunked(final byte[] binaryData) {
+        if (N.isNullOrEmpty(binaryData)) {
+            return N.EMPTY_STRING;
+        }
+
+        return new String(Base64.encodeBase64Chunked(binaryData), Charsets.US_ASCII);
+    }
+
+    /**
+     * @param base64String
+     * @return
+     */
+    public static byte[] base64Decode(final String base64String) {
+        if (N.isNullOrEmpty(base64String)) {
             return N.EMPTY_BYTE_ARRAY;
         }
 
-        return Base64.getDecoder().decode(src);
+        return Base64.decodeBase64(base64String);
     }
 
     /**
-     * @param src
+     * @param base64String
      * @return
      */
-    public static String base64DecodeToString(final String src) {
-        if (N.isNullOrEmpty(src)) {
+    public static String base64DecodeToString(final String base64String) {
+        if (N.isNullOrEmpty(base64String)) {
             return N.EMPTY_STRING;
         }
 
-        return new String(Base64.getDecoder().decode(src));
+        return new String(base64Decode(base64String));
     }
 
     /**
-     * @param src
+     * @param binaryData
      * @return
      */
-    public static String base64UrlEncode(final byte[] src) {
-        if (N.isNullOrEmpty(src)) {
+    public static String base64UrlEncode(final byte[] binaryData) {
+        if (N.isNullOrEmpty(binaryData)) {
             return N.EMPTY_STRING;
         }
 
-        return Base64.getUrlEncoder().encodeToString(src);
+        return Base64.encodeBase64URLSafeString(binaryData);
     }
 
     /**
-     * @param src
+     * @param base64String
      * @return
      */
-    public static byte[] base64UrlDecode(final String src) {
-        if (N.isNullOrEmpty(src)) {
+    public static byte[] base64UrlDecode(final String base64String) {
+        if (N.isNullOrEmpty(base64String)) {
             return N.EMPTY_BYTE_ARRAY;
         }
 
-        return Base64.getUrlDecoder().decode(src);
+        return Base64.decodeBase64URL(base64String);
     }
 
     /**
-     * @param src
+     * @param base64String
      * @return
      */
-    public static String base64MimeEncode(final byte[] src) {
-        if (N.isNullOrEmpty(src)) {
+    public static String base64UrlDecodeToString(final String base64String) {
+        if (N.isNullOrEmpty(base64String)) {
             return N.EMPTY_STRING;
         }
 
-        return Base64.getMimeEncoder().encodeToString(src);
-    }
-
-    /**
-     * @param src
-     * @return
-     */
-    public static byte[] base64MimeDecode(final String src) {
-        if (N.isNullOrEmpty(src)) {
-            return N.EMPTY_BYTE_ARRAY;
-        }
-
-        return Base64.getMimeDecoder().decode(src);
+        return new String(Base64.decodeBase64URL(base64String));
     }
 
     public static String urlEncode(final Object parameters) {
@@ -15972,15 +15969,13 @@ public final class N {
             return 0D;
         }
 
-        //        double result = 0;
-        //
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            result += func.applyAsDouble(a[i]);
-        //        }
-        //
-        //        return result;
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
+        for (int i = fromIndex; i < toIndex; i++) {
+            summation.add(func.applyAsDouble(a[i]));
+        }
+
+        return summation.sum();
     }
 
     /**
@@ -16008,15 +16003,13 @@ public final class N {
             return 0D;
         }
 
-        //        double result = 0;
-        //
-        //        for (T e : c) {
-        //            result += func.applyAsDouble(e);
-        //        }
-        //
-        //        return result;
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(c).mapToDouble(toDoubleFunction(func)).sum();
+        for (T e : c) {
+            summation.add(func.applyAsDouble(e));
+        }
+
+        return summation.sum();
     }
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -16027,33 +16020,31 @@ public final class N {
             return 0D;
         }
 
-        //        double result = 0;
-        //
-        //        if (c instanceof List && c instanceof RandomAccess) {
-        //            final List<T> list = (List<T>) c;
-        //
-        //            for (int i = fromIndex; i < toIndex; i++) {
-        //                result += func.applyAsDouble(list.get(i));
-        //            }
-        //        } else {
-        //            int idx = 0;
-        //
-        //            for (T e : c) {
-        //                if (idx++ < fromIndex) {
-        //                    continue;
-        //                }
-        //
-        //                result += func.applyAsDouble(e);
-        //
-        //                if (idx >= toIndex) {
-        //                    break;
-        //                }
-        //            }
-        //        }
-        //
-        //        return result;
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(c, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                summation.add(func.applyAsDouble(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                summation.add(func.applyAsDouble(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return summation.sum();
     }
 
     /**
@@ -16284,9 +16275,13 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        // return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
+        for (int i = fromIndex; i < toIndex; i++) {
+            summation.add(func.applyAsDouble(a[i]));
+        }
+
+        return summation.average();
     }
 
     /**
@@ -16315,9 +16310,13 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        // return OptionalDouble.of(sumDouble(c, func) / c.size());
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(c).mapToDouble(toDoubleFunction(func)).average();
+        for (T e : c) {
+            summation.add(func.applyAsDouble(e));
+        }
+
+        return summation.average();
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -16328,22 +16327,31 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        // return OptionalDouble.of(sumDouble(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        final KahanSummation summation = new KahanSummation();
 
-        return Stream.of(c, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
-    }
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-    private static <T, E extends Exception> ToDoubleFunction<T> toDoubleFunction(final Try.ToDoubleFunction<? super T, E> func) {
-        return func instanceof ToDoubleFunction ? (ToDoubleFunction<T>) func : new ToDoubleFunction<T>() {
-            @Override
-            public double applyAsDouble(T t) {
-                try {
-                    return func.applyAsDouble(t);
-                } catch (Exception e) {
-                    throw N.toRuntimeException(e);
+            for (int i = fromIndex; i < toIndex; i++) {
+                summation.add(func.applyAsDouble(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                summation.add(func.applyAsDouble(e));
+
+                if (idx >= toIndex) {
+                    break;
                 }
             }
-        };
+        }
+
+        return summation.average();
     }
 
     /**
@@ -24474,15 +24482,13 @@ public final class N {
             return 0f;
         }
 
-        //        float sum = 0;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i];
-        //        }
-        //
-        //        return sum;
+        final KahanSummation summation = new KahanSummation();
 
-        return (float) FloatStream.of(a, from, to).sum();
+        for (int i = from; i < to; i++) {
+            summation.add(a[i]);
+        }
+
+        return (float) summation.sum();
     }
 
     /**
@@ -24510,15 +24516,13 @@ public final class N {
             return 0d;
         }
 
-        //        double sum = 0;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i];
-        //        }
-        //
-        //        return sum;
+        final KahanSummation summation = new KahanSummation();
 
-        return DoubleStream.of(a, from, to).sum();
+        for (int i = from; i < to; i++) {
+            summation.add(a[i]);
+        }
+
+        return summation.sum();
     }
 
     /**
@@ -24728,15 +24732,13 @@ public final class N {
             return 0d;
         }
 
-        //        double sum = 0;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i];
-        //        }
-        //
-        //        return sum / (to - from);
+        final KahanSummation summation = new KahanSummation();
 
-        return FloatStream.of(a, from, to).average().orElse(0);
+        for (int i = from; i < to; i++) {
+            summation.add(a[i]);
+        }
+
+        return summation.average().orZero();
     }
 
     /**
@@ -24766,9 +24768,13 @@ public final class N {
             return 0d;
         }
 
-        // return sum(a, from, to) / (to - from);
+        final KahanSummation summation = new KahanSummation();
 
-        return DoubleStream.of(a, from, to).average().orElse(0);
+        for (int i = from; i < to; i++) {
+            summation.add(a[i]);
+        }
+
+        return summation.average().orZero();
     }
 
     /**

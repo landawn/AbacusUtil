@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 HaiYang Li
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -77,13 +77,8 @@ import com.landawn.abacus.util.Wrapper;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 
-/**
- * This class is a sequential, stateful and immutable stream implementation.
- *
- * @param <T>
- * @since 0.8
+/** 
  * 
- * @author Haiyang Li
  */
 abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, A, P, C, PL, OT, IT, ITER, S>>
         implements BaseStream<T, A, P, C, PL, OT, IT, ITER, S> {

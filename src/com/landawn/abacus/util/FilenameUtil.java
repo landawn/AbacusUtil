@@ -142,7 +142,7 @@ public final class FilenameUtil {
     /**
      * Instances should NOT be constructed in standard programming.
      */
-    public FilenameUtil() {
+    private FilenameUtil() {
         super();
     }
 

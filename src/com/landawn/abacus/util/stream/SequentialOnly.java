@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 HaiYang Li
+ * Copyright (C) 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -23,11 +23,9 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(value = RetentionPolicy.CLASS)
 @Target(value = { ElementType.METHOD, ElementType.TYPE })
+
 /**
- * 
- * @since 1.2
- * 
- * @author Haiyang Li
+ *
  */
 public @interface SequentialOnly {
 

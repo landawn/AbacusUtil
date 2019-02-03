@@ -1,27 +1,17 @@
 /*
- * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (C) 2019 HaiYang Li
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
+
 package com.landawn.abacus.util;
 
 import java.util.Collection;
@@ -31,8 +21,9 @@ import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
+ * @since 1.3
+ * 
  * @author haiyangl
- *
  */
 public class Joiner implements AutoCloseable {
     public static final String DEFAULT_DELIMITER = N.ELEMENT_SEPARATOR;
@@ -49,35 +40,10 @@ public class Joiner implements AutoCloseable {
     private boolean useCachedBuffer = false;
     private String nullText = N.NULL_STRING;
 
-    /*
-     * StringBuilder value -- at any time, the characters constructed from the
-     * prefix, the added element separated by the delimiter, but without the
-     * suffix, so that we can more easily add elements without having to jigger
-     * the suffix each time.
-     */
     private StringBuilder buffer;
 
-    /*
-     * By default, the string consisting of prefix+suffix, returned by
-     * toString(), or properties of value, when no elements have yet been added,
-     * i.e. when it is empty.  This may be overridden by the user to be some
-     * other value including the empty String.
-     */
     private String emptyValue;
 
-    /**
-     * Constructs a {@code StringJoiner} with no characters in it, with no
-     * {@code prefix} or {@code suffix}, and a copy of the supplied
-     * {@code delimiter}.
-     * If no characters are added to the {@code StringJoiner} and methods
-     * accessing the value of it are invoked, it will not return a
-     * {@code prefix} or {@code suffix} (or properties thereof) in the result,
-     * unless {@code setEmptyValue} has first been called.
-     *
-     * @param  delimiter the sequence of characters to be used between each
-     *         element added to the {@code StringJoiner} value
-     * @throws NullPointerException if {@code delimiter} is {@code null}
-     */
     Joiner(CharSequence delimiter) {
         this(delimiter, DEFAULT_KEY_VALUE_DELIMITER);
     }
@@ -86,21 +52,6 @@ public class Joiner implements AutoCloseable {
         this(delimiter, keyValueDelimiter, "", "");
     }
 
-    /**
-     * Constructs a {@code StringJoiner} with no characters in it using copies
-     * of the supplied {@code prefix}, {@code delimiter} and {@code suffix}.
-     * If no characters are added to the {@code StringJoiner} and methods
-     * accessing the string value of it are invoked, it will return the
-     * {@code prefix + suffix} (or properties thereof) in the result, unless
-     * {@code setEmptyValue} has first been called.
-     *
-     * @param  delimiter the sequence of characters to be used between each
-     *         element added to the {@code StringJoiner}
-     * @param  prefix the sequence of characters to be used at the beginning
-     * @param  suffix the sequence of characters to be used at the end
-     * @throws NullPointerException if {@code prefix}, {@code delimiter}, or
-     *         {@code suffix} is {@code null}
-     */
     Joiner(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
         this(delimiter, DEFAULT_KEY_VALUE_DELIMITER, prefix, suffix);
     }
@@ -120,11 +71,6 @@ public class Joiner implements AutoCloseable {
         this.isEmptyKeyValueDelimiter = N.isNullOrEmpty(keyValueDelimiter);
     }
 
-    /**
-     * Returns the Map Splitter with the default element and key/value delimiter: <code>", "</code> and <code>"="</code>
-     * 
-     * @return
-     */
     public static Joiner defauLt() {
         return with(DEFAULT_DELIMITER, DEFAULT_KEY_VALUE_DELIMITER);
     }
@@ -145,20 +91,6 @@ public class Joiner implements AutoCloseable {
         return new Joiner(delimiter, keyValueDelimiter, prefix, suffix);
     }
 
-    /**
-     * Sets the sequence of characters to be used when determining the string
-     * representation of this {@code StringJoiner} and no elements have been
-     * added yet, that is, when it is empty.  A copy of the {@code emptyValue}
-     * parameter is made for this purpose. Note that once an add method has been
-     * called, the {@code StringJoiner} is no longer considered empty, even if
-     * the element(s) added correspond to the empty {@code String}.
-     *
-     * @param  emptyValue the characters to return as the value of an empty
-     *         {@code StringJoiner}
-     * @return this {@code StringJoiner} itself so the calls may be chained
-     * @throws NullPointerException when the {@code emptyValue} parameter is
-     *         {@code null}
-     */
     public Joiner setEmptyValue(CharSequence emptyValue) {
         this.emptyValue = N.checkArgNotNull(emptyValue, "The empty value must not be null").toString();
 
@@ -1135,16 +1067,6 @@ public class Joiner implements AutoCloseable {
         return obj == null ? nullText : (trim ? N.toString(obj).trim() : N.toString(obj));
     }
 
-    /**
-     * Returns the length of the {@code String} representation
-     * of this {@code StringJoiner}. Note that if
-     * no add methods have been called, then the length of the {@code String}
-     * representation (either {@code prefix + suffix} or {@code emptyValue})
-     * will be returned. The value should be equivalent to
-     * {@code toString().length()}.
-     *
-     * @return the length of the current value of {@code StringJoiner}
-     */
     public int length() {
         // Remember that we never actually append the suffix unless we return
         // the full (present) value or some sub-string or length of it, so that

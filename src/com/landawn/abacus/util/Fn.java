@@ -2657,36 +2657,36 @@ public final class Fn extends Comparators {
         };
     }
 
-    public static <R, E extends Exception> Try.Callable<R, E> callable(final Try.Callable<R, E> callable) {
+    public static <R> com.landawn.abacus.util.function.Callable<R> callable(final com.landawn.abacus.util.function.Callable<R> callable) {
         N.checkArgNotNull(callable);
 
         return callable;
     }
 
-    public static <E extends Exception> Try.Runnable<E> runnable(final Try.Runnable<E> runnable) {
+    public static com.landawn.abacus.util.function.Runnable runnable(final com.landawn.abacus.util.function.Runnable runnable) {
         N.checkArgNotNull(runnable);
 
         return runnable;
     }
 
-    public static <E extends Exception> Try.Callable<Void, E> toCallable(final Try.Runnable<E> runnable) {
+    public static com.landawn.abacus.util.function.Callable<Void> toCallable(final com.landawn.abacus.util.function.Runnable runnable) {
         N.checkArgNotNull(runnable);
 
-        return new Try.Callable<Void, E>() {
+        return new com.landawn.abacus.util.function.Callable<Void>() {
             @Override
-            public Void call() throws E {
+            public Void call() {
                 runnable.run();
                 return null;
             }
         };
     }
 
-    public static <R, E extends Exception> Try.Runnable<E> toRunnable(final Try.Callable<R, E> callable) {
+    public static <R> com.landawn.abacus.util.function.Runnable toRunnable(final com.landawn.abacus.util.function.Callable<R> callable) {
         N.checkArgNotNull(callable);
 
-        return new Try.Runnable<E>() {
+        return new com.landawn.abacus.util.function.Runnable() {
             @Override
-            public void run() throws E {
+            public void run() {
                 callable.call();
             }
         };
@@ -5602,8 +5602,8 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class EE {
-        private EE() {
+    public static final class FN {
+        private FN() {
             // singleton
         }
 
@@ -5621,6 +5621,41 @@ public final class Fn extends Comparators {
 
         public static <T, E extends Exception> Try.BinaryOperator<T, E> replacingMerger() {
             return BinaryOperators.REPLACING_MERGER;
+        }
+
+        public static <R, E extends Exception> Try.Callable<R, E> callable(final Try.Callable<R, E> callable) {
+            N.checkArgNotNull(callable);
+
+            return callable;
+        }
+
+        public static <E extends Exception> Try.Runnable<E> runnable(final Try.Runnable<E> runnable) {
+            N.checkArgNotNull(runnable);
+
+            return runnable;
+        }
+
+        public static <E extends Exception> Try.Callable<Void, E> toCallable(final Try.Runnable<E> runnable) {
+            N.checkArgNotNull(runnable);
+
+            return new Try.Callable<Void, E>() {
+                @Override
+                public Void call() throws E {
+                    runnable.run();
+                    return null;
+                }
+            };
+        }
+
+        public static <R, E extends Exception> Try.Runnable<E> toRunnable(final Try.Callable<R, E> callable) {
+            N.checkArgNotNull(callable);
+
+            return new Try.Runnable<E>() {
+                @Override
+                public void run() throws E {
+                    callable.call();
+                }
+            };
         }
     }
 }

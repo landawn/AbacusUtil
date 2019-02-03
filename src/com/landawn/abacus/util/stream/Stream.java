@@ -1,26 +1,15 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.landawn.abacus.util.stream;
 
@@ -131,8 +120,7 @@ import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 
 /**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk,
- * And including methods copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
+ * Note: This class includes codes copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
  * <br />
  * 
  * @param <T> the type of the stream elements 
@@ -150,13 +138,6 @@ public abstract class Stream<T>
         super(sorted, cmp, closeHandlers);
     }
 
-    /**
-     * Returns a stream consisting of the elements in this stream which are
-     * instances of given class.
-     * 
-     * @param targetType
-     * @return
-     */
     @SequentialOnly
     public <U> Stream<U> select(Class<U> targetType) {
         if (isParallel()) {
@@ -166,19 +147,6 @@ public abstract class Stream<T>
         }
     }
 
-    /**
-     * Returns a stream consisting of the results of applying the given
-     * function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param <R> The element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
 
@@ -306,51 +274,15 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract ShortStream mapToShort(ToShortFunction<? super T> mapper);
 
-    /**
-     * Returns an {@code IntStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract IntStream mapToInt(ToIntFunction<? super T> mapper);
 
-    /**
-     * Returns a {@code LongStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract LongStream mapToLong(ToLongFunction<? super T> mapper);
 
     @ParallelSupported
     public abstract FloatStream mapToFloat(ToFloatFunction<? super T> mapper);
 
-    /**
-     * Returns a {@code DoubleStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper);
 
@@ -364,45 +296,6 @@ public abstract class Stream<T>
 
     // public abstract <U> Stream<U> mapp(Function<? super T, ? extends Optional<? extends U>> mapper);
 
-    /**
-     * Returns a stream consisting of the results of replacing each element of
-     * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @apiNote
-     * The {@code flatMap()} operation has the effect of applying a one-to-many
-     * transformation to the elements of the stream, and then flattening the
-     * resulting elements into a new stream.
-     *
-     * <p><b>Examples.</b>
-     *
-     * <p>If {@code orders} is a stream of purchase orders, and each purchase
-     * order contains a collection of line items, then the following produces a
-     * stream containing all the line items in all the orders:
-     * <pre>{@code
-     *     orders.flatMap(order -> order.getLineItems().stream())...
-     * }</pre>
-     *
-     * <p>If {@code path} is the path to a file, then the following produces a
-     * stream of the {@code words} contained in that file:
-     * <pre>{@code
-     *     Stream<String> lines = Files.lines(path, StandardCharsets.UTF_8);
-     *     Stream<String> words = lines.flatMap(line -> Stream.of(line.split(" +")));
-     * }</pre>
-     * The {@code mapper} function passed to {@code flatMap} splits a line,
-     * using a simple regular expression, into an array of words, and then
-     * creates a stream of words from that array.
-     *
-     * @param <R> The element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces a stream
-     *               of new values
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
@@ -421,69 +314,15 @@ public abstract class Stream<T>
     @ParallelSupported
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
 
-    /**
-     * Returns an {@code IntStream} consisting of the results of replacing each
-     * element of this stream with the contents of a mapped stream produced by
-     * applying the provided mapping function to each element.  Each mapped
-     * stream is {@link java.util.stream.Baseclose() closed} after its
-     * contents have been placed into this stream.  (If a mapped stream is
-     * {@code null} an empty stream is used, instead.)
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces a stream
-     *               of new values
-     * @return the new stream
-     * @see #flatMap(Function)
-     */
     @ParallelSupported
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
 
-    /**
-     * Returns an {@code LongStream} consisting of the results of replacing each
-     * element of this stream with the contents of a mapped stream produced by
-     * applying the provided mapping function to each element.  Each mapped
-     * stream is {@link java.util.stream.Baseclose() closed} after its
-     * contents have been placed into this stream.  (If a mapped stream is
-     * {@code null} an empty stream is used, instead.)
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces a stream
-     *               of new values
-     * @return the new stream
-     * @see #flatMap(Function)
-     */
     @ParallelSupported
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
     @ParallelSupported
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
-    /**
-     * Returns an {@code DoubleStream} consisting of the results of replacing
-     * each element of this stream with the contents of a mapped stream produced
-     * by applying the provided mapping function to each element.  Each mapped
-     * stream is {@link java.util.stream.Baseclose() closed} after its
-     * contents have placed been into this stream.  (If a mapped stream is
-     * {@code null} an empty stream is used, instead.)
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces a stream
-     *               of new values
-     * @return the new stream
-     * @see #flatMap(Function)
-     */
     @ParallelSupported
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
@@ -870,21 +709,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> top(int n, Comparator<? super T> comparator);
 
-    /**
-     * Returns a stream consisting of the elements of this stream, sorted
-     * according to the provided {@code Comparator}.
-     *
-     * <p>For ordered streams, the sort is stable.  For unordered streams, no
-     * stability guarantees are made.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @param comparator a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                   <a href="package-summary.html#Statelessness">stateless</a>
-     *                   {@code Comparator} to be used to compare stream elements
-     * @return the new stream
-     */
     @ParallelSupported
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
 
@@ -984,33 +808,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract boolean containsAll(Collection<? extends T> c);
 
-    /**
-     * Returns an array containing the elements of this stream, using the
-     * provided {@code generator} function to allocate the returned array, as
-     * well as any additional arrays that might be required for a partitioned
-     * execution or for resizing.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote
-     * The generator function takes an integer, which is the size of the
-     * desired array, and produces an array of the desired size.  This can be
-     * concisely expressed with an array constructor reference:
-     * <pre>{@code
-     *     Person[] men = people.stream()
-     *                          .filter(p -> p.getGender() == MALE)
-     *                          .toArray(Person[]::new);
-     * }</pre>
-     *
-     * @param <A> the element type of the resulting array
-     * @param generator a function which produces a new array of the desired
-     *                  type and the provided length
-     * @return an array containing the elements in this stream
-     * @throws ArrayStoreException if the runtime type of the array returned
-     * from the array generator is not a supertype of the runtime type of every
-     * element in this stream
-     */
     @SequentialOnly
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
@@ -1254,217 +1051,18 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract DataSet toDataSet(final List<String> columnNames);
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using the provided identity value and an
-     * <a href="package-summary.html#Associativity">associative</a>
-     * accumulation function, and returns the reduced value.  This is equivalent
-     * to:
-     * <pre>{@code
-     *     T result = identity;
-     *     for (T element : this stream)
-     *         result = accumulator.apply(result, element)
-     *     return result;
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code identity} value must be an identity for the accumulator
-     * function. This means that for all {@code t},
-     * {@code accumulator.apply(identity, t)} is equal to {@code t}.
-     * The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Sum, min, max, average, and string concatenation are all special
-     * cases of reduction. Summing a stream of numbers can be expressed as:
-     *
-     * <pre>{@code
-     *     Integer sum = integers.reduce(0, (a, b) -> a+b);
-     * }</pre>
-     *
-     * or:
-     *
-     * <pre>{@code
-     *     Integer sum = integers.reduce(0, Integer::sum);
-     * }</pre>
-     *
-     * <p>While this may seem a more roundabout way to perform an aggregation
-     * compared to simply mutating a running total in a loop, reduction
-     * operations parallelize more gracefully, without needing additional
-     * synchronization and with greatly reduced risk of data races.
-     *
-     * @param identity the identity value for the accumulating function
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values
-     * @return the result of the reduction
-     */
     @ParallelSupported
     public abstract T reduce(T identity, BinaryOperator<T> accumulator);
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using an
-     * <a href="package-summary.html#Associativity">associative</a> accumulation
-     * function, and returns an {@code Optional} describing the reduced value,
-     * if any. This is equivalent to:
-     * <pre>{@code
-     *     boolean foundAny = false;
-     *     T result = null;
-     *     for (T element : this stream) {
-     *         if (!foundAny) {
-     *             foundAny = true;
-     *             result = element;
-     *         }
-     *         else
-     *             result = accumulator.apply(result, element);
-     *     }
-     *     return foundAny ? Optional.of(result) : Optional.empty();
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values
-     * @return an {@link Optional} describing the result of the reduction
-     * @see #reduce(Object, BinaryOperator)
-     * @see #min(Comparator)
-     * @see #max(Comparator)
-     */
     @ParallelSupported
     public abstract Optional<T> reduce(BinaryOperator<T> accumulator);
 
-    /**
-     * Performs a <a href="package-summary.html#MutableReduction">mutable
-     * reduction</a> operation on the elements of this stream.  A mutable
-     * reduction is one in which the reduced value is a mutable result container,
-     * such as an {@code ArrayList}, and elements are incorporated by updating
-     * the state of the result rather than by replacing the result.  This
-     * produces a result equivalent to:
-     * <pre>{@code
-     *     R result = supplier.get();
-     *     for (T element : this stream)
-     *         accumulator.accept(result, element);
-     *     return result;
-     * }</pre>
-     *
-     * <p>Like {@link #reduce(Object, BinaryOperator)}, {@code collect} operations
-     * can be parallelized without requiring additional synchronization.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote There are many existing classes in the JDK whose signatures are
-     * well-suited for use with method references as arguments to {@code collect()}.
-     * For example, the following will accumulate strings into an {@code ArrayList}:
-     * <pre>{@code
-     *     List<String> asList = stringStream.collect(ArrayList::new, ArrayList::add,
-     *                                                ArrayList::addAll);
-     * }</pre>
-     *
-     * <p>The following will take a stream of strings and concatenates them into a
-     * single string:
-     * <pre>{@code
-     *     String concat = stringStream.collect(StringBuilder::new, StringBuilder::append,
-     *                                          StringBuilder::append)
-     *                                 .toString();
-     * }</pre>
-     *
-     * @param <R> type of the result
-     * @param supplier a function that creates a new result container. For a
-     *                 parallel execution, this function may be called
-     *                 multiple times and must return a fresh value each time.
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values, which must be
-     *                    compatible with the accumulator function
-     * @return the result of the reduction
-     */
     @ParallelSupported
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
-    /**
-     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
-     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
-     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code> when it's necessary in Parallel Stream.
-     * 
-     * @param supplier
-     * @param accumulator
-     * @return
-     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
-     */
     @ParallelSupported
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator);
 
-    /**
-     * Performs a <a href="package-summary.html#MutableReduction">mutable
-     * reduction</a> operation on the elements of this stream using a
-     * {@code Collector}.  A {@code Collector}
-     * encapsulates the functions used as arguments to
-     * {@link #collect(Supplier, BiConsumer, BiConsumer)}, allowing for reuse of
-     * collection strategies and composition of collect operations such as
-     * multiple-level grouping or partitioning.
-     *
-     * <p>If the stream is parallel, and the {@code Collector}
-     * is {@link Collector.Characteristics#CONCURRENT concurrent}, and
-     * either the stream is unordered or the collector is
-     * {@link Collector.Characteristics#UNORDERED unordered},
-     * then a concurrent reduction will be performed (see {@link Collector} for
-     * details on concurrent reduction.)
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>When executed in parallel, multiple intermediate results may be
-     * instantiated, populated, and merged so as to maintain isolation of
-     * mutable data structures.  Therefore, even when executed in parallel
-     * with non-thread-safe data structures (such as {@code ArrayList}), no
-     * additional synchronization is needed for a parallel reduction.
-     *
-     * @apiNote
-     * The following will accumulate strings into an ArrayList:
-     * <pre>{@code
-     *     List<String> asList = stringStream.collect(Collectors.toList());
-     * }</pre>
-     *
-     * <p>The following will classify {@code Person} objects by city:
-     * <pre>{@code
-     *     Map<String, List<Person>> peopleByCity
-     *         = personStream.collect(Collectors.groupingBy(Person::getCity));
-     * }</pre>
-     *
-     * <p>The following will classify {@code Person} objects by state and city,
-     * cascading two {@code Collector}s together:
-     * <pre>{@code
-     *     Map<String, Map<String, List<Person>>> peopleByStateAndCity
-     *         = personStream.collect(Collectors.groupingBy(Person::getState,
-     *                                                      Collectors.groupingBy(Person::getCity)));
-     * }</pre>
-     *
-     * @param <R> the type of the result
-     * @param <A> the intermediate accumulation type of the {@code Collector}
-     * @param collector the {@code Collector} describing the reduction
-     * @return the result of the reduction
-     * @see #collect(Supplier, BiConsumer, BiConsumer)
-     * @see Collectors
-     */
     @ParallelSupported
     public abstract <R, A> R collect(Collector<? super T, A, R> collector);
 
@@ -1567,19 +1165,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> skipLast(int n);
 
-    /**
-     * Returns the minimum element of this stream according to the provided
-     * {@code Comparator}.  This is a special case of a
-     * <a href="package-summary.html#Reduction">reduction</a>.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @param comparator a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                   <a href="package-summary.html#Statelessness">stateless</a>
-     *                   {@code Comparator} to compare elements of this stream
-     * @return an {@code Optional} describing the minimum element of this stream,
-     * or an empty {@code Optional} if the stream is empty
-     */
     @ParallelSupported
     public abstract Optional<T> min(Comparator<? super T> comparator);
 
@@ -1591,20 +1176,6 @@ public abstract class Stream<T>
         return min(comparator);
     }
 
-    /**
-     * Returns the maximum element of this stream according to the provided
-     * {@code Comparator}.  This is a special case of a
-     * <a href="package-summary.html#Reduction">reduction</a>.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param comparator a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                   <a href="package-summary.html#Statelessness">stateless</a>
-     *                   {@code Comparator} to compare elements of this stream
-     * @return an {@code Optional} describing the maximum element of this stream,
-     * or an empty {@code Optional} if the stream is empty
-     */
     @ParallelSupported
     public abstract Optional<T> max(Comparator<? super T> comparator);
 

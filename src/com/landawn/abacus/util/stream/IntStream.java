@@ -1,27 +1,17 @@
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -76,9 +66,7 @@ import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToIntFunction;
 
-/**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
- * <br />
+/** 
  * 
  * @see Stream 
  */
@@ -90,18 +78,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         super(sorted, null, closeHandlers);
     }
 
-    /**
-     * Returns a stream consisting of the results of applying the given
-     * function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract IntStream map(IntUnaryOperator mapper);
 
     public abstract CharStream mapToChar(IntToCharFunction mapper);
@@ -110,78 +86,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract ShortStream mapToShort(IntToShortFunction mapper);
 
-    /**
-     * Returns a {@code LongStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract LongStream mapToLong(IntToLongFunction mapper);
 
-    /**
-     * Returns a {@code FloatStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract FloatStream mapToFloat(IntToFloatFunction mapper);
 
-    /**
-     * Returns a {@code DoubleStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract DoubleStream mapToDouble(IntToDoubleFunction mapper);
 
-    /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
 
-    /**
-     * Returns a stream consisting of the results of replacing each element of
-     * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces an
-     *               {@code IntStream} of new values
-     * @return the new stream
-     * @see Stream#flatMap(Function)
-     */
     public abstract IntStream flatMap(IntFunction<? extends IntStream> mapper);
 
     public abstract IntStream flattMap(IntFunction<int[]> mapper);
@@ -356,134 +268,10 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract IntMatrix toMatrix();
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using the provided identity value and an
-     * <a href="package-summary.html#Associativity">associative</a>
-     * accumulation function, and returns the reduced value.  This is equivalent
-     * to:
-     * <pre>{@code
-     *     int result = identity;
-     *     for (int element : this stream)
-     *         result = accumulator.applyAsInt(result, element)
-     *     return result;
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code identity} value must be an identity for the accumulator
-     * function. This means that for all {@code x},
-     * {@code accumulator.apply(identity, x)} is equal to {@code x}.
-     * The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Sum, min, max, and average are all special cases of reduction.
-     * Summing a stream of numbers can be expressed as:
-     *
-     * <pre>{@code
-     *     int sum = integers.reduce(0, (a, b) -> a+b);
-     * }</pre>
-     *
-     * or more compactly:
-     *
-     * <pre>{@code
-     *     int sum = integers.reduce(0, Integer::sum);
-     * }</pre>
-     *
-     * <p>While this may seem a more roundabout way to perform an aggregation
-     * compared to simply mutating a running total in a loop, reduction
-     * operations parallelize more gracefully, without needing additional
-     * synchronization and with greatly reduced risk of data races.
-     *
-     * @param identity the identity value for the accumulating function
-     * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *           <a href="package-summary.html#Statelessness">stateless</a>
-     *           function for combining two values
-     * @return the result of the reduction
-     * @see #sum()
-     * @see #min()
-     * @see #max()
-     * @see #average()
-     */
     public abstract int reduce(int identity, IntBinaryOperator op);
 
-    /**
-     * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
-     * elements of this stream, using an
-     * <a href="package-summary.html#Associativity">associative</a> accumulation
-     * function, and returns an {@code OptionalInt} describing the reduced value,
-     * if any. This is equivalent to:
-     * <pre>{@code
-     *     boolean foundAny = false;
-     *     int result = null;
-     *     for (int element : this stream) {
-     *         if (!foundAny) {
-     *             foundAny = true;
-     *             result = element;
-     *         }
-     *         else
-     *             result = accumulator.applyAsInt(result, element);
-     *     }
-     *     return foundAny ? OptionalInt.of(result) : OptionalInt.empty();
-     * }</pre>
-     *
-     * but is not constrained to execute sequentially.
-     *
-     * <p>The {@code accumulator} function must be an
-     * <a href="package-summary.html#Associativity">associative</a> function.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *           <a href="package-summary.html#Statelessness">stateless</a>
-     *           function for combining two values
-     * @return the result of the reduction
-     * @see #reduce(int, IntBinaryOperator)
-     */
     public abstract OptionalInt reduce(IntBinaryOperator op);
 
-    /**
-     * Performs a <a href="package-summary.html#MutableReduction">mutable
-     * reduction</a> operation on the elements of this stream.  A mutable
-     * reduction is one in which the reduced value is a mutable result container,
-     * such as an {@code ArrayList}, and elements are incorporated by updating
-     * the state of the result rather than by replacing the result.  This
-     * produces a result equivalent to:
-     * <pre>{@code
-     *     R result = supplier.get();
-     *     for (int element : this stream)
-     *         accumulator.accept(result, element);
-     *     return result;
-     * }</pre>
-     *
-     * <p>Like {@link #reduce(int, IntBinaryOperator)}, {@code collect} operations
-     * can be parallelized without requiring additional synchronization.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @param <R> type of the result
-     * @param supplier a function that creates a new result container. For a
-     *                 parallel execution, this function may be called
-     *                 multiple times and must return a fresh value each time.
-     * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                    <a href="package-summary.html#Statelessness">stateless</a>
-     *                    function for combining two values, which must be
-     *                    compatible with the accumulator function
-     * @return the result of the reduction
-     * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
-     */
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
@@ -557,37 +345,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     //    @Deprecated
     //    public abstract Pair<IntStream, OptionalInt> headAndTaill();
 
-    /**
-     * Returns an {@code OptionalInt} describing the minimum element of this
-     * stream, or an empty optional if this stream is empty.  This is a special
-     * case of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(Integer::min);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return an {@code OptionalInt} containing the minimum element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty
-     */
     public abstract OptionalInt min();
 
-    /**
-     * Returns an {@code OptionalInt} describing the maximum element of this
-     * stream, or an empty optional if this stream is empty.  This is a special
-     * case of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(Integer::max);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an {@code OptionalInt} containing the maximum element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty
-     */
     public abstract OptionalInt max();
 
     /**
@@ -597,33 +356,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract OptionalInt kthLargest(int k);
 
-    /**
-     * Returns the sum of elements in this stream.  This is a special case
-     * of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(0, Integer::sum);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return the sum of elements in this stream
-     */
     public abstract int sum();
 
-    /**
-     * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
-     * this stream, or an empty optional if this stream is empty.  This is a
-     * special case of a
-     * <a href="package-summary.html#Reduction">reduction</a>.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an {@code OptionalDouble} containing the average element of this
-     * stream, or an empty optional if the stream is empty
-     */
     public abstract OptionalDouble average();
 
     public abstract IntSummaryStatistics summarize();
@@ -646,54 +380,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction);
 
-    /**
-     * Returns a {@code LongStream} consisting of the elements of this stream,
-     * converted to {@code long}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code LongStream} consisting of the elements of this stream,
-     * converted to {@code long}
-     */
     public abstract LongStream asLongStream();
 
-    /**
-     * Returns a {@code FloatStream} consisting of the elements of this stream,
-     * converted to {@code double}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code FloatStream} consisting of the elements of this stream,
-     * converted to {@code double}
-     */
     public abstract FloatStream asFloatStream();
 
-    /**
-     * Returns a {@code DoubleStream} consisting of the elements of this stream,
-     * converted to {@code double}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code DoubleStream} consisting of the elements of this stream,
-     * converted to {@code double}
-     */
     public abstract DoubleStream asDoubleStream();
 
     public abstract java.util.stream.IntStream toJdkStream();
 
-    /**
-     * Returns a {@code Stream} consisting of the elements of this stream,
-     * each boxed to an {@code Integer}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code Stream} consistent of the elements of this stream,
-     * each boxed to an {@code Integer}
-     */
     public abstract Stream<Integer> boxed();
 
     @Override

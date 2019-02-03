@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 HaiYang Li
+ * Copyright (C) 2016, 2017, 2018, 2019 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -25,9 +25,6 @@ import com.landawn.abacus.util.ObjIterator;
 
 /**
  * 
- * @since 0.8
- * 
- * @author Haiyang Li
  */
 @Internal
 public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements IteratorEx<T> {
