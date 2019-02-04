@@ -10,6 +10,8 @@
 
 * Refactoring: `Fn`.
 
+* Remove/replace the source codes/docs copied from OpenJdk.
+
 * Improvements and bug fix.
 
 
