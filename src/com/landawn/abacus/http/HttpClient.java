@@ -26,9 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -69,17 +67,6 @@ public final class HttpClient extends AbstractHttpClient {
         }
     }
 
-    // ...
-    /**
-     * Default value is true.
-     */
-    public static final String DO_INPUT = "doInput";
-
-    /**
-     * Default value is true if the specified request/parameters is not null, otherwise it's false.
-     */
-    public static final String DO_OUTPUT = "doOutput";
-
     protected final URL _netURL;
 
     protected final AtomicInteger _activeConnectionCounter;
@@ -96,11 +83,11 @@ public final class HttpClient extends AbstractHttpClient {
         this(url, maxConnection, connTimeout, readTimeout, null);
     }
 
-    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, Map<String, Object> settings) {
+    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
         this(url, maxConnection, connTimeout, readTimeout, settings, new AtomicInteger(0));
     }
 
-    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, Map<String, Object> settings,
+    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings,
             final AtomicInteger sharedActiveConnectionCounter) {
         super(url, maxConnection, connTimeout, readTimeout, settings);
 
@@ -129,11 +116,11 @@ public final class HttpClient extends AbstractHttpClient {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout);
     }
 
-    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, Map<String, Object> settings) {
+    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout, settings);
     }
 
-    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, Map<String, Object> settings,
+    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings,
             final AtomicInteger sharedActiveConnectionCounter) {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout, settings, sharedActiveConnectionCounter);
     }
@@ -147,22 +134,22 @@ public final class HttpClient extends AbstractHttpClient {
     //    }
 
     @Deprecated
-    public static String get(final String url, final Object parameters, final Map<String, Object> settings) {
+    public static String get(final String url, final Object parameters, final HttpSettings settings) {
         return get(String.class, url, parameters, settings);
     }
 
     @Deprecated
-    public static <T> T get(final Class<T> resultClass, final String url, final Object parameters, final Map<String, Object> settings) {
+    public static <T> T get(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
         return HttpClient.create(URLEncodedUtil.encode(url, parameters)).get(resultClass, (Object) null, settings);
     }
 
     @Deprecated
-    public static ContinuableFuture<String> asyncGet(final String url, final Object parameters, final Map<String, Object> settings) {
+    public static ContinuableFuture<String> asyncGet(final String url, final Object parameters, final HttpSettings settings) {
         return asyncGet(String.class, url, parameters, settings);
     }
 
     @Deprecated
-    public static <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final String url, final Object parameters, final Map<String, Object> settings) {
+    public static <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
         final Callable<T> cmd = new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -174,23 +161,22 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     @Deprecated
-    public static String delete(final String url, final Object parameters, final Map<String, Object> settings) {
+    public static String delete(final String url, final Object parameters, final HttpSettings settings) {
         return delete(String.class, url, parameters, settings);
     }
 
     @Deprecated
-    public static <T> T delete(final Class<T> resultClass, final String url, final Object parameters, final Map<String, Object> settings) {
+    public static <T> T delete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
         return HttpClient.create(URLEncodedUtil.encode(url, parameters)).delete(resultClass, (Object) null, settings);
     }
 
     @Deprecated
-    public static ContinuableFuture<String> asyncDelete(final String url, final Object parameters, final Map<String, Object> settings) {
+    public static ContinuableFuture<String> asyncDelete(final String url, final Object parameters, final HttpSettings settings) {
         return asyncDelete(String.class, url, parameters, settings);
     }
 
     @Deprecated
-    public static <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final String url, final Object parameters,
-            final Map<String, Object> settings) {
+    public static <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
         final Callable<T> cmd = new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -202,12 +188,12 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final Map<String, Object> settings) {
+    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         return execute(resultClass, null, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final File output, final HttpMethod httpMethod, final Object request, final Map<String, Object> settings) {
+    public void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         OutputStream os = null;
 
         try {
@@ -221,17 +207,17 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final Map<String, Object> settings) {
+    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         execute(null, output, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final Map<String, Object> settings) {
+    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         execute(null, null, output, httpMethod, request, settings);
     }
 
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
-            final Object request, final Map<String, Object> settings) {
+            final Object request, final HttpSettings settings) {
         final ContentFormat requestContentFormat = getContentFormat(settings);
         final HttpURLConnection connection = openConnection(httpMethod, request, request != null, settings);
         InputStream is = null;
@@ -287,14 +273,19 @@ public final class HttpClient extends AbstractHttpClient {
 
                     return null;
                 } else {
-                    final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
-
-                    if (type == null) {
-                        return (T) IOUtil.readString(is);
-                    } else if (type.isSerializable()) {
-                        return (T) type.valueOf(IOUtil.readString(is));
+                    if (resultClass != null && resultClass.equals(HttpResponse.class)) {
+                        return (T) new HttpResponse(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
+                                IOUtil.readString(is), responseContentFormat);
                     } else {
-                        return HTTP.getParser(responseContentFormat).deserialize(resultClass, is);
+                        final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
+
+                        if (type == null) {
+                            return (T) IOUtil.readString(is);
+                        } else if (type.isSerializable()) {
+                            return (T) type.valueOf(IOUtil.readString(is));
+                        } else {
+                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, is);
+                        }
                     }
                 }
             }
@@ -309,11 +300,11 @@ public final class HttpClient extends AbstractHttpClient {
         return getOutputStream(connection, contentFormat, null);
     }
 
-    public OutputStream getOutputStream(final HttpURLConnection connection, final Map<String, Object> settings) throws IOException {
+    public OutputStream getOutputStream(final HttpURLConnection connection, final HttpSettings settings) throws IOException {
         return getOutputStream(connection, null, settings);
     }
 
-    private OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat, final Map<String, Object> settings)
+    private OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat, final HttpSettings settings)
             throws IOException {
         String contentType = getContentType(settings);
 
@@ -358,15 +349,15 @@ public final class HttpClient extends AbstractHttpClient {
         return openConnection(httpMethod, doOutput, _settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, Map<String, Object> settings) {
+    public HttpURLConnection openConnection(HttpMethod httpMethod, HttpSettings settings) {
         return openConnection(httpMethod, HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod), settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, Map<String, Object> settings) {
+    public HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, HttpSettings settings) {
         return openConnection(httpMethod, null, doOutput, settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, final Object request, boolean doOutput, Map<String, Object> settings) {
+    public HttpURLConnection openConnection(HttpMethod httpMethod, final Object request, boolean doOutput, HttpSettings settings) {
         HttpURLConnection connection = null;
 
         try {
@@ -383,15 +374,7 @@ public final class HttpClient extends AbstractHttpClient {
             }
 
             if (connection instanceof HttpsURLConnection) {
-                SSLSocketFactory ssf = null;
-
-                if (N.notNullOrEmpty(settings)) {
-                    ssf = (SSLSocketFactory) settings.get(HttpHeaders.SSL_SOCKET_FACTORY);
-                }
-
-                if (ssf == null && N.notNullOrEmpty(this._settings)) {
-                    ssf = (SSLSocketFactory) this._settings.get(HttpHeaders.SSL_SOCKET_FACTORY);
-                }
+                SSLSocketFactory ssf = (settings == null ? _settings : settings).getSSLSocketFactory();
 
                 if (ssf != null) {
                     ((HttpsURLConnection) connection).setSSLSocketFactory(ssf);
@@ -400,8 +383,8 @@ public final class HttpClient extends AbstractHttpClient {
 
             int connTimeout = _connTimeout > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) _connTimeout;
 
-            if (N.notNullOrEmpty(settings) && settings.containsKey(HttpHeaders.CONNECTION_TIMEOUT)) {
-                connTimeout = ((Number) settings.get(HttpHeaders.CONNECTION_TIMEOUT)).intValue();
+            if (settings != null) {
+                connTimeout = settings.getConnectionTimeout();
             }
 
             if (connTimeout > 0) {
@@ -410,23 +393,19 @@ public final class HttpClient extends AbstractHttpClient {
 
             int readTimeout = _readTimeout > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) _readTimeout;
 
-            if (N.notNullOrEmpty(settings) && settings.containsKey(HttpHeaders.READ_TIMEOUT)) {
-                readTimeout = ((Number) settings.get(HttpHeaders.READ_TIMEOUT)).intValue();
+            if (settings != null) {
+                readTimeout = settings.getReadTimeout();
             }
 
             if (readTimeout > 0) {
                 connection.setReadTimeout(readTimeout);
             }
 
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
+            connection.setDoInput(settings.doInput());
+            connection.setDoOutput(settings.doOutput());
             connection.setUseCaches(false);
 
-            if (N.notNullOrEmpty(settings)) {
-                setHttpProperties(connection, settings);
-            } else if (N.notNullOrEmpty(this._settings)) {
-                setHttpProperties(connection, this._settings);
-            }
+            setHttpProperties(connection, settings == null || settings.headers().isEmpty() ? _settings : settings);
 
             if (isOneWayRequest(settings)) {
                 connection.setDoInput(false);
@@ -458,287 +437,39 @@ public final class HttpClient extends AbstractHttpClient {
         HTTP.flush(os);
     }
 
-    private void setHttpProperties(HttpURLConnection connection, Map<String, Object> settings) {
-        if (N.notNullOrEmpty(settings)) {
-            for (Map.Entry<String, Object> entry : settings.entrySet()) {
-                if (HTTP.NON_HTTP_PROP_NAMES.contains(entry.getKey())) {
+    private void setHttpProperties(HttpURLConnection connection, HttpSettings settings) {
+        final HttpHeaders headers = settings.headers();
+
+        if (headers != null) {
+
+            Object headerValue = null;
+
+            for (String headerName : headers.headerNameSet()) {
+                if (HTTP.NON_HTTP_PROP_NAMES.contains(headerName)) {
                     continue;
                 }
 
-                if (entry.getKey().equals(DO_INPUT)) {
-                    if (Boolean.valueOf((entry.getValue().toString())) == false) {
-                        connection.setDoInput(false);
-                    }
-                } else if (entry.getKey().equals(DO_OUTPUT)) {
-                    if (Boolean.valueOf((entry.getValue().toString())) == false) {
-                        connection.setDoOutput(false);
-                    }
-                } else if (entry.getKey().equals(HttpHeaders.USE_CACHES)) {
-                    if (Boolean.valueOf((entry.getValue().toString())) == true) {
+                headerValue = headers.get(headerName);
+
+                if (headerName.equals(HttpHeaders.USE_CACHES)) {
+                    if (Boolean.valueOf((headerValue.toString())) == true) {
                         connection.setUseCaches(true);
                     }
                 } else {
-                    if (entry.getValue() instanceof Collection) {
-                        final Iterator<Object> iter = ((Collection<Object>) entry).iterator();
+                    if (headerValue instanceof Collection) {
+                        final Iterator<Object> iter = ((Collection<Object>) headerValue).iterator();
 
                         if (iter.hasNext()) {
-                            connection.setRequestProperty(entry.getKey(), N.stringOf(iter.next()));
+                            connection.setRequestProperty(headerName, N.stringOf(iter.next()));
                         }
 
                         while (iter.hasNext()) {
-                            connection.addRequestProperty(entry.getKey(), N.stringOf(iter.next()));
+                            connection.addRequestProperty(headerName, N.stringOf(iter.next()));
                         }
                     } else {
-                        connection.setRequestProperty(entry.getKey(), N.stringOf(entry.getValue()));
+                        connection.setRequestProperty(headerName, N.stringOf(headerValue));
                     }
                 }
-            }
-        }
-    }
-
-    public static class HttpRequest {
-        final HttpClient httpClient;
-
-        Map<String, Object> settings;
-        HttpMethod httpMethod;
-        Object request;
-
-        HttpRequest(HttpClient httpClient) {
-            this.httpClient = httpClient;
-        }
-
-        HttpRequest(String url) {
-            this(url, 0, 0);
-        }
-
-        HttpRequest(String url, long connTimeout, long readTimeout) {
-            this.httpClient = HttpClient.create(url, 1, connTimeout, readTimeout);
-        }
-
-        public static HttpRequest create(final HttpClient httpClient) {
-            return new HttpRequest(httpClient);
-        }
-
-        public static HttpRequest url(final String url) {
-            return new HttpRequest(url);
-        }
-
-        public static HttpRequest url(final String url, final long connTimeout, final long readTimeout) {
-            return new HttpRequest(url, connTimeout, readTimeout);
-        }
-
-        public HttpRequest header(String name, Object value) {
-            checkSettings();
-
-            settings.put(name, value);
-
-            return this;
-        }
-
-        public HttpRequest headers(String name1, Object value1, String name2, Object value2) {
-            checkSettings();
-
-            settings.put(name1, value1);
-            settings.put(name2, value2);
-
-            return this;
-        }
-
-        public HttpRequest headers(String name1, Object value1, String name2, Object value2, String name3, Object value3) {
-            checkSettings();
-
-            settings.put(name1, value1);
-            settings.put(name2, value2);
-            settings.put(name3, value3);
-
-            return this;
-        }
-
-        public HttpRequest headers(Map<String, Object> headers) {
-            checkSettings();
-
-            settings.putAll(headers);
-
-            return this;
-        }
-
-        public HttpRequest headers(HttpHeaders headers) {
-            checkSettings();
-
-            settings.putAll(headers.map);
-
-            return this;
-        }
-
-        public String get() {
-            return get(String.class);
-        }
-
-        public <T> T get(Class<T> resultClass) {
-            return get(resultClass, null);
-        }
-
-        public String get(Object query) {
-            return get(String.class, query);
-        }
-
-        public <T> T get(Class<T> resultClass, Object query) {
-            this.httpMethod = HttpMethod.GET;
-            this.request = query;
-
-            return execute(resultClass);
-        }
-
-        public String post(Object body) {
-            return post(String.class, body);
-        }
-
-        public <T> T post(Class<T> resultClass, Object body) {
-            this.httpMethod = HttpMethod.POST;
-            this.request = body;
-
-            return execute(resultClass);
-        }
-
-        public String put(Object body) {
-            return put(String.class, body);
-        }
-
-        public <T> T put(Class<T> resultClass, Object body) {
-            this.httpMethod = HttpMethod.PUT;
-            this.request = body;
-
-            return execute(resultClass);
-        }
-
-        public String delete() {
-            return delete(String.class);
-        }
-
-        public <T> T delete(Class<T> resultClass) {
-            return delete(resultClass, null);
-        }
-
-        public String delete(Object query) {
-            return delete(String.class, query);
-        }
-
-        public <T> T delete(Class<T> resultClass, Object query) {
-            this.httpMethod = HttpMethod.DELETE;
-            this.request = query;
-
-            return execute(resultClass);
-        }
-
-        public ContinuableFuture<String> asyncGet() {
-            return asyncGet(String.class);
-        }
-
-        public <T> ContinuableFuture<T> asyncGet(Class<T> resultClass) {
-            return asyncGet(resultClass, null);
-        }
-
-        public ContinuableFuture<String> asyncGet(Object query) {
-            return asyncGet(String.class, query);
-        }
-
-        public <T> ContinuableFuture<T> asyncGet(Class<T> resultClass, Object query) {
-            this.httpMethod = HttpMethod.GET;
-            this.request = query;
-
-            return asyncExecute(resultClass);
-        }
-
-        public ContinuableFuture<String> asyncPost(Object body) {
-            return asyncPost(String.class, body);
-        }
-
-        public <T> ContinuableFuture<T> asyncPost(Class<T> resultClass, Object body) {
-            this.httpMethod = HttpMethod.POST;
-            this.request = body;
-
-            return asyncExecute(resultClass);
-        }
-
-        public ContinuableFuture<String> asyncPut(Object body) {
-            return asyncPut(String.class, body);
-        }
-
-        public <T> ContinuableFuture<T> asyncPut(Class<T> resultClass, Object body) {
-            this.httpMethod = HttpMethod.PUT;
-            this.request = body;
-
-            return asyncExecute(resultClass);
-        }
-
-        public ContinuableFuture<String> asyncDelete() {
-            return asyncDelete(String.class);
-        }
-
-        public <T> ContinuableFuture<T> asyncDelete(Class<T> resultClass) {
-            return asyncDelete(resultClass, null);
-        }
-
-        public ContinuableFuture<String> asyncDelete(Object query) {
-            return asyncDelete(String.class, query);
-        }
-
-        public <T> ContinuableFuture<T> asyncDelete(Class<T> resultClass, Object query) {
-            this.httpMethod = HttpMethod.DELETE;
-            this.request = query;
-
-            return asyncExecute(resultClass);
-        }
-
-        protected <T> T execute(final Class<T> resultClass) {
-            if (httpMethod == null) {
-                throw new RuntimeException("HTTP method is not set");
-            }
-
-            switch (httpMethod) {
-                case GET:
-                    return httpClient.get(resultClass, request, settings);
-
-                case POST:
-                    return httpClient.post(resultClass, request, settings);
-
-                case PUT:
-                    return httpClient.put(resultClass, request, settings);
-
-                case DELETE:
-                    return httpClient.delete(resultClass, request, settings);
-
-                default:
-                    throw new RuntimeException("Unsupported HTTP method: " + httpMethod);
-            }
-        }
-
-        protected <T> ContinuableFuture<T> asyncExecute(final Class<T> resultClass) {
-            if (httpMethod == null) {
-                throw new RuntimeException("HTTP method is not set");
-            }
-
-            switch (httpMethod) {
-                case GET:
-                    return httpClient.asyncGet(resultClass, request, settings);
-
-                case POST:
-                    return httpClient.asyncPost(resultClass, request, settings);
-
-                case PUT:
-                    return httpClient.asyncPut(resultClass, request, settings);
-
-                case DELETE:
-                    return httpClient.asyncDelete(resultClass, request, settings);
-
-                default:
-                    throw new RuntimeException("Unsupported HTTP method: " + httpMethod);
-            }
-        }
-
-        protected void checkSettings() {
-            if (settings == null) {
-                settings = new HashMap<>();
             }
         }
     }

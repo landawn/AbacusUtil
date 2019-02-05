@@ -123,7 +123,7 @@ public final class HttpProxy {
                         OperationConfig copy = entry.getValue() == null ? new OperationConfig() : N.copy(entry.getValue());
 
                         if (entry.getValue() != null && entry.getValue().getRequestSettings() != null) {
-                            copy.setRequestSettings(new HashMap<>(entry.getValue().getRequestSettings()));
+                            copy.setRequestSettings(entry.getValue().getRequestSettings().copy());
                         }
 
                         newOperationConfigs.put(entry.getKey(), copy);
@@ -281,8 +281,8 @@ public final class HttpProxy {
                     }
                 }
 
-                if (config != null && N.notNullOrEmpty(config.getRequestSettings())) {
-                    _config.setRequestSettings(N.asProps(config.getRequestSettings()));
+                if (config != null && config.getRequestSettings() != null) {
+                    _config.setRequestSettings(config.getRequestSettings().copy());
                 }
             }
 
@@ -647,7 +647,7 @@ public final class HttpProxy {
         private boolean executedByThreadPool;
         private AsyncExecutor asyncExecutor;
 
-        private Map<String, Object> requestSettings;
+        private HttpSettings requestSettings;
 
         private Map<String, OperationConfig> operationConfigs;
         private boolean requestByOperatioName;
@@ -717,11 +717,11 @@ public final class HttpProxy {
             return this;
         }
 
-        public Map<String, Object> getRequestSettings() {
+        public HttpSettings getRequestSettings() {
             return requestSettings;
         }
 
-        public Config setRequestSettings(final Map<String, Object> requestSettings) {
+        public Config setRequestSettings(final HttpSettings requestSettings) {
             this.requestSettings = requestSettings;
 
             return this;
@@ -830,7 +830,7 @@ public final class HttpProxy {
     public static class OperationConfig {
         private String requestUrl;
         private HttpMethod httpMethod;
-        private Map<String, Object> requestSettings;
+        private HttpSettings requestSettings;
         private int retryTimes;
         private long retryInterval;
         private Function<Throwable, Boolean> ifRetry;
@@ -873,11 +873,11 @@ public final class HttpProxy {
             return this;
         }
 
-        public Map<String, Object> getRequestSettings() {
+        public HttpSettings getRequestSettings() {
             return requestSettings;
         }
 
-        public OperationConfig setRequestSettings(final Map<String, Object> requestSettings) {
+        public OperationConfig setRequestSettings(final HttpSettings requestSettings) {
             this.requestSettings = requestSettings;
 
             return this;

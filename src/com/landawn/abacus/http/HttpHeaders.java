@@ -14,12 +14,9 @@
 
 package com.landawn.abacus.http;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -27,16 +24,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public class HttpHeaders implements Map<String, Object> {
-    public static final String SSL_SOCKET_FACTORY = "sslSocketFactory";
-    public static final String CONNECTION_TIMEOUT = "connectionTimeout";
-    public static final String READ_TIMEOUT = "readTimeout";
-    public static final String CONTENT_FORMAT = "contentFormat";
-    public static final String IS_ONE_WAY_REQUEST = "isOneWayRequest";
-    /**
-     * Default value is false.
-     */
-    public static final String USE_CACHES = "useCaches";
+public final class HttpHeaders {
     // ...
     public static final String ACCEPT = "Accept";
     public static final String ACCEPT_CHARSET = "Accept-Charset";
@@ -68,6 +56,10 @@ public class HttpHeaders implements Map<String, Object> {
     public static final String FROM = "From";
     public static final String HOST = "Host";
     public static final String SERVER = "Server";
+    /**
+     * Default value is false.
+     */
+    public static final String USE_CACHES = "useCaches";
     public static final String CACHE_CONTROL = "Cache-Control";
     // application/content type.
     /**
@@ -86,37 +78,68 @@ public class HttpHeaders implements Map<String, Object> {
 
     final Map<String, Object> map;
 
-    public HttpHeaders() {
-        this(new HashMap<String, Object>());
-    }
-
-    private HttpHeaders(Map<String, Object> map) {
-        this.map = map;
+    HttpHeaders() {
+        this.map = new HashMap<>();
     }
 
     public static HttpHeaders create() {
         return new HttpHeaders();
     }
 
-    @SafeVarargs
-    public static HttpHeaders of(Object... values) {
-        return new HttpHeaders(N.asProps(values));
-    }
-
-    public HttpHeaders setContentType(String contentType) {
-        map.put(HttpHeaders.CONTENT_TYPE, contentType);
+    public HttpHeaders setAcceptCharset(String acceptCharset) {
+        set(HttpHeaders.ACCEPT_CHARSET, acceptCharset);
 
         return this;
     }
 
-    public HttpHeaders setContentEncoding(String contentEncoding) {
-        map.put(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+    public HttpHeaders setAcceptEncoding(String acceptEncoding) {
+        set(HttpHeaders.ACCEPT_ENCODING, acceptEncoding);
+
+        return this;
+    }
+
+    public HttpHeaders setAcceptLanguage(String acceptLanguage) {
+        set(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
+
+        return this;
+    }
+
+    public HttpHeaders setAcceptRanges(String acceptRanges) {
+        set(HttpHeaders.ACCEPT_RANGES, acceptRanges);
+
+        return this;
+    }
+
+    public HttpHeaders setContentType(String contentType) {
+        //    if (hasHeader(HTTP.CONTENT_FORMAT)) {
+        //        throw new IllegalArgumentException("The parameter 'contentFormat' has already been set");
+        //    }
+
+        set(HttpHeaders.CONTENT_TYPE, contentType);
+
+        return this;
+    }
+
+    public HttpHeaders setContentEncoding(String acceptEncoding) {
+        set(HttpHeaders.CONTENT_ENCODING, acceptEncoding);
+
+        return this;
+    }
+
+    public HttpHeaders setContentLanguage(String acceptLanguage) {
+        set(HttpHeaders.CONTENT_LANGUAGE, acceptLanguage);
 
         return this;
     }
 
     public HttpHeaders setContentLength(long contentLength) {
-        map.put(HttpHeaders.CONTENT_LENGTH, contentLength);
+        set(HttpHeaders.CONTENT_LENGTH, contentLength);
+
+        return this;
+    }
+
+    public HttpHeaders setUserAgent(String userAgent) {
+        set(HttpHeaders.USER_AGENT, userAgent);
 
         return this;
     }
@@ -127,63 +150,44 @@ public class HttpHeaders implements Map<String, Object> {
         return this;
     }
 
-    @Override
-    public Object get(Object key) {
-        return map.get(key);
-    }
-
-    @Override
-    public Object put(String key, Object value) {
-        return map.put(key, value);
-    }
-
-    @Override
-    public void putAll(Map<? extends String, ? extends Object> m) {
+    public HttpHeaders setAll(Map<? extends String, ? extends Object> m) {
         map.putAll(m);
+
+        return this;
     }
 
-    @Override
-    public Object remove(Object key) {
-        return map.remove(key);
+    public Object get(String headerName) {
+        return map.get(headerName);
     }
 
-    @Override
-    public boolean containsKey(Object key) {
-        return map.containsKey(key);
+    public Object remove(String headerName) {
+        return map.remove(headerName);
     }
 
-    @Override
-    public boolean containsValue(Object value) {
-        return map.containsValue(value);
-    }
-
-    @Override
-    public Set<String> keySet() {
+    public Set<String> headerNameSet() {
         return map.keySet();
     }
 
-    @Override
-    public Collection<Object> values() {
-        return map.values();
-    }
-
-    @Override
-    public Set<java.util.Map.Entry<String, Object>> entrySet() {
-        return map.entrySet();
-    }
-
-    @Override
-    public int size() {
-        return map.size();
-    }
-
-    @Override
     public boolean isEmpty() {
         return map.isEmpty();
     }
 
+    public HttpHeaders copy() {
+        return new HttpHeaders().setAll(this.map);
+    }
+
     @Override
-    public void clear() {
-        map.clear();
+    public int hashCode() {
+        return map.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof HttpHeaders && this.map.equals(((HttpHeaders) obj).map);
+    }
+
+    @Override
+    public String toString() {
+        return map.toString();
     }
 }

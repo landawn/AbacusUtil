@@ -43,6 +43,12 @@ import com.landawn.abacus.util.ObjectPool;
  * @author Haiyang Li
  */
 final class HTTP {
+    public static final String SSL_SOCKET_FACTORY = "sslSocketFactory";
+    public static final String CONNECTION_TIMEOUT = "connectionTimeout";
+    public static final String READ_TIMEOUT = "readTimeout";
+    public static final String CONTENT_FORMAT = "contentFormat";
+    public static final String IS_ONE_WAY_REQUEST = "isOneWayRequest";
+
     static final String JSON = "json";
     static final String XML = "xml";
     static final String GZIP = "gzip";
@@ -52,8 +58,8 @@ final class HTTP {
     static final String URL_ENCODED = "urlencoded";
 
     // ...
-    static final Set<String> NON_HTTP_PROP_NAMES = ImmutableSet.of(HttpHeaders.SSL_SOCKET_FACTORY, HttpHeaders.CONNECTION_TIMEOUT, HttpHeaders.READ_TIMEOUT,
-            HttpHeaders.USE_CACHES, HttpHeaders.CONTENT_FORMAT, HttpHeaders.IS_ONE_WAY_REQUEST);
+    static final Set<String> NON_HTTP_PROP_NAMES = ImmutableSet.of(HTTP.SSL_SOCKET_FACTORY, HTTP.CONNECTION_TIMEOUT, HTTP.READ_TIMEOUT, HttpHeaders.USE_CACHES,
+            HTTP.CONTENT_FORMAT, HTTP.IS_ONE_WAY_REQUEST);
 
     static final JSONParser jsonParser = ParserFactory.createJSONParser();
     static final XMLParser xmlParser = ParserFactory.isXMLAvailable() ? ParserFactory.createXMLParser() : null;
