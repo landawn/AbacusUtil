@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.parser.DeserializationConfig;
 import com.landawn.abacus.parser.JSONParser;
 import com.landawn.abacus.parser.KryoParser;
@@ -42,7 +43,8 @@ import com.landawn.abacus.util.ObjectPool;
  * 
  * @author Haiyang Li
  */
-final class HTTP {
+@Internal
+public final class HTTP {
     public static final String SSL_SOCKET_FACTORY = "sslSocketFactory";
     public static final String CONNECTION_TIMEOUT = "connectionTimeout";
     public static final String READ_TIMEOUT = "readTimeout";

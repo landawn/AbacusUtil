@@ -252,6 +252,12 @@ public final class HttpClient extends AbstractHttpClient {
                 flush(os);
             }
 
+            final int code = connection.getResponseCode();
+
+            if ((code < 200 || code >= 300) && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
+                throw new RuntimeException(code + ": " + connection.getResponseMessage());
+            }
+
             final ContentFormat responseContentFormat = getContentFormat(connection);
             is = getInputStream(connection, responseContentFormat);
 
@@ -274,8 +280,8 @@ public final class HttpClient extends AbstractHttpClient {
                     return null;
                 } else {
                     if (resultClass != null && resultClass.equals(HttpResponse.class)) {
-                        return (T) new HttpResponse(connection.getResponseCode(), connection.getResponseMessage(), connection.getHeaderFields(),
-                                IOUtil.readString(is), responseContentFormat);
+                        return (T) new HttpResponse(code, connection.getResponseMessage(), connection.getHeaderFields(), IOUtil.readString(is),
+                                responseContentFormat);
                     } else {
                         final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
 

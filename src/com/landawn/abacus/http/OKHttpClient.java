@@ -331,7 +331,7 @@ public final class OKHttpClient extends AbstractHttpClient {
             httpRequest = requestBuilder.build();
             httpResponse = client.newCall(httpRequest).execute();
 
-            if (httpResponse.isSuccessful() == false) {
+            if (httpResponse.isSuccessful() == false && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
                 throw new RuntimeException(httpResponse.code() + ": " + httpResponse.message());
             }
 

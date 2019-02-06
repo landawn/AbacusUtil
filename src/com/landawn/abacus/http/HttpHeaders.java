@@ -168,6 +168,10 @@ public final class HttpHeaders {
         return map.keySet();
     }
 
+    public void clear() {
+        map.clear();
+    }
+
     public boolean isEmpty() {
         return map.isEmpty();
     }

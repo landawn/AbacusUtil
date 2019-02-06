@@ -162,7 +162,11 @@ public final class HttpSettings {
     }
 
     public HttpSettings headers(HttpHeaders headers) {
-        headers().setAll(headers.map);
+        if (headers == null) {
+            this.headers = headers;
+        } else {
+            headers().setAll(headers.map);
+        }
 
         return this;
     }
