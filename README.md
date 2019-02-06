@@ -44,7 +44,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Chain](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Chain_view.html), 
 [Hashing](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Hashing_view.html), 
 [Clazz](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Clazz_view.html), 
-[Base64](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Base64_view.html), 
 [Hex](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Hex_view.html), 
 [JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
 [CSVUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CSVUtil_view.html), 
@@ -55,7 +54,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [ContinuableFuture](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ContinuableFuture_view.html), 
 [Futures](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Futures_view.html), 
 [HttpClient](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/HttpClient_view.html), 
-[OkHttpClient](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OkHttpClient_view.html), 
+[OkHttpRequest](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OkHttpRequest_view.html), 
 [Profiler](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Profiler_view.html), 
 [CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html)...
 
