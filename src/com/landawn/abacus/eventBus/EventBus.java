@@ -29,7 +29,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -84,7 +86,7 @@ import com.landawn.abacus.util.ThreadMode;
 public class EventBus {
     private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
+    private static final ExecutorService executorService = new ThreadPoolExecutor(8, 32, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     private static final Map<Class<?>, List<SubIdentifier>> classMetaSubMap = new ConcurrentHashMap<>();
 

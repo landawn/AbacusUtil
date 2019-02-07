@@ -17,13 +17,22 @@ package com.landawn.abacus.http.okhttp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.http.ContentFormat;
 import com.landawn.abacus.http.HTTP;
 import com.landawn.abacus.http.HttpHeaders;
+import com.landawn.abacus.logging.Logger;
+import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 import okhttp3.CacheControl;
 import okhttp3.Headers;
@@ -41,6 +50,29 @@ import okhttp3.internal.Util;
  * @author Haiyang Li
  */
 public class OkHttpRequest {
+    private static final Logger logger = LoggerFactory.getLogger(OkHttpRequest.class);
+
+    private static final ExecutorService commonPool = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                logger.warn("Starting to shutdown task in ContinuableFuture");
+
+                try {
+                    commonPool.shutdown();
+
+                    while (commonPool.isTerminated() == false) {
+                        N.sleepUninterruptibly(100);
+                    }
+                } finally {
+                    logger.warn("Completed to shutdown task in ContinuableFuture");
+                }
+            }
+        });
+    }
+
     final OkHttpClient httpClient;
     final Request.Builder builder = new Request.Builder();
     RequestBody body;
@@ -170,20 +202,20 @@ public class OkHttpRequest {
         return execute(resultClass, "POST");
     }
 
-    public Response delete() throws IOException {
-        return execute("DELETE");
-    }
-
-    public <T> T delete(Class<T> resultClass) throws IOException {
-        return execute(resultClass, "DELETE");
-    }
-
     public Response put() throws IOException {
         return execute("PUT");
     }
 
     public <T> T put(Class<T> resultClass) throws IOException {
         return execute(resultClass, "PUT");
+    }
+
+    public Response delete() throws IOException {
+        return execute("DELETE");
+    }
+
+    public <T> T delete(Class<T> resultClass) throws IOException {
+        return execute(resultClass, "DELETE");
     }
 
     public Response head() throws IOException {
@@ -212,7 +244,9 @@ public class OkHttpRequest {
 
                 final Type<Object> type = N.typeOf(resultClass);
 
-                if (type.isSerializable()) {
+                if (byte[].class.equals(resultClass)) {
+                    return (T) IOUtil.readBytes(is);
+                } else if (type.isSerializable()) {
                     return (T) type.valueOf(IOUtil.readString(is));
                 } else {
                     return HTTP.getParser(responseContentFormat).deserialize(resultClass, is);
@@ -221,5 +255,145 @@ public class OkHttpRequest {
                 throw new IOException(resp.code() + ": " + resp.message());
             }
         }
+    }
+
+    public ContinuableFuture<Response> asyncGet() throws IOException {
+        return asyncGet(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncGet(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return get();
+            }
+
+        }, executor);
+    }
+
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass) throws IOException {
+        return asyncGet(resultClass, commonPool);
+    }
+
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<T, IOException>() {
+            @Override
+            public T call() throws IOException {
+                return get(resultClass);
+            }
+
+        }, executor);
+    }
+
+    public ContinuableFuture<Response> asyncPost() throws IOException {
+        return asyncPost(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncPost(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return post();
+            }
+
+        }, executor);
+    }
+
+    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass) throws IOException {
+        return asyncPost(resultClass, commonPool);
+    }
+
+    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass, final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<T, IOException>() {
+            @Override
+            public T call() throws IOException {
+                return post(resultClass);
+            }
+
+        }, executor);
+    }
+
+    public ContinuableFuture<Response> asyncPut() throws IOException {
+        return asyncPut(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncPut(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return put();
+            }
+
+        }, executor);
+    }
+
+    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass) throws IOException {
+        return asyncPut(resultClass, commonPool);
+    }
+
+    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass, final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<T, IOException>() {
+            @Override
+            public T call() throws IOException {
+                return put(resultClass);
+            }
+
+        }, executor);
+    }
+
+    public ContinuableFuture<Response> asyncDelete() throws IOException {
+        return asyncDelete(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncDelete(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return delete();
+            }
+
+        }, executor);
+    }
+
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass) throws IOException {
+        return asyncDelete(resultClass, commonPool);
+    }
+
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<T, IOException>() {
+            @Override
+            public T call() throws IOException {
+                return delete(resultClass);
+            }
+
+        }, executor);
+    }
+
+    public ContinuableFuture<Response> asyncHead() throws IOException {
+        return asyncHead(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncHead(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return head();
+            }
+
+        }, executor);
+    }
+
+    public ContinuableFuture<Response> asyncPatch() throws IOException {
+        return asyncPatch(commonPool);
+    }
+
+    public ContinuableFuture<Response> asyncPatch(final Executor executor) throws IOException {
+        return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
+            @Override
+            public Response call() throws IOException {
+                return patch();
+            }
+
+        }, executor);
     }
 }

@@ -19,9 +19,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -40,7 +41,7 @@ import com.landawn.abacus.util.Tuple.Tuple4;
 public class ContinuableFuture<T> implements Future<T> {
     private static final Logger logger = LoggerFactory.getLogger(ContinuableFuture.class);
 
-    private static final ExecutorService commonPool = Executors.newFixedThreadPool(64);
+    private static final ExecutorService commonPool = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {

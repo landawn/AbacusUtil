@@ -25,9 +25,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -64,7 +65,8 @@ public abstract class Observer<T> {
         }
     };
 
-    protected static final Executor asyncExecutor = Executors.newFixedThreadPool(IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 32);
+    protected static final Executor asyncExecutor = new ThreadPoolExecutor(IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 8,
+            IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 32, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 32);
 

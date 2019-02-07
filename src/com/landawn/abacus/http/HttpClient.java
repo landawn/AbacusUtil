@@ -287,6 +287,8 @@ public final class HttpClient extends AbstractHttpClient {
 
                         if (type == null) {
                             return (T) IOUtil.readString(is);
+                        } else if (byte[].class.equals(resultClass)) {
+                            return (T) IOUtil.readBytes(is);
                         } else if (type.isSerializable()) {
                             return (T) type.valueOf(IOUtil.readString(is));
                         } else {
