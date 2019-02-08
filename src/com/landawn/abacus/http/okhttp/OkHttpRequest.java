@@ -52,22 +52,22 @@ import okhttp3.internal.Util;
 public class OkHttpRequest {
     private static final Logger logger = LoggerFactory.getLogger(OkHttpRequest.class);
 
-    private static final ExecutorService commonPool = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+    private static final ExecutorService DEFAULT_EXECUTOR = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                logger.warn("Starting to shutdown task in ContinuableFuture");
+                logger.warn("Starting to shutdown task in OkHttpRequest");
 
                 try {
-                    commonPool.shutdown();
+                    DEFAULT_EXECUTOR.shutdown();
 
-                    while (commonPool.isTerminated() == false) {
+                    while (DEFAULT_EXECUTOR.isTerminated() == false) {
                         N.sleepUninterruptibly(100);
                     }
                 } finally {
-                    logger.warn("Completed to shutdown task in ContinuableFuture");
+                    logger.warn("Completed to shutdown task in OkHttpRequest");
                 }
             }
         });
@@ -258,7 +258,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncGet() throws IOException {
-        return asyncGet(commonPool);
+        return asyncGet(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncGet(final Executor executor) throws IOException {
@@ -272,7 +272,7 @@ public class OkHttpRequest {
     }
 
     public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass) throws IOException {
-        return asyncGet(resultClass, commonPool);
+        return asyncGet(resultClass, DEFAULT_EXECUTOR);
     }
 
     public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Executor executor) throws IOException {
@@ -286,7 +286,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncPost() throws IOException {
-        return asyncPost(commonPool);
+        return asyncPost(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncPost(final Executor executor) throws IOException {
@@ -300,7 +300,7 @@ public class OkHttpRequest {
     }
 
     public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass) throws IOException {
-        return asyncPost(resultClass, commonPool);
+        return asyncPost(resultClass, DEFAULT_EXECUTOR);
     }
 
     public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass, final Executor executor) throws IOException {
@@ -314,7 +314,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncPut() throws IOException {
-        return asyncPut(commonPool);
+        return asyncPut(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncPut(final Executor executor) throws IOException {
@@ -328,7 +328,7 @@ public class OkHttpRequest {
     }
 
     public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass) throws IOException {
-        return asyncPut(resultClass, commonPool);
+        return asyncPut(resultClass, DEFAULT_EXECUTOR);
     }
 
     public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass, final Executor executor) throws IOException {
@@ -342,7 +342,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncDelete() throws IOException {
-        return asyncDelete(commonPool);
+        return asyncDelete(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncDelete(final Executor executor) throws IOException {
@@ -356,7 +356,7 @@ public class OkHttpRequest {
     }
 
     public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass) throws IOException {
-        return asyncDelete(resultClass, commonPool);
+        return asyncDelete(resultClass, DEFAULT_EXECUTOR);
     }
 
     public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Executor executor) throws IOException {
@@ -370,7 +370,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncHead() throws IOException {
-        return asyncHead(commonPool);
+        return asyncHead(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncHead(final Executor executor) throws IOException {
@@ -384,7 +384,7 @@ public class OkHttpRequest {
     }
 
     public ContinuableFuture<Response> asyncPatch() throws IOException {
-        return asyncPatch(commonPool);
+        return asyncPatch(DEFAULT_EXECUTOR);
     }
 
     public ContinuableFuture<Response> asyncPatch(final Executor executor) throws IOException {

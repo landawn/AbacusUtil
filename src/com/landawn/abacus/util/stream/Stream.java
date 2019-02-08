@@ -1812,21 +1812,21 @@ public abstract class Stream<T>
     }
 
     public static Try<Stream<String>> of(final File file) {
-        return of(file, Charsets.DEFAULT);
+        return of(file, Charsets.UTF_8);
     }
 
     public static Try<Stream<String>> of(final File file, final Charset charset) {
-        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.DEFAULT : charset);
+        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
 
         return of(reader).onClose(newCloseHandle(reader)).tried();
     }
 
     public static Try<Stream<String>> of(final Path path) {
-        return of(path, Charsets.DEFAULT);
+        return of(path, Charsets.UTF_8);
     }
 
     public static Try<Stream<String>> of(final Path path, final Charset charset) {
-        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.DEFAULT : charset);
+        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
 
         return of(reader).onClose(new Runnable() {
             private boolean isClosed = false;

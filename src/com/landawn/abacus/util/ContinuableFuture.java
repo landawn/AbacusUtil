@@ -41,7 +41,7 @@ import com.landawn.abacus.util.Tuple.Tuple4;
 public class ContinuableFuture<T> implements Future<T> {
     private static final Logger logger = LoggerFactory.getLogger(ContinuableFuture.class);
 
-    private static final ExecutorService commonPool = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+    private static final ExecutorService DEFAULT_EXECUTOR = new ThreadPoolExecutor(8, 64, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -50,9 +50,9 @@ public class ContinuableFuture<T> implements Future<T> {
                 logger.warn("Starting to shutdown task in ContinuableFuture");
 
                 try {
-                    commonPool.shutdown();
+                    DEFAULT_EXECUTOR.shutdown();
 
-                    while (commonPool.isTerminated() == false) {
+                    while (DEFAULT_EXECUTOR.isTerminated() == false) {
                         N.sleepUninterruptibly(100);
                     }
                 } finally {
@@ -73,11 +73,11 @@ public class ContinuableFuture<T> implements Future<T> {
     ContinuableFuture(final Future<T> future, final List<ContinuableFuture<?>> upFutures, final Executor asyncExecutor) {
         this.future = future;
         this.upFutures = upFutures;
-        this.asyncExecutor = asyncExecutor == null ? commonPool : asyncExecutor;
+        this.asyncExecutor = asyncExecutor == null ? DEFAULT_EXECUTOR : asyncExecutor;
     }
 
     public static <E extends Exception> ContinuableFuture<Void> run(final Try.Runnable<E> action) {
-        return run(action, commonPool);
+        return run(action, DEFAULT_EXECUTOR);
     }
 
     public static <E extends Exception> ContinuableFuture<Void> run(final Try.Runnable<E> action, final Executor executor) {
@@ -95,7 +95,7 @@ public class ContinuableFuture<T> implements Future<T> {
     }
 
     public static <T, E extends Exception> ContinuableFuture<T> call(final Try.Callable<T, E> action) {
-        return call(action, commonPool);
+        return call(action, DEFAULT_EXECUTOR);
     }
 
     public static <T, E extends Exception> ContinuableFuture<T> call(final Try.Callable<T, E> action, final Executor executor) {
@@ -143,7 +143,7 @@ public class ContinuableFuture<T> implements Future<T> {
             public T get(final long timeout, final TimeUnit unit) {
                 return result;
             }
-        }, null, commonPool);
+        }, null, DEFAULT_EXECUTOR);
     }
 
     public static <T> ContinuableFuture<T> wrap(Future<T> future) {

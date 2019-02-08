@@ -98,8 +98,8 @@ public final class IOUtil {
                 deMethod.setAccessible(true);
 
                 char[] chars = "abc".toCharArray();
-                byte[] bytes = ClassUtil.invokeMethod(enMethod, Charsets.DEFAULT, chars, 1, 1);
-                char[] chars2 = ClassUtil.invokeMethod(deMethod, Charsets.DEFAULT, bytes, 0, bytes.length);
+                byte[] bytes = ClassUtil.invokeMethod(enMethod, Charsets.UTF_8, chars, 1, 1);
+                char[] chars2 = ClassUtil.invokeMethod(deMethod, Charsets.UTF_8, bytes, 0, bytes.length);
 
                 if (chars2.length == 1 && chars2[0] == 'b') {
                     encodeMethod = enMethod;
@@ -371,7 +371,7 @@ public final class IOUtil {
     }
 
     public static byte[] chars2Bytes(final char[] chars) {
-        return chars2Bytes(chars, Charsets.DEFAULT);
+        return chars2Bytes(chars, Charsets.UTF_8);
     }
 
     public static byte[] chars2Bytes(final char[] chars, final Charset charset) {
@@ -379,7 +379,7 @@ public final class IOUtil {
     }
 
     public static byte[] chars2Bytes(final char[] chars, final int offset, final int len, Charset charset) {
-        charset = charset == null ? Charsets.DEFAULT : charset;
+        charset = charset == null ? Charsets.UTF_8 : charset;
 
         if (stringEncodeMethod == null) {
             return new String(chars, offset, len).getBytes(charset);
@@ -389,7 +389,7 @@ public final class IOUtil {
     }
 
     public static char[] bytes2Chars(final byte[] bytes) {
-        return bytes2Chars(bytes, Charsets.DEFAULT);
+        return bytes2Chars(bytes, Charsets.UTF_8);
     }
 
     public static char[] bytes2Chars(final byte[] bytes, final Charset charset) {
@@ -397,7 +397,7 @@ public final class IOUtil {
     }
 
     public static char[] bytes2Chars(final byte bytes[], final int offset, final int len, Charset charset) {
-        charset = charset == null ? Charsets.DEFAULT : charset;
+        charset = charset == null ? Charsets.UTF_8 : charset;
 
         if (stringDecodeMethod == null) {
             return new String(bytes, offset, len, charset).toCharArray();
@@ -407,7 +407,7 @@ public final class IOUtil {
     }
 
     public static InputStream string2InputStream(final String str) {
-        return string2InputStream(str, Charsets.DEFAULT);
+        return string2InputStream(str, Charsets.UTF_8);
     }
 
     public static InputStream string2InputStream(final String str, Charset charset) {
@@ -415,7 +415,7 @@ public final class IOUtil {
             throw new IllegalArgumentException("The input String can't be null.");
         }
 
-        charset = charset == null ? Charsets.DEFAULT : charset;
+        charset = charset == null ? Charsets.UTF_8 : charset;
 
         return new ByteArrayInputStream(str.getBytes(charset));
     }
@@ -508,7 +508,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final long offset, final int maxLen) throws UncheckedIOException {
-        return readChars(file, 0, maxLen, Charsets.DEFAULT);
+        return readChars(file, 0, maxLen, Charsets.UTF_8);
     }
 
     public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
@@ -532,11 +532,11 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
-        return readChars(is, 0, maxLen, Charsets.DEFAULT);
+        return readChars(is, 0, maxLen, Charsets.UTF_8);
     }
 
     public static char[] readChars(final InputStream is, final long offset, final int maxLen, Charset encoding) throws UncheckedIOException {
-        encoding = encoding == null ? Charsets.DEFAULT : encoding;
+        encoding = encoding == null ? Charsets.UTF_8 : encoding;
 
         Reader reader = null;
 
@@ -608,7 +608,7 @@ public final class IOUtil {
     }
 
     public static String readString(final File file, final long offset, final int maxLen) throws UncheckedIOException {
-        return readString(file, offset, maxLen, Charsets.DEFAULT);
+        return readString(file, offset, maxLen, Charsets.UTF_8);
     }
 
     public static String readString(final File file, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
@@ -622,7 +622,7 @@ public final class IOUtil {
     }
 
     public static String readString(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
-        return readString(is, offset, maxLen, Charsets.DEFAULT);
+        return readString(is, offset, maxLen, Charsets.UTF_8);
     }
 
     public static String readString(final InputStream is, final long offset, final int maxLen, final Charset encoding) throws UncheckedIOException {
@@ -646,7 +646,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineIndex) throws UncheckedIOException {
-        return readLine(file, lineIndex, Charsets.DEFAULT);
+        return readLine(file, lineIndex, Charsets.UTF_8);
     }
 
     public static String readLine(final File file, final int lineIndex, final Charset encoding) throws UncheckedIOException {
@@ -670,7 +670,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final InputStream is, final int lineIndex) throws UncheckedIOException {
-        return readLine(is, lineIndex, Charsets.DEFAULT);
+        return readLine(is, lineIndex, Charsets.UTF_8);
     }
 
     public static String readLine(final InputStream is, final int lineIndex, final Charset encoding) throws UncheckedIOException {
@@ -707,7 +707,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count) throws UncheckedIOException {
-        return readLines(file, offset, count, Charsets.DEFAULT);
+        return readLines(file, offset, count, Charsets.UTF_8);
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) throws UncheckedIOException {
@@ -731,7 +731,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final InputStream is, final int offset, final int count) throws UncheckedIOException {
-        return readLines(is, offset, count, Charsets.DEFAULT);
+        return readLines(is, offset, count, Charsets.UTF_8);
     }
 
     public static List<String> readLines(final InputStream is, final int offset, final int count, final Charset encoding) throws UncheckedIOException {
@@ -739,7 +739,7 @@ public final class IOUtil {
     }
 
     private static InputStreamReader createReader(final InputStream is, final Charset encoding) throws UncheckedIOException {
-        return encoding == null ? new InputStreamReader(is, Charsets.DEFAULT) : new InputStreamReader(is, encoding);
+        return encoding == null ? new InputStreamReader(is, Charsets.UTF_8) : new InputStreamReader(is, encoding);
     }
 
     public static List<String> readLines(final Reader reader) throws UncheckedIOException {
@@ -780,7 +780,7 @@ public final class IOUtil {
      * @see #iterate(File, Charset)
      */
     public static LineIterator iterate(final File file) throws UncheckedIOException {
-        return iterate(file, Charsets.DEFAULT);
+        return iterate(file, Charsets.UTF_8);
     }
 
     /**
@@ -1330,11 +1330,11 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final CharSequence str) throws UncheckedIOException {
-        write(out, str, Charsets.DEFAULT);
+        write(out, str, Charsets.UTF_8);
     }
 
     public static void write(final File out, final CharSequence str, Charset charset) throws UncheckedIOException {
-        charset = charset == null ? Charsets.DEFAULT : charset;
+        charset = charset == null ? Charsets.UTF_8 : charset;
 
         write(out, chars2Bytes(toCharArray(str), charset));
     }
@@ -1348,11 +1348,11 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final CharSequence str, final boolean flush) throws UncheckedIOException {
-        write(out, str, Charsets.DEFAULT, flush);
+        write(out, str, Charsets.UTF_8, flush);
     }
 
     public static void write(final OutputStream out, final CharSequence str, Charset charset, final boolean flush) throws UncheckedIOException {
-        charset = charset == null ? Charsets.DEFAULT : charset;
+        charset = charset == null ? Charsets.UTF_8 : charset;
 
         try {
             out.write(chars2Bytes(toCharArray(str), charset));
@@ -1378,7 +1378,7 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
-        write(out, chars, offset, len, Charsets.DEFAULT);
+        write(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void write(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
@@ -1390,7 +1390,7 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
-        write(out, chars, offset, len, Charsets.DEFAULT);
+        write(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
@@ -1402,7 +1402,7 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final boolean flush) throws UncheckedIOException {
-        write(out, chars, offset, len, Charsets.DEFAULT, flush);
+        write(out, chars, offset, len, Charsets.UTF_8, flush);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset, final boolean flush)
@@ -1573,7 +1573,7 @@ public final class IOUtil {
     }
 
     public static long write(final File output, final Reader input) throws UncheckedIOException {
-        return write(output, input, Charsets.DEFAULT);
+        return write(output, input, Charsets.UTF_8);
     }
 
     public static long write(final File output, final Reader input, final Charset charset) throws UncheckedIOException {
@@ -1581,7 +1581,7 @@ public final class IOUtil {
     }
 
     public static long write(final File output, final Reader input, final long offset, final long len) throws UncheckedIOException {
-        return write(output, input, offset, len, Charsets.DEFAULT);
+        return write(output, input, offset, len, Charsets.UTF_8);
     }
 
     /**
@@ -1598,7 +1598,7 @@ public final class IOUtil {
         Writer writer = null;
 
         try {
-            writer = new OutputStreamWriter(new FileOutputStream(output), charset == null ? Charsets.DEFAULT : charset);
+            writer = new OutputStreamWriter(new FileOutputStream(output), charset == null ? Charsets.UTF_8 : charset);
 
             long result = write(writer, input, offset, len);
 
@@ -1802,7 +1802,7 @@ public final class IOUtil {
     }
 
     public static void append(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
-        append(out, chars, offset, len, Charsets.DEFAULT);
+        append(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void append(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
@@ -1810,7 +1810,7 @@ public final class IOUtil {
     }
 
     public static void append(File output, CharSequence str) throws UncheckedIOException {
-        append(output, str, Charsets.DEFAULT);
+        append(output, str, Charsets.UTF_8);
     }
 
     public static void append(File output, CharSequence str, Charset charset) throws UncheckedIOException {
@@ -1854,7 +1854,7 @@ public final class IOUtil {
     }
 
     public static long append(final File output, final Reader input) throws UncheckedIOException {
-        return append(output, input, Charsets.DEFAULT);
+        return append(output, input, Charsets.UTF_8);
     }
 
     public static long append(final File output, final Reader input, final Charset charset) throws UncheckedIOException {
@@ -1862,7 +1862,7 @@ public final class IOUtil {
     }
 
     public static long append(final File output, final Reader input, final long offset, final long len) throws UncheckedIOException {
-        return append(output, input, offset, len, Charsets.DEFAULT);
+        return append(output, input, offset, len, Charsets.UTF_8);
     }
 
     /**
@@ -1878,7 +1878,7 @@ public final class IOUtil {
         Writer writer = null;
 
         try {
-            writer = new OutputStreamWriter(new FileOutputStream(output, true), charset == null ? Charsets.DEFAULT : charset);
+            writer = new OutputStreamWriter(new FileOutputStream(output, true), charset == null ? Charsets.UTF_8 : charset);
 
             long result = write(writer, input, offset, len);
 
@@ -1914,7 +1914,7 @@ public final class IOUtil {
     }
 
     public static void appendLine(File output, CharSequence str) throws UncheckedIOException {
-        appendLine(output, str, Charsets.DEFAULT);
+        appendLine(output, str, Charsets.UTF_8);
     }
 
     public static void appendLine(File output, CharSequence str, Charset charset) throws UncheckedIOException {
@@ -2231,7 +2231,7 @@ public final class IOUtil {
 
     public static java.io.BufferedReader newBufferedReader(File file, Charset charset) throws UncheckedIOException {
         try {
-            return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.DEFAULT : charset));
+            return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.UTF_8 : charset));
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -2239,7 +2239,7 @@ public final class IOUtil {
 
     public static java.io.BufferedReader newBufferedReader(Path path) throws UncheckedIOException {
         try {
-            return Files.newBufferedReader(path, Charsets.DEFAULT);
+            return Files.newBufferedReader(path, Charsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -2258,7 +2258,7 @@ public final class IOUtil {
     }
 
     public static java.io.BufferedReader newBufferedReader(InputStream is, Charset charset) throws UncheckedIOException {
-        return new java.io.BufferedReader(new InputStreamReader(is, charset == null ? Charsets.DEFAULT : charset));
+        return new java.io.BufferedReader(new InputStreamReader(is, charset == null ? Charsets.UTF_8 : charset));
     }
 
     static java.io.BufferedWriter newBufferedWriter(String filePath) throws UncheckedIOException {
@@ -2275,7 +2275,7 @@ public final class IOUtil {
 
     public static java.io.BufferedWriter newBufferedWriter(File file, Charset charset) throws UncheckedIOException {
         try {
-            return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.DEFAULT : charset));
+            return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.UTF_8 : charset));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -2286,7 +2286,7 @@ public final class IOUtil {
     }
 
     public static java.io.BufferedWriter newBufferedWriter(OutputStream os, Charset charset) throws UncheckedIOException {
-        return new java.io.BufferedWriter(new OutputStreamWriter(os, charset == null ? Charsets.DEFAULT : charset));
+        return new java.io.BufferedWriter(new OutputStreamWriter(os, charset == null ? Charsets.UTF_8 : charset));
     }
 
     public static LZ4BlockInputStream newLZ4BlockInputStream(final InputStream is) throws UncheckedIOException {

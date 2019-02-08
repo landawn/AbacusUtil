@@ -267,13 +267,13 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public static Try<ExceptionalStream<String, IOException>> of(final File file) {
-        return of(file, Charsets.DEFAULT);
+        return of(file, Charsets.UTF_8);
     }
 
     public static Try<ExceptionalStream<String, IOException>> of(final File file, final Charset charset) {
         N.checkArgNotNull(file, "file");
 
-        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.DEFAULT : charset);
+        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
 
         return of(reader).onClose(new Try.Runnable<IOException>() {
             @Override
@@ -284,13 +284,13 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public static Try<ExceptionalStream<String, IOException>> of(final Path path) {
-        return of(path, Charsets.DEFAULT);
+        return of(path, Charsets.UTF_8);
     }
 
     public static Try<ExceptionalStream<String, IOException>> of(final Path path, final Charset charset) {
         N.checkArgNotNull(path, "path");
 
-        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.DEFAULT : charset);
+        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
 
         return of(reader).onClose(new Try.Runnable<IOException>() {
             @Override
