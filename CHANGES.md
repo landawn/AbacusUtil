@@ -1,3 +1,14 @@
+### 1.3.33
+ 
+* Refactoring `HttpClient/HttpRequest/OKHttpClient/HttpSettings/HttpHeaders`.
+
+* Replace `Charsets.DEFAULT` with `Charsets.UTF_8`.
+
+* Add `OkHttpRequest`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.32
  
 * Remove `Result.__()`.
