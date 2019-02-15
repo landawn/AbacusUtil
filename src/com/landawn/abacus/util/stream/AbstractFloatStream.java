@@ -67,6 +67,18 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new FloatPredicate() {
+            @Override
+            public boolean test(float value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public FloatStream flattMap(final FloatFunction<float[]> mapper) {
         return flatMap(new FloatFunction<FloatStream>() {
             @Override
@@ -294,143 +306,8 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public FloatMatrix toMatrix() {
-        return FloatMatrix.of(toArray());
-    }
-
-    @Override
-    public FloatStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new FloatPredicate() {
-            @Override
-            public boolean test(float value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
     public FloatStream top(int n) {
         return top(n, FLOAT_COMPARATOR);
-    }
-
-    @Override
-    public double sum() {
-        return summation().sum();
-    }
-
-    private KahanSummation summation() {
-        final KahanSummation summation = new KahanSummation();
-
-        final FloatConsumer action = new FloatConsumer() {
-            @Override
-            public void accept(float t) {
-                summation.add(t);
-            }
-        };
-
-        this.forEach(action);
-        return summation;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        return summation().average();
-    }
-
-    @Override
-    public OptionalFloat first() {
-        final FloatIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalFloat.of(iter.nextFloat()) : OptionalFloat.empty();
-    }
-
-    @Override
-    public OptionalFloat last() {
-        final FloatIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalFloat.empty();
-        }
-
-        float next = iter.nextFloat();
-
-        while (iter.hasNext()) {
-            next = iter.nextFloat();
-        }
-
-        return OptionalFloat.of(next);
-    }
-
-    @Override
-    public OptionalFloat onlyOne() throws DuplicatedResultException {
-        final FloatIterator iter = this.iteratorEx();
-
-        final OptionalFloat result = iter.hasNext() ? OptionalFloat.of(iter.nextFloat()) : OptionalFloat.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextFloat()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalFloat findFirstOrLast(Try.FloatPredicate<E> predicateForFirst,
-            Try.FloatPredicate<E> predicateForLast) throws E, E2 {
-        final FloatIteratorEx iter = iteratorEx();
-        MutableFloat last = null;
-        float next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextFloat();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalFloat.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableFloat.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalFloat.empty() : OptionalFloat.of(last.value());
     }
 
     @Override
@@ -906,56 +783,10 @@ abstract class AbstractFloatStream extends FloatStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Float>> percentiles() {
-        final float[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizze() {
-        final float[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
-        } else {
-            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final FloatIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextFloat());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalFloat, FloatStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalFloat, FloatStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -1014,5 +845,205 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public FloatStream cached() {
         return newStream(toArray(), sorted);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public FloatMatrix toMatrix() {
+        return FloatMatrix.of(toArray());
+    }
+
+    @Override
+    public double sum() {
+        try {
+            return summation().sum();
+        } finally {
+            close();
+        }
+    }
+
+    private KahanSummation summation() {
+        final KahanSummation summation = new KahanSummation();
+
+        final FloatConsumer action = new FloatConsumer() {
+            @Override
+            public void accept(float t) {
+                summation.add(t);
+            }
+        };
+
+        this.forEach(action);
+        return summation;
+    }
+
+    @Override
+    public OptionalDouble average() {
+        try {
+            return summation().average();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalFloat first() {
+        try {
+            final FloatIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalFloat.of(iter.nextFloat()) : OptionalFloat.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalFloat last() {
+        try {
+            final FloatIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalFloat.empty();
+            }
+
+            float next = iter.nextFloat();
+
+            while (iter.hasNext()) {
+                next = iter.nextFloat();
+            }
+
+            return OptionalFloat.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalFloat onlyOne() throws DuplicatedResultException {
+        try {
+            final FloatIterator iter = this.iteratorEx();
+
+            final OptionalFloat result = iter.hasNext() ? OptionalFloat.of(iter.nextFloat()) : OptionalFloat.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextFloat()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalFloat findFirstOrLast(Try.FloatPredicate<E> predicateForFirst,
+            Try.FloatPredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final FloatIteratorEx iter = iteratorEx();
+            MutableFloat last = null;
+            float next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextFloat();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalFloat.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableFloat.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalFloat.empty() : OptionalFloat.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Float>> percentiles() {
+        try {
+            final float[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeAndPercentiles() {
+        try {
+            final float[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
+            } else {
+                return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final FloatIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextFloat());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
     }
 }

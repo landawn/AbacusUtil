@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +51,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  */
 class IteratorCharStream extends AbstractCharStream {
-    final CharIteratorEx elements;
+    CharIteratorEx elements;
 
-    OptionalChar head;
-    CharStream tail;
+    //    OptionalChar head;
+    //    CharStream tail;
 
     //    CharStream head2;
     //    OptionalChar tail2;
@@ -299,7 +300,7 @@ class IteratorCharStream extends AbstractCharStream {
                     s = mapper.apply(elements.nextChar());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -334,8 +335,8 @@ class IteratorCharStream extends AbstractCharStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -366,7 +367,7 @@ class IteratorCharStream extends AbstractCharStream {
                     s = mapper.apply(elements.nextChar());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -401,8 +402,8 @@ class IteratorCharStream extends AbstractCharStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -433,7 +434,7 @@ class IteratorCharStream extends AbstractCharStream {
                     s = mapper.apply(elements.nextChar());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -468,8 +469,8 @@ class IteratorCharStream extends AbstractCharStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -633,6 +634,7 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public char nextChar() {
                 final char next = elements.nextChar();
+
                 action.accept(next);
                 return next;
             }
@@ -733,19 +735,31 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.CharConsumer<E> action) throws E {
-        while (elements.hasNext()) {
-            action.accept(elements.nextChar());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.nextChar());
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public char[] toArray() {
-        return elements.toArray();
+        try {
+            return elements.toArray();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public CharList toCharList() {
-        return elements.toList();
+        try {
+            return elements.toList();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -760,13 +774,17 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <C extends Collection<Character>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
+            while (elements.hasNext()) {
+                result.add(elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -776,13 +794,17 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
-        final Multiset<Character> result = supplier.get();
+        try {
+            final Multiset<Character> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
+            while (elements.hasNext()) {
+                result.add(elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -792,121 +814,145 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
-        final LongMultiset<Character> result = supplier.get();
+        try {
+            final LongMultiset<Character> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextChar());
+            while (elements.hasNext()) {
+                result.add(elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        char element = 0;
+        try {
+            final M result = mapFactory.get();
+            char element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextChar();
-            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            while (elements.hasNext()) {
+                element = elements.nextChar();
+                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Character> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        char element = 0;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Character> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
+            char element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextChar();
-            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+            while (elements.hasNext()) {
+                element = elements.nextChar();
+                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, element);
             }
 
-            downstreamAccumulator.accept(v, element);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public char reduce(char identity, CharBinaryOperator op) {
-        char result = identity;
+        try {
+            char result = identity;
 
-        while (elements.hasNext()) {
-            result = op.applyAsChar(result, elements.nextChar());
+            while (elements.hasNext()) {
+                result = op.applyAsChar(result, elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalChar reduce(CharBinaryOperator op) {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalChar.empty();
+            }
+
+            char result = elements.nextChar();
+
+            while (elements.hasNext()) {
+                result = op.applyAsChar(result, elements.nextChar());
+            }
+
+            return OptionalChar.of(result);
+        } finally {
+            close();
         }
-
-        char result = elements.nextChar();
-
-        while (elements.hasNext()) {
-            result = op.applyAsChar(result, elements.nextChar());
-        }
-
-        return OptionalChar.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.nextChar());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalChar head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return head;
-    }
-
-    @Override
-    public CharStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return tail;
-    }
+    //    @Override
+    //    public OptionalChar head() {
+    //        if (head == null) {
+    //            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return head;
+    //    }
+    //
+    //    @Override
+    //    public CharStream tail() {
+    //        if (tail == null) {
+    //            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return tail;
+    //    }
 
     //    @Override
     //    public CharStream headd() {
@@ -932,117 +978,149 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar min() {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            return OptionalChar.of(elements.nextChar());
-        }
-
-        char candidate = elements.nextChar();
-        char next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextChar();
-
-            if (next < candidate) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalChar.empty();
+            } else if (sorted) {
+                return OptionalChar.of(elements.nextChar());
             }
-        }
 
-        return OptionalChar.of(candidate);
-    }
-
-    @Override
-    public OptionalChar max() {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        } else if (sorted) {
+            char candidate = elements.nextChar();
             char next = 0;
 
             while (elements.hasNext()) {
                 next = elements.nextChar();
+
+                if (next < candidate) {
+                    candidate = next;
+                }
             }
 
-            return OptionalChar.of(next);
+            return OptionalChar.of(candidate);
+        } finally {
+            close();
         }
+    }
 
-        char candidate = elements.nextChar();
-        char next = 0;
+    @Override
+    public OptionalChar max() {
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalChar.empty();
+            } else if (sorted) {
+                char next = 0;
 
-        while (elements.hasNext()) {
-            next = elements.nextChar();
+                while (elements.hasNext()) {
+                    next = elements.nextChar();
+                }
 
-            if (next > candidate) {
-                candidate = next;
+                return OptionalChar.of(next);
             }
-        }
 
-        return OptionalChar.of(candidate);
+            char candidate = elements.nextChar();
+            char next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.nextChar();
+
+                if (next > candidate) {
+                    candidate = next;
+                }
+            }
+
+            return OptionalChar.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalChar kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalChar.empty();
+            }
+
+            final Optional<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
+
+            return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
+        } finally {
+            close();
         }
-
-        final Optional<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
-
-        return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }
 
     @Override
     public int sum() {
-        long result = 0;
+        try {
+            long result = 0;
 
-        while (elements.hasNext()) {
-            result += elements.nextChar();
+            while (elements.hasNext()) {
+                result += elements.nextChar();
+            }
+
+            return N.toIntExact(result);
+        } finally {
+            close();
         }
-
-        return N.toIntExact(result);
     }
 
     @Override
     public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            long sum = 0;
+            long count = 0;
+
+            while (elements.hasNext()) {
+                sum += elements.nextChar();
+                count++;
+            }
+
+            return OptionalDouble.of(((double) sum) / count);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-        long count = 0;
-
-        while (elements.hasNext()) {
-            sum += elements.nextChar();
-            count++;
-        }
-
-        return OptionalDouble.of(((double) sum) / count);
     }
 
     @Override
     public long count() {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public CharSummaryStatistics summarize() {
-        final CharSummaryStatistics result = new CharSummaryStatistics();
+        try {
+            final CharSummaryStatistics result = new CharSummaryStatistics();
 
-        while (elements.hasNext()) {
-            result.accept(elements.nextChar());
+            while (elements.hasNext()) {
+                result.accept(elements.nextChar());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextChar())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextChar())) {
+                    return true;
+                }
             }
+        } finally {
+            close();
         }
 
         return false;
@@ -1050,10 +1128,14 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextChar()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextChar()) == false) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1061,10 +1143,14 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextChar())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextChar())) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1072,12 +1158,16 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            char e = elements.nextChar();
+        try {
+            while (elements.hasNext()) {
+                char e = elements.nextChar();
 
-            if (predicate.test(e)) {
-                return OptionalChar.of(e);
+                if (predicate.test(e)) {
+                    return OptionalChar.of(e);
+                }
             }
+        } finally {
+            close();
         }
 
         return OptionalChar.empty();
@@ -1085,24 +1175,28 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalChar.empty();
-        }
-
-        boolean hasResult = false;
-        char e = 0;
-        char result = 0;
-
-        while (elements.hasNext()) {
-            e = elements.nextChar();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalChar.empty();
             }
-        }
 
-        return hasResult ? OptionalChar.of(result) : OptionalChar.empty();
+            boolean hasResult = false;
+            char e = 0;
+            char result = 0;
+
+            while (elements.hasNext()) {
+                e = elements.nextChar();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? OptionalChar.of(result) : OptionalChar.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1152,13 +1246,13 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new IteratorCharStream(elements, sorted, newCloseHandlers);
     }

@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -60,6 +60,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToShortFunction;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @see Stream
  */
@@ -259,23 +260,23 @@ public abstract class ShortStream
 
     public abstract <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalShort head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract ShortStream tail();
-
-    public abstract Pair<OptionalShort, ShortStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalShort head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract ShortStream tail();
+    //
+    //    public abstract Pair<OptionalShort, ShortStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -322,7 +323,7 @@ public abstract class ShortStream
 
     public abstract ShortSummaryStatistics summarize();
 
-    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizze();
+    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -345,6 +346,12 @@ public abstract class ShortStream
 
     public abstract Stream<Short> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
+    @SequentialOnly
     @Override
     public ShortIterator iterator() {
         return iteratorEx();
@@ -1219,12 +1226,6 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream merge(final ShortIterator a, final ShortIterator b, final ShortBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorShortStream(new ShortIteratorEx() {
             private short nextA = 0;
             private short nextB = 0;
@@ -1317,7 +1318,7 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream merge(final ShortStream a, final ShortStream b, final ShortStream c, final ShortBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1337,13 +1338,13 @@ public abstract class ShortStream
         }
 
         final Iterator<? extends ShortStream> iter = c.iterator();
-        ShortStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        ShortStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1366,21 +1367,24 @@ public abstract class ShortStream
     public static ShortStream parallelMerge(final Collection<? extends ShortStream> c, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends ShortStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends ShortStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<ShortIterator> queue = N.newLinkedList();
+        final Queue<ShortStream> queue = N.newLinkedList();
 
         for (ShortStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1391,9 +1395,9 @@ public abstract class ShortStream
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    ShortIterator a = null;
-                    ShortIterator b = null;
-                    ShortIterator c = null;
+                    ShortStream a = null;
+                    ShortStream b = null;
+                    ShortStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1408,7 +1412,7 @@ public abstract class ShortStream
                                 }
                             }
 
-                            c = ShortIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = ShortStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1421,13 +1425,14 @@ public abstract class ShortStream
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

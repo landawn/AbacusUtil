@@ -66,6 +66,18 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public DoubleStream flattMap(final DoubleFunction<double[]> mapper) {
         return flatMap(new DoubleFunction<DoubleStream>() {
             @Override
@@ -292,145 +304,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
         }, false);
     }
 
-    @Override
-    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+    //    @Override
+    //    public Pair<OptionalDouble, DoubleStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public DoubleMatrix toMatrix() {
-        return DoubleMatrix.of(toArray());
-    }
-
-    @Override
-    public DoubleStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new DoublePredicate() {
-            @Override
-            public boolean test(double value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
-    public DoubleStream top(int n) {
-        return top(n, DOUBLE_COMPARATOR);
-    }
-
-    @Override
-    public double sum() {
-        return summation().sum();
-    }
-
-    private KahanSummation summation() {
-        final KahanSummation summation = new KahanSummation();
-
-        final DoubleConsumer action = new DoubleConsumer() {
-            @Override
-            public void accept(double t) {
-                summation.add(t);
-            }
-        };
-
-        this.forEach(action);
-        return summation;
-    }
-
-    @Override
-    public OptionalDouble average() {
-        return summation().average();
-    }
-
-    @Override
-    public OptionalDouble first() {
-        final DoubleIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
-    }
-
-    @Override
-    public OptionalDouble last() {
-        final DoubleIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalDouble.empty();
-        }
-
-        double next = iter.nextDouble();
-
-        while (iter.hasNext()) {
-            next = iter.nextDouble();
-        }
-
-        return OptionalDouble.of(next);
-    }
-
-    @Override
-    public OptionalDouble onlyOne() throws DuplicatedResultException {
-        final DoubleIterator iter = this.iteratorEx();
-
-        final OptionalDouble result = iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextDouble()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalDouble findFirstOrLast(Try.DoublePredicate<E> predicateForFirst,
-            Try.DoublePredicate<E> predicateForLast) throws E, E2 {
-        final DoubleIteratorEx iter = iteratorEx();
-        MutableDouble last = null;
-        double next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextDouble();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalDouble.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableDouble.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalDouble.empty() : OptionalDouble.of(last.value());
-    }
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
 
     @Override
     public DoubleStream intersection(final Collection<?> c) {
@@ -906,63 +789,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Double>> percentiles() {
-        final double[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizze() {
-        final double[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
-        } else {
-            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final DoubleIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextDouble());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalDouble, DoubleStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
-    @Override
     public Stream<IndexedDouble> indexed() {
         final MutableLong idx = MutableLong.of(0);
 
@@ -1011,7 +837,225 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream top(int n) {
+        return top(n, DOUBLE_COMPARATOR);
+    }
+
+    @Override
     public DoubleStream cached() {
         return newStream(toArray(), sorted);
     }
+
+    @Override
+    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public DoubleMatrix toMatrix() {
+        return DoubleMatrix.of(toArray());
+    }
+
+    @Override
+    public double sum() {
+        try {
+            return summation().sum();
+        } finally {
+            close();
+        }
+    }
+
+    private KahanSummation summation() {
+        final KahanSummation summation = new KahanSummation();
+
+        final DoubleConsumer action = new DoubleConsumer() {
+            @Override
+            public void accept(double t) {
+                summation.add(t);
+            }
+        };
+
+        this.forEach(action);
+        return summation;
+    }
+
+    @Override
+    public OptionalDouble average() {
+        try {
+            return summation().average();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalDouble first() {
+        try {
+            final DoubleIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalDouble last() {
+        try {
+            final DoubleIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            double next = iter.nextDouble();
+
+            while (iter.hasNext()) {
+                next = iter.nextDouble();
+            }
+
+            return OptionalDouble.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalDouble onlyOne() throws DuplicatedResultException {
+        try {
+            final DoubleIterator iter = this.iteratorEx();
+
+            final OptionalDouble result = iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextDouble()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalDouble findFirstOrLast(Try.DoublePredicate<E> predicateForFirst,
+            Try.DoublePredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final DoubleIteratorEx iter = iteratorEx();
+            MutableDouble last = null;
+            double next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextDouble();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalDouble.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableDouble.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalDouble.empty() : OptionalDouble.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Double>> percentiles() {
+        try {
+            final double[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+
+    }
+
+    @Override
+    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeAndPercentiles() {
+        try {
+            final double[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
+            } else {
+                return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final DoubleIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextDouble());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
+    }
+
+    //    @Override
+    //    public Pair<OptionalDouble, DoubleStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
+
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
+
 }

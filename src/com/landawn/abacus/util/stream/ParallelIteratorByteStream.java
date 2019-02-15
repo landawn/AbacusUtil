@@ -16,9 +16,9 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -71,12 +71,12 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     ParallelIteratorByteStream(final ByteStream stream, final boolean sorted, final int maxThreadNum, final Splitor splitor, final AsyncExecutor asyncExector,
-            final Set<Runnable> closeHandlers) {
+            final Deque<Runnable> closeHandlers) {
         this(stream.iteratorEx(), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
     ParallelIteratorByteStream(final Stream<Byte> stream, final boolean sorted, final int maxThreadNum, final Splitor splitor, final AsyncExecutor asyncExector,
-            final Set<Runnable> closeHandlers) {
+            final Deque<Runnable> closeHandlers) {
         this(byteIterator(stream.iteratorEx()), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
@@ -271,7 +271,12 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
+
     }
 
     @Override
@@ -353,6 +358,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -366,8 +372,10 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     result = op.applyAsByte(result, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? identity : result;
@@ -420,6 +428,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -437,8 +446,10 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     result = accumulator.applyAsByte(result, tmp);
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? OptionalByte.empty() : OptionalByte.of(result);
@@ -482,6 +493,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -495,8 +507,10 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return container == NONE ? supplier.get() : container;
@@ -540,7 +554,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -583,7 +601,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -626,7 +648,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -676,7 +702,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -724,7 +754,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -772,7 +806,11 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == NONE ? OptionalByte.empty() : OptionalByte.of((Byte) resultHolder.value());
     }
@@ -869,13 +907,13 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
 
     @Override
     public ByteStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, asyncExecutor, newCloseHandlers);
     }

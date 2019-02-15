@@ -23,9 +23,11 @@ import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @since 1.3
  * 
@@ -70,15 +73,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     private final ExceptionalIterator<T, E> elements;
     private final boolean sorted;
     private final Comparator<? super T> comparator;
-    private final Set<Try.Runnable<? extends E>> closeHandlers;
+    private final Deque<Try.Runnable<? extends E>> closeHandlers;
     private boolean isClosed = false;
 
-    ExceptionalStream(final ExceptionalIterator<T, E> iter, final Set<Try.Runnable<? extends E>> closeHandlers) {
+    ExceptionalStream(final ExceptionalIterator<T, E> iter, final Deque<Try.Runnable<? extends E>> closeHandlers) {
         this(iter, false, null, closeHandlers);
     }
 
     ExceptionalStream(final ExceptionalIterator<T, E> iter, final boolean sorted, final Comparator<? super T> comparator,
-            final Set<Try.Runnable<? extends E>> closeHandlers) {
+            final Deque<Try.Runnable<? extends E>> closeHandlers) {
         this.elements = iter;
         this.sorted = sorted;
         this.comparator = comparator;
@@ -193,17 +196,22 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         final ExceptionalIterator<T, E> iter = new ExceptionalIterator<T, E>() {
             private Stream<? extends T> s = stream;
             private Iterator<? extends T> iter = null;
+            private boolean isInitialized = false;
 
             @Override
             public boolean hasNext() throws E {
-                init();
+                if (isInitialized == false) {
+                    init();
+                }
 
                 return iter.hasNext();
             }
 
             @Override
             public T next() throws E {
-                init();
+                if (isInitialized == false) {
+                    init();
+                }
 
                 return iter.next();
             }
@@ -232,7 +240,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             private void init() {
-                if (iter == null) {
+                if (isInitialized == false) {
+                    isInitialized = true;
                     iter = stream.iterator();
                 }
             }
@@ -264,371 +273,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public static <T, E extends Exception> ExceptionalStream<T, E> of(final Stream<? extends T> stream, final Class<E> exceptionType) {
         return of(stream);
-    }
-
-    public static Try<ExceptionalStream<String, IOException>> of(final File file) {
-        return of(file, Charsets.UTF_8);
-    }
-
-    public static Try<ExceptionalStream<String, IOException>> of(final File file, final Charset charset) {
-        N.checkArgNotNull(file, "file");
-
-        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
-
-        return of(reader).onClose(new Try.Runnable<IOException>() {
-            @Override
-            public void run() throws IOException {
-                reader.close();
-            }
-        }).tried();
-    }
-
-    public static Try<ExceptionalStream<String, IOException>> of(final Path path) {
-        return of(path, Charsets.UTF_8);
-    }
-
-    public static Try<ExceptionalStream<String, IOException>> of(final Path path, final Charset charset) {
-        N.checkArgNotNull(path, "path");
-
-        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
-
-        return of(reader).onClose(new Try.Runnable<IOException>() {
-            @Override
-            public void run() throws IOException {
-                reader.close();
-            }
-        }).tried();
-    }
-
-    public static ExceptionalStream<String, IOException> of(final Reader reader) {
-        N.checkArgNotNull(reader, "reader");
-
-        return newStream(new ExceptionalIterator<String, IOException>() {
-            private final BufferedReader bufferedReader = reader instanceof BufferedReader ? ((BufferedReader) reader) : new BufferedReader(reader);
-            private String cachedLine;
-            private boolean finished = false;
-
-            @Override
-            public boolean hasNext() throws IOException {
-                if (this.cachedLine != null) {
-                    return true;
-                } else if (this.finished) {
-                    return false;
-                } else {
-                    this.cachedLine = this.bufferedReader.readLine();
-                    if (this.cachedLine == null) {
-                        this.finished = true;
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            }
-
-            @Override
-            public String next() throws IOException {
-                if (!this.hasNext()) {
-                    throw new NoSuchElementException("No more lines");
-                } else {
-                    String res = this.cachedLine;
-                    this.cachedLine = null;
-                    return res;
-                }
-            }
-        });
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @return
-     */
-    public static ExceptionalStream<Object[], SQLException> of(final ResultSet resultSet) {
-        return of(Object[].class, resultSet);
-    }
-
-    public static Try<ExceptionalStream<Object[], SQLException>> of(final ResultSet resultSet, final boolean closeResultSet) {
-        return of(Object[].class, resultSet, closeResultSet);
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param targetClass Array/List/Map or Entity with getter/setter methods.
-     * @param resultSet
-     * @return
-     */
-    public static <T> ExceptionalStream<T, SQLException> of(final Class<T> targetClass, final ResultSet resultSet) {
-        N.checkArgNotNull(targetClass, "targetClass");
-        N.checkArgNotNull(resultSet, "resultSet");
-
-        final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
-            private final BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
-
-            @Override
-            public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
-                return biRecordGetter.apply(resultSet, columnLabels);
-            }
-        };
-
-        return of(resultSet, recordGetter);
-    }
-
-    /**
-     * 
-     * @param targetClass Array/List/Map or Entity with getter/setter methods.
-     * @param resultSet
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<ExceptionalStream<T, SQLException>> of(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
-        N.checkArgNotNull(targetClass, "targetClass");
-        N.checkArgNotNull(resultSet, "resultSet");
-
-        if (closeResultSet) {
-            return of(targetClass, resultSet).onClose(new Try.Runnable<SQLException>() {
-                @Override
-                public void run() throws SQLException {
-                    JdbcUtil.closeQuietly(resultSet);
-                }
-            }).tried();
-        } else {
-            return of(targetClass, resultSet).tried();
-        }
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param recordGetter
-     * @return
-     */
-    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(recordGetter, "recordGetter");
-
-        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-            private boolean hasNext;
-
-            @Override
-            public boolean hasNext() throws SQLException {
-                if (hasNext == false) {
-                    hasNext = resultSet.next();
-                }
-
-                return hasNext;
-            }
-
-            @Override
-            public T next() throws SQLException {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                hasNext = false;
-
-                return recordGetter.apply(resultSet);
-            }
-
-            @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
-
-                final long m = hasNext ? n - 1 : n;
-
-                JdbcUtil.skip(resultSet, m);
-
-                hasNext = false;
-            }
-        };
-
-        return newStream(iter);
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param recordGetter
-     * @return
-     */
-    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(recordGetter, "recordGetter");
-
-        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-            private List<String> columnLabels = null;
-            private boolean hasNext;
-
-            @Override
-            public boolean hasNext() throws SQLException {
-                if (hasNext == false) {
-                    hasNext = resultSet.next();
-                }
-
-                return hasNext;
-            }
-
-            @Override
-            public T next() throws SQLException {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                hasNext = false;
-
-                if (columnLabels == null) {
-                    columnLabels = JdbcUtil.getColumnLabelList(resultSet);
-                }
-
-                return recordGetter.apply(resultSet, columnLabels);
-            }
-
-            @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
-
-                final long m = hasNext ? n - 1 : n;
-
-                JdbcUtil.skip(resultSet, m);
-
-                hasNext = false;
-            }
-        };
-
-        return newStream(iter);
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param columnIndex starts from 0, not 1.
-     * @return
-     */
-    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet, final int columnIndex) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNegative(columnIndex, "columnIndex");
-
-        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-            private final int newColumnIndex = columnIndex + 1;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() throws SQLException {
-                if (hasNext == false) {
-                    hasNext = resultSet.next();
-                }
-
-                return hasNext;
-            }
-
-            @Override
-            public T next() throws SQLException {
-                if (!hasNext()) {
-                    throw new NoSuchElementException("No more rows");
-                }
-
-                final T next = (T) JdbcUtil.getColumnValue(resultSet, newColumnIndex);
-                hasNext = false;
-                return next;
-            }
-
-            @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
-
-                final long m = hasNext ? n - 1 : n;
-
-                JdbcUtil.skip(resultSet, m);
-
-                hasNext = false;
-            }
-        };
-
-        return newStream(iter);
-    }
-
-    /**
-     * 
-     * @param resultSet
-     * @param columnIndex starts from 0, not 1.
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<ExceptionalStream<T, SQLException>> of(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNegative(columnIndex, "columnIndex");
-
-        if (closeResultSet) {
-            return ((ExceptionalStream<T, SQLException>) of(resultSet, columnIndex)).onClose(new Try.Runnable<SQLException>() {
-                @Override
-                public void run() throws SQLException {
-                    JdbcUtil.closeQuietly(resultSet);
-                }
-            }).tried();
-        } else {
-            return ((ExceptionalStream<T, SQLException>) of(resultSet, columnIndex)).tried();
-        }
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
-     * 
-     * @param resultSet
-     * @param columnName
-     * @return
-     */
-    public static <T> ExceptionalStream<T, SQLException> of(final ResultSet resultSet, final String columnName) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(columnName, "columnName");
-
-        return of(resultSet, getColumnIndex(resultSet, columnName));
-    }
-
-    /**
-     * 
-     * @param resultSet
-     * @param columnName
-     * @param closeResultSet
-     * @return
-     */
-    public static <T> Try<ExceptionalStream<T, SQLException>> of(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
-        N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(columnName, "columnName");
-
-        return of(resultSet, getColumnIndex(resultSet, columnName), closeResultSet);
-    }
-
-    private static int getColumnIndex(final ResultSet resultSet, final String columnName) {
-        int columnIndex = -1;
-
-        try {
-            final ResultSetMetaData rsmd = resultSet.getMetaData();
-            final int columnCount = rsmd.getColumnCount();
-
-            for (int i = 1; i <= columnCount; i++) {
-                if (JdbcUtil.getColumnLabel(rsmd, i).equals(columnName)) {
-                    columnIndex = i - 1;
-                    break;
-                }
-            }
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        }
-
-        N.checkArgument(columnIndex >= 0, "No column found by name %s", columnName);
-
-        return columnIndex;
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final Try.BooleanSupplier<? extends E> hasNext, final Supplier<? extends T> next) {
@@ -746,6 +390,405 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return t = t == NONE ? seed : f.apply(t);
             }
         });
+    }
+
+    public static ExceptionalStream<String, IOException> lines(final File file) {
+        return lines(file, Charsets.UTF_8);
+    }
+
+    public static ExceptionalStream<String, IOException> lines(final File file, final Charset charset) {
+        N.checkArgNotNull(file, "file");
+
+        final ExceptionalIterator<String, IOException> iter = createLazyLineIterator(file, null, charset, null, true);
+
+        return newStream(iter).onClose(new Try.Runnable<IOException>() {
+            @Override
+            public void run() throws IOException {
+                iter.close();
+            }
+        });
+    }
+
+    public static ExceptionalStream<String, IOException> lines(final Path path) {
+        return lines(path, Charsets.UTF_8);
+    }
+
+    public static ExceptionalStream<String, IOException> lines(final Path path, final Charset charset) {
+        N.checkArgNotNull(path, "path");
+
+        final ExceptionalIterator<String, IOException> iter = createLazyLineIterator(null, path, charset, null, true);
+
+        return newStream(iter).onClose(new Try.Runnable<IOException>() {
+            @Override
+            public void run() throws IOException {
+                iter.close();
+            }
+        });
+    }
+
+    public static ExceptionalStream<String, IOException> lines(final Reader reader) {
+        N.checkArgNotNull(reader, "reader");
+
+        return newStream(createLazyLineIterator(null, null, Charsets.UTF_8, reader, false));
+    }
+
+    private static ExceptionalIterator<String, IOException> createLazyLineIterator(final File file, final Path path, final Charset charset, final Reader reader,
+            final boolean closeReader) {
+        return ExceptionalIterator.of(new Try.Supplier<ExceptionalIterator<String, IOException>, IOException>() {
+            private ExceptionalIterator<String, IOException> lazyIter = null;
+
+            @Override
+            public synchronized ExceptionalIterator<String, IOException> get() {
+                if (lazyIter == null) {
+                    lazyIter = new ExceptionalIterator<String, IOException>() {
+                        private BufferedReader bufferedReader;
+
+                        {
+                            if (reader != null) {
+                                bufferedReader = reader instanceof BufferedReader ? ((BufferedReader) reader) : new BufferedReader(reader);
+                            } else if (file != null) {
+                                bufferedReader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
+                            } else {
+                                bufferedReader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
+                            }
+                        }
+
+                        private String cachedLine;
+                        private boolean finished = false;
+
+                        @Override
+                        public boolean hasNext() throws IOException {
+                            if (this.cachedLine != null) {
+                                return true;
+                            } else if (this.finished) {
+                                return false;
+                            } else {
+                                this.cachedLine = this.bufferedReader.readLine();
+                                if (this.cachedLine == null) {
+                                    this.finished = true;
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            }
+                        }
+
+                        @Override
+                        public String next() throws IOException {
+                            if (!this.hasNext()) {
+                                throw new NoSuchElementException("No more lines");
+                            } else {
+                                String res = this.cachedLine;
+                                this.cachedLine = null;
+                                return res;
+                            }
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+                            if (closeReader) {
+                                IOUtil.close(reader);
+                            }
+                        }
+                    };
+                }
+
+                return lazyIter;
+            }
+        });
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @return
+     */
+    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet) {
+        return rows(Object[].class, resultSet);
+    }
+
+    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
+        return rows(Object[].class, resultSet, closeResultSet);
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
+     * @param resultSet
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet) {
+        N.checkArgNotNull(targetClass, "targetClass");
+        N.checkArgNotNull(resultSet, "resultSet");
+
+        final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
+            private final BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
+
+            @Override
+            public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
+                return biRecordGetter.apply(resultSet, columnLabels);
+            }
+        };
+
+        return rows(resultSet, recordGetter);
+    }
+
+    /**
+     * 
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
+     * @param resultSet
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
+        N.checkArgNotNull(targetClass, "targetClass");
+        N.checkArgNotNull(resultSet, "resultSet");
+
+        if (closeResultSet) {
+            return rows(targetClass, resultSet).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    JdbcUtil.closeQuietly(resultSet);
+                }
+            });
+        } else {
+            return rows(targetClass, resultSet);
+        }
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param recordGetter
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(recordGetter, "recordGetter");
+
+        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
+            private boolean hasNext;
+
+            @Override
+            public boolean hasNext() throws SQLException {
+                if (hasNext == false) {
+                    hasNext = resultSet.next();
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() throws SQLException {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                return recordGetter.apply(resultSet);
+            }
+
+            @Override
+            public void skip(final long n) throws SQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                JdbcUtil.skip(resultSet, m);
+
+                hasNext = false;
+            }
+        };
+
+        return newStream(iter);
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param recordGetter
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet,
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(recordGetter, "recordGetter");
+
+        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
+            private List<String> columnLabels = null;
+            private boolean hasNext;
+
+            @Override
+            public boolean hasNext() throws SQLException {
+                if (hasNext == false) {
+                    hasNext = resultSet.next();
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() throws SQLException {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                if (columnLabels == null) {
+                    columnLabels = JdbcUtil.getColumnLabelList(resultSet);
+                }
+
+                return recordGetter.apply(resultSet, columnLabels);
+            }
+
+            @Override
+            public void skip(final long n) throws SQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                JdbcUtil.skip(resultSet, m);
+
+                hasNext = false;
+            }
+        };
+
+        return newStream(iter);
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnIndex starts from 0, not 1.
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNegative(columnIndex, "columnIndex");
+
+        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
+            private final int newColumnIndex = columnIndex + 1;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() throws SQLException {
+                if (hasNext == false) {
+                    hasNext = resultSet.next();
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() throws SQLException {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("No more rows");
+                }
+
+                final T next = (T) JdbcUtil.getColumnValue(resultSet, newColumnIndex);
+                hasNext = false;
+                return next;
+            }
+
+            @Override
+            public void skip(final long n) throws SQLException {
+                if (n <= 0) {
+                    return;
+                }
+
+                final long m = hasNext ? n - 1 : n;
+
+                JdbcUtil.skip(resultSet, m);
+
+                hasNext = false;
+            }
+        };
+
+        return newStream(iter);
+    }
+
+    /**
+     * 
+     * @param resultSet
+     * @param columnIndex starts from 0, not 1.
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNegative(columnIndex, "columnIndex");
+
+        if (closeResultSet) {
+            return (ExceptionalStream<T, SQLException>) rows(resultSet, columnIndex).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    JdbcUtil.closeQuietly(resultSet);
+                }
+            });
+        } else {
+            return rows(resultSet, columnIndex);
+        }
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnName
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(columnName, "columnName");
+
+        return rows(resultSet, getColumnIndex(resultSet, columnName));
+    }
+
+    /**
+     * 
+     * @param resultSet
+     * @param columnName
+     * @param closeResultSet
+     * @return
+     */
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
+        N.checkArgNotNull(resultSet, "resultSet");
+        N.checkArgNotNull(columnName, "columnName");
+
+        return rows(resultSet, getColumnIndex(resultSet, columnName), closeResultSet);
+    }
+
+    private static int getColumnIndex(final ResultSet resultSet, final String columnName) {
+        int columnIndex = -1;
+
+        try {
+            final ResultSetMetaData rsmd = resultSet.getMetaData();
+            final int columnCount = rsmd.getColumnCount();
+
+            for (int i = 1; i <= columnCount; i++) {
+                if (JdbcUtil.getColumnLabel(rsmd, i).equals(columnName)) {
+                    columnIndex = i - 1;
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        }
+
+        N.checkArgument(columnIndex >= 0, "No column found by name %s", columnName);
+
+        return columnIndex;
     }
 
     public ExceptionalStream<T, E> filter(final Try.Predicate<? super T, ? extends E> predicate) {
@@ -967,8 +1010,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
         };
 
-        final Set<Try.Runnable<? extends E>> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new HashSet<Try.Runnable<? extends E>>(1)
-                : new HashSet<Try.Runnable<? extends E>>(closeHandlers);
+        final Deque<Try.Runnable<? extends E>> newCloseHandlers = new ArrayDeque<>(N.size(closeHandlers) + 1);
 
         newCloseHandlers.add(new Try.Runnable<E>() {
             @Override
@@ -976,6 +1018,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 iter.close();
             }
         });
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            newCloseHandlers.addAll(closeHandlers);
+        }
 
         return newStream(iter, newCloseHandlers);
     }
@@ -1516,30 +1562,38 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public void forEach(Try.Consumer<? super T, ? extends E> action) throws E {
         N.checkArgNotNull(action, "action");
 
-        while (elements.hasNext()) {
-            action.accept(elements.next());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.next());
+            }
+        } finally {
+            close();
         }
     }
 
     public Optional<T> min(Comparator<? super T> comparator) throws E {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(comparator, comparator)) {
-            return Optional.of(elements.next());
-        }
-
-        comparator = comparator == null ? Comparators.NATURAL_ORDER : comparator;
-        T candidate = elements.next();
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-            if (comparator.compare(next, candidate) < 0) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(comparator, comparator)) {
+                return Optional.of(elements.next());
             }
-        }
 
-        return Optional.of(candidate);
+            comparator = comparator == null ? Comparators.NATURAL_ORDER : comparator;
+            T candidate = elements.next();
+            T next = null;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+                if (comparator.compare(next, candidate) < 0) {
+                    candidate = next;
+                }
+            }
+
+            return Optional.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -1547,37 +1601,45 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
 
-        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+        try {
+            final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
-        return min(comparator);
+            return min(comparator);
+        } finally {
+            close();
+        }
     }
 
     public Optional<T> max(Comparator<? super T> comparator) throws E {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(comparator, comparator)) {
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(comparator, comparator)) {
+                T next = null;
+
+                while (elements.hasNext()) {
+                    next = elements.next();
+                }
+
+                return Optional.of(next);
+            }
+
+            comparator = comparator == null ? Comparators.NATURAL_ORDER : comparator;
+            T candidate = elements.next();
             T next = null;
 
             while (elements.hasNext()) {
                 next = elements.next();
+
+                if (comparator.compare(next, candidate) > 0) {
+                    candidate = next;
+                }
             }
 
-            return Optional.of(next);
+            return Optional.of(candidate);
+        } finally {
+            close();
         }
-
-        comparator = comparator == null ? Comparators.NATURAL_ORDER : comparator;
-        T candidate = elements.next();
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-
-            if (comparator.compare(next, candidate) > 0) {
-                candidate = next;
-            }
-        }
-
-        return Optional.of(candidate);
     }
 
     @SuppressWarnings("rawtypes")
@@ -1585,148 +1647,200 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
 
-        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+        try {
+            final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
-        return max(comparator);
+            return max(comparator);
+        } finally {
+            close();
+        }
     }
 
     public boolean anyMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
 
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next())) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } finally {
+            close();
+        }
     }
 
     public boolean allMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
 
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next()) == false) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     public boolean noneMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
 
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next())) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     public Optional<T> findFirst(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
 
-        while (elements.hasNext()) {
-            T e = elements.next();
+        try {
+            while (elements.hasNext()) {
+                T e = elements.next();
 
-            if (predicate.test(e)) {
-                return Optional.of(e);
+                if (predicate.test(e)) {
+                    return Optional.of(e);
+                }
             }
-        }
 
-        return (Optional<T>) Optional.empty();
+            return (Optional<T>) Optional.empty();
+        } finally {
+            close();
+        }
     }
 
     public Optional<T> findLast(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
 
-        if (elements.hasNext() == false) {
-            return (Optional<T>) Optional.empty();
-        }
-
-        boolean hasResult = false;
-        T e = null;
-        T result = null;
-
-        while (elements.hasNext()) {
-            e = elements.next();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return (Optional<T>) Optional.empty();
             }
-        }
 
-        return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
+            boolean hasResult = false;
+            T e = null;
+            T result = null;
+
+            while (elements.hasNext()) {
+                e = elements.next();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
+        } finally {
+            close();
+        }
     }
 
     public Optional<T> first() throws E {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            }
 
-        return Optional.of(elements.next());
+            return Optional.of(elements.next());
+        } finally {
+            close();
+        }
     }
 
     public Optional<T> last() throws E {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            }
+
+            T next = elements.next();
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return Optional.of(next);
+        } finally {
+            close();
         }
-
-        T next = elements.next();
-
-        while (elements.hasNext()) {
-            next = elements.next();
-        }
-
-        return Optional.of(next);
     }
 
     public Object[] toArray() throws E {
-        return toList().toArray();
+        try {
+            return toList().toArray();
+        } finally {
+            close();
+        }
     }
 
     public <A> A[] toArray(IntFunction<A[]> generator) throws E {
         N.checkArgNotNull(generator, "generator");
 
-        final List<T> list = toList();
+        try {
+            final List<T> list = toList();
 
-        return list.toArray(generator.apply(list.size()));
+            return list.toArray(generator.apply(list.size()));
+        } finally {
+            close();
+        }
     }
 
     public List<T> toList() throws E {
-        final List<T> result = new ArrayList<>();
+        try {
+            final List<T> result = new ArrayList<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     public Set<T> toSet() throws E {
-        final Set<T> result = new HashSet<>();
+        try {
+            final Set<T> result = new HashSet<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     public <C extends Collection<T>> C toCollection(final Supplier<C> supplier) throws E {
         N.checkArgNotNull(supplier, "supplier");
 
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     /**
@@ -1798,15 +1912,19 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(mergeFunction, "mergeFunction");
         N.checkArgNotNull(mapFactory, "mapFactory");
 
-        final M result = mapFactory.get();
-        T next = null;
+        try {
+            final M result = mapFactory.get();
+            T next = null;
 
-        while (elements.hasNext()) {
-            next = elements.next();
-            Fn.merge(result, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
+            while (elements.hasNext()) {
+                next = elements.next();
+                Fn.merge(result, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     /**
@@ -1864,34 +1982,38 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(downstream, "downstream");
         N.checkArgNotNull(mapFactory, "mapFactory");
 
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
-        final Function<A, D> downstreamFinisher = downstream.finisher();
+        try {
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+            final Function<A, D> downstreamFinisher = downstream.finisher();
 
-        final M result = mapFactory.get();
-        final Map<K, A> tmp = (Map<K, A>) result;
-        T next = null;
-        K key = null;
-        A container = null;
+            final M result = mapFactory.get();
+            final Map<K, A> tmp = (Map<K, A>) result;
+            T next = null;
+            K key = null;
+            A container = null;
 
-        while (elements.hasNext()) {
-            next = elements.next();
-            key = keyExtractor.apply(next);
-            container = tmp.get(key);
+            while (elements.hasNext()) {
+                next = elements.next();
+                key = keyExtractor.apply(next);
+                container = tmp.get(key);
 
-            if (container == null) {
-                container = downstreamSupplier.get();
-                tmp.put(key, container);
+                if (container == null) {
+                    container = downstreamSupplier.get();
+                    tmp.put(key, container);
+                }
+
+                downstreamAccumulator.accept(container, valueMapper.apply(next));
             }
 
-            downstreamAccumulator.accept(container, valueMapper.apply(next));
-        }
+            for (Map.Entry<K, D> entry : result.entrySet()) {
+                entry.setValue(downstreamFinisher.apply((A) entry.getValue()));
+            }
 
-        for (Map.Entry<K, D> entry : result.entrySet()) {
-            entry.setValue(downstreamFinisher.apply((A) entry.getValue()));
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     /**
@@ -1936,26 +2058,34 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(mapFactory, "mapFactory");
 
-        final M result = mapFactory.get();
-        T next = null;
-        K key = null;
+        try {
+            final M result = mapFactory.get();
+            T next = null;
+            K key = null;
 
-        while (elements.hasNext()) {
-            next = elements.next();
-            key = keyExtractor.apply(next);
+            while (elements.hasNext()) {
+                next = elements.next();
+                key = keyExtractor.apply(next);
 
-            if (result.containsKey(key) == false) {
-                result.put(key, new ArrayList<V>());
+                if (result.containsKey(key) == false) {
+                    result.put(key, new ArrayList<V>());
+                }
+
+                result.get(key).add(valueMapper.apply(next));
             }
 
-            result.get(key).add(valueMapper.apply(next));
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     public long count() throws E {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     /**
@@ -1965,146 +2095,186 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @throws E
      */
     public Optional<T> onlyOne() throws DuplicatedResultException, E {
-        Optional<T> result = Optional.empty();
-
-        if (elements.hasNext()) {
-            result = Optional.of(elements.next());
+        try {
+            Optional<T> result = Optional.empty();
 
             if (elements.hasNext()) {
-                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", elements.next()));
-            }
-        }
+                result = Optional.of(elements.next());
 
-        return result;
+                if (elements.hasNext()) {
+                    throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", elements.next()));
+                }
+            }
+
+            return result;
+        } finally {
+            close();
+        }
     }
 
     public OptionalInt sumInt(Try.ToIntFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalInt.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalInt.empty();
+            }
+
+            long sum = 0;
+
+            while (elements.hasNext()) {
+                sum += func.applyAsInt(elements.next());
+            }
+
+            return OptionalInt.of(N.toIntExact(sum));
+        } finally {
+            close();
         }
-
-        long sum = 0;
-
-        while (elements.hasNext()) {
-            sum += func.applyAsInt(elements.next());
-        }
-
-        return OptionalInt.of(N.toIntExact(sum));
     }
 
     public OptionalLong sumLong(Try.ToLongFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
+            }
+
+            long sum = 0;
+
+            while (elements.hasNext()) {
+                sum += func.applyAsLong(elements.next());
+            }
+
+            return OptionalLong.of(sum);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-
-        while (elements.hasNext()) {
-            sum += func.applyAsLong(elements.next());
-        }
-
-        return OptionalLong.of(sum);
     }
 
     public OptionalDouble sumDouble(Try.ToDoubleFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            final List<Double> list = new ArrayList<>();
+
+            while (elements.hasNext()) {
+                list.add(func.applyAsDouble(elements.next()));
+            }
+
+            return OptionalDouble.of(N.sumDouble(list));
+        } finally {
+            close();
         }
-
-        final List<Double> list = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            list.add(func.applyAsDouble(elements.next()));
-        }
-
-        return OptionalDouble.of(N.sumDouble(list));
     }
 
     public OptionalDouble averageInt(Try.ToIntFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            long sum = 0;
+            long count = 0;
+
+            while (elements.hasNext()) {
+                sum += func.applyAsInt(elements.next());
+                count++;
+            }
+
+            return OptionalDouble.of(((double) sum) / count);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-        long count = 0;
-
-        while (elements.hasNext()) {
-            sum += func.applyAsInt(elements.next());
-            count++;
-        }
-
-        return OptionalDouble.of(((double) sum) / count);
     }
 
     public OptionalDouble averageLong(Try.ToLongFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            long sum = 0;
+            long count = 0;
+
+            while (elements.hasNext()) {
+                sum += func.applyAsLong(elements.next());
+                count++;
+            }
+
+            return OptionalDouble.of(((double) sum) / count);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-        long count = 0;
-
-        while (elements.hasNext()) {
-            sum += func.applyAsLong(elements.next());
-            count++;
-        }
-
-        return OptionalDouble.of(((double) sum) / count);
     }
 
     public OptionalDouble averageDouble(Try.ToDoubleFunction<T, E> func) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            final List<Double> list = new ArrayList<>();
+
+            while (elements.hasNext()) {
+                list.add(func.applyAsDouble(elements.next()));
+            }
+
+            return N.averageLong(list);
+        } finally {
+            close();
         }
-
-        final List<Double> list = new ArrayList<>();
-
-        while (elements.hasNext()) {
-            list.add(func.applyAsDouble(elements.next()));
-        }
-
-        return N.averageLong(list);
     }
 
     public T reduce(T identity, Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
 
-        T result = identity;
+        try {
+            T result = identity;
 
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     public Optional<T> reduce(Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
 
-        if (elements.hasNext() == false) {
-            return Optional.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            }
+
+            T result = elements.next();
+
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return Optional.of(result);
+        } finally {
+            close();
         }
-
-        T result = elements.next();
-
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
-        }
-
-        return Optional.of(result);
     }
 
     public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
 
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     public <R, RR> RR collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
@@ -2113,51 +2283,67 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(accumulator, "accumulator");
         N.checkArgNotNull(finisher, "finisher");
 
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.next());
+            }
+
+            return finisher.apply(result);
+        } finally {
+            close();
         }
-
-        return finisher.apply(result);
     }
 
     public <R, A> R collect(final Collector<? super T, A, R> collector) throws E {
         N.checkArgNotNull(collector, "collector");
 
-        final A container = collector.supplier().get();
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        try {
+            final A container = collector.supplier().get();
+            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (elements.hasNext()) {
-            accumulator.accept(container, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(container, elements.next());
+            }
+
+            return collector.finisher().apply(container);
+        } finally {
+            close();
         }
-
-        return collector.finisher().apply(container);
     }
 
     public <R, RR, A> RR collectAndThen(final Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func) throws E {
         N.checkArgNotNull(collector, "collector");
         N.checkArgNotNull(func, "func");
 
-        final A container = collector.supplier().get();
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        try {
+            final A container = collector.supplier().get();
+            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (elements.hasNext()) {
-            accumulator.accept(container, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(container, elements.next());
+            }
+
+            return func.apply(collector.finisher().apply(container));
+        } finally {
+            close();
         }
-
-        return func.apply(collector.finisher().apply(container));
     }
 
     public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) throws E {
-        final A container = collector.supplier().get();
-        final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        try {
+            final A container = collector.supplier().get();
+            final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (elements.hasNext()) {
-            accumulator.accept(container, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(container, elements.next());
+            }
+
+            return collector.finisher().apply(container);
+        } finally {
+            close();
         }
-
-        return collector.finisher().apply(container);
     }
 
     public <R, RR, A> RR collectAndThen(final java.util.stream.Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func)
@@ -2165,18 +2351,18 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(collector, "collector");
         N.checkArgNotNull(func, "func");
 
-        final A container = collector.supplier().get();
-        final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        try {
+            final A container = collector.supplier().get();
+            final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (elements.hasNext()) {
-            accumulator.accept(container, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(container, elements.next());
+            }
+
+            return func.apply(collector.finisher().apply(container));
+        } finally {
+            close();
         }
-
-        return func.apply(collector.finisher().apply(container));
-    }
-
-    public Try<ExceptionalStream<T, E>> tried() {
-        return Try.of(this);
     }
 
     public Stream<T> __() {
@@ -2211,7 +2397,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             });
         } else {
             return Stream.of(new ObjIteratorEx<T>() {
-
                 @Override
                 public boolean hasNext() {
                     try {
@@ -2249,7 +2434,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 }
             });
         }
-
     }
 
     public <R> R __(Try.Function<? super ExceptionalStream<T, E>, R, ? extends E> transfer) throws E {
@@ -2261,13 +2445,25 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public ExceptionalStream<T, E> onClose(final Try.Runnable<? extends E> closeHandler) {
         N.checkArgNotNull(closeHandler, "closeHandler");
 
-        final Set<Try.Runnable<? extends E>> newCloseHandlers = new HashSet<>();
+        final Deque<Try.Runnable<? extends E>> newCloseHandlers = new ArrayDeque<>(N.size(closeHandlers) + 1);
+
+        newCloseHandlers.add(new Try.Runnable<E>() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() throws E {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                closeHandler.run();
+            }
+        });
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return newStream(elements, newCloseHandlers);
     }
@@ -2313,12 +2509,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     static <T, E extends Exception> ExceptionalStream<T, E> newStream(final ExceptionalIterator<T, E> iter,
-            final Set<Try.Runnable<? extends E>> closeHandlers) {
+            final Deque<Try.Runnable<? extends E>> closeHandlers) {
         return new ExceptionalStream<>(iter, closeHandlers);
     }
 
     static <T, E extends Exception> ExceptionalStream<T, E> newStream(final ExceptionalIterator<T, E> iter, final boolean sorted,
-            final Comparator<? super T> comparator, final Set<Try.Runnable<? extends E>> closeHandlers) {
+            final Comparator<? super T> comparator, final Deque<Try.Runnable<? extends E>> closeHandlers) {
         return new ExceptionalStream<>(iter, sorted, comparator, closeHandlers);
     }
 
@@ -2330,7 +2526,152 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return a == b || (a == null && b == Comparators.NATURAL_ORDER) || (b == null && a == Comparators.NATURAL_ORDER);
     }
 
+    public static final class StreamE<T, E extends Exception> extends ExceptionalStream<T, E> {
+        StreamE(ExceptionalIterator<T, E> iter, boolean sorted, Comparator<? super T> comparator, Deque<Try.Runnable<? extends E>> closeHandlers) {
+            super(iter, sorted, comparator, closeHandlers);
+        }
+    }
+
     static abstract class ExceptionalIterator<T, E extends Exception> {
+
+        /**
+         * Lazy evaluation.
+         * 
+         * @param iteratorSupplier
+         * @return
+         */
+        public static <T, E extends Exception> ExceptionalIterator<T, E> of(final Try.Supplier<ExceptionalIterator<T, E>, E> iteratorSupplier) {
+            N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+            return new ExceptionalIterator<T, E>() {
+                private ExceptionalIterator<T, E> iter = null;
+                private boolean isInitialized = false;
+
+                @Override
+                public boolean hasNext() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    return iter.hasNext();
+                }
+
+                @Override
+                public T next() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    return iter.next();
+                }
+
+                @Override
+                public void skip(long n) throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    iter.skip(n);
+                }
+
+                @Override
+                public long count() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    return iter.count();
+                }
+
+                @Override
+                public void close() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    iter.close();
+                }
+
+                private void init() throws E {
+                    if (isInitialized == false) {
+                        isInitialized = true;
+                        iter = iteratorSupplier.get();
+                    }
+                }
+            };
+        }
+
+        /**
+         * Lazy evaluation.
+         * 
+         * @param arraySupplier
+         * @return
+         */
+        public static <T, E extends Exception> ExceptionalIterator<T, E> oF(final Try.Supplier<T[], E> arraySupplier) {
+            N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+            return new ExceptionalIterator<T, E>() {
+                private T[] a;
+                private int len;
+                private int position = 0;
+                private boolean isInitialized = false;
+
+                @Override
+                public boolean hasNext() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    return position < len;
+                }
+
+                @Override
+                public T next() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    if (position >= len) {
+                        throw new NoSuchElementException();
+                    }
+
+                    return a[position++];
+                }
+
+                @Override
+                public long count() throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    return len - position;
+                }
+
+                @Override
+                public void skip(long n) throws E {
+                    if (isInitialized == false) {
+                        init();
+                    }
+
+                    if (n <= 0) {
+                        return;
+                    } else if (n > len - position) {
+                        position = len;
+                    }
+
+                    position += n;
+                }
+
+                private void init() throws E {
+                    if (isInitialized == false) {
+                        isInitialized = true;
+                        a = arraySupplier.get();
+                        len = N.len(a);
+                    }
+                }
+            };
+        }
+
         public abstract boolean hasNext() throws E;
 
         public abstract T next() throws E;
@@ -2358,13 +2699,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
         public void close() throws E {
             // Nothing to do by default.
-        }
-    }
-
-    public static final class StreamE<T, E extends Exception> extends ExceptionalStream<T, E> {
-        StreamE(com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator<T, E> iter, boolean sorted, Comparator<? super T> comparator,
-                Set<com.landawn.abacus.util.Try.Runnable<? extends E>> closeHandlers) {
-            super(iter, sorted, comparator, closeHandlers);
         }
     }
 }

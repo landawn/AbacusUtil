@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -612,7 +613,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -647,8 +648,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -680,7 +681,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -715,8 +716,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -748,7 +749,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -783,8 +784,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -816,7 +817,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -851,8 +852,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -884,7 +885,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -919,8 +920,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -952,7 +953,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -987,8 +988,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1020,7 +1021,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1055,8 +1056,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1088,7 +1089,7 @@ class ArrayIntStream extends AbstractIntStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1123,8 +1124,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1538,217 +1539,289 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(elements[i]);
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public int[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
+        try {
+            return N.copyOfRange(elements, fromIndex, toIndex);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public IntList toIntList() {
-        return IntList.of(N.copyOfRange(elements, fromIndex, toIndex));
+        try {
+            return IntList.of(N.copyOfRange(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public List<Integer> toList() {
-        final List<Integer> result = new ArrayList<>(toIndex - fromIndex);
+        try {
+            final List<Integer> result = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Set<Integer> toSet() {
-        final Set<Integer> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final Set<Integer> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <C extends Collection<Integer>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<Integer> toMultiset() {
-        final Multiset<Integer> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final Multiset<Integer> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier) {
-        final Multiset<Integer> result = supplier.get();
+        try {
+            final Multiset<Integer> result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<Integer> toLongMultiset() {
-        final LongMultiset<Integer> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final LongMultiset<Integer> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier) {
-        final LongMultiset<Integer> result = supplier.get();
+        try {
+            final LongMultiset<Integer> result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
+        try {
+            final M result = mapFactory.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+            for (int i = fromIndex; i < toIndex; i++) {
+                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Integer> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Integer> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            for (int i = fromIndex; i < toIndex; i++) {
+                key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, elements[i]);
             }
 
-            downstreamAccumulator.accept(v, elements[i]);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public OptionalInt first() {
-        return fromIndex < toIndex ? OptionalInt.of(elements[fromIndex]) : OptionalInt.empty();
+        try {
+            return fromIndex < toIndex ? OptionalInt.of(elements[fromIndex]) : OptionalInt.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalInt last() {
-        return fromIndex < toIndex ? OptionalInt.of(elements[toIndex - 1]) : OptionalInt.empty();
+        try {
+            return fromIndex < toIndex ? OptionalInt.of(elements[toIndex - 1]) : OptionalInt.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalInt onlyOne() throws DuplicatedResultException {
-        final int size = toIndex - fromIndex;
+        try {
+            final int size = toIndex - fromIndex;
 
-        if (size == 0) {
-            return OptionalInt.empty();
-        } else if (size == 1) {
-            return OptionalInt.of(elements[fromIndex]);
-        } else {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            if (size == 0) {
+                return OptionalInt.empty();
+            } else if (size == 1) {
+                return OptionalInt.of(elements[fromIndex]);
+            } else {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public int reduce(int identity, IntBinaryOperator op) {
-        int result = identity;
+        try {
+            int result = identity;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsInt(result, elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = op.applyAsInt(result, elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalInt reduce(IntBinaryOperator op) {
-        if (fromIndex == toIndex) {
-            return OptionalInt.empty();
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalInt.empty();
+            }
+
+            int result = elements[fromIndex];
+
+            for (int i = fromIndex + 1; i < toIndex; i++) {
+                result = op.applyAsInt(result, elements[i]);
+            }
+
+            return OptionalInt.of(result);
+        } finally {
+            close();
         }
-
-        int result = elements[fromIndex];
-
-        for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsInt(result, elements[i]);
-        }
-
-        return OptionalInt.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                accumulator.accept(result, elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalInt head() {
-        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
-    }
-
-    @Override
-    public IntStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    }
+    //    @Override
+    //    public OptionalInt head() {
+    //        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
+    //    }
+    //
+    //    @Override
+    //    public IntStream tail() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
+    //    }
 
     //    @Override
     //    public IntStream headd() {
@@ -1766,56 +1839,80 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt min() {
-        if (fromIndex == toIndex) {
-            return OptionalInt.empty();
-        } else if (sorted) {
-            return OptionalInt.of(elements[fromIndex]);
-        }
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalInt.empty();
+            } else if (sorted) {
+                return OptionalInt.of(elements[fromIndex]);
+            }
 
-        return OptionalInt.of(N.min(elements, fromIndex, toIndex));
+            return OptionalInt.of(N.min(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalInt max() {
-        if (fromIndex == toIndex) {
-            return OptionalInt.empty();
-        } else if (sorted) {
-            return OptionalInt.of(elements[toIndex - 1]);
-        }
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalInt.empty();
+            } else if (sorted) {
+                return OptionalInt.of(elements[toIndex - 1]);
+            }
 
-        return OptionalInt.of(N.max(elements, fromIndex, toIndex));
+            return OptionalInt.of(N.max(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalInt kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (k > toIndex - fromIndex) {
-            return OptionalInt.empty();
-        } else if (sorted) {
-            return OptionalInt.of(elements[toIndex - k]);
-        }
+        try {
+            if (k > toIndex - fromIndex) {
+                return OptionalInt.empty();
+            } else if (sorted) {
+                return OptionalInt.of(elements[toIndex - k]);
+            }
 
-        return OptionalInt.of(N.kthLargest(elements, fromIndex, toIndex, k));
+            return OptionalInt.of(N.kthLargest(elements, fromIndex, toIndex, k));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public int sum() {
-        return sum(elements, fromIndex, toIndex);
+        try {
+            return sum(elements, fromIndex, toIndex);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalDouble average() {
-        if (fromIndex == toIndex) {
-            return OptionalDouble.empty();
-        }
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalDouble.empty();
+            }
 
-        return OptionalDouble.of(sum() / toIndex - fromIndex);
+            return OptionalDouble.of(sum() / toIndex - fromIndex);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public long count() {
-        return toIndex - fromIndex;
+        try {
+            return toIndex - fromIndex;
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1920,68 +2017,92 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntSummaryStatistics summarize() {
-        final IntSummaryStatistics result = new IntSummaryStatistics();
+        try {
+            final IntSummaryStatistics result = new IntSummaryStatistics();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.accept(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.accept(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return true;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i]) == false) {
-                return false;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i]) == false) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return false;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return OptionalInt.of(elements[i]);
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return OptionalInt.of(elements[i]);
+                }
             }
-        }
 
-        return OptionalInt.empty();
+            return OptionalInt.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E {
-        for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalInt.of(elements[i]);
+        try {
+            for (int i = toIndex - 1; i >= fromIndex; i--) {
+                if (predicate.test(elements[i])) {
+                    return OptionalInt.of(elements[i]);
+                }
             }
-        }
 
-        return OptionalInt.empty();
+            return OptionalInt.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2160,13 +2281,13 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ArrayIntStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }

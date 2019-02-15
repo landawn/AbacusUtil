@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.ByteSupplier;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.ByteStream;
 
 /**
@@ -80,6 +81,93 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
             @Override
             public ByteList toList() {
                 return ByteList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static ByteIterator of(final Supplier<? extends ByteIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new ByteIterator() {
+            private ByteIterator iter = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextByte();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static ByteIterator oF(final Supplier<byte[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new ByteIterator() {
+            private byte[] aar = null;
+            private int len = 0;
+            private int cur = 0;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return cur < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (cur >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cur++];
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    aar = arraySupplier.get();
+                    len = N.len(aar);
+                }
             }
         };
     }

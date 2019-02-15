@@ -59,6 +59,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.BaseStream.Splitor;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  */
 public final class EntryStream<K, V> implements AutoCloseable {
@@ -628,6 +629,71 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.groupBy(keyExtractor, valueMapper, mergeFunction, mapFactory));
     }
 
+    /**
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     * @see Stream#collapse(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public Stream<Entry<K, V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible,
+            final BiFunction<? super Entry<K, V>, ? super Entry<K, V>, Entry<K, V>> mergeFunction) {
+
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        return s.collapse(collapsible2, mergeFunction);
+    }
+
+    /**
+     * 
+     * @param collapsible
+     * @return
+     * @see Stream#collapse(BiPredicate, Collector)
+     */
+    @SequentialOnly
+    public Stream<List<V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible) {
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        final Function<Entry<K, V>, V> mapper = Fn.value();
+        final Collector<V, ?, List<V>> collector = Collectors.toList();
+
+        return s.collapse(collapsible2, Collectors.mapping(mapper, collector));
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param collector
+     * @return
+     */
+    @SequentialOnly
+    public <R, A> Stream<R> collapseByKey(final BiPredicate<? super K, ? super K> collapsible, final Collector<? super Entry<K, V>, A, R> collector) {
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        return s.collapse(collapsible2, collector);
+    }
+
     @ParallelSupported
     public EntryStream<K, V> sorted(final Comparator<? super Map.Entry<K, V>> comparator) {
         return of(s.sorted(comparator));
@@ -912,11 +978,21 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.count();
     }
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
     @SequentialOnly
     public ObjIterator<Map.Entry<K, V>> iterator() {
         return s.iterator();
     }
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
     @SequentialOnly
     public BiIterator<K, V> biIterator() {
         final ObjIterator<Entry<K, V>> iter = iterator();
@@ -1265,71 +1341,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
-    /**
-     * 
-     * @param collapsible
-     * @param mergeFunction
-     * @return
-     * @see Stream#collapse(BiPredicate, BiFunction)
-     */
-    @SequentialOnly
-    public Stream<Entry<K, V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible,
-            final BiFunction<? super Entry<K, V>, ? super Entry<K, V>, Entry<K, V>> mergeFunction) {
-
-        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> t, Entry<K, V> u) {
-                return collapsible.test(t.getKey(), u.getKey());
-            }
-        };
-
-        return s.collapse(collapsible2, mergeFunction);
-    }
-
-    /**
-     * 
-     * @param collapsible
-     * @return
-     * @see Stream#collapse(BiPredicate, Collector)
-     */
-    @SequentialOnly
-    public Stream<List<V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible) {
-        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> t, Entry<K, V> u) {
-                return collapsible.test(t.getKey(), u.getKey());
-            }
-        };
-
-        final Function<Entry<K, V>, V> mapper = Fn.value();
-        final Collector<V, ?, List<V>> collector = Collectors.toList();
-
-        return s.collapse(collapsible2, Collectors.mapping(mapper, collector));
-    }
-
-    /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param collapsible
-     * @param collector
-     * @return
-     */
-    @SequentialOnly
-    public <R, A> Stream<R> collapseByKey(final BiPredicate<? super K, ? super K> collapsible, final Collector<? super Entry<K, V>, A, R> collector) {
-        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
-            @Override
-            public boolean test(Entry<K, V> t, Entry<K, V> u) {
-                return collapsible.test(t.getKey(), u.getKey());
-            }
-        };
-
-        return s.collapse(collapsible2, collector);
-    }
-
     @ParallelSupported
     public Map.Entry<K, V> reduce(final ImmutableEntry<K, V> identity, final BinaryOperator<Map.Entry<K, V>> accumulator) {
         return s.reduce(identity, accumulator);
@@ -1388,14 +1399,18 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @SequentialOnly
     public String join(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
-        final Iterator<Entry<K, V>> iter = this.iterator();
+        try {
+            final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
+            final Iterator<Entry<K, V>> iter = this.iterator();
 
-        while (iter.hasNext()) {
-            joiner.appendEntry(iter.next());
+            while (iter.hasNext()) {
+                joiner.appendEntry(iter.next());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
         }
-
-        return joiner.toString();
     }
 
     @SequentialOnly
@@ -1668,8 +1683,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.onClose(closeHandler));
     }
 
-    @SequentialOnly
     @Override
+    @SequentialOnly
     public void close() {
         s.close();
     }

@@ -65,6 +65,18 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public ByteStream flattMap(final ByteFunction<byte[]> mapper) {
         return flatMap(new ByteFunction<ByteStream>() {
             @Override
@@ -289,117 +301,6 @@ abstract class AbstractByteStream extends ByteStream {
                 return (res = accumulator.apply(res, iter.nextByte()));
             }
         }, false);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public ByteMatrix toMatrix() {
-        return ByteMatrix.of(toArray());
-    }
-
-    @Override
-    public ByteStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new BytePredicate() {
-            @Override
-            public boolean test(byte value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
-    public OptionalByte first() {
-        final ByteIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
-    }
-
-    @Override
-    public OptionalByte last() {
-        final ByteIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalByte.empty();
-        }
-
-        byte next = iter.nextByte();
-
-        while (iter.hasNext()) {
-            next = iter.nextByte();
-        }
-
-        return OptionalByte.of(next);
-    }
-
-    @Override
-    public OptionalByte onlyOne() throws DuplicatedResultException {
-        final ByteIterator iter = this.iteratorEx();
-
-        final OptionalByte result = iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextByte()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalByte findFirstOrLast(Try.BytePredicate<E> predicateForFirst,
-            Try.BytePredicate<E> predicateForLast) throws E, E2 {
-        final ByteIteratorEx iter = iteratorEx();
-        MutableByte last = null;
-        byte next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextByte();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalByte.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableByte.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalByte.empty() : OptionalByte.of(last.value());
     }
 
     @Override
@@ -875,56 +776,10 @@ abstract class AbstractByteStream extends ByteStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Byte>> percentiles() {
-        final byte[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizze() {
-        final byte[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
-        } else {
-            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final ByteIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextByte());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalByte, ByteStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalByte, ByteStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -979,8 +834,199 @@ abstract class AbstractByteStream extends ByteStream {
         return ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
+    //    @Override
+    //    public Pair<OptionalByte, ByteStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
+
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
+
     @Override
     public ByteStream cached() {
         return newStream(toArray(), sorted);
     }
+
+    @Override
+    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public ByteMatrix toMatrix() {
+        return ByteMatrix.of(toArray());
+    }
+
+    @Override
+    public OptionalByte first() {
+        try {
+            final ByteIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalByte last() {
+        try {
+            final ByteIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalByte.empty();
+            }
+
+            byte next = iter.nextByte();
+
+            while (iter.hasNext()) {
+                next = iter.nextByte();
+            }
+
+            return OptionalByte.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalByte onlyOne() throws DuplicatedResultException {
+        try {
+            final ByteIterator iter = this.iteratorEx();
+
+            final OptionalByte result = iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextByte()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalByte findFirstOrLast(Try.BytePredicate<E> predicateForFirst,
+            Try.BytePredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final ByteIteratorEx iter = iteratorEx();
+            MutableByte last = null;
+            byte next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextByte();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalByte.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableByte.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalByte.empty() : OptionalByte.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Byte>> percentiles() {
+        try {
+            final byte[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeAndPercentiles() {
+        try {
+            final byte[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
+            } else {
+                return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final ByteIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextByte());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
+    }
+
+    //    @Override
+    //    public Pair<OptionalByte, ByteStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
+
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
+
 }

@@ -21,6 +21,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  *  
@@ -140,6 +141,144 @@ public abstract class IntIteratorEx extends IntIterator implements IteratorEx<In
             @Override
             public void close() {
                 // Do nothing.
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static IntIteratorEx of(final Supplier<? extends IntIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new IntIteratorEx() {
+            private IntIterator iter = null;
+            private IntIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextInt();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    return iterEx.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
+            public void close() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.close();
+                }
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                    iterEx = iter instanceof IntIteratorEx ? (IntIteratorEx) iter : null;
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static IntIteratorEx oF(final Supplier<int[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new IntIteratorEx() {
+            private IntIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.nextInt();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                iterEx.skip(n);
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.count();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    int[] aar = arraySupplier.get();
+                    iterEx = IntIteratorEx.of(aar);
+                }
             }
         };
     }

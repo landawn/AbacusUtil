@@ -16,9 +16,9 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -71,12 +71,12 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     ParallelIteratorShortStream(final ShortStream stream, final boolean sorted, final int maxThreadNum, final Splitor splitor, final AsyncExecutor asyncExector,
-            final Set<Runnable> closeHandlers) {
+            final Deque<Runnable> closeHandlers) {
         this(stream.iteratorEx(), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
     ParallelIteratorShortStream(final Stream<Short> stream, final boolean sorted, final int maxThreadNum, final Splitor splitor,
-            final AsyncExecutor asyncExector, final Set<Runnable> closeHandlers) {
+            final AsyncExecutor asyncExector, final Deque<Runnable> closeHandlers) {
         this(shortIterator(stream.iteratorEx()), sorted, maxThreadNum, splitor, asyncExector, mergeCloseHandlers(stream, closeHandlers));
     }
 
@@ -271,7 +271,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -353,6 +357,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -366,8 +371,10 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                     result = op.applyAsShort(result, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? identity : result;
@@ -420,6 +427,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -437,8 +445,10 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                     result = accumulator.applyAsShort(result, tmp);
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? OptionalShort.empty() : OptionalShort.of(result);
@@ -482,6 +492,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -495,8 +506,10 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) { 
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return container == NONE ? supplier.get() : container;
@@ -540,7 +553,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -583,7 +600,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -626,7 +647,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -676,7 +701,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
@@ -724,7 +753,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
@@ -772,7 +805,11 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
     }
@@ -870,13 +907,13 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     @Override
     public ShortStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, asyncExecutor, newCloseHandlers);
     }

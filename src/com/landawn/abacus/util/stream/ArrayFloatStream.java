@@ -17,6 +17,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -479,7 +480,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -514,8 +515,8 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -547,7 +548,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -582,8 +583,8 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -615,7 +616,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -650,8 +651,8 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -683,7 +684,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -718,8 +719,8 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -751,7 +752,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements[cursor++]);
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -786,8 +787,8 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1201,217 +1202,289 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(elements[i]);
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public float[] toArray() {
-        return N.copyOfRange(elements, fromIndex, toIndex);
+        try {
+            return N.copyOfRange(elements, fromIndex, toIndex);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public FloatList toFloatList() {
-        return FloatList.of(N.copyOfRange(elements, fromIndex, toIndex));
+        try {
+            return FloatList.of(N.copyOfRange(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public List<Float> toList() {
-        final List<Float> result = new ArrayList<>(toIndex - fromIndex);
+        try {
+            final List<Float> result = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Set<Float> toSet() {
-        final Set<Float> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final Set<Float> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <C extends Collection<Float>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<Float> toMultiset() {
-        final Multiset<Float> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final Multiset<Float> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<Float> toMultiset(Supplier<? extends Multiset<Float>> supplier) {
-        final Multiset<Float> result = supplier.get();
+        try {
+            final Multiset<Float> result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<Float> toLongMultiset() {
-        final LongMultiset<Float> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
+        try {
+            final LongMultiset<Float> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<Float> toLongMultiset(Supplier<? extends LongMultiset<Float>> supplier) {
-        final LongMultiset<Float> result = supplier.get();
+        try {
+            final LongMultiset<Float> result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
+        try {
+            final M result = mapFactory.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+            for (int i = fromIndex; i < toIndex; i++) {
+                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            for (int i = fromIndex; i < toIndex; i++) {
+                key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, elements[i]);
             }
 
-            downstreamAccumulator.accept(v, elements[i]);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public OptionalFloat first() {
-        return fromIndex < toIndex ? OptionalFloat.of(elements[fromIndex]) : OptionalFloat.empty();
+        try {
+            return fromIndex < toIndex ? OptionalFloat.of(elements[fromIndex]) : OptionalFloat.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalFloat last() {
-        return fromIndex < toIndex ? OptionalFloat.of(elements[toIndex - 1]) : OptionalFloat.empty();
+        try {
+            return fromIndex < toIndex ? OptionalFloat.of(elements[toIndex - 1]) : OptionalFloat.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalFloat onlyOne() throws DuplicatedResultException {
-        final int size = toIndex - fromIndex;
+        try {
+            final int size = toIndex - fromIndex;
 
-        if (size == 0) {
-            return OptionalFloat.empty();
-        } else if (size == 1) {
-            return OptionalFloat.of(elements[fromIndex]);
-        } else {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            if (size == 0) {
+                return OptionalFloat.empty();
+            } else if (size == 1) {
+                return OptionalFloat.of(elements[fromIndex]);
+            } else {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(elements[fromIndex], ", ", elements[fromIndex + 1]));
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public float reduce(float identity, FloatBinaryOperator op) {
-        float result = identity;
+        try {
+            float result = identity;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsFloat(result, elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = op.applyAsFloat(result, elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalFloat reduce(FloatBinaryOperator op) {
-        if (fromIndex == toIndex) {
-            return OptionalFloat.empty();
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalFloat.empty();
+            }
+
+            float result = elements[fromIndex];
+
+            for (int i = fromIndex + 1; i < toIndex; i++) {
+                result = op.applyAsFloat(result, elements[i]);
+            }
+
+            return OptionalFloat.of(result);
+        } finally {
+            close();
         }
-
-        float result = elements[fromIndex];
-
-        for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsFloat(result, elements[i]);
-        }
-
-        return OptionalFloat.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                accumulator.accept(result, elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalFloat head() {
-        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
-    }
-
-    @Override
-    public FloatStream tail() {
-        if (fromIndex == toIndex) {
-            return this;
-        }
-
-        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    }
+    //    @Override
+    //    public OptionalFloat head() {
+    //        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    //    }
+    //
+    //    @Override
+    //    public FloatStream tail() {
+    //        if (fromIndex == toIndex) {
+    //            return this;
+    //        }
+    //
+    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
+    //    }
 
     //    @Override
     //    public FloatStream headd() {
@@ -1429,42 +1502,58 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat min() {
-        if (fromIndex == toIndex) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements[fromIndex]);
-        }
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalFloat.empty();
+            } else if (sorted) {
+                return OptionalFloat.of(elements[fromIndex]);
+            }
 
-        return OptionalFloat.of(N.min(elements, fromIndex, toIndex));
+            return OptionalFloat.of(N.min(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalFloat max() {
-        if (fromIndex == toIndex) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements[toIndex - 1]);
-        }
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalFloat.empty();
+            } else if (sorted) {
+                return OptionalFloat.of(elements[toIndex - 1]);
+            }
 
-        return OptionalFloat.of(N.max(elements, fromIndex, toIndex));
+            return OptionalFloat.of(N.max(elements, fromIndex, toIndex));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalFloat kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (k > toIndex - fromIndex) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements[toIndex - k]);
-        }
+        try {
+            if (k > toIndex - fromIndex) {
+                return OptionalFloat.empty();
+            } else if (sorted) {
+                return OptionalFloat.of(elements[toIndex - k]);
+            }
 
-        return OptionalFloat.of(N.kthLargest(elements, fromIndex, toIndex, k));
+            return OptionalFloat.of(N.kthLargest(elements, fromIndex, toIndex, k));
+        } finally {
+            close();
+        }
     }
 
     @Override
     public long count() {
-        return toIndex - fromIndex;
+        try {
+            return toIndex - fromIndex;
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1569,68 +1658,92 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatSummaryStatistics summarize() {
-        final FloatSummaryStatistics result = new FloatSummaryStatistics();
+        try {
+            final FloatSummaryStatistics result = new FloatSummaryStatistics();
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.accept(elements[i]);
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.accept(elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.FloatPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return true;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.FloatPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i]) == false) {
-                return false;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i]) == false) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.FloatPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return false;
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> OptionalFloat findFirst(final Try.FloatPredicate<E> predicate) throws E {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(elements[i])) {
-                return OptionalFloat.of(elements[i]);
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    return OptionalFloat.of(elements[i]);
+                }
             }
-        }
 
-        return OptionalFloat.empty();
+            return OptionalFloat.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> OptionalFloat findLast(final Try.FloatPredicate<E> predicate) throws E {
-        for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalFloat.of(elements[i]);
+        try {
+            for (int i = toIndex - 1; i >= fromIndex; i--) {
+                if (predicate.test(elements[i])) {
+                    return OptionalFloat.of(elements[i]);
+                }
             }
-        }
 
-        return OptionalFloat.empty();
+            return OptionalFloat.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1702,13 +1815,13 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ArrayFloatStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }

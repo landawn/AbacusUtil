@@ -21,6 +21,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.function.Supplier;
 
 /** 
  * 
@@ -140,6 +141,144 @@ public abstract class ShortIteratorEx extends ShortIterator implements IteratorE
             @Override
             public void close() {
                 // Do nothing.
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static ShortIteratorEx of(final Supplier<? extends ShortIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new ShortIteratorEx() {
+            private ShortIterator iter = null;
+            private ShortIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextShort();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    return iterEx.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
+            public void close() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.close();
+                }
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                    iterEx = iter instanceof ShortIteratorEx ? (ShortIteratorEx) iter : null;
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static ShortIteratorEx oF(final Supplier<short[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new ShortIteratorEx() {
+            private ShortIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.nextShort();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                iterEx.skip(n);
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.count();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    short[] aar = arraySupplier.get();
+                    iterEx = ShortIteratorEx.of(aar);
+                }
             }
         };
     }

@@ -1704,99 +1704,98 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Class<T> targetClass, final String sql,
-            final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(targetClass, sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Class<T> targetClass, final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql,
             final StatementSetter statementSetter, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(targetClass, sql, statementSetter, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Class<T> targetClass, final String sql,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(targetClass, sql, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Class<T> targetClass, final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(targetClass, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final String sql,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(sql, recordGetter, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final String sql, final StatementSetter statementSetter,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final String sql, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(sql, statementSetter, recordGetter, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final String sql,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(sql, recordGetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final String sql, final StatementSetter statementSetter,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final String sql, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.stream(sql, statementSetter, recordGetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Class<T> targetClass, final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final String sql,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.streamAll(targetClass, sql, jdbcSettings, parameters);
             }
         });
@@ -1812,22 +1811,22 @@ public final class AsyncSQLExecutor {
      * @return
      */
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Class<T> targetClass, final String sql,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.streamAll(targetClass, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Class<T> targetClass, final List<String> sqls,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final List<String> sqls,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.streamAll(targetClass, sqls, jdbcSettings, parameters);
             }
         });
@@ -1843,11 +1842,11 @@ public final class AsyncSQLExecutor {
      * @return
      */
     @SafeVarargs
-    public final <T> ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Class<T> targetClass, final List<String> sqls,
+    public final <T> ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final List<String> sqls,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
             @Override
-            public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+            public ExceptionalStream<T, SQLException> call() throws Exception {
                 return sqlExecutor.streamAll(targetClass, sqls, statementSetter, jdbcSettings, parameters);
             }
         });

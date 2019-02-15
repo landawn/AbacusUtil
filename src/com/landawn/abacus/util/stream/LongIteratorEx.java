@@ -21,6 +21,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -140,6 +141,144 @@ public abstract class LongIteratorEx extends LongIterator implements IteratorEx<
             @Override
             public void close() {
                 // Do nothing.
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static LongIteratorEx of(final Supplier<? extends LongIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new LongIteratorEx() {
+            private LongIterator iter = null;
+            private LongIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextLong();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    return iterEx.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
+            public void close() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.close();
+                }
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                    iterEx = iter instanceof LongIteratorEx ? (LongIteratorEx) iter : null;
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static LongIteratorEx oF(final Supplier<long[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new LongIteratorEx() {
+            private LongIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.nextLong();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                iterEx.skip(n);
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.count();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    long[] aar = arraySupplier.get();
+                    iterEx = LongIteratorEx.of(aar);
+                }
             }
         };
     }

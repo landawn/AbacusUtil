@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,8 +66,8 @@ import com.landawn.abacus.util.function.Supplier;
 class IteratorLongStream extends AbstractLongStream {
     final LongIteratorEx elements;
 
-    OptionalLong head;
-    LongStream tail;
+    //    OptionalLong head;
+    //    LongStream tail;
 
     //    LongStream head2;
     //    OptionalLong tail2;
@@ -362,7 +363,7 @@ class IteratorLongStream extends AbstractLongStream {
                     s = mapper.apply(elements.nextLong());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -397,8 +398,8 @@ class IteratorLongStream extends AbstractLongStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -429,7 +430,7 @@ class IteratorLongStream extends AbstractLongStream {
                     s = mapper.apply(elements.nextLong());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -464,8 +465,8 @@ class IteratorLongStream extends AbstractLongStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -496,7 +497,7 @@ class IteratorLongStream extends AbstractLongStream {
                     s = mapper.apply(elements.nextLong());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -531,8 +532,8 @@ class IteratorLongStream extends AbstractLongStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -563,7 +564,7 @@ class IteratorLongStream extends AbstractLongStream {
                     s = mapper.apply(elements.nextLong());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -598,8 +599,8 @@ class IteratorLongStream extends AbstractLongStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -630,7 +631,7 @@ class IteratorLongStream extends AbstractLongStream {
                     s = mapper.apply(elements.nextLong());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -665,8 +666,8 @@ class IteratorLongStream extends AbstractLongStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1043,19 +1044,31 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E {
-        while (elements.hasNext()) {
-            action.accept(elements.nextLong());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.nextLong());
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public long[] toArray() {
-        return elements.toArray();
+        try {
+            return elements.toArray();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public LongList toLongList() {
-        return elements.toList();
+        try {
+            return elements.toList();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1070,13 +1083,17 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <C extends Collection<Long>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
+            while (elements.hasNext()) {
+                result.add(elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -1086,13 +1103,17 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
-        final Multiset<Long> result = supplier.get();
+        try {
+            final Multiset<Long> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
+            while (elements.hasNext()) {
+                result.add(elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -1102,121 +1123,145 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
-        final LongMultiset<Long> result = supplier.get();
+        try {
+            final LongMultiset<Long> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextLong());
+            while (elements.hasNext()) {
+                result.add(elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        long element = 0;
+        try {
+            final M result = mapFactory.get();
+            long element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextLong();
-            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            while (elements.hasNext()) {
+                element = elements.nextLong();
+                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        long element = 0;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
+            long element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextLong();
-            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+            while (elements.hasNext()) {
+                element = elements.nextLong();
+                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, element);
             }
 
-            downstreamAccumulator.accept(v, element);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public long reduce(long identity, LongBinaryOperator op) {
-        long result = identity;
+        try {
+            long result = identity;
 
-        while (elements.hasNext()) {
-            result = op.applyAsLong(result, elements.nextLong());
+            while (elements.hasNext()) {
+                result = op.applyAsLong(result, elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalLong reduce(LongBinaryOperator op) {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
+            }
+
+            long result = elements.nextLong();
+
+            while (elements.hasNext()) {
+                result = op.applyAsLong(result, elements.nextLong());
+            }
+
+            return OptionalLong.of(result);
+        } finally {
+            close();
         }
-
-        long result = elements.nextLong();
-
-        while (elements.hasNext()) {
-            result = op.applyAsLong(result, elements.nextLong());
-        }
-
-        return OptionalLong.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.nextLong());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalLong head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return head;
-    }
-
-    @Override
-    public LongStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return tail;
-    }
+    //    @Override
+    //    public OptionalLong head() {
+    //        if (head == null) {
+    //            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return head;
+    //    }
+    //
+    //    @Override
+    //    public LongStream tail() {
+    //        if (tail == null) {
+    //            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return tail;
+    //    }
 
     //    @Override
     //    public LongStream headd() {
@@ -1242,117 +1287,149 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong min() {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        } else if (sorted) {
-            return OptionalLong.of(elements.nextLong());
-        }
-
-        long candidate = elements.nextLong();
-        long next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextLong();
-
-            if (next < candidate) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
+            } else if (sorted) {
+                return OptionalLong.of(elements.nextLong());
             }
-        }
 
-        return OptionalLong.of(candidate);
-    }
-
-    @Override
-    public OptionalLong max() {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        } else if (sorted) {
+            long candidate = elements.nextLong();
             long next = 0;
 
             while (elements.hasNext()) {
                 next = elements.nextLong();
+
+                if (next < candidate) {
+                    candidate = next;
+                }
             }
 
-            return OptionalLong.of(next);
+            return OptionalLong.of(candidate);
+        } finally {
+            close();
         }
+    }
 
-        long candidate = elements.nextLong();
-        long next = 0;
+    @Override
+    public OptionalLong max() {
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
+            } else if (sorted) {
+                long next = 0;
 
-        while (elements.hasNext()) {
-            next = elements.nextLong();
+                while (elements.hasNext()) {
+                    next = elements.nextLong();
+                }
 
-            if (next > candidate) {
-                candidate = next;
+                return OptionalLong.of(next);
             }
-        }
 
-        return OptionalLong.of(candidate);
+            long candidate = elements.nextLong();
+            long next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.nextLong();
+
+                if (next > candidate) {
+                    candidate = next;
+                }
+            }
+
+            return OptionalLong.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalLong kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
+            }
+
+            final Optional<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
+
+            return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
+        } finally {
+            close();
         }
-
-        final Optional<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
-
-        return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
     }
 
     @Override
     public long sum() {
-        long result = 0;
+        try {
+            long result = 0;
 
-        while (elements.hasNext()) {
-            result += elements.nextLong();
+            while (elements.hasNext()) {
+                result += elements.nextLong();
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            long sum = 0;
+            long count = 0;
+
+            while (elements.hasNext()) {
+                sum += elements.nextLong();
+                count++;
+            }
+
+            return OptionalDouble.of(((double) sum) / count);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-        long count = 0;
-
-        while (elements.hasNext()) {
-            sum += elements.nextLong();
-            count++;
-        }
-
-        return OptionalDouble.of(((double) sum) / count);
     }
 
     @Override
     public long count() {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public LongSummaryStatistics summarize() {
-        final LongSummaryStatistics result = new LongSummaryStatistics();
+        try {
+            final LongSummaryStatistics result = new LongSummaryStatistics();
 
-        while (elements.hasNext()) {
-            result.accept(elements.nextLong());
+            while (elements.hasNext()) {
+                result.accept(elements.nextLong());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextLong())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextLong())) {
+                    return true;
+                }
             }
+        } finally {
+            close();
         }
 
         return false;
@@ -1360,10 +1437,14 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextLong()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextLong()) == false) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1371,10 +1452,14 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextLong())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextLong())) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1382,12 +1467,16 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            long e = elements.nextLong();
+        try {
+            while (elements.hasNext()) {
+                long e = elements.nextLong();
 
-            if (predicate.test(e)) {
-                return OptionalLong.of(e);
+                if (predicate.test(e)) {
+                    return OptionalLong.of(e);
+                }
             }
+        } finally {
+            close();
         }
 
         return OptionalLong.empty();
@@ -1395,24 +1484,28 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalLong.empty();
-        }
-
-        boolean hasResult = false;
-        long e = 0;
-        long result = 0;
-
-        while (elements.hasNext()) {
-            e = elements.nextLong();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalLong.empty();
             }
-        }
 
-        return hasResult ? OptionalLong.of(result) : OptionalLong.empty();
+            boolean hasResult = false;
+            long e = 0;
+            long result = 0;
+
+            while (elements.hasNext()) {
+                e = elements.nextLong();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? OptionalLong.of(result) : OptionalLong.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1510,13 +1603,13 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new IteratorLongStream(elements, sorted, newCloseHandlers);
     }

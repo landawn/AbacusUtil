@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableSet;
@@ -30,11 +31,11 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Percentage;
-import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  *
  * @param <T> the type of the stream elements
  * @param <A> the type of array
@@ -472,20 +473,24 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
 
     /**
      * Returns an iterator for the elements of this stream.
+     * 
+     * <br />
+     * Remember to close this Stream after the iteration is done, if required.
      *
      * @return the element iterator for this stream
      */
     @SequentialOnly
     ITER iterator();
 
+    @Beta
     @SequentialOnly
     void println();
 
     @SequentialOnly
     <R> R __(Function<? super S, R> transfer);
 
-    @SequentialOnly
-    Try<S> tried();
+    //    @SequentialOnly
+    //    Try<S> tried();
 
     /**
      * 
@@ -498,8 +503,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     /**
      * 
      */
-    @SequentialOnly
     @Override
+    @SequentialOnly
     void close();
 
     /**

@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.ShortSupplier;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.ShortStream;
 
 /**
@@ -80,6 +81,93 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
             @Override
             public ShortList toList() {
                 return ShortList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static ShortIterator of(final Supplier<? extends ShortIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new ShortIterator() {
+            private ShortIterator iter = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextShort();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static ShortIterator oF(final Supplier<short[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new ShortIterator() {
+            private short[] aar = null;
+            private int len = 0;
+            private int cur = 0;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return cur < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (cur >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cur++];
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    aar = arraySupplier.get();
+                    len = N.len(aar);
+                }
             }
         };
     }

@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,8 +61,8 @@ import com.landawn.abacus.util.function.Supplier;
 class IteratorFloatStream extends AbstractFloatStream {
     final FloatIteratorEx elements;
 
-    OptionalFloat head;
-    FloatStream tail;
+    //    OptionalFloat head;
+    //    FloatStream tail;
 
     //    FloatStream head2;
     //    OptionalFloat tail2;
@@ -357,7 +358,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements.nextFloat());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -392,8 +393,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -424,7 +425,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements.nextFloat());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -459,8 +460,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -491,7 +492,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements.nextFloat());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -526,8 +527,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -558,7 +559,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements.nextFloat());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -593,8 +594,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -625,7 +626,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     s = mapper.apply(elements.nextFloat());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -660,8 +661,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1038,19 +1039,31 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E {
-        while (elements.hasNext()) {
-            action.accept(elements.nextFloat());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.nextFloat());
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public float[] toArray() {
-        return elements.toArray();
+        try {
+            return elements.toArray();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public FloatList toFloatList() {
-        return elements.toList();
+        try {
+            return elements.toList();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1065,13 +1078,17 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <C extends Collection<Float>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextFloat());
+            while (elements.hasNext()) {
+                result.add(elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -1081,13 +1098,17 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Multiset<Float> toMultiset(Supplier<? extends Multiset<Float>> supplier) {
-        final Multiset<Float> result = supplier.get();
+        try {
+            final Multiset<Float> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextFloat());
+            while (elements.hasNext()) {
+                result.add(elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -1097,121 +1118,145 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public LongMultiset<Float> toLongMultiset(Supplier<? extends LongMultiset<Float>> supplier) {
-        final LongMultiset<Float> result = supplier.get();
+        try {
+            final LongMultiset<Float> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextFloat());
+            while (elements.hasNext()) {
+                result.add(elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        float element = 0;
+        try {
+            final M result = mapFactory.get();
+            float element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextFloat();
-            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            while (elements.hasNext()) {
+                element = elements.nextFloat();
+                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        float element = 0;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
+            float element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextFloat();
-            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+            while (elements.hasNext()) {
+                element = elements.nextFloat();
+                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, element);
             }
 
-            downstreamAccumulator.accept(v, element);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public float reduce(float identity, FloatBinaryOperator op) {
-        float result = identity;
+        try {
+            float result = identity;
 
-        while (elements.hasNext()) {
-            result = op.applyAsFloat(result, elements.nextFloat());
+            while (elements.hasNext()) {
+                result = op.applyAsFloat(result, elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalFloat reduce(FloatBinaryOperator op) {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalFloat.empty();
+            }
+
+            float result = elements.nextFloat();
+
+            while (elements.hasNext()) {
+                result = op.applyAsFloat(result, elements.nextFloat());
+            }
+
+            return OptionalFloat.of(result);
+        } finally {
+            close();
         }
-
-        float result = elements.nextFloat();
-
-        while (elements.hasNext()) {
-            result = op.applyAsFloat(result, elements.nextFloat());
-        }
-
-        return OptionalFloat.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.nextFloat());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalFloat head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return head;
-    }
-
-    @Override
-    public FloatStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return tail;
-    }
+    //    @Override
+    //    public OptionalFloat head() {
+    //        if (head == null) {
+    //            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return head;
+    //    }
+    //
+    //    @Override
+    //    public FloatStream tail() {
+    //        if (tail == null) {
+    //            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return tail;
+    //    }
 
     //    @Override
     //    public FloatStream headd() {
@@ -1237,89 +1282,113 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat min() {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
-            return OptionalFloat.of(elements.nextFloat());
-        }
-
-        float candidate = elements.nextFloat();
-        float next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextFloat();
-
-            if (N.compare(next, candidate) < 0) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalFloat.empty();
+            } else if (sorted) {
+                return OptionalFloat.of(elements.nextFloat());
             }
-        }
 
-        return OptionalFloat.of(candidate);
-    }
-
-    @Override
-    public OptionalFloat max() {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        } else if (sorted) {
+            float candidate = elements.nextFloat();
             float next = 0;
 
             while (elements.hasNext()) {
                 next = elements.nextFloat();
+
+                if (N.compare(next, candidate) < 0) {
+                    candidate = next;
+                }
             }
 
-            return OptionalFloat.of(next);
+            return OptionalFloat.of(candidate);
+        } finally {
+            close();
         }
+    }
 
-        float candidate = elements.nextFloat();
-        float next = 0;
+    @Override
+    public OptionalFloat max() {
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalFloat.empty();
+            } else if (sorted) {
+                float next = 0;
 
-        while (elements.hasNext()) {
-            next = elements.nextFloat();
+                while (elements.hasNext()) {
+                    next = elements.nextFloat();
+                }
 
-            if (N.compare(next, candidate) > 0) {
-                candidate = next;
+                return OptionalFloat.of(next);
             }
-        }
 
-        return OptionalFloat.of(candidate);
+            float candidate = elements.nextFloat();
+            float next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.nextFloat();
+
+                if (N.compare(next, candidate) > 0) {
+                    candidate = next;
+                }
+            }
+
+            return OptionalFloat.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalFloat kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalFloat.empty();
+            }
+
+            final Optional<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
+
+            return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
+        } finally {
+            close();
         }
-
-        final Optional<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
-
-        return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
     }
 
     @Override
     public long count() {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public FloatSummaryStatistics summarize() {
-        final FloatSummaryStatistics result = new FloatSummaryStatistics();
+        try {
+            final FloatSummaryStatistics result = new FloatSummaryStatistics();
 
-        while (elements.hasNext()) {
-            result.accept(elements.nextFloat());
+            while (elements.hasNext()) {
+                result.accept(elements.nextFloat());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.FloatPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextFloat())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextFloat())) {
+                    return true;
+                }
             }
+        } finally {
+            close();
         }
 
         return false;
@@ -1327,10 +1396,14 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.FloatPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextFloat()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextFloat()) == false) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1338,10 +1411,14 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.FloatPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextFloat())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextFloat())) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1349,12 +1426,16 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findFirst(final Try.FloatPredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            float e = elements.nextFloat();
+        try {
+            while (elements.hasNext()) {
+                float e = elements.nextFloat();
 
-            if (predicate.test(e)) {
-                return OptionalFloat.of(e);
+                if (predicate.test(e)) {
+                    return OptionalFloat.of(e);
+                }
             }
+        } finally {
+            close();
         }
 
         return OptionalFloat.empty();
@@ -1362,24 +1443,28 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findLast(final Try.FloatPredicate<E> predicate) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalFloat.empty();
-        }
-
-        boolean hasResult = false;
-        float e = 0;
-        float result = 0;
-
-        while (elements.hasNext()) {
-            e = elements.nextFloat();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalFloat.empty();
             }
-        }
 
-        return hasResult ? OptionalFloat.of(result) : OptionalFloat.empty();
+            boolean hasResult = false;
+            float e = 0;
+            float result = 0;
+
+            while (elements.hasNext()) {
+                e = elements.nextFloat();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? OptionalFloat.of(result) : OptionalFloat.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1429,13 +1514,13 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new IteratorFloatStream(elements, sorted, newCloseHandlers);
     }

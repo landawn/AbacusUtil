@@ -72,8 +72,8 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 class IteratorStream<T> extends AbstractStream<T> {
     final ObjIteratorEx<T> elements;
 
-    Optional<T> head;
-    Stream<T> tail;
+    //    Optional<T> head;
+    //    Stream<T> tail;
 
     //    Stream<T> head2;
     //    Optional<T> tail2;
@@ -112,7 +112,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         this.elements = tmp;
     }
 
-    IteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final Set<Runnable> closeHandlers) {
+    IteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final Deque<Runnable> closeHandlers) {
         this(stream.iterator(), sorted, comparator, mergeCloseHandlers(stream, closeHandlers));
     }
 
@@ -839,7 +839,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -874,8 +874,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -906,7 +906,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -941,8 +941,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -973,7 +973,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1008,8 +1008,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1040,7 +1040,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1075,8 +1075,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1107,7 +1107,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1142,8 +1142,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1174,7 +1174,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1209,8 +1209,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1241,7 +1241,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1276,8 +1276,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1308,7 +1308,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     s = mapper.apply(elements.next());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -1343,8 +1343,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1760,76 +1760,87 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
-        while (elements.hasNext()) {
-            action.accept(elements.next());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.next());
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
-
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
-        T prev = (T) NONE;
+        try {
+            T prev = (T) NONE;
 
-        while (elements.hasNext()) {
-            if (increment > windowSize && prev != NONE) {
-                int skipNum = increment - windowSize;
+            while (elements.hasNext()) {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
 
-                while (skipNum-- > 0 && elements.hasNext()) {
-                    elements.next();
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    if (elements.hasNext() == false) {
+                        break;
+                    }
+
+                    prev = (T) NONE;
                 }
 
-                if (elements.hasNext() == false) {
-                    break;
+                if (increment == 1) {
+                    action.accept(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    action.accept(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
                 }
-
-                prev = (T) NONE;
             }
-
-            if (increment == 1) {
-                action.accept(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
-            } else {
-                action.accept(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
-            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
-
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
 
-        T prev = (T) NONE;
-        T prev2 = (T) NONE;
+        try {
+            T prev = (T) NONE;
+            T prev2 = (T) NONE;
 
-        while (elements.hasNext()) {
-            if (increment > windowSize && prev != NONE) {
-                int skipNum = increment - windowSize;
+            while (elements.hasNext()) {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
 
-                while (skipNum-- > 0 && elements.hasNext()) {
-                    elements.next();
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    if (elements.hasNext() == false) {
+                        break;
+                    }
+
+                    prev = (T) NONE;
                 }
 
-                if (elements.hasNext() == false) {
-                    break;
+                if (increment == 1) {
+                    action.accept(prev2 == NONE ? elements.next() : prev2, (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+
+                } else if (increment == 2) {
+                    action.accept(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    action.accept(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
                 }
-
-                prev = (T) NONE;
             }
-
-            if (increment == 1) {
-                action.accept(prev2 == NONE ? elements.next() : prev2, (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
-                        (prev = (elements.hasNext() ? elements.next() : null)));
-
-            } else if (increment == 2) {
-                action.accept(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
-                        (prev = (elements.hasNext() ? elements.next() : null)));
-            } else {
-                action.accept(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)), (prev = (elements.hasNext() ? elements.next() : null)));
-            }
+        } finally {
+            close();
         }
     }
 
@@ -1839,218 +1850,278 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     <A> A[] toArray(A[] a) {
-        return elements.toArray(a);
+        try {
+            return elements.toArray(a);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public List<T> toList() {
-        final List<T> result = new ArrayList<>();
+        try {
+            final List<T> result = new ArrayList<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Set<T> toSet() {
-        final Set<T> result = new HashSet<>();
+        try {
+            final Set<T> result = new HashSet<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <C extends Collection<T>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<T> toMultiset() {
-        final Multiset<T> result = new Multiset<>();
+        try {
+            final Multiset<T> result = new Multiset<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
-        final Multiset<T> result = supplier.get();
+        try {
+            final Multiset<T> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<T> toLongMultiset() {
-        final LongMultiset<T> result = new LongMultiset<>();
+        try {
+            final LongMultiset<T> result = new LongMultiset<>();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
-        final LongMultiset<T> result = supplier.get();
+        try {
+            final LongMultiset<T> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.next());
+            while (elements.hasNext()) {
+                result.add(elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        T element = null;
+        try {
+            final M result = mapFactory.get();
+            T element = null;
 
-        while (elements.hasNext()) {
-            element = elements.next();
-            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            while (elements.hasNext()) {
+                element = elements.next();
+                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        T element = null;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
+            T element = null;
 
-        while (elements.hasNext()) {
-            element = elements.next();
-            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+            while (elements.hasNext()) {
+                element = elements.next();
+                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, element);
             }
 
-            downstreamAccumulator.accept(v, element);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        T element = null;
+        try {
+            final M result = mapFactory.get();
+            T element = null;
 
-        while (elements.hasNext()) {
-            element = elements.next();
-            result.put(keyExtractor.apply(element), valueMapper.apply(element));
+            while (elements.hasNext()) {
+                element = elements.next();
+                result.put(keyExtractor.apply(element), valueMapper.apply(element));
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public T reduce(T identity, BinaryOperator<T> accumulator) {
-        T result = identity;
+        try {
+            T result = identity;
 
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            }
+
+            T result = elements.next();
+
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return Optional.of(result);
+        } finally {
+            close();
         }
-
-        T result = elements.next();
-
-        while (elements.hasNext()) {
-            result = accumulator.apply(result, elements.next());
-        }
-
-        return Optional.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
-        final A container = collector.supplier().get();
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        try {
+            final A container = collector.supplier().get();
+            final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (elements.hasNext()) {
-            accumulator.accept(container, elements.next());
+            while (elements.hasNext()) {
+                accumulator.accept(container, elements.next());
+            }
+
+            return collector.finisher().apply(container);
+        } finally {
+            close();
         }
-
-        return collector.finisher().apply(container);
     }
 
-    @Override
-    public Optional<T> head() {
-        if (head == null) {
-            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
-            tail = newStream(elements, sorted, cmp);
-        }
-
-        return head;
-    }
-
-    @Override
-    public Stream<T> tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
-            tail = newStream(elements, sorted, cmp);
-        }
-
-        return tail;
-    }
+    //    @Override
+    //    public Optional<T> head() {
+    //        if (head == null) {
+    //            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
+    //            tail = newStream(elements, sorted, cmp);
+    //        }
+    //
+    //        return head;
+    //    }
+    //
+    //    @Override
+    //    public Stream<T> tail() {
+    //        if (tail == null) {
+    //            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
+    //            tail = newStream(elements, sorted, cmp);
+    //        }
+    //
+    //        return tail;
+    //    }
 
     //    @Override
     //    public Stream<T> headd() {
@@ -2082,17 +2153,35 @@ class IteratorStream<T> extends AbstractStream<T> {
             return new IteratorStream<>(ObjIteratorEx.EMPTY, sorted, cmp, closeHandlers);
         }
 
-        final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
+        return newStream(new ObjIteratorEx<T>() {
+            private Iterator<T> iter;
 
-        while (elements.hasNext()) {
-            if (dqueue.size() >= n) {
-                dqueue.pollFirst();
+            @Override
+            public boolean hasNext() {
+                init();
+                return iter.hasNext();
             }
 
-            dqueue.offerLast(elements.next());
-        }
+            @Override
+            public T next() {
+                init();
+                return iter.next();
+            }
 
-        return newStream(dqueue.iterator(), sorted, cmp);
+            private void init() {
+                if (iter == null) {
+                    final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
+
+                    while (elements.hasNext()) {
+                        if (dqueue.size() >= n) {
+                            dqueue.pollFirst();
+                        }
+
+                        dqueue.offerLast(elements.next());
+                    }
+                }
+            }
+        }, sorted, cmp);
     }
 
     @Override
@@ -2135,105 +2224,125 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> min(Comparator<? super T> comparator) {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(comparator, cmp)) {
-            return Optional.of(elements.next());
-        }
-
-        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
-        T candidate = elements.next();
-        T next = null;
-
-        while (elements.hasNext()) {
-            next = elements.next();
-            if (comparator.compare(next, candidate) < 0) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(comparator, cmp)) {
+                return Optional.of(elements.next());
             }
-        }
 
-        return Optional.of(candidate);
-    }
-
-    @Override
-    public Optional<T> max(Comparator<? super T> comparator) {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(comparator, cmp)) {
+            comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
+            T candidate = elements.next();
             T next = null;
 
             while (elements.hasNext()) {
                 next = elements.next();
+                if (comparator.compare(next, candidate) < 0) {
+                    candidate = next;
+                }
             }
 
-            return Optional.of(next);
+            return Optional.of(candidate);
+        } finally {
+            close();
         }
+    }
 
-        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
-        T candidate = elements.next();
-        T next = null;
+    @Override
+    public Optional<T> max(Comparator<? super T> comparator) {
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(comparator, cmp)) {
+                T next = null;
 
-        while (elements.hasNext()) {
-            next = elements.next();
-            if (comparator.compare(next, candidate) > 0) {
-                candidate = next;
+                while (elements.hasNext()) {
+                    next = elements.next();
+                }
+
+                return Optional.of(next);
             }
-        }
 
-        return Optional.of(candidate);
+            comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
+            T candidate = elements.next();
+            T next = null;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+                if (comparator.compare(next, candidate) > 0) {
+                    candidate = next;
+                }
+            }
+
+            return Optional.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
         N.checkArgPositive(k, "k");
 
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(comparator, cmp)) {
-            final LinkedList<T> queue = new LinkedList<>();
+        try {
+            if (elements.hasNext() == false) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(comparator, cmp)) {
+                final LinkedList<T> queue = new LinkedList<>();
 
-            while (elements.hasNext()) {
-                if (queue.size() >= k) {
-                    queue.poll();
+                while (elements.hasNext()) {
+                    if (queue.size() >= k) {
+                        queue.poll();
+                    }
+
+                    queue.offer(elements.next());
                 }
 
-                queue.offer(elements.next());
+                return queue.size() < k ? (Optional<T>) Optional.empty() : Optional.of(queue.peek());
+            }
+
+            comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
+            final Queue<T> queue = new PriorityQueue<>(k, comparator);
+            T e = null;
+
+            while (elements.hasNext()) {
+                e = elements.next();
+
+                if (queue.size() < k) {
+                    queue.offer(e);
+                } else {
+                    if (comparator.compare(e, queue.peek()) > 0) {
+                        queue.poll();
+                        queue.offer(e);
+                    }
+                }
             }
 
             return queue.size() < k ? (Optional<T>) Optional.empty() : Optional.of(queue.peek());
+        } finally {
+            close();
         }
-
-        comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
-        final Queue<T> queue = new PriorityQueue<>(k, comparator);
-        T e = null;
-
-        while (elements.hasNext()) {
-            e = elements.next();
-
-            if (queue.size() < k) {
-                queue.offer(e);
-            } else {
-                if (comparator.compare(e, queue.peek()) > 0) {
-                    queue.poll();
-                    queue.offer(e);
-                }
-            }
-        }
-
-        return queue.size() < k ? (Optional<T>) Optional.empty() : Optional.of(queue.peek());
     }
 
     @Override
     public long count() {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next())) {
+                    return true;
+                }
             }
+        } finally {
+            close();
         }
 
         return false;
@@ -2241,10 +2350,14 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next()) == false) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -2252,10 +2365,14 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.next())) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -2263,12 +2380,16 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
-        while (elements.hasNext()) {
-            T e = elements.next();
+        try {
+            while (elements.hasNext()) {
+                T e = elements.next();
 
-            if (predicate.test(e)) {
-                return Optional.of(e);
+                if (predicate.test(e)) {
+                    return Optional.of(e);
+                }
             }
+        } finally {
+            close();
         }
 
         return (Optional<T>) Optional.empty();
@@ -2276,24 +2397,28 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
-        if (elements.hasNext() == false) {
-            return (Optional<T>) Optional.empty();
-        }
-
-        boolean hasResult = false;
-        T e = null;
-        T result = null;
-
-        while (elements.hasNext()) {
-            e = elements.next();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return (Optional<T>) Optional.empty();
             }
-        }
 
-        return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
+            boolean hasResult = false;
+            T e = null;
+            T result = null;
+
+            while (elements.hasNext()) {
+                e = elements.next();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
+        } finally {
+            close();
+        }
     }
 
     /**
@@ -2343,13 +2468,13 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new IteratorStream<>(elements, sorted, cmp, newCloseHandlers);
     }

@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.CharSupplier;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.CharStream;
 
 /**
@@ -80,6 +81,93 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
             @Override
             public CharList toList() {
                 return CharList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static CharIterator of(final Supplier<? extends CharIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new CharIterator() {
+            private CharIterator iter = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextChar();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static CharIterator oF(final Supplier<char[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new CharIterator() {
+            private char[] aar = null;
+            private int len = 0;
+            private int cur = 0;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return cur < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (cur >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cur++];
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    aar = arraySupplier.get();
+                    len = N.len(aar);
+                }
             }
         };
     }

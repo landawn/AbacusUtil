@@ -304,6 +304,52 @@ public class DynamicSQLBuilder {
             return this;
         }
 
+        /**
+         * Append question mark {@code ?} {@code n} times.
+         * 
+         * @param n
+         * @return
+         */
+        public Where repeatQM(int n) {
+            N.checkArgNotNegative(n, "n");
+
+            for (int i = 0; i < n; i++) {
+                if (i > 0) {
+                    sb.append(", ?");
+                } else {
+                    sb.append('?');
+                }
+            }
+
+            return this;
+        }
+
+        /**
+         * Append question mark {@code ?} {@code n} times.
+         * 
+         * @param n
+         * @param prefix
+         * @param postfix
+         * @return
+         */
+        public Where repeatQM(int n, String prefix, String postfix) {
+            N.checkArgNotNegative(n, "n");
+
+            sb.append(prefix);
+
+            for (int i = 0; i < n; i++) {
+                if (i > 0) {
+                    sb.append(", ?");
+                } else {
+                    sb.append('?');
+                }
+            }
+
+            sb.append(postfix);
+
+            return this;
+        }
+
         public Where and(String cond) {
             sb.append(" AND ").append(cond);
 

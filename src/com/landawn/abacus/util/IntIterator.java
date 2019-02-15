@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.IntSupplier;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.IntStream;
 
 /**
@@ -80,6 +81,93 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
             @Override
             public IntList toList() {
                 return IntList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static IntIterator of(final Supplier<? extends IntIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new IntIterator() {
+            private IntIterator iter = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextInt();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static IntIterator oF(final Supplier<int[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new IntIterator() {
+            private int[] aar = null;
+            private int len = 0;
+            private int cur = 0;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return cur < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (cur >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return aar[cur++];
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    aar = arraySupplier.get();
+                    len = N.len(aar);
+                }
             }
         };
     }

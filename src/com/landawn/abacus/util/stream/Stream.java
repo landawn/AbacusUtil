@@ -13,6 +13,7 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,7 +41,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -122,6 +122,8 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 /**
  * Note: This class includes codes copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
  * <br />
+ * 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @param <T> the type of the stream elements 
  * @see IntStream
@@ -1081,26 +1083,26 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <R> R toSetAndThen(Function<? super Set<T>, R> func);
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() or tail() is called. 
-     * 
-     * @return
-     */
-    @SequentialOnly
-    public abstract Optional<T> head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() or tail() is called. 
-     * 
-     * @return
-     */
-    @SequentialOnly
-    public abstract Stream<T> tail();
-
-    @SequentialOnly
-    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() or tail() is called. 
+    //     * 
+    //     * @return
+    //     */
+    //    @SequentialOnly
+    //    public abstract Optional<T> head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() or tail() is called. 
+    //     * 
+    //     * @return
+    //     */
+    //    @SequentialOnly
+    //    public abstract Stream<T> tail();
+    //
+    //    @SequentialOnly
+    //    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -1551,6 +1553,11 @@ public abstract class Stream<T>
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException;
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
     @SequentialOnly
     public abstract java.util.stream.Stream<T> toJdkStream();
 
@@ -1620,7 +1627,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
      * @param a
      * @param startIndex
@@ -1632,7 +1638,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
      * @param c
      * @return
@@ -1642,7 +1647,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
      * 
      * @param c
      * @param startIndex
@@ -1701,7 +1705,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
      * @param iterator
      * @return
@@ -1715,7 +1718,6 @@ public abstract class Stream<T>
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
      * 
      * @param c
      * @param startIndex
@@ -1731,8 +1733,7 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
-        final Stream<T> stream = of(iterator);
-        return stream.skip(startIndex).limit(endIndex - startIndex);
+        return Stream.<T> of(iterator).skip(startIndex).limit(endIndex - startIndex);
     }
 
     public static <T> Stream<T> of(final java.util.stream.Stream<T> stream) {
@@ -1791,56 +1792,6 @@ public abstract class Stream<T>
                 stream.close();
             }
         });
-    }
-
-    /**
-     * It's user's responsibility to close the input <code>reader</code> after the stream is finished.
-     * 
-     * @param reader
-     * @return
-     */
-    public static Stream<String> of(final Reader reader) {
-        N.checkArgNotNull(reader);
-
-        return of(new LineIterator(reader));
-    }
-
-    static Stream<String> of(final Reader reader, int startIndex, int endIndex) {
-        N.checkArgNotNull(reader);
-
-        return of(new LineIterator(reader), startIndex, endIndex);
-    }
-
-    public static Try<Stream<String>> of(final File file) {
-        return of(file, Charsets.UTF_8);
-    }
-
-    public static Try<Stream<String>> of(final File file, final Charset charset) {
-        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
-
-        return of(reader).onClose(newCloseHandle(reader)).tried();
-    }
-
-    public static Try<Stream<String>> of(final Path path) {
-        return of(path, Charsets.UTF_8);
-    }
-
-    public static Try<Stream<String>> of(final Path path, final Charset charset) {
-        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
-
-        return of(reader).onClose(new Runnable() {
-            private boolean isClosed = false;
-
-            @Override
-            public void run() {
-                if (isClosed) {
-                    return;
-                }
-
-                isClosed = true;
-                IOUtil.closeQuietly(reader);
-            }
-        }).tried();
     }
 
     public static <T> Stream<T> ofNullable(T t) {
@@ -2592,17 +2543,9 @@ public abstract class Stream<T>
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final Supplier<T> s) {
         N.checkArgNotNull(s);
 
-        final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
-
-        return of(new ObjIteratorEx<T>() {
+        return LongStream.interval(delay, interval, unit).mapToObj(new LongFunction<T>() {
             @Override
-            public boolean hasNext() {
-                return timer.hasNext();
-            }
-
-            @Override
-            public T next() {
-                timer.nextLong();
+            public T apply(long value) {
                 return s.get();
             }
         });
@@ -2635,19 +2578,7 @@ public abstract class Stream<T>
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final LongFunction<T> s) {
         N.checkArgNotNull(s);
 
-        final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
-
-        return of(new ObjIteratorEx<T>() {
-            @Override
-            public boolean hasNext() {
-                return timer.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return s.apply(timer.nextLong());
-            }
-        });
+        return LongStream.interval(delay, interval, unit).mapToObj(s);
     }
 
     /**
@@ -2735,6 +2666,95 @@ public abstract class Stream<T>
 
                     return N.EMPTY_STRING;
                 }
+            }
+        });
+    }
+
+    public static Stream<String> lines(final File file) {
+        return lines(file, Charsets.UTF_8);
+    }
+
+    public static Stream<String> lines(final File file, final Charset charset) {
+        final ObjIteratorEx<String> iter = createLazyLineIterator(file, null, charset, null, true);
+
+        return of(iter).onClose(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+    }
+
+    public static Stream<String> lines(final Path path) {
+        return lines(path, Charsets.UTF_8);
+    }
+
+    public static Stream<String> lines(final Path path, final Charset charset) {
+        final ObjIteratorEx<String> iter = createLazyLineIterator(null, path, charset, null, true);
+
+        return of(iter).onClose(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>reader</code> after the stream is finished.
+     * 
+     * @param reader
+     * @return
+     */
+    public static Stream<String> lines(final Reader reader) {
+        N.checkArgNotNull(reader);
+
+        return of(createLazyLineIterator(null, null, Charsets.UTF_8, reader, false));
+    }
+
+    private static ObjIteratorEx<String> createLazyLineIterator(final File file, final Path path, final Charset charset, final Reader reader,
+            final boolean closeReader) {
+        return ObjIteratorEx.of(new Supplier<ObjIteratorEx<String>>() {
+            private ObjIteratorEx<String> lazyIter = null;
+
+            @Override
+            public synchronized ObjIteratorEx<String> get() {
+                if (lazyIter == null) {
+                    lazyIter = new ObjIteratorEx<String>() {
+                        private BufferedReader bufferedReader;
+
+                        {
+                            if (reader != null) {
+                                bufferedReader = reader instanceof BufferedReader ? ((BufferedReader) reader) : new BufferedReader(reader);
+                            } else if (file != null) {
+                                bufferedReader = IOUtil.newBufferedReader(file, charset == null ? Charsets.UTF_8 : charset);
+                            } else {
+                                bufferedReader = IOUtil.newBufferedReader(path, charset == null ? Charsets.UTF_8 : charset);
+                            }
+                        }
+
+                        private final LineIterator lineIterator = new LineIterator(bufferedReader);
+
+                        @Override
+                        public boolean hasNext() {
+                            return lineIterator.hasNext();
+                        }
+
+                        @Override
+                        public String next() {
+                            return lineIterator.next();
+                        }
+
+                        @Override
+                        public void close() {
+                            if (closeReader) {
+                                IOUtil.closeAllQuietly(reader);
+                            }
+                        }
+                    };
+                }
+
+                return lazyIter;
             }
         });
     }
@@ -2945,13 +2965,34 @@ public abstract class Stream<T>
             return empty();
         }
 
-        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+        return of(new ObjIteratorEx<T>() {
+            private final Iterator<? extends Stream<? extends T>> iterators = c.iterator();
+            private Stream<? extends T> cur;
+            private Iterator<? extends T> iter;
 
-        for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
-        }
+            @Override
+            public boolean hasNext() {
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
 
-        return concatt(iterList).onClose(newCloseHandler(c));
+                    cur = iterators.next();
+                    iter = cur.iterator();
+                }
+
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return iter.next();
+            }
+        }).onClose(newCloseHandler(c));
     }
 
     public static <T> Stream<T> concatt(final Collection<? extends Iterator<? extends T>> c) {
@@ -3212,13 +3253,103 @@ public abstract class Stream<T>
             return Stream.empty();
         }
 
-        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+        final AtomicInteger threadCounter = new AtomicInteger(c.size());
+        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+        final Iterator<? extends Stream<? extends T>> iterators = c.iterator();
+        final int threadNum = Math.min(c.size(), readThreadNum);
+
+        for (int i = 0; i < threadNum; i++) {
+            DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
+                @Override
+                public void run() {
+                    try {
+                        while (onGoing.value()) {
+                            Stream<? extends T> s = null;
+                            Iterator<? extends T> iter = null;
+
+                            synchronized (iterators) {
+                                if (iterators.hasNext()) {
+                                    s = iterators.next();
+                                    iter = s.iterator();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            T next = null;
+
+                            while (onGoing.value() && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next == null) {
+                                    next = (T) NONE;
+                                }
+
+                                if (queue.offer(next) == false) {
+                                    while (onGoing.value()) {
+                                        if (queue.offer(next, 100, TimeUnit.MILLISECONDS)) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (s != null) {
+                                s.close();
+                            }
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e, onGoing);
+                    } finally {
+                        threadCounter.decrementAndGet();
+                    }
+                }
+            });
         }
 
-        return parallelConcatt(iterList, readThreadNum, queueSize).onClose(newCloseHandler(c));
+        return of(new QueuedIterator<T>(queueSize) {
+            T next = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    if (next == null && (next = queue.poll()) == null) {
+                        while (onGoing.value() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
+                            if ((next = queue.poll(1, TimeUnit.MILLISECONDS)) != null) {
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    setError(eHolder, e, onGoing);
+                }
+
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
+                }
+
+                return next != null;
+            }
+
+            @Override
+            public T next() {
+                if (next == null && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                T result = next == NONE ? null : next;
+                next = null;
+                return result;
+            }
+        }).onClose(newCloseHandler(c)).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
     }
 
     /**
@@ -7631,12 +7762,6 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorStream<>(new ObjIteratorEx<T>() {
             private T nextA = null;
             private T nextB = null;
@@ -7724,7 +7849,7 @@ public abstract class Stream<T>
     public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final Stream<? extends T> c,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
 
-        return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b, c)));
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     public static <T> Stream<T> merge(final List<? extends Collection<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
@@ -7766,13 +7891,14 @@ public abstract class Stream<T>
             return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+        final Iterator<? extends Stream<? extends T>> iter = c.iterator();
+        Stream<T> result = merge(iter.next(), iter.next(), nextSelector);
 
-        for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+        while (iter.hasNext()) {
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return mergge(iterList, nextSelector).onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -7810,12 +7936,19 @@ public abstract class Stream<T>
     public static <T> Stream<T> parallelMerge(final List<? extends Collection<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
         N.checkArgNotNull(nextSelector);
-        checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
         final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
@@ -7846,22 +7979,75 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        N.checkArgNotNull(nextSelector);
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return (Stream<T>) c.iterator().next();
+        } else if (c.size() == 2) {
+            final Iterator<? extends Stream<? extends T>> iter = c.iterator();
+            return merge(iter.next().queued(), iter.next().queued(), nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends Stream<? extends T>> iter = c.iterator();
+            return merge(iter.next().queued(), iter.next().queued(), iter.next().queued(), nextSelector);
         }
 
-        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+        final Queue<Stream<T>> queue = N.newLinkedList();
 
         for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+            queue.add((Stream<T>) e);
         }
 
-        return parallelMergge(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt cnt = MutableInt.of(c.size());
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+
+        for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
+            futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
+                @Override
+                public void run() {
+                    Stream<T> a = null;
+                    Stream<T> b = null;
+                    Stream<T> c = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (queue) {
+                                if (cnt.intValue() > 2 && queue.size() > 1) {
+                                    a = queue.poll();
+                                    b = queue.poll();
+
+                                    cnt.decrement();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            c = Stream.of((T[]) merge(a, b, nextSelector).toArray());
+
+                            synchronized (queue) {
+                                queue.offer(c);
+                            }
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
+        }
+
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 
     /**
@@ -7885,7 +8071,9 @@ public abstract class Stream<T>
             final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return mergge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return of(c.iterator().next());
@@ -7895,6 +8083,14 @@ public abstract class Stream<T>
             final Iterator<? extends T> b = iter.next();
             return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(),
                     nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            final Iterator<? extends T> iterA = iter.next();
+            final Iterator<? extends T> iterB = iter.next();
+            final Iterator<? extends T> iterC = iter.next();
+            return merge(iterA instanceof QueuedIterator ? iterA : Stream.of(iterA).queued().iterator(),
+                    iterB instanceof QueuedIterator ? iterB : Stream.of(iterB).queued().iterator(),
+                    iterC instanceof QueuedIterator ? iterC : Stream.of(iterC).queued().iterator(), nextSelector);
         }
 
         final Queue<Iterator<? extends T>> queue = N.newLinkedList(c);
@@ -7938,11 +8134,6 @@ public abstract class Stream<T>
         }
 
         complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
-        }
 
         final Iterator<? extends T> a = queue.poll();
         final Iterator<? extends T> b = queue.poll();

@@ -22,7 +22,6 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +50,7 @@ import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.Iterators;
+import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Matrix;
@@ -1333,144 +1333,176 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
             final Try.Predicate<? super T, E2> predicateForLast) throws E, E2 {
-        final ObjIteratorEx<T> iter = iteratorEx();
-        T last = (T) NONE;
-        T next = null;
+        try {
+            final ObjIteratorEx<T> iter = iteratorEx();
+            T last = (T) NONE;
+            T next = null;
 
-        while (iter.hasNext()) {
-            next = iter.next();
+            while (iter.hasNext()) {
+                next = iter.next();
 
-            if (predicateForFirst.test(next)) {
-                return Optional.of(next);
-            } else if (predicateForLast.test(next)) {
-                last = next;
+                if (predicateForFirst.test(next)) {
+                    return Optional.of(next);
+                } else if (predicateForLast.test(next)) {
+                    last = next;
+                }
             }
-        }
 
-        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+            return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U seed,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
-        final ObjIteratorEx<T> iter = iteratorEx();
-        T last = (T) NONE;
-        T next = null;
+        try {
+            final ObjIteratorEx<T> iter = iteratorEx();
+            T last = (T) NONE;
+            T next = null;
 
-        while (iter.hasNext()) {
-            next = iter.next();
+            while (iter.hasNext()) {
+                next = iter.next();
 
-            if (predicateForFirst.test(next, seed)) {
-                return Optional.of(next);
-            } else if (predicateForLast.test(next, seed)) {
-                last = next;
+                if (predicateForFirst.test(next, seed)) {
+                    return Optional.of(next);
+                } else if (predicateForLast.test(next, seed)) {
+                    last = next;
+                }
             }
-        }
 
-        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+            return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
-        final ObjIteratorEx<T> iter = iteratorEx();
-        U seed = null;
-        T last = (T) NONE;
-        T next = null;
+        try {
+            final ObjIteratorEx<T> iter = iteratorEx();
+            U seed = null;
+            T last = (T) NONE;
+            T next = null;
 
-        while (iter.hasNext()) {
-            next = iter.next();
-            seed = preFunc.apply(next);
+            while (iter.hasNext()) {
+                next = iter.next();
+                seed = preFunc.apply(next);
 
-            if (predicateForFirst.test(next, seed)) {
-                return Optional.of(next);
-            } else if (predicateForLast.test(next, seed)) {
-                last = next;
+                if (predicateForFirst.test(next, seed)) {
+                    return Optional.of(next);
+                } else if (predicateForLast.test(next, seed)) {
+                    last = next;
+                }
             }
-        }
 
-        return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+            return last == NONE ? (Optional<T>) Optional.empty() : Optional.of(last);
+        } finally {
+            close();
+        }
     }
 
     @Override
     @SafeVarargs
     public final boolean containsAll(final T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return true;
-        } else if (a.length == 1) {
-            return anyMatch(Fn.equal(a[0]));
-        } else if (a.length == 2) {
-            return filter(new Predicate<T>() {
-                private final T val1 = a[0];
-                private final T val2 = a[1];
+        try {
+            if (N.isNullOrEmpty(a)) {
+                return true;
+            } else if (a.length == 1) {
+                return anyMatch(Fn.equal(a[0]));
+            } else if (a.length == 2) {
+                return filter(new Predicate<T>() {
+                    private final T val1 = a[0];
+                    private final T val2 = a[1];
 
-                @Override
-                public boolean test(T t) {
-                    return N.equals(t, val1) || N.equals(t, val2);
-                }
-            }).distinct().limit(2).count() == 2;
-        } else {
-            return containsAll(N.asSet(a));
+                    @Override
+                    public boolean test(T t) {
+                        return N.equals(t, val1) || N.equals(t, val2);
+                    }
+                }).distinct().limit(2).count() == 2;
+            } else {
+                return containsAll(N.asSet(a));
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public boolean containsAll(final Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return true;
-        } else if (c.size() == 1) {
-            final T val = c instanceof List ? ((List<T>) c).get(0) : c.iterator().next();
-            return anyMatch(Fn.equal(val));
-        } else {
-            final Set<T> set = c instanceof Set ? (Set<T>) c : N.newHashSet(c);
-            return filter(new Predicate<T>() {
-                @Override
-                public boolean test(T t) {
-                    return set.contains(t);
-                }
-            }).distinct().limit(set.size()).count() == set.size();
+        try {
+            if (N.isNullOrEmpty(c)) {
+                return true;
+            } else if (c.size() == 1) {
+                final T val = c instanceof List ? ((List<T>) c).get(0) : c.iterator().next();
+                return anyMatch(Fn.equal(val));
+            } else {
+                final Set<T> set = c instanceof Set ? (Set<T>) c : N.newHashSet(c);
+                return filter(new Predicate<T>() {
+                    @Override
+                    public boolean test(T t) {
+                        return set.contains(t);
+                    }
+                }).distinct().limit(set.size()).count() == set.size();
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public Optional<T> first() {
-        final Iterator<T> iter = this.iterator();
+        try {
+            final Iterator<T> iter = this.iterator();
 
-        if (iter.hasNext() == false) {
-            return Optional.empty();
+            if (iter.hasNext() == false) {
+                return Optional.empty();
+            }
+
+            return Optional.of(iter.next());
+        } finally {
+            close();
         }
-
-        return Optional.of(iter.next());
     }
 
     @Override
     public Optional<T> last() {
-        final Iterator<T> iter = this.iterator();
+        try {
+            final Iterator<T> iter = this.iterator();
 
-        if (iter.hasNext() == false) {
-            return Optional.empty();
+            if (iter.hasNext() == false) {
+                return Optional.empty();
+            }
+
+            T next = iter.next();
+
+            while (iter.hasNext()) {
+                next = iter.next();
+            }
+
+            return Optional.of(next);
+        } finally {
+            close();
         }
-
-        T next = iter.next();
-
-        while (iter.hasNext()) {
-            next = iter.next();
-        }
-
-        return Optional.of(next);
     }
 
     @Override
     public Optional<T> onlyOne() throws DuplicatedResultException {
-        final Iterator<T> iter = this.iteratorEx();
+        try {
+            final Iterator<T> iter = this.iteratorEx();
 
-        final Optional<T> result = iter.hasNext() ? Optional.of(iter.next()) : Optional.<T> empty();
+            final Optional<T> result = iter.hasNext() ? Optional.of(iter.next()) : Optional.<T> empty();
 
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.next()));
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.next()));
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -1973,24 +2005,32 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<Map<Percentage, T>> percentiles() {
-        final Object[] a = sorted().toArray();
+        try {
+            final Object[] a = sorted().toArray();
 
-        if (N.isNullOrEmpty(a)) {
-            return Optional.empty();
+            if (N.isNullOrEmpty(a)) {
+                return Optional.empty();
+            }
+
+            return Optional.of((Map<Percentage, T>) N.percentiles(a));
+        } finally {
+            close();
         }
-
-        return Optional.of((Map<Percentage, T>) N.percentiles(a));
     }
 
     @Override
     public Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator) {
-        final Object[] a = sorted(comparator).toArray();
+        try {
+            final Object[] a = sorted(comparator).toArray();
 
-        if (N.isNullOrEmpty(a)) {
-            return Optional.empty();
+            if (N.isNullOrEmpty(a)) {
+                return Optional.empty();
+            }
+
+            return Optional.of((Map<Percentage, T>) N.percentiles(a));
+        } finally {
+            close();
         }
-
-        return Optional.of((Map<Percentage, T>) N.percentiles(a));
     }
 
     //    @Override
@@ -2188,10 +2228,14 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
-        final Object[] src = toArray();
-        final A[] res = generator.apply(src.length);
-        System.arraycopy(src, 0, res, 0, src.length);
-        return res;
+        try {
+            final Object[] src = toArray();
+            final A[] res = generator.apply(src.length);
+            System.arraycopy(src, 0, res, 0, src.length);
+            return res;
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2201,36 +2245,40 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public DataSet toDataSet(boolean isFirstHeader) {
-        if (isFirstHeader) {
-            final ObjIterator<T> iter = this.iterator();
+        try {
+            if (isFirstHeader) {
+                final ObjIterator<T> iter = this.iterator();
 
-            if (iter.hasNext() == false) {
-                return N.newDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
-            }
-
-            final T header = iter.next();
-            final Type<?> type = N.typeOf(header.getClass());
-            List<String> columnNames = null;
-
-            if (type.isArray()) {
-                final Object[] a = (Object[]) header;
-                columnNames = new ArrayList<>(a.length);
-
-                for (Object e : a) {
-                    columnNames.add(N.stringOf(e));
+                if (iter.hasNext() == false) {
+                    return N.newDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
                 }
+
+                final T header = iter.next();
+                final Type<?> type = N.typeOf(header.getClass());
+                List<String> columnNames = null;
+
+                if (type.isArray()) {
+                    final Object[] a = (Object[]) header;
+                    columnNames = new ArrayList<>(a.length);
+
+                    for (Object e : a) {
+                        columnNames.add(N.stringOf(e));
+                    }
+                } else {
+                    final Collection<?> c = (Collection<?>) header;
+                    columnNames = new ArrayList<>(c.size());
+
+                    for (Object e : c) {
+                        columnNames.add(N.stringOf(e));
+                    }
+                }
+
+                return N.newDataSet(columnNames, Iterators.toList(iter));
             } else {
-                final Collection<?> c = (Collection<?>) header;
-                columnNames = new ArrayList<>(c.size());
-
-                for (Object e : c) {
-                    columnNames.add(N.stringOf(e));
-                }
+                return toDataSet(null);
             }
-
-            return N.newDataSet(columnNames, Iterators.toList(iter));
-        } else {
-            return toDataSet(null);
+        } finally {
+            close();
         }
     }
 
@@ -2240,34 +2288,37 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public String join(CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
     public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final IteratorEx<T> iter = this.iteratorEx();
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final IteratorEx<T> iter = this.iteratorEx();
 
-        while (iter.hasNext()) {
-            joiner.append(iter.next());
+            while (iter.hasNext()) {
+                joiner.append(iter.next());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
         }
-
-        return joiner.toString();
     }
 
     @Override
     public boolean hasDuplicates() {
-        final Set<T> set = new HashSet<>();
-        final Iterator<T> iter = iterator();
+        try {
+            final Set<T> set = new HashSet<>();
+            final Iterator<T> iter = iterator();
 
-        while (iter.hasNext()) {
-            if (set.add(iter.next()) == false) {
-                return true;
+            while (iter.hasNext()) {
+                if (set.add(iter.next()) == false) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2302,10 +2353,10 @@ abstract class AbstractStream<T> extends Stream<T> {
         return func.apply(toSet());
     }
 
-    @Override
-    public Pair<Optional<T>, Stream<T>> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<Optional<T>, Stream<T>> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -2418,23 +2469,27 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(Writer writer, Try.Function<? super T, String, IOException> toLine) throws IOException {
-        final Iterator<T> iter = iterator();
-        final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
-        long cnt = 0;
-
         try {
-            while (iter.hasNext()) {
-                bw.write(toLine.apply(iter.next()));
-                bw.write(IOUtil.LINE_SEPARATOR);
-                cnt++;
-            }
-        } finally {
-            if (bw != writer) {
-                Objectory.recycle(bw);
-            }
-        }
+            final Iterator<T> iter = iterator();
+            final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
+            long cnt = 0;
 
-        return cnt;
+            try {
+                while (iter.hasNext()) {
+                    bw.write(toLine.apply(iter.next()));
+                    bw.write(IOUtil.LINE_SEPARATOR);
+                    cnt++;
+                }
+            } finally {
+                if (bw != writer) {
+                    Objectory.recycle(bw);
+                }
+            }
+
+            return cnt;
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2447,7 +2502,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             return persist(stmt, batchSize, batchInterval, stmtSetter);
         } finally {
-            closeQuietly(stmt);
+            JdbcUtil.closeQuietly(stmt);
         }
     }
 
@@ -2457,47 +2512,33 @@ abstract class AbstractStream<T> extends Stream<T> {
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
 
-        final Iterator<T> iter = iterator();
+        try {
+            final Iterator<T> iter = iterator();
 
-        long cnt = 0;
-        while (iter.hasNext()) {
-            stmtSetter.accept(stmt, iter.next());
+            long cnt = 0;
+            while (iter.hasNext()) {
+                stmtSetter.accept(stmt, iter.next());
 
-            stmt.addBatch();
+                stmt.addBatch();
 
-            if ((++cnt % batchSize) == 0) {
+                if ((++cnt % batchSize) == 0) {
+                    stmt.executeBatch();
+                    stmt.clearBatch();
+
+                    if (batchInterval > 0) {
+                        N.sleep(batchInterval);
+                    }
+                }
+            }
+
+            if ((cnt % batchSize) > 0) {
                 stmt.executeBatch();
                 stmt.clearBatch();
-
-                if (batchInterval > 0) {
-                    N.sleep(batchInterval);
-                }
-            }
-        }
-
-        if ((cnt % batchSize) > 0) {
-            stmt.executeBatch();
-            stmt.clearBatch();
-        }
-
-        return cnt;
-    }
-
-    private static void closeQuietly(final Statement stmt) {
-        if (stmt != null) {
-            if (stmt instanceof PreparedStatement) {
-                try {
-                    ((PreparedStatement) stmt).clearParameters();
-                } catch (Exception e) {
-                    logger.error("Failed to clear parameters", e);
-                }
             }
 
-            try {
-                stmt.close();
-            } catch (Exception e) {
-                logger.error("Failed to close Statement", e);
-            }
+            return cnt;
+        } finally {
+            close();
         }
     }
 

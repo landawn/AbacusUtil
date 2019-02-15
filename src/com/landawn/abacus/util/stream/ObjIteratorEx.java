@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -174,6 +175,143 @@ public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements Iterato
 
     public static <T> ObjIteratorEx<T> of(final Iterable<T> iterable) {
         return iterable == null ? ObjIteratorEx.<T> empty() : of(iterable.iterator());
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static <T> ObjIteratorEx<T> of(final Supplier<? extends Iterator<? extends T>> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new ObjIteratorEx<T>() {
+            private Iterator<? extends T> iter = null;
+            private ObjIteratorEx<? extends T> iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.next();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    return iterEx.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
+            public void close() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.close();
+                }
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                    iterEx = iter instanceof ObjIteratorEx ? (ObjIteratorEx<T>) iter : null;
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static <T> ObjIteratorEx<T> oF(final Supplier<T[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new ObjIteratorEx<T>() {
+            private ObjIteratorEx<T> iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.next();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                iterEx.skip(n);
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.count();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iterEx = ObjIteratorEx.of(arraySupplier.get());
+                }
+            }
+        };
     }
 
     @Override

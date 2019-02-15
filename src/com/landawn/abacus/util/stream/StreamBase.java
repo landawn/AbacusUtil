@@ -16,15 +16,15 @@ package com.landawn.abacus.util.stream;
 
 import java.lang.reflect.Field;
 import java.security.SecureRandom;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -92,8 +92,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
     static final int CORE_THREAD_POOL_SIZE = 64;
 
-    static final int DEFAULT_MAX_THREAD_NUM = IOUtil.CPU_CORES;
-    static final int DEFAULT_READING_THREAD_NUM = 8;
+    static final int DEFAULT_MAX_THREAD_NUM = Math.max(8, IOUtil.CPU_CORES * 2);
+    static final int DEFAULT_READING_THREAD_NUM = Math.max(8, IOUtil.CPU_CORES * 2);
 
     static final int MAX_QUEUE_SIZE = 8192;
     static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 32;
@@ -585,14 +585,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
     static volatile boolean isListElementDataFieldGettable = true;
 
-    final Set<Runnable> closeHandlers;
+    final Deque<Runnable> closeHandlers;
     final boolean sorted;
     final Comparator<? super T> cmp;;
     boolean isClosed = false;
 
     StreamBase(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+                : (closeHandlers instanceof LocalArrayDeque ? (LocalArrayDeque<Runnable>) closeHandlers : new LocalArrayDeque<>(closeHandlers));
 
         this.sorted = sorted;
         this.cmp = cmp;
@@ -631,6 +631,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     @Override
     public ImmutableSet<T> toImmutableSet() {
         return ImmutableSet.of(toSet());
+    }
+
+    @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
     }
 
     @Override
@@ -735,10 +740,10 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     //        return (SS) this.parallel(maxThreadNum).__(op).sequential();
     //    }
 
-    @Override
-    public Try<S> tried() {
-        return Try.of((S) this);
-    }
+    //    @Override
+    //    public Try<S> tried() {
+    //        return Try.of((S) this);
+    //    }
 
     @Override
     public synchronized void close() {
@@ -750,7 +755,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         close(closeHandlers);
     }
 
-    static void close(final Set<Runnable> closeHandlers) {
+    static void close(final Deque<Runnable> closeHandlers) {
         Throwable ex = null;
 
         for (Runnable closeHandler : closeHandlers) {
@@ -1141,6 +1146,22 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return DoubleIteratorEx.from(iter);
     }
 
+    static Runnable wrapCloseHandlers(final Runnable closeHandler) {
+        return new Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                closeHandler.run();
+            }
+        };
+    }
+
     static Runnable newCloseHandle(final AutoCloseable closeable) {
         return Fn.closeQuietly(closeable);
     }
@@ -1170,20 +1191,20 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         };
     }
 
-    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> stream, final Set<Runnable> closeHandlers) {
+    static Deque<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> stream, final Deque<Runnable> closeHandlers) {
         return mergeCloseHandlers(stream.closeHandlers, closeHandlers);
     }
 
-    static Set<Runnable> mergeCloseHandlers(final Set<Runnable> closeHandlersA, final Set<Runnable> closeHandlersB) {
-        if (N.isNullOrEmpty(closeHandlersA) && closeHandlersB instanceof LocalLinkedHashSet) {
+    static Deque<Runnable> mergeCloseHandlers(final Deque<Runnable> closeHandlersA, final Deque<Runnable> closeHandlersB) {
+        if (N.isNullOrEmpty(closeHandlersA) && closeHandlersB instanceof LocalArrayDeque) {
             return closeHandlersB;
-        } else if (closeHandlersA instanceof LocalLinkedHashSet && N.isNullOrEmpty(closeHandlersB)) {
+        } else if (closeHandlersA instanceof LocalArrayDeque && N.isNullOrEmpty(closeHandlersB)) {
             return closeHandlersA;
         } else if (N.isNullOrEmpty(closeHandlersA) && N.isNullOrEmpty(closeHandlersB)) {
             return null;
         }
 
-        final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>();
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>();
 
         if (N.notNullOrEmpty(closeHandlersA)) {
             newCloseHandlers.addAll(closeHandlersA);
@@ -1327,22 +1348,18 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         return DoubleStream.of(a, from, to).sum();
     }
 
-    static final class LocalLinkedHashSet<T> extends LinkedHashSet<T> {
+    static final class LocalArrayDeque<T> extends ArrayDeque<T> {
         private static final long serialVersionUID = -97425473105100734L;
 
-        public LocalLinkedHashSet() {
+        public LocalArrayDeque() {
             super();
         }
 
-        public LocalLinkedHashSet(int initialCapacity) {
+        public LocalArrayDeque(int initialCapacity) {
             super(initialCapacity);
         }
 
-        public LocalLinkedHashSet(int initialCapacity, float loadFactor) {
-            super(initialCapacity, loadFactor);
-        }
-
-        public LocalLinkedHashSet(Collection<? extends T> c) {
+        public LocalArrayDeque(Collection<? extends T> c) {
             super(c);
         }
     }

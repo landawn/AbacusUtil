@@ -21,6 +21,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.function.Supplier;
 
 /** 
  * 
@@ -140,6 +141,144 @@ public abstract class ByteIteratorEx extends ByteIterator implements IteratorEx<
             @Override
             public void close() {
                 // Do nothing.
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param iteratorSupplier
+     * @return
+     */
+    public static ByteIteratorEx of(final Supplier<? extends ByteIterator> iteratorSupplier) {
+        N.checkArgNotNull(iteratorSupplier, "iteratorSupplier");
+
+        return new ByteIteratorEx() {
+            private ByteIterator iter = null;
+            private ByteIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iter.nextByte();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.skip(n);
+                } else {
+                    super.skip(n);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    return iterEx.count();
+                } else {
+                    return super.count();
+                }
+            }
+
+            @Override
+            public void close() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                if (iterEx != null) {
+                    iterEx.close();
+                }
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    iter = iteratorSupplier.get();
+                    iterEx = iter instanceof ByteIteratorEx ? (ByteIteratorEx) iter : null;
+                }
+            }
+        };
+    }
+
+    /**
+     * Lazy evaluation.
+     * 
+     * @param arraySupplier
+     * @return
+     */
+    public static ByteIteratorEx oF(final Supplier<byte[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier, "arraySupplier");
+
+        return new ByteIteratorEx() {
+            private ByteIteratorEx iterEx = null;
+            private boolean isInitialized = false;
+
+            @Override
+            public boolean hasNext() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.nextByte();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                iterEx.skip(n);
+            }
+
+            @Override
+            public long count() {
+                if (isInitialized == false) {
+                    init();
+                }
+
+                return iterEx.count();
+            }
+
+            private void init() {
+                if (isInitialized == false) {
+                    isInitialized = true;
+                    byte[] aar = arraySupplier.get();
+                    iterEx = ByteIteratorEx.of(aar);
+                }
             }
         };
     }

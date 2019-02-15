@@ -65,6 +65,18 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new ShortPredicate() {
+            @Override
+            public boolean test(short value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public ShortStream flattMap(final ShortFunction<short[]> mapper) {
         return flatMap(new ShortFunction<ShortStream>() {
             @Override
@@ -292,119 +304,8 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public ShortMatrix toMatrix() {
-        return ShortMatrix.of(toArray());
-    }
-
-    @Override
-    public ShortStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new ShortPredicate() {
-            @Override
-            public boolean test(short value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
     public ShortStream top(int n) {
         return top(n, SHORT_COMPARATOR);
-    }
-
-    @Override
-    public OptionalShort first() {
-        final ShortIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
-    }
-
-    @Override
-    public OptionalShort last() {
-        final ShortIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalShort.empty();
-        }
-
-        short next = iter.nextShort();
-
-        while (iter.hasNext()) {
-            next = iter.nextShort();
-        }
-
-        return OptionalShort.of(next);
-    }
-
-    @Override
-    public OptionalShort onlyOne() throws DuplicatedResultException {
-        final ShortIterator iter = this.iteratorEx();
-
-        final OptionalShort result = iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextShort()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
-            Try.ShortPredicate<E> predicateForLast) throws E, E2 {
-        final ShortIteratorEx iter = iteratorEx();
-        MutableShort last = null;
-        short next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextShort();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalShort.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableShort.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalShort.empty() : OptionalShort.of(last.value());
     }
 
     @Override
@@ -880,56 +781,10 @@ abstract class AbstractShortStream extends ShortStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Short>> percentiles() {
-        final short[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizze() {
-        final short[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
-        } else {
-            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final ShortIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextShort());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalShort, ShortStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalShort, ShortStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -988,5 +843,173 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream cached() {
         return newStream(toArray(), sorted);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public ShortMatrix toMatrix() {
+        return ShortMatrix.of(toArray());
+    }
+
+    @Override
+    public OptionalShort first() {
+        try {
+            final ShortIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalShort last() {
+        try {
+            final ShortIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalShort.empty();
+            }
+
+            short next = iter.nextShort();
+
+            while (iter.hasNext()) {
+                next = iter.nextShort();
+            }
+
+            return OptionalShort.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalShort onlyOne() throws DuplicatedResultException {
+        try {
+            final ShortIterator iter = this.iteratorEx();
+
+            final OptionalShort result = iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextShort()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
+            Try.ShortPredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final ShortIteratorEx iter = iteratorEx();
+            MutableShort last = null;
+            short next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextShort();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalShort.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableShort.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalShort.empty() : OptionalShort.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Short>> percentiles() {
+        try {
+            final short[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeAndPercentiles() {
+        try {
+            final short[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
+            } else {
+                return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final ShortIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextShort());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
     }
 }

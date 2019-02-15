@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
@@ -30,6 +29,7 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -61,7 +61,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * <br />
  *
  * @see Stream
@@ -429,23 +429,23 @@ public abstract class CharStream
 
     public abstract <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalChar head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract CharStream tail();
-
-    public abstract Pair<OptionalChar, CharStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalChar head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract CharStream tail();
+    //
+    //    public abstract Pair<OptionalChar, CharStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -521,7 +521,7 @@ public abstract class CharStream
 
     public abstract CharSummaryStatistics summarize();
 
-    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizze();
+    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -564,6 +564,12 @@ public abstract class CharStream
      */
     public abstract Stream<Character> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
+    @SequentialOnly
     @Override
     public CharIterator iterator() {
         return iteratorEx();
@@ -1524,12 +1530,6 @@ public abstract class CharStream
      * @return
      */
     public static CharStream merge(final CharIterator a, final CharIterator b, final CharBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorCharStream(new CharIteratorEx() {
             private char nextA = 0;
             private char nextB = 0;
@@ -1622,7 +1622,7 @@ public abstract class CharStream
      * @return
      */
     public static CharStream merge(final CharStream a, final CharStream b, final CharStream c, final CharBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1642,13 +1642,13 @@ public abstract class CharStream
         }
 
         final Iterator<? extends CharStream> iter = c.iterator();
-        CharStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        CharStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1671,21 +1671,24 @@ public abstract class CharStream
     public static CharStream parallelMerge(final Collection<? extends CharStream> c, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends CharStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends CharStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<CharIterator> queue = N.newLinkedList();
+        final Queue<CharStream> queue = N.newLinkedList();
 
         for (CharStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1696,9 +1699,9 @@ public abstract class CharStream
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    CharIterator a = null;
-                    CharIterator b = null;
-                    CharIterator c = null;
+                    CharStream a = null;
+                    CharStream b = null;
+                    CharStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1713,7 +1716,7 @@ public abstract class CharStream
                                 }
                             }
 
-                            c = CharIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = CharStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1726,13 +1729,14 @@ public abstract class CharStream
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

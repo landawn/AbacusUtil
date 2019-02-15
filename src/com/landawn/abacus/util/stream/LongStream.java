@@ -26,11 +26,11 @@ import java.util.PrimitiveIterator;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
@@ -67,6 +67,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToLongFunction;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @see Stream 
  */
@@ -272,23 +273,23 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalLong head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract LongStream tail();
-
-    public abstract Pair<OptionalLong, LongStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalLong head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract LongStream tail();
+    //
+    //    public abstract Pair<OptionalLong, LongStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -335,7 +336,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract LongSummaryStatistics summarize();
 
-    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizze();
+    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -362,6 +363,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract Stream<Long> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
+    @SequentialOnly
     @Override
     public LongIterator iterator() {
         return iteratorEx();
@@ -1369,12 +1376,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final LongIterator a, final LongIterator b, final LongBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorLongStream(new LongIteratorEx() {
             private long nextA = 0;
             private long nextB = 0;
@@ -1467,7 +1468,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final LongStream a, final LongStream b, final LongStream c, final LongBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1487,13 +1488,13 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         }
 
         final Iterator<? extends LongStream> iter = c.iterator();
-        LongStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        LongStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1516,21 +1517,24 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream parallelMerge(final Collection<? extends LongStream> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends LongStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends LongStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<LongIterator> queue = N.newLinkedList();
+        final Queue<LongStream> queue = N.newLinkedList();
 
         for (LongStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1541,9 +1545,9 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    LongIterator a = null;
-                    LongIterator b = null;
-                    LongIterator c = null;
+                    LongStream a = null;
+                    LongStream b = null;
+                    LongStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1558,7 +1562,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                                 }
                             }
 
-                            c = LongIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = LongStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1571,14 +1575,15 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 
     public static abstract class LongStreamEx extends LongStream {

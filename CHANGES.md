@@ -1,3 +1,16 @@
+### 1.5
+ 
+* Change the stream implementation: close it after execution(any terminal method is executed).
+
+* Remove `Stream.head/tail/headAndTail`.
+
+* Remove `Stream.try` because the all streams will be automatically closed after execution.
+
+* Rename `Stream.of(File/Path...)` to `Stream.lines(File/Path...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.3.33
  
 * Refactoring `HttpClient/HttpRequest/OKHttpClient/HttpSettings/HttpHeaders`.

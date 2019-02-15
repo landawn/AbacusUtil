@@ -64,6 +64,18 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new LongPredicate() {
+            @Override
+            public boolean test(long value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public LongStream flattMap(final LongFunction<long[]> mapper) {
         return flatMap(new LongFunction<LongStream>() {
             @Override
@@ -291,119 +303,8 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public LongMatrix toMatrix() {
-        return LongMatrix.of(toArray());
-    }
-
-    @Override
-    public LongStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new LongPredicate() {
-            @Override
-            public boolean test(long value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
     public LongStream top(int n) {
         return top(n, LONG_COMPARATOR);
-    }
-
-    @Override
-    public OptionalLong first() {
-        final LongIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
-    }
-
-    @Override
-    public OptionalLong last() {
-        final LongIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalLong.empty();
-        }
-
-        long next = iter.nextLong();
-
-        while (iter.hasNext()) {
-            next = iter.nextLong();
-        }
-
-        return OptionalLong.of(next);
-    }
-
-    @Override
-    public OptionalLong onlyOne() throws DuplicatedResultException {
-        final LongIterator iter = this.iteratorEx();
-
-        final OptionalLong result = iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextLong()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalLong findFirstOrLast(Try.LongPredicate<E> predicateForFirst,
-            Try.LongPredicate<E> predicateForLast) throws E, E2 {
-        final LongIteratorEx iter = iteratorEx();
-        MutableLong last = null;
-        long next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextLong();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalLong.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableLong.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalLong.empty() : OptionalLong.of(last.value());
     }
 
     @Override
@@ -879,56 +780,10 @@ abstract class AbstractLongStream extends LongStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Long>> percentiles() {
-        final long[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizze() {
-        final long[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
-        } else {
-            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final LongIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextLong());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalLong, LongStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalLong, LongStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -986,5 +841,173 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream cached() {
         return newStream(toArray(), sorted);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public LongMatrix toMatrix() {
+        return LongMatrix.of(toArray());
+    }
+
+    @Override
+    public OptionalLong first() {
+        try {
+            final LongIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalLong last() {
+        try {
+            final LongIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalLong.empty();
+            }
+
+            long next = iter.nextLong();
+
+            while (iter.hasNext()) {
+                next = iter.nextLong();
+            }
+
+            return OptionalLong.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalLong onlyOne() throws DuplicatedResultException {
+        try {
+            final LongIterator iter = this.iteratorEx();
+
+            final OptionalLong result = iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextLong()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalLong findFirstOrLast(Try.LongPredicate<E> predicateForFirst,
+            Try.LongPredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final LongIteratorEx iter = iteratorEx();
+            MutableLong last = null;
+            long next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextLong();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalLong.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableLong.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalLong.empty() : OptionalLong.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Long>> percentiles() {
+        try {
+            final long[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeAndPercentiles() {
+        try {
+            final long[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
+            } else {
+                return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final LongIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextLong());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
     }
 }

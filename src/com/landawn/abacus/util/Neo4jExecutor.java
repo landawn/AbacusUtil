@@ -523,22 +523,22 @@ public final class Neo4jExecutor {
         }
     }
 
-    public Try<Stream<Map<String, Object>>> query(String cypher, Map<String, ?> parameters) {
+    public Stream<Map<String, Object>> query(String cypher, Map<String, ?> parameters) {
         final Session session = getSession();
 
-        return Stream.of(session.query(cypher, parameters).iterator()).onClose(newCloseHandle(session)).tried();
+        return Stream.of(session.query(cypher, parameters).iterator()).onClose(newCloseHandle(session));
     }
 
-    public Try<Stream<Map<String, Object>>> query(String cypher, Map<String, ?> parameters, boolean readOnly) {
+    public Stream<Map<String, Object>> query(String cypher, Map<String, ?> parameters, boolean readOnly) {
         final Session session = getSession();
 
-        return Stream.of(session.query(cypher, parameters, readOnly).iterator()).onClose(newCloseHandle(session)).tried();
+        return Stream.of(session.query(cypher, parameters, readOnly).iterator()).onClose(newCloseHandle(session));
     }
 
-    public <T> Try<Stream<T>> query(Class<T> objectType, String cypher, Map<String, ?> parameters) {
+    public <T> Stream<T> query(Class<T> objectType, String cypher, Map<String, ?> parameters) {
         final Session session = getSession();
 
-        return Stream.of(session.query(objectType, cypher, parameters).iterator()).onClose(newCloseHandle(session)).tried();
+        return Stream.of(session.query(objectType, cypher, parameters).iterator()).onClose(newCloseHandle(session));
     }
 
     private Runnable newCloseHandle(final Session session) {

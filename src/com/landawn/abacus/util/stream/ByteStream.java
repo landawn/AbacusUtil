@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
@@ -30,6 +29,7 @@ import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -60,6 +60,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @see Stream 
  */
@@ -153,6 +154,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     @SequentialOnly
     public abstract ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator);
 
+    /**
+     * 
+     * @return
+     */
     public abstract ByteList toByteList();
 
     /**
@@ -267,23 +272,23 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead. 
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalByte head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract ByteStream tail();
-
-    public abstract Pair<OptionalByte, ByteStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead. 
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalByte head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract ByteStream tail();
+    //
+    //    public abstract Pair<OptionalByte, ByteStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -342,7 +347,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract ByteSummaryStatistics summarize();
 
-    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizze();
+    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -365,6 +370,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract Stream<Byte> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
+    @SequentialOnly
     @Override
     public ByteIterator iterator() {
         return iteratorEx();
@@ -1238,12 +1249,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteIterator a, final ByteIterator b, final ByteBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorByteStream(new ByteIteratorEx() {
             private byte nextA = 0;
             private byte nextB = 0;
@@ -1336,7 +1341,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteStream c, final ByteBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1356,13 +1361,13 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         }
 
         final Iterator<? extends ByteStream> iter = c.iterator();
-        ByteStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        ByteStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1385,21 +1390,24 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream parallelMerge(final Collection<? extends ByteStream> c, final ByteBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends ByteStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends ByteStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<ByteIterator> queue = N.newLinkedList();
+        final Queue<ByteStream> queue = N.newLinkedList();
 
         for (ByteStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1410,9 +1418,9 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    ByteIterator a = null;
-                    ByteIterator b = null;
-                    ByteIterator c = null;
+                    ByteStream a = null;
+                    ByteStream b = null;
+                    ByteStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1427,7 +1435,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                                 }
                             }
 
-                            c = ByteIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = ByteStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1440,13 +1448,14 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

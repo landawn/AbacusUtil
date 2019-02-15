@@ -65,6 +65,18 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public IntStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public IntStream flattMap(final IntFunction<int[]> mapper) {
         return flatMap(new IntFunction<IntStream>() {
             @Override
@@ -292,119 +304,8 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public IntMatrix toMatrix() {
-        return IntMatrix.of(toArray());
-    }
-
-    @Override
-    public IntStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new IntPredicate() {
-            @Override
-            public boolean test(int value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
     public IntStream top(int n) {
         return top(n, INT_COMPARATOR);
-    }
-
-    @Override
-    public OptionalInt first() {
-        final IntIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
-    }
-
-    @Override
-    public OptionalInt last() {
-        final IntIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalInt.empty();
-        }
-
-        int next = iter.nextInt();
-
-        while (iter.hasNext()) {
-            next = iter.nextInt();
-        }
-
-        return OptionalInt.of(next);
-    }
-
-    @Override
-    public OptionalInt onlyOne() throws DuplicatedResultException {
-        final IntIterator iter = this.iteratorEx();
-
-        final OptionalInt result = iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextInt()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalInt findFirstOrLast(Try.IntPredicate<E> predicateForFirst, Try.IntPredicate<E> predicateForLast)
-            throws E, E2 {
-        final IntIteratorEx iter = iteratorEx();
-        MutableInt last = null;
-        int next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextInt();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalInt.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableInt.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalInt.empty() : OptionalInt.of(last.value());
     }
 
     @Override
@@ -880,56 +781,10 @@ abstract class AbstractIntStream extends IntStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Integer>> percentiles() {
-        final int[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizze() {
-        final int[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
-        } else {
-            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final IntIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextInt());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalInt, IntStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalInt, IntStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -987,5 +842,173 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream cached() {
         return newStream(toArray(), sorted);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public IntMatrix toMatrix() {
+        return IntMatrix.of(toArray());
+    }
+
+    @Override
+    public OptionalInt first() {
+        try {
+            final IntIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalInt last() {
+        try {
+            final IntIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalInt.empty();
+            }
+
+            int next = iter.nextInt();
+
+            while (iter.hasNext()) {
+                next = iter.nextInt();
+            }
+
+            return OptionalInt.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalInt onlyOne() throws DuplicatedResultException {
+        try {
+            final IntIterator iter = this.iteratorEx();
+
+            final OptionalInt result = iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextInt()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalInt findFirstOrLast(Try.IntPredicate<E> predicateForFirst, Try.IntPredicate<E> predicateForLast)
+            throws E, E2 {
+        try {
+            final IntIteratorEx iter = iteratorEx();
+            MutableInt last = null;
+            int next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextInt();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalInt.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableInt.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalInt.empty() : OptionalInt.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Integer>> percentiles() {
+        try {
+            final int[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeAndPercentiles() {
+        try {
+            final int[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
+            } else {
+                return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final IntIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextInt());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
     }
 }

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -31,6 +30,7 @@ import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -63,6 +63,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToFloatFunction;
 
 /**
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @see Stream
  */
@@ -276,23 +277,23 @@ public abstract class FloatStream
 
     public abstract <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalFloat head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract FloatStream tail();
-
-    public abstract Pair<OptionalFloat, FloatStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalFloat head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract FloatStream tail();
+    //
+    //    public abstract Pair<OptionalFloat, FloatStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -339,7 +340,7 @@ public abstract class FloatStream
 
     public abstract FloatSummaryStatistics summarize();
 
-    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizze();
+    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -362,6 +363,12 @@ public abstract class FloatStream
 
     public abstract Stream<Float> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
+    @SequentialOnly
     @Override
     public FloatIterator iterator() {
         return iteratorEx();
@@ -1024,12 +1031,6 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream merge(final FloatIterator a, final FloatIterator b, final FloatBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorFloatStream(new FloatIteratorEx() {
             private float nextA = 0;
             private float nextB = 0;
@@ -1122,7 +1123,7 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream merge(final FloatStream a, final FloatStream b, final FloatStream c, final FloatBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1142,13 +1143,13 @@ public abstract class FloatStream
         }
 
         final Iterator<? extends FloatStream> iter = c.iterator();
-        FloatStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        FloatStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1171,21 +1172,24 @@ public abstract class FloatStream
     public static FloatStream parallelMerge(final Collection<? extends FloatStream> c, final FloatBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends FloatStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends FloatStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<FloatIterator> queue = N.newLinkedList();
+        final Queue<FloatStream> queue = N.newLinkedList();
 
         for (FloatStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1196,9 +1200,9 @@ public abstract class FloatStream
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    FloatIterator a = null;
-                    FloatIterator b = null;
-                    FloatIterator c = null;
+                    FloatStream a = null;
+                    FloatStream b = null;
+                    FloatStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1213,7 +1217,7 @@ public abstract class FloatStream
                                 }
                             }
 
-                            c = FloatIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = FloatStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1226,13 +1230,14 @@ public abstract class FloatStream
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

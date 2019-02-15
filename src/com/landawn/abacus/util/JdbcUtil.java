@@ -3227,17 +3227,17 @@ public final class JdbcUtil {
             this.asyncExecutor = asyncExecutor;
         }
 
-        /**
-         * It's designed to void try-catch. 
-         * This method should be called immediately after {@code JdbcUtil#prepareCallableQuery/SQLExecutor#prepareQuery}.
-         * 
-         * @return 
-         */
-        public Try<Q> tried() {
-            assertNotClosed();
-
-            return Try.of((Q) this);
-        }
+        //        /**
+        //         * It's designed to void try-catch. 
+        //         * This method should be called immediately after {@code JdbcUtil#prepareCallableQuery/SQLExecutor#prepareQuery}.
+        //         * 
+        //         * @return 
+        //         */
+        //        public Try<Q> tried() {
+        //            assertNotClosed();
+        //
+        //            return Try.of((Q) this);
+        //        }
 
         public Q closeAfterExecution(boolean closeAfterExecution) {
             assertNotClosed();
@@ -3316,6 +3316,12 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setBoolean(int parameterIndex, Boolean x) throws SQLException {
+            stmt.setBoolean(parameterIndex, Primitives.unboxOrDefault(x));
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -3325,6 +3331,12 @@ public final class JdbcUtil {
          */
         public Q setByte(int parameterIndex, byte x) throws SQLException {
             stmt.setByte(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setByte(int parameterIndex, Byte x) throws SQLException {
+            stmt.setByte(parameterIndex, Primitives.unboxOrDefault(x));
 
             return (Q) this;
         }
@@ -3342,6 +3354,12 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setShort(int parameterIndex, Short x) throws SQLException {
+            stmt.setShort(parameterIndex, Primitives.unboxOrDefault(x));
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -3351,6 +3369,12 @@ public final class JdbcUtil {
          */
         public Q setInt(int parameterIndex, int x) throws SQLException {
             stmt.setInt(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        public Q setInt(int parameterIndex, Integer x) throws SQLException {
+            stmt.setInt(parameterIndex, Primitives.unboxOrDefault(x));
 
             return (Q) this;
         }
@@ -3368,6 +3392,12 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setLong(int parameterIndex, Long x) throws SQLException {
+            stmt.setLong(parameterIndex, Primitives.unboxOrDefault(x));
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -3381,6 +3411,12 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public Q setFloat(int parameterIndex, Float x) throws SQLException {
+            stmt.setFloat(parameterIndex, Primitives.unboxOrDefault(x));
+
+            return (Q) this;
+        }
+
         /**
          * 
          * @param parameterIndex starts from 1, not 0.
@@ -3389,6 +3425,12 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public Q setDouble(int parameterIndex, double x) throws SQLException {
+            stmt.setDouble(parameterIndex, Primitives.unboxOrDefault(x));
+
+            return (Q) this;
+        }
+
+        public Q setDouble(int parameterIndex, Double x) throws SQLException {
             stmt.setDouble(parameterIndex, x);
 
             return (Q) this;
@@ -4680,15 +4722,15 @@ public final class JdbcUtil {
             }
         }
 
-        public <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass) throws SQLException {
+        public <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass) throws SQLException {
             return stream(BiRecordGetter.to(targetClass));
         }
 
-        public <T> Try<ExceptionalStream<T, SQLException>> stream(final RecordGetter<T, RuntimeException> recordGetter) throws SQLException {
+        public <T> ExceptionalStream<T, SQLException> stream(final RecordGetter<T, RuntimeException> recordGetter) throws SQLException {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            Try<ExceptionalStream<T, SQLException>> result = null;
+            ExceptionalStream<T, SQLException> result = null;
             ResultSet rs = null;
 
             try {
@@ -4741,7 +4783,7 @@ public final class JdbcUtil {
                             closeAfterExecutionIfAllowed();
                         }
                     }
-                }).tried();
+                });
             } finally {
                 if (result == null) {
                     try {
@@ -4755,11 +4797,11 @@ public final class JdbcUtil {
             return result;
         }
 
-        public <T> Try<ExceptionalStream<T, SQLException>> stream(final BiRecordGetter<T, RuntimeException> recordGetter) throws SQLException {
+        public <T> ExceptionalStream<T, SQLException> stream(final BiRecordGetter<T, RuntimeException> recordGetter) throws SQLException {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            Try<ExceptionalStream<T, SQLException>> result = null;
+            ExceptionalStream<T, SQLException> result = null;
             ResultSet rs = null;
 
             try {
@@ -4817,7 +4859,7 @@ public final class JdbcUtil {
                             closeAfterExecutionIfAllowed();
                         }
                     }
-                }).tried();
+                });
             } finally {
                 if (result == null) {
                     try {
@@ -5471,8 +5513,20 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setBoolean(String parameterName, Boolean x) throws SQLException {
+            stmt.setBoolean(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
         public PreparedCallableQuery setByte(String parameterName, byte x) throws SQLException {
             stmt.setByte(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setByte(String parameterName, Byte x) throws SQLException {
+            stmt.setByte(parameterName, Primitives.unboxOrDefault(x));
 
             return this;
         }
@@ -5483,8 +5537,20 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setShort(String parameterName, Short x) throws SQLException {
+            stmt.setShort(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
         public PreparedCallableQuery setInt(String parameterName, int x) throws SQLException {
             stmt.setInt(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setInt(String parameterName, Integer x) throws SQLException {
+            stmt.setInt(parameterName, Primitives.unboxOrDefault(x));
 
             return this;
         }
@@ -5495,14 +5561,32 @@ public final class JdbcUtil {
             return this;
         }
 
+        public PreparedCallableQuery setLong(String parameterName, Long x) throws SQLException {
+            stmt.setLong(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
         public PreparedCallableQuery setFloat(String parameterName, float x) throws SQLException {
             stmt.setFloat(parameterName, x);
 
             return this;
         }
 
+        public PreparedCallableQuery setFloat(String parameterName, Float x) throws SQLException {
+            stmt.setFloat(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
         public PreparedCallableQuery setDouble(String parameterName, double x) throws SQLException {
             stmt.setDouble(parameterName, x);
+
+            return this;
+        }
+
+        public PreparedCallableQuery setDouble(String parameterName, Double x) throws SQLException {
+            stmt.setDouble(parameterName, Primitives.unboxOrDefault(x));
 
             return this;
         }

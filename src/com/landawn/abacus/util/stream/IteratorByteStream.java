@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +53,8 @@ import com.landawn.abacus.util.function.Supplier;
 class IteratorByteStream extends AbstractByteStream {
     ByteIteratorEx elements;
 
-    OptionalByte head;
-    ByteStream tail;
+    //    OptionalByte head;
+    //    ByteStream tail;
 
     //    ByteStream head2;
     //    OptionalByte tail2;
@@ -299,7 +300,7 @@ class IteratorByteStream extends AbstractByteStream {
                     s = mapper.apply(elements.nextByte());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -334,8 +335,8 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -366,7 +367,7 @@ class IteratorByteStream extends AbstractByteStream {
                     s = mapper.apply(elements.nextByte());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -401,8 +402,8 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -433,7 +434,7 @@ class IteratorByteStream extends AbstractByteStream {
                     s = mapper.apply(elements.nextByte());
 
                     if (N.notNullOrEmpty(s.closeHandlers)) {
-                        final Set<Runnable> tmp = s.closeHandlers;
+                        final Deque<Runnable> tmp = s.closeHandlers;
 
                         closeHandle = new Runnable() {
                             @Override
@@ -468,8 +469,8 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -734,19 +735,31 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ByteConsumer<E> action) throws E {
-        while (elements.hasNext()) {
-            action.accept(elements.nextByte());
+        try {
+            while (elements.hasNext()) {
+                action.accept(elements.nextByte());
+            }
+        } finally {
+            close();
         }
     }
 
     @Override
     public byte[] toArray() {
-        return elements.toArray();
+        try {
+            return elements.toArray();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public ByteList toByteList() {
-        return elements.toList();
+        try {
+            return elements.toList();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -761,13 +774,17 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <C extends Collection<Byte>> C toCollection(Supplier<? extends C> supplier) {
-        final C result = supplier.get();
+        try {
+            final C result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
+            while (elements.hasNext()) {
+                result.add(elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -777,13 +794,17 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier) {
-        final Multiset<Byte> result = supplier.get();
+        try {
+            final Multiset<Byte> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
+            while (elements.hasNext()) {
+                result.add(elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
@@ -793,121 +814,145 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier) {
-        final LongMultiset<Byte> result = supplier.get();
+        try {
+            final LongMultiset<Byte> result = supplier.get();
 
-        while (elements.hasNext()) {
-            result.add(elements.nextByte());
+            while (elements.hasNext()) {
+                result.add(elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        byte element = 0;
+        try {
+            final M result = mapFactory.get();
+            byte element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextByte();
-            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            while (elements.hasNext()) {
+                element = elements.nextByte();
+                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, Byte> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        K key = null;
-        A v = null;
-        byte element = 0;
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, Byte> downstreamAccumulator = downstream.accumulator();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+            K key = null;
+            A v = null;
+            byte element = 0;
 
-        while (elements.hasNext()) {
-            element = elements.nextByte();
-            key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+            while (elements.hasNext()) {
+                element = elements.nextByte();
+                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
+                if ((v = intermediate.get(key)) == null) {
+                    if ((v = downstreamSupplier.get()) != null) {
+                        intermediate.put(key, v);
+                    }
                 }
+
+                downstreamAccumulator.accept(v, element);
             }
 
-            downstreamAccumulator.accept(v, element);
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstream.finisher().apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
         }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return result;
     }
 
     @Override
     public byte reduce(byte identity, ByteBinaryOperator op) {
-        byte result = identity;
+        try {
+            byte result = identity;
 
-        while (elements.hasNext()) {
-            result = op.applyAsByte(result, elements.nextByte());
+            while (elements.hasNext()) {
+                result = op.applyAsByte(result, elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public OptionalByte reduce(ByteBinaryOperator op) {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalByte.empty();
+            }
+
+            byte result = elements.nextByte();
+
+            while (elements.hasNext()) {
+                result = op.applyAsByte(result, elements.nextByte());
+            }
+
+            return OptionalByte.of(result);
+        } finally {
+            close();
         }
-
-        byte result = elements.nextByte();
-
-        while (elements.hasNext()) {
-            result = op.applyAsByte(result, elements.nextByte());
-        }
-
-        return OptionalByte.of(result);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
+        try {
+            final R result = supplier.get();
 
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.nextByte());
+            while (elements.hasNext()) {
+                accumulator.accept(result, elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
-    @Override
-    public OptionalByte head() {
-        if (head == null) {
-            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return head;
-    }
-
-    @Override
-    public ByteStream tail() {
-        if (tail == null) {
-            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = newStream(elements, sorted);
-        }
-
-        return tail;
-    }
+    //    @Override
+    //    public OptionalByte head() {
+    //        if (head == null) {
+    //            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return head;
+    //    }
+    //
+    //    @Override
+    //    public ByteStream tail() {
+    //        if (tail == null) {
+    //            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
+    //            tail = newStream(elements, sorted);
+    //        }
+    //
+    //        return tail;
+    //    }
 
     //    @Override
     //    public ByteStream headd() {
@@ -933,117 +978,149 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte min() {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        } else if (sorted) {
-            return OptionalByte.of(elements.nextByte());
-        }
-
-        byte candidate = elements.nextByte();
-        byte next = 0;
-
-        while (elements.hasNext()) {
-            next = elements.nextByte();
-
-            if (next < candidate) {
-                candidate = next;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalByte.empty();
+            } else if (sorted) {
+                return OptionalByte.of(elements.nextByte());
             }
-        }
 
-        return OptionalByte.of(candidate);
-    }
-
-    @Override
-    public OptionalByte max() {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        } else if (sorted) {
+            byte candidate = elements.nextByte();
             byte next = 0;
 
             while (elements.hasNext()) {
                 next = elements.nextByte();
+
+                if (next < candidate) {
+                    candidate = next;
+                }
             }
 
-            return OptionalByte.of(next);
+            return OptionalByte.of(candidate);
+        } finally {
+            close();
         }
+    }
 
-        byte candidate = elements.nextByte();
-        byte next = 0;
+    @Override
+    public OptionalByte max() {
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalByte.empty();
+            } else if (sorted) {
+                byte next = 0;
 
-        while (elements.hasNext()) {
-            next = elements.nextByte();
+                while (elements.hasNext()) {
+                    next = elements.nextByte();
+                }
 
-            if (next > candidate) {
-                candidate = next;
+                return OptionalByte.of(next);
             }
-        }
 
-        return OptionalByte.of(candidate);
+            byte candidate = elements.nextByte();
+            byte next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.nextByte();
+
+                if (next > candidate) {
+                    candidate = next;
+                }
+            }
+
+            return OptionalByte.of(candidate);
+        } finally {
+            close();
+        }
     }
 
     @Override
     public OptionalByte kthLargest(int k) {
         N.checkArgPositive(k, "k");
 
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalByte.empty();
+            }
+
+            final Optional<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
+
+            return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
+        } finally {
+            close();
         }
-
-        final Optional<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
-
-        return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
     }
 
     @Override
     public int sum() {
-        long result = 0;
+        try {
+            long result = 0;
 
-        while (elements.hasNext()) {
-            result += elements.nextByte();
+            while (elements.hasNext()) {
+                result += elements.nextByte();
+            }
+
+            return N.toIntExact(result);
+        } finally {
+            close();
         }
-
-        return N.toIntExact(result);
     }
 
     @Override
     public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            return OptionalDouble.empty();
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalDouble.empty();
+            }
+
+            long sum = 0;
+            long count = 0;
+
+            while (elements.hasNext()) {
+                sum += elements.nextByte();
+                count++;
+            }
+
+            return OptionalDouble.of(((double) sum) / count);
+        } finally {
+            close();
         }
-
-        long sum = 0;
-        long count = 0;
-
-        while (elements.hasNext()) {
-            sum += elements.nextByte();
-            count++;
-        }
-
-        return OptionalDouble.of(((double) sum) / count);
     }
 
     @Override
     public long count() {
-        return elements.count();
+        try {
+            return elements.count();
+        } finally {
+            close();
+        }
     }
 
     @Override
     public ByteSummaryStatistics summarize() {
-        final ByteSummaryStatistics result = new ByteSummaryStatistics();
+        try {
+            final ByteSummaryStatistics result = new ByteSummaryStatistics();
 
-        while (elements.hasNext()) {
-            result.accept(elements.nextByte());
+            while (elements.hasNext()) {
+                result.accept(elements.nextByte());
+            }
+
+            return result;
+        } finally {
+            close();
         }
-
-        return result;
     }
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextByte())) {
-                return true;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextByte())) {
+                    return true;
+                }
             }
+        } finally {
+            close();
         }
 
         return false;
@@ -1051,10 +1128,14 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextByte()) == false) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextByte()) == false) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1062,10 +1143,14 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            if (predicate.test(elements.nextByte())) {
-                return false;
+        try {
+            while (elements.hasNext()) {
+                if (predicate.test(elements.nextByte())) {
+                    return false;
+                }
             }
+        } finally {
+            close();
         }
 
         return true;
@@ -1073,12 +1158,16 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
-        while (elements.hasNext()) {
-            byte e = elements.nextByte();
+        try {
+            while (elements.hasNext()) {
+                byte e = elements.nextByte();
 
-            if (predicate.test(e)) {
-                return OptionalByte.of(e);
+                if (predicate.test(e)) {
+                    return OptionalByte.of(e);
+                }
             }
+        } finally {
+            close();
         }
 
         return OptionalByte.empty();
@@ -1086,24 +1175,28 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
-        if (elements.hasNext() == false) {
-            return OptionalByte.empty();
-        }
-
-        boolean hasResult = false;
-        byte e = 0;
-        byte result = 0;
-
-        while (elements.hasNext()) {
-            e = elements.nextByte();
-
-            if (predicate.test(e)) {
-                result = e;
-                hasResult = true;
+        try {
+            if (elements.hasNext() == false) {
+                return OptionalByte.empty();
             }
-        }
 
-        return hasResult ? OptionalByte.of(result) : OptionalByte.empty();
+            boolean hasResult = false;
+            byte e = 0;
+            byte result = 0;
+
+            while (elements.hasNext()) {
+                e = elements.nextByte();
+
+                if (predicate.test(e)) {
+                    result = e;
+                    hasResult = true;
+                }
+            }
+
+            return hasResult ? OptionalByte.of(result) : OptionalByte.empty();
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -1153,13 +1246,13 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new IteratorByteStream(elements, sorted, newCloseHandlers);
     }

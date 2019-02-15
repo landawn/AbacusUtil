@@ -48,6 +48,10 @@ public final class Result<T, E extends Throwable> {
         return exception == null;
     }
 
+    public <E2 extends Exception> void ifFailure(final Try.Consumer<? super E, E2> actionOnFailure) throws E2 {
+        ifFailureOrElse(actionOnFailure, Fn.doNothing());
+    }
+
     public <E2 extends Exception, E3 extends Exception> void ifFailureOrElse(final Try.Consumer<? super E, E2> actionOnFailure,
             final Try.Consumer<? super T, E3> actionOnSuccess) throws E2, E3 {
         N.checkArgNotNull(actionOnFailure, "actionOnFailure");
@@ -58,6 +62,10 @@ public final class Result<T, E extends Throwable> {
         } else {
             actionOnSuccess.accept(value);
         }
+    }
+
+    public <E2 extends Exception> void ifSuccess(final Try.Consumer<? super T, E2> actionOnSuccess) throws E2 {
+        ifSuccessOrElse(actionOnSuccess, Fn.doNothing());
     }
 
     public <E2 extends Exception, E3 extends Exception> void ifSuccessOrElse(final Try.Consumer<? super T, E2> actionOnSuccess,

@@ -17,11 +17,11 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -1205,7 +1205,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1273,7 +1273,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1310,8 +1310,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1356,7 +1356,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1424,7 +1424,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1462,8 +1462,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1508,7 +1508,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1576,7 +1576,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1614,8 +1614,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1660,7 +1660,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1728,7 +1728,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1766,8 +1766,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1812,7 +1812,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1880,7 +1880,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -1918,8 +1918,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1964,7 +1964,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2032,7 +2032,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2070,8 +2070,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -2116,7 +2116,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2184,7 +2184,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2222,8 +2222,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -2268,7 +2268,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(elements[cursor++]);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2336,7 +2336,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             s = mapper.apply(next);
 
                             if (N.notNullOrEmpty(s.closeHandlers)) {
-                                final Set<Runnable> tmp = s.closeHandlers;
+                                final Deque<Runnable> tmp = s.closeHandlers;
 
                                 closeHandle = new Runnable() {
                                     @Override
@@ -2374,8 +2374,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Deque<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalArrayDeque<Runnable>(1)
+                : new LocalArrayDeque<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -2526,7 +2526,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2571,7 +2575,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -2617,18 +2625,26 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }));
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
     }
 
     @Override
     <A> A[] toArray(A[] a) {
-        if (a.length < (toIndex - fromIndex)) {
-            a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
+        try {
+            if (a.length < (toIndex - fromIndex)) {
+                a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
+            }
+
+            N.copy(elements, fromIndex, a, 0, toIndex - fromIndex);
+
+            return a;
+        } finally {
+            close();
         }
-
-        N.copy(elements, fromIndex, a, 0, toIndex - fromIndex);
-
-        return a;
     }
 
     @Override
@@ -2709,6 +2725,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -2728,6 +2745,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return res;
@@ -2840,6 +2859,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -2866,6 +2886,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -2963,6 +2985,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -2982,6 +3005,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return res;
@@ -3078,6 +3103,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -3093,6 +3119,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == NONE ? identity : result;
@@ -3181,6 +3209,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -3200,6 +3229,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == NONE ? (Optional<T>) Optional.empty() : Optional.of(result);
@@ -3275,6 +3306,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -3290,6 +3322,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return container == NONE ? supplier.get() : container;
@@ -3371,6 +3405,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -3386,6 +3421,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return finisher.apply(container == NONE ? supplier.get() : container);
@@ -3393,10 +3430,20 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Optional<T> min(Comparator<? super T> comparator) {
-        if (fromIndex == toIndex) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(cmp, comparator)) {
-            return Optional.of(elements[fromIndex]);
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(cmp, comparator)) {
+                return Optional.of(elements[fromIndex]);
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
@@ -3406,10 +3453,20 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Optional<T> max(Comparator<? super T> comparator) {
-        if (fromIndex == toIndex) {
-            return Optional.empty();
-        } else if (sorted && isSameComparator(cmp, comparator)) {
-            return Optional.of(elements[toIndex - 1]);
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return Optional.empty();
+            } else if (sorted && isSameComparator(cmp, comparator)) {
+                return Optional.of(elements[toIndex - 1]);
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
@@ -3487,7 +3544,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -3562,7 +3623,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -3637,7 +3702,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -3727,7 +3796,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
     }
@@ -3817,7 +3890,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
     }
@@ -3905,7 +3982,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == NONE ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value());
     }
@@ -4142,13 +4223,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, asyncExecutor, newCloseHandlers);
     }

@@ -65,6 +65,18 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public CharStream distinct() {
+        final Set<Object> set = new HashSet<>();
+
+        return newStream(this.sequential().filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return set.add(value);
+            }
+        }).iteratorEx(), sorted);
+    }
+
+    @Override
     public CharStream flattMap(final CharFunction<char[]> mapper) {
         return flatMap(new CharFunction<CharStream>() {
             @Override
@@ -289,117 +301,6 @@ abstract class AbstractCharStream extends CharStream {
                 return (res = accumulator.apply(res, iter.nextChar()));
             }
         }, false);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public CharMatrix toMatrix() {
-        return CharMatrix.of(toArray());
-    }
-
-    @Override
-    public CharStream distinct() {
-        final Set<Object> set = new HashSet<>();
-
-        return newStream(this.sequential().filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return set.add(value);
-            }
-        }).iteratorEx(), sorted);
-    }
-
-    @Override
-    public OptionalChar first() {
-        final CharIterator iter = this.iteratorEx();
-
-        return iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
-    }
-
-    @Override
-    public OptionalChar last() {
-        final CharIterator iter = this.iteratorEx();
-
-        if (iter.hasNext() == false) {
-            return OptionalChar.empty();
-        }
-
-        char next = iter.nextChar();
-
-        while (iter.hasNext()) {
-            next = iter.nextChar();
-        }
-
-        return OptionalChar.of(next);
-    }
-
-    @Override
-    public OptionalChar onlyOne() throws DuplicatedResultException {
-        final CharIterator iter = this.iteratorEx();
-
-        final OptionalChar result = iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
-
-        if (result.isPresent() && iter.hasNext()) {
-            throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextChar()));
-        }
-
-        return result;
-    }
-
-    @Override
-    public <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E {
-        return findFirst(predicate);
-    }
-
-    @Override
-    public <E extends Exception, E2 extends Exception> OptionalChar findFirstOrLast(Try.CharPredicate<E> predicateForFirst,
-            Try.CharPredicate<E> predicateForLast) throws E, E2 {
-        final CharIteratorEx iter = iteratorEx();
-        MutableChar last = null;
-        char next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextChar();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalChar.of(next);
-            } else if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableChar.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        return last == null ? OptionalChar.empty() : OptionalChar.of(last.value());
     }
 
     @Override
@@ -875,56 +776,10 @@ abstract class AbstractCharStream extends CharStream {
         }, sorted);
     }
 
-    @Override
-    public Optional<Map<Percentage, Character>> percentiles() {
-        final char[] a = sorted().toArray();
-
-        if (a.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.percentiles(a));
-    }
-
-    @Override
-    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizze() {
-        final char[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
-        } else {
-            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
-        }
-    }
-
-    @Override
-    public String join(final CharSequence delimiter) {
-        return join(delimiter, "", "");
-    }
-
-    @Override
-    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
-        final CharIteratorEx iter = this.iteratorEx();
-
-        while (iter.hasNext()) {
-            joiner.append(iter.nextChar());
-        }
-
-        return joiner.toString();
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
-    public Pair<OptionalChar, CharStream> headAndTail() {
-        return Pair.of(head(), tail());
-    }
+    //    @Override
+    //    public Pair<OptionalChar, CharStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
 
     //    @SuppressWarnings("deprecation")
     //    @Override
@@ -983,4 +838,184 @@ abstract class AbstractCharStream extends CharStream {
     public CharStream cached() {
         return newStream(toArray(), sorted);
     }
+
+    @Override
+    public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public CharMatrix toMatrix() {
+        return CharMatrix.of(toArray());
+    }
+
+    @Override
+    public OptionalChar first() {
+        try {
+            final CharIterator iter = this.iteratorEx();
+
+            return iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalChar last() {
+        try {
+            final CharIterator iter = this.iteratorEx();
+
+            if (iter.hasNext() == false) {
+                return OptionalChar.empty();
+            }
+
+            char next = iter.nextChar();
+
+            while (iter.hasNext()) {
+                next = iter.nextChar();
+            }
+
+            return OptionalChar.of(next);
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public OptionalChar onlyOne() throws DuplicatedResultException {
+        try {
+            final CharIterator iter = this.iteratorEx();
+
+            final OptionalChar result = iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
+
+            if (result.isPresent() && iter.hasNext()) {
+                throw new DuplicatedResultException("There are at least two elements: " + Strings.concat(result.get(), ", ", iter.nextChar()));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalChar findFirstOrLast(Try.CharPredicate<E> predicateForFirst,
+            Try.CharPredicate<E> predicateForLast) throws E, E2 {
+        try {
+            final CharIteratorEx iter = iteratorEx();
+            MutableChar last = null;
+            char next = 0;
+
+            while (iter.hasNext()) {
+                next = iter.nextChar();
+
+                if (predicateForFirst.test(next)) {
+                    return OptionalChar.of(next);
+                } else if (predicateForLast.test(next)) {
+                    if (last == null) {
+                        last = MutableChar.of(next);
+                    } else {
+                        last.setValue(next);
+                    }
+                }
+            }
+
+            return last == null ? OptionalChar.empty() : OptionalChar.of(last.value());
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Optional<Map<Percentage, Character>> percentiles() {
+        try {
+            final char[] a = sorted().toArray();
+
+            if (a.length == 0) {
+                return Optional.empty();
+            }
+
+            return Optional.of(N.percentiles(a));
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeAndPercentiles() {
+        try {
+            final char[] a = sorted().toArray();
+
+            if (N.isNullOrEmpty(a)) {
+                return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
+            } else {
+                return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        try {
+            final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
+            final CharIteratorEx iter = this.iteratorEx();
+
+            while (iter.hasNext()) {
+                joiner.append(iter.nextChar());
+            }
+
+            return joiner.toString();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
+        final BiConsumer<R, R> combiner = collectingCombiner;
+
+        return collect(supplier, accumulator, combiner);
+    }
+
+    //    @Override
+    //    public Pair<OptionalChar, CharStream> headAndTail() {
+    //        return Pair.of(head(), tail());
+    //    }
+
+    //    @SuppressWarnings("deprecation")
+    //    @Override
+    //    public Pair<CharStream, OptionalChar> headAndTaill() {
+    //        return Pair.of(headd(), taill());
+    //    }
+
 }

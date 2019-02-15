@@ -16,9 +16,9 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 
-/** 
+/**  
  * 
  */
 final class ParallelArrayCharStream extends ArrayCharStream {
@@ -288,7 +288,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
     }
 
     @Override
@@ -401,6 +405,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -416,6 +421,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? identity : result;
@@ -503,6 +510,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -522,6 +530,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result == null ? OptionalChar.empty() : OptionalChar.of(result);
@@ -596,6 +606,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         }
 
         if (eHolder.value() != null) {
+            close();
             throw N.toRuntimeException(eHolder.value());
         }
 
@@ -611,6 +622,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return container == NONE ? supplier.get() : container;
@@ -618,12 +631,22 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public OptionalChar min() {
-        if (fromIndex == toIndex) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            return OptionalChar.of(elements[fromIndex]);
-        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return OptionalChar.of(N.min(elements, fromIndex, toIndex));
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalChar.empty();
+            } else if (sorted) {
+                return OptionalChar.of(elements[fromIndex]);
+            } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+                return OptionalChar.of(N.min(elements, fromIndex, toIndex));
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -658,6 +681,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return candidate == null ? OptionalChar.empty() : OptionalChar.of(candidate);
@@ -665,12 +690,22 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public OptionalChar max() {
-        if (fromIndex == toIndex) {
-            return OptionalChar.empty();
-        } else if (sorted) {
-            return OptionalChar.of(elements[toIndex - 1]);
-        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return OptionalChar.of(N.max(elements, fromIndex, toIndex));
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return OptionalChar.empty();
+            } else if (sorted) {
+                return OptionalChar.of(elements[toIndex - 1]);
+            } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+                return OptionalChar.of(N.max(elements, fromIndex, toIndex));
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -704,6 +739,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return candidate == null ? OptionalChar.empty() : OptionalChar.of(candidate);
@@ -711,10 +748,20 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public int sum() {
-        if (fromIndex == toIndex) {
-            return 0;
-        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return sum(elements, fromIndex, toIndex);
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return 0;
+            } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+                return sum(elements, fromIndex, toIndex);
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -759,6 +806,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return N.toIntExact(result);
@@ -766,10 +815,20 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public CharSummaryStatistics summarize() {
-        if (fromIndex == toIndex) {
-            return new CharSummaryStatistics();
-        } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return super.summarize();
+        boolean isDone = true;
+
+        try {
+            if (fromIndex == toIndex) {
+                return new CharSummaryStatistics();
+            } else if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+                return super.summarize();
+            } else {
+                isDone = false;
+            }
+        } finally {
+            if (isDone) {
+                close();
+            }
         }
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
@@ -811,6 +870,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
+        } finally {
+            close();
         }
 
         return result;
@@ -884,7 +945,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -957,7 +1022,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -1030,7 +1099,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return result.value();
     }
@@ -1118,7 +1191,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
@@ -1206,7 +1283,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
@@ -1292,7 +1373,11 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
         }
 
-        complette(futureList, eHolder, (E) null);
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
 
         return resultHolder.value() == NONE ? OptionalChar.empty() : OptionalChar.of((Character) resultHolder.value());
     }
@@ -1390,13 +1475,13 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public CharStream onClose(Runnable closeHandler) {
-        final Set<Runnable> newCloseHandlers = new AbstractStream.LocalLinkedHashSet<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        newCloseHandlers.add(wrapCloseHandlers(closeHandler));
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             newCloseHandlers.addAll(this.closeHandlers);
         }
-
-        newCloseHandlers.add(closeHandler);
 
         return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, asyncExecutor, newCloseHandlers);
     }

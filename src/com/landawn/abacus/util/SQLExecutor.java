@@ -59,6 +59,7 @@ import com.landawn.abacus.condition.Equal;
 import com.landawn.abacus.dataSource.SQLDataSource;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.DuplicatedResultException;
+import com.landawn.abacus.exception.UncheckedException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -2034,8 +2035,8 @@ public class SQLExecutor implements Closeable {
         //        }
         //    });
 
-        try (ExceptionalStream<T, SQLException> s = streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).val()) {
-            return s.toList();
+        try {
+            return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).toList();
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         }
@@ -2056,10 +2057,10 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> listAll(final List<String> sqls, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        try (ExceptionalStream<T, SQLException> s = streamAll(sqls, statementSetter, recordGetter, jdbcSettings, parameters).val()) {
-            return s.toList();
+        try {
+            return streamAll(sqls, statementSetter, recordGetter, jdbcSettings, parameters).toList();
         } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
+            throw new UncheckedException(e);
         }
     }
 
@@ -2630,17 +2631,17 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
+    public final <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
         return stream(targetClass, sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final Object... parameters) {
         return stream(targetClass, sql, statementSetter, null, parameters);
     }
 
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
+    public final <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return stream(targetClass, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
@@ -2656,7 +2657,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         final JdbcUtil.BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
 
@@ -2664,19 +2665,19 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final Object... parameters) {
         return stream(sql, StatementSetter.DEFAULT, recordGetter, parameters);
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final String sql, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final Object... parameters) {
         return stream(sql, statementSetter, recordGetter, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return stream(sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, parameters);
     }
@@ -2693,7 +2694,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> stream(final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> stream(final String sql, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
 
         final ResultExtractor<ResultSet> resultExtractor = new ResultExtractor<ResultSet>() {
@@ -2767,11 +2768,11 @@ public class SQLExecutor implements Closeable {
                 JdbcUtil.closeQuietly(rs, true, true);
 
             }
-        }).tried();
+        });
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(targetClass, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
@@ -2787,7 +2788,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         final JdbcUtil.BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
 
@@ -2795,7 +2796,7 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final String sql, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, parameters);
     }
@@ -2811,7 +2812,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final String sql, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final String sql, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         checkJdbcSettingsForAllQuery(jdbcSettings);
 
@@ -2824,10 +2825,7 @@ public class SQLExecutor implements Closeable {
         return Stream.of(dss).map(new Function<String, JdbcSettings>() {
             @Override
             public JdbcSettings apply(String ds) {
-                final JdbcSettings newJdbcSettings = jdbcSettings.copy();
-                newJdbcSettings.setQueryWithDataSources(null);
-                newJdbcSettings.setQueryWithDataSource(ds);
-                return newJdbcSettings;
+                return jdbcSettings.copy().setQueryWithDataSources(null).setQueryWithDataSource(ds);
             }
         }).__(new Function<Stream<JdbcSettings>, Stream<JdbcSettings>>() {
             @Override
@@ -2837,23 +2835,18 @@ public class SQLExecutor implements Closeable {
         }).map(new Function<JdbcSettings, ExceptionalStream<T, SQLException>>() {
             @Override
             public ExceptionalStream<T, SQLException> apply(JdbcSettings newJdbcSettings) {
-                return stream(sql, statementSetter, recordGetter, newJdbcSettings, parameters).val();
+                return stream(sql, statementSetter, recordGetter, newJdbcSettings, parameters);
             }
         }).__(new Function<Stream<ExceptionalStream<T, SQLException>>, ExceptionalStream<ExceptionalStream<T, SQLException>, SQLException>>() {
             @Override
             public ExceptionalStream<ExceptionalStream<T, SQLException>, SQLException> apply(Stream<ExceptionalStream<T, SQLException>> s) {
                 return ExceptionalStream.of(s);
             }
-        }).flatMap(new Try.Function<ExceptionalStream<T, SQLException>, ExceptionalStream<T, SQLException>, SQLException>() {
-            @Override
-            public ExceptionalStream<T, SQLException> apply(ExceptionalStream<T, SQLException> s) throws SQLException {
-                return s;
-            }
-        }).tried();
+        }).flatMap(FN.<ExceptionalStream<T, SQLException>, SQLException> identity());
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(targetClass, sqls, null, jdbcSettings, parameters);
     }
@@ -2869,15 +2862,15 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final Class<T> targetClass, final List<String> sqls,
-            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         final JdbcUtil.BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
 
         return streamAll(sqls, statementSetter, biRecordGetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final List<String> sqls, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final List<String> sqls, final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sqls, null, recordGetter, jdbcSettings, parameters);
     }
@@ -2894,7 +2887,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Try<ExceptionalStream<T, SQLException>> streamAll(final List<String> sqls, final StatementSetter statementSetter,
+    public final <T> ExceptionalStream<T, SQLException> streamAll(final List<String> sqls, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         if (sqls.size() == 1) {
             return streamAll(sqls.get(0), statementSetter, recordGetter, jdbcSettings, parameters);
@@ -2910,19 +2903,14 @@ public class SQLExecutor implements Closeable {
         }).map(new Function<String, ExceptionalStream<T, SQLException>>() {
             @Override
             public ExceptionalStream<T, SQLException> apply(String sql) {
-                return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).val();
+                return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters);
             }
         }).__(new Function<Stream<ExceptionalStream<T, SQLException>>, ExceptionalStream<ExceptionalStream<T, SQLException>, SQLException>>() {
             @Override
             public ExceptionalStream<ExceptionalStream<T, SQLException>, SQLException> apply(Stream<ExceptionalStream<T, SQLException>> s) {
                 return ExceptionalStream.of(s);
             }
-        }).flatMap(new Try.Function<ExceptionalStream<T, SQLException>, ExceptionalStream<T, SQLException>, SQLException>() {
-            @Override
-            public ExceptionalStream<T, SQLException> apply(ExceptionalStream<T, SQLException> s) throws SQLException {
-                return s;
-            }
-        }).tried();
+        }).flatMap(FN.<ExceptionalStream<T, SQLException>, SQLException> identity());
     }
 
     public PreparedQuery prepareQuery(final String sql, final Object... parameters) throws UncheckedSQLException {
@@ -4353,7 +4341,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public Try<ExceptionalStream<T, SQLException>> stream(final Condition whereCause) {
+        public ExceptionalStream<T, SQLException> stream(final Condition whereCause) {
             return stream((Collection<String>) null, whereCause);
         }
 
@@ -4366,7 +4354,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public Try<ExceptionalStream<T, SQLException>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+        public ExceptionalStream<T, SQLException> stream(final Collection<String> selectPropNames, final Condition whereCause) {
             return stream(selectPropNames, whereCause, null);
         }
 
@@ -4380,7 +4368,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public Try<ExceptionalStream<T, SQLException>> stream(final Collection<String> selectPropNames, final Condition whereCause,
+        public ExceptionalStream<T, SQLException> stream(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
@@ -4397,7 +4385,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> stream(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause) {
             return stream(selectPropName, recordGetter, whereCause, null);
         }
@@ -4413,7 +4401,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> stream(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return stream(Arrays.asList(selectPropName), recordGetter, whereCause, jdbcSettings);
         }
@@ -4428,7 +4416,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> stream(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause) {
             return stream(selectPropName, recordGetter, whereCause, null);
         }
@@ -4444,7 +4432,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> stream(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return stream(Arrays.asList(selectPropName), recordGetter, whereCause, jdbcSettings);
         }
@@ -4459,8 +4447,8 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(Collection<String> selectPropNames,
-                final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
+        public <R> ExceptionalStream<R, SQLException> stream(Collection<String> selectPropNames, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
+                final Condition whereCause) {
             return stream(selectPropNames, recordGetter, whereCause, null);
         }
 
@@ -4475,8 +4463,8 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(Collection<String> selectPropNames,
-                final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ExceptionalStream<R, SQLException> stream(Collection<String> selectPropNames, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(recordGetter);
 
             final JdbcUtil.BiRecordGetter<R, RuntimeException> biRecordGetter = new JdbcUtil.BiRecordGetter<R, RuntimeException>() {
@@ -4499,7 +4487,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(Collection<String> selectPropNames,
+        public <R> ExceptionalStream<R, SQLException> stream(Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
             return stream(selectPropNames, recordGetter, whereCause, null);
         }
@@ -4515,7 +4503,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> stream(Collection<String> selectPropNames,
+        public <R> ExceptionalStream<R, SQLException> stream(Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
@@ -4533,7 +4521,7 @@ public class SQLExecutor implements Closeable {
          * @return
          * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
          */
-        public Try<ExceptionalStream<T, SQLException>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public ExceptionalStream<T, SQLException> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
             return streamAll(null, whereCause, jdbcSettings);
         }
 
@@ -4549,7 +4537,7 @@ public class SQLExecutor implements Closeable {
          * @return
          * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
          */
-        public Try<ExceptionalStream<T, SQLException>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
+        public ExceptionalStream<T, SQLException> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
@@ -4568,7 +4556,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> streamAll(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> streamAll(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return streamAll(Arrays.asList(selectPropName), recordGetter, whereCause, jdbcSettings);
         }
@@ -4585,7 +4573,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> streamAll(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
+        public <R> ExceptionalStream<R, SQLException> streamAll(String selectPropName, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return streamAll(Arrays.asList(selectPropName), recordGetter, whereCause, jdbcSettings);
         }
@@ -4602,7 +4590,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> streamAll(Collection<String> selectPropNames,
+        public <R> ExceptionalStream<R, SQLException> streamAll(Collection<String> selectPropNames,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(recordGetter);
 
@@ -4628,7 +4616,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Try<ExceptionalStream<R, SQLException>> streamAll(Collection<String> selectPropNames,
+        public <R> ExceptionalStream<R, SQLException> streamAll(Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
@@ -6605,168 +6593,168 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        public ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+                public ExceptionalStream<T, SQLException> call() throws Exception {
                     return mapper.stream(whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        public ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+                public ExceptionalStream<T, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, whereCause);
                 }
             });
         }
 
-        public ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> stream(final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<ExceptionalStream<T, SQLException>> stream(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+                public ExceptionalStream<T, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final String selectPropName,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropName, recordGetter, whereCause);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final String selectPropName,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropName, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final Collection<String> selectPropNames,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, recordGetter, whereCause);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final Collection<String> selectPropNames,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final String selectPropName,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropName, recordGetter, whereCause);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final String selectPropName,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropName, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, recordGetter, whereCause);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> stream(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> stream(final Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.stream(selectPropNames, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+        public ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+                public ExceptionalStream<T, SQLException> call() throws Exception {
                     return mapper.streamAll(whereCause, jdbcSettings);
                 }
             });
         }
 
-        public ContinuableFuture<Try<ExceptionalStream<T, SQLException>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
+        public ContinuableFuture<ExceptionalStream<T, SQLException>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<T, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<T, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<T, SQLException>> call() throws Exception {
+                public ExceptionalStream<T, SQLException> call() throws Exception {
                     return mapper.streamAll(selectPropNames, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> streamAll(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> streamAll(final String selectPropName,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.streamAll(selectPropName, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> streamAll(final String selectPropName,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> streamAll(final String selectPropName,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.streamAll(selectPropName, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> streamAll(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> streamAll(final Collection<String> selectPropNames,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.streamAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
                 }
             });
         }
 
-        public <R> ContinuableFuture<Try<ExceptionalStream<R, SQLException>>> streamAll(final Collection<String> selectPropNames,
+        public <R> ContinuableFuture<ExceptionalStream<R, SQLException>> streamAll(final Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            return asyncExecutor.execute(new Callable<Try<ExceptionalStream<R, SQLException>>>() {
+            return asyncExecutor.execute(new Callable<ExceptionalStream<R, SQLException>>() {
                 @Override
-                public Try<ExceptionalStream<R, SQLException>> call() throws Exception {
+                public ExceptionalStream<R, SQLException> call() throws Exception {
                     return mapper.streamAll(selectPropNames, recordGetter, whereCause, jdbcSettings);
                 }
             });

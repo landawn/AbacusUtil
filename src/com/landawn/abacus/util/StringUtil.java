@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +86,20 @@ public abstract class StringUtil {
         }
 
         sharedStringConstructor = tmpConstructor;
+    }
+
+    private static final Map<Integer, String> QM_CACHE = new HashMap<>();
+
+    static {
+        for (int i = 0; i <= 30; i++) {
+            QM_CACHE.put(i, StringUtil.repeat("?", i, ", "));
+        }
+
+        QM_CACHE.put(100, StringUtil.repeat("?", 100, ", "));
+        QM_CACHE.put(200, StringUtil.repeat("?", 200, ", "));
+        QM_CACHE.put(300, StringUtil.repeat("?", 300, ", "));
+        QM_CACHE.put(500, StringUtil.repeat("?", 500, ", "));
+        QM_CACHE.put(1000, StringUtil.repeat("?", 1000, ", "));
     }
 
     private StringUtil() {
@@ -423,6 +438,26 @@ public abstract class StringUtil {
         }
 
         return newString(cbuf, true);
+    }
+
+    /**
+     * Repeat question mark({@code ?}) {@code n} times with delimiter {@code ", "}.
+     * <br />
+     * It's designed for SQL builder.
+     * 
+     * @param n
+     * @return
+     */
+    public static String repeatQM(int n) {
+        N.checkArgNotNegative(n, "count");
+
+        String result = QM_CACHE.get(n);
+
+        if (result == null) {
+            result = StringUtil.repeat("?", n, ", ");
+        }
+
+        return result;
     }
 
     public static char toLowerCase(final char ch) {

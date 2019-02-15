@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 import java.util.Queue;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -32,6 +31,7 @@ import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -63,6 +63,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 
 /** 
+ * The Stream will be automatically closed after execution(A terminal method is executed).
  * 
  * @see Stream 
  */
@@ -277,23 +278,23 @@ public abstract class DoubleStream
 
     public abstract <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E;
 
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract OptionalDouble head();
-
-    /**
-     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
-     * 
-     * @return
-     */
-    public abstract DoubleStream tail();
-
-    public abstract Pair<OptionalDouble, DoubleStream> headAndTail();
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract OptionalDouble head();
+    //
+    //    /**
+    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+    //     * Don't call any other methods with this stream after head() and tail() are called. 
+    //     * 
+    //     * @return
+    //     */
+    //    public abstract DoubleStream tail();
+    //
+    //    public abstract Pair<OptionalDouble, DoubleStream> headAndTail();
 
     //    /**
     //     * Headd and taill should be used by pair. 
@@ -340,7 +341,7 @@ public abstract class DoubleStream
 
     public abstract DoubleSummaryStatistics summarize();
 
-    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizze();
+    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeAndPercentiles();
 
     /**
      * 
@@ -363,6 +364,11 @@ public abstract class DoubleStream
 
     public abstract Stream<Double> boxed();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
     @Override
     public DoubleIterator iterator() {
         return iteratorEx();
@@ -1125,12 +1131,6 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<Nth> nextSelector) {
-        if (a.hasNext() == false) {
-            return of(b);
-        } else if (b.hasNext() == false) {
-            return of(a);
-        }
-
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private double nextA = 0;
             private double nextB = 0;
@@ -1223,7 +1223,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleBiFunction<Nth> nextSelector) {
-        return merge(N.asList(a, b, c), nextSelector);
+        return merge(merge(a, b, nextSelector), c, nextSelector);
     }
 
     /**
@@ -1243,13 +1243,13 @@ public abstract class DoubleStream
         }
 
         final Iterator<? extends DoubleStream> iter = c.iterator();
-        DoubleStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
+        DoubleStream result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
+            result = merge(result, iter.next(), nextSelector);
         }
 
-        return result.onClose(newCloseHandler(c));
+        return result;
     }
 
     /**
@@ -1272,21 +1272,24 @@ public abstract class DoubleStream
     public static DoubleStream parallelMerge(final Collection<? extends DoubleStream> c, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 
-        if (N.isNullOrEmpty(c)) {
+        if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        } else if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
             return c.iterator().next();
         } else if (c.size() == 2) {
             final Iterator<? extends DoubleStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
-        } else if (maxThreadNum <= 1) {
-            return merge(c, nextSelector);
+        } else if (c.size() == 3) {
+            final Iterator<? extends DoubleStream> iter = c.iterator();
+            return merge(iter.next(), iter.next(), iter.next(), nextSelector);
         }
 
-        final Queue<DoubleIterator> queue = N.newLinkedList();
+        final Queue<DoubleStream> queue = N.newLinkedList();
 
         for (DoubleStream e : c) {
-            queue.add(e.iteratorEx());
+            queue.add(e);
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1297,9 +1300,9 @@ public abstract class DoubleStream
             futureList.add(DEFAULT_ASYNC_EXECUTOR.execute(new Try.Runnable<RuntimeException>() {
                 @Override
                 public void run() {
-                    DoubleIterator a = null;
-                    DoubleIterator b = null;
-                    DoubleIterator c = null;
+                    DoubleStream a = null;
+                    DoubleStream b = null;
+                    DoubleStream c = null;
 
                     try {
                         while (eHolder.value() == null) {
@@ -1314,7 +1317,7 @@ public abstract class DoubleStream
                                 }
                             }
 
-                            c = DoubleIteratorEx.of(merge(a, b, nextSelector).toArray());
+                            c = DoubleStream.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -1327,14 +1330,15 @@ public abstract class DoubleStream
             }));
         }
 
-        complete(futureList, eHolder);
-
-        // Should never happen.
-        if (queue.size() != 2) {
-            throw new AbacusException("Unknown error happened.");
+        try {
+            complete(futureList, eHolder);
+        } finally {
+            if (eHolder.value() != null) {
+                IOUtil.closeAllQuietly(c);
+            }
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 
     public static abstract class DoubleStreamEx extends DoubleStream {

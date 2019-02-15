@@ -290,7 +290,11 @@ public final class URLEncodedUtil {
             if (N.isNullOrEmpty(values)) {
                 propValue = propInfo.type.defaultValue();
             } else {
-                propValue = propInfo.type.valueOf(values[0]);
+                if (propInfo.type.clazz().equals(String[].class)) {
+                    propValue = values;
+                } else {
+                    propValue = propInfo.type.valueOf(StringUtil.join(values, ", "));
+                }
             }
 
             propInfo.setPropValue(result, propValue);
