@@ -1846,6 +1846,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     <A> A[] toArray(A[] a) {
+        assertNotClosed();
+
         try {
             return elements.toArray(a);
         } finally {
@@ -2440,6 +2442,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {

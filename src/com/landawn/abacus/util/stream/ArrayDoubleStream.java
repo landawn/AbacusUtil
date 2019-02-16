@@ -1202,6 +1202,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
@@ -1213,6 +1215,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public double[] toArray() {
+        assertNotClosed();
+
         try {
             return N.copyOfRange(elements, fromIndex, toIndex);
         } finally {
@@ -1222,6 +1226,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleList toDoubleList() {
+        assertNotClosed();
+
         try {
             return DoubleList.of(N.copyOfRange(elements, fromIndex, toIndex));
         } finally {
@@ -1231,6 +1237,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public List<Double> toList() {
+        assertNotClosed();
+
         try {
             final List<Double> result = new ArrayList<>(toIndex - fromIndex);
 
@@ -1246,6 +1254,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Set<Double> toSet() {
+        assertNotClosed();
+
         try {
             final Set<Double> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1261,6 +1271,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <C extends Collection<Double>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1276,6 +1288,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Multiset<Double> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<Double> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1291,6 +1305,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Multiset<Double> toMultiset(Supplier<? extends Multiset<Double>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Double> result = supplier.get();
 
@@ -1306,6 +1322,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongMultiset<Double> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<Double> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1321,6 +1339,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongMultiset<Double> toLongMultiset(Supplier<? extends LongMultiset<Double>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Double> result = supplier.get();
 
@@ -1337,6 +1357,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -1353,6 +1375,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1390,6 +1414,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble first() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalDouble.of(elements[fromIndex]) : OptionalDouble.empty();
         } finally {
@@ -1399,6 +1425,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble last() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalDouble.of(elements[toIndex - 1]) : OptionalDouble.empty();
         } finally {
@@ -1408,6 +1436,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final int size = toIndex - fromIndex;
 
@@ -1425,6 +1455,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public double reduce(double identity, DoubleBinaryOperator op) {
+        assertNotClosed();
+
         try {
             double result = identity;
 
@@ -1440,6 +1472,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble reduce(DoubleBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1459,6 +1493,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1502,6 +1538,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble min() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1517,6 +1555,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble max() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1533,6 +1573,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public OptionalDouble kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (k > toIndex - fromIndex) {
@@ -1549,6 +1590,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return toIndex - fromIndex;
         } finally {
@@ -1658,6 +1701,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final DoubleSummaryStatistics result = new DoubleSummaryStatistics();
 
@@ -1673,6 +1718,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1688,6 +1735,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i]) == false) {
@@ -1703,6 +1752,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1718,6 +1769,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1733,6 +1786,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = toIndex - 1; i >= fromIndex; i--) {
                 if (predicate.test(elements[i])) {

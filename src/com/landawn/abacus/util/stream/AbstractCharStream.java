@@ -874,6 +874,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public OptionalChar first() {
+        assertNotClosed();
+
         try {
             final CharIterator iter = this.iteratorEx();
 
@@ -885,6 +887,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public OptionalChar last() {
+        assertNotClosed();
+
         try {
             final CharIterator iter = this.iteratorEx();
 
@@ -906,6 +910,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public OptionalChar onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final CharIterator iter = this.iteratorEx();
 
@@ -929,6 +935,8 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalChar findFirstOrLast(Try.CharPredicate<E> predicateForFirst,
             Try.CharPredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final CharIteratorEx iter = iteratorEx();
             MutableChar last = null;
@@ -956,6 +964,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Optional<Map<Percentage, Character>> percentiles() {
+        assertNotClosed();
+
         try {
             final char[] a = sorted().toArray();
 
@@ -971,6 +981,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final char[] a = sorted().toArray();
 
@@ -986,6 +998,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final CharIteratorEx iter = this.iteratorEx();

@@ -882,6 +882,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public double sum() {
+        assertNotClosed();
+
         try {
             return summation().sum();
         } finally {
@@ -905,6 +907,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             return summation().average();
         } finally {
@@ -914,6 +918,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat first() {
+        assertNotClosed();
+
         try {
             final FloatIterator iter = this.iteratorEx();
 
@@ -925,6 +931,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat last() {
+        assertNotClosed();
+
         try {
             final FloatIterator iter = this.iteratorEx();
 
@@ -946,6 +954,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final FloatIterator iter = this.iteratorEx();
 
@@ -969,6 +979,8 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalFloat findFirstOrLast(Try.FloatPredicate<E> predicateForFirst,
             Try.FloatPredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final FloatIteratorEx iter = iteratorEx();
             MutableFloat last = null;
@@ -996,6 +1008,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Optional<Map<Percentage, Float>> percentiles() {
+        assertNotClosed();
+
         try {
             final float[] a = sorted().toArray();
 
@@ -1011,6 +1025,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final float[] a = sorted().toArray();
 
@@ -1026,6 +1042,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final FloatIteratorEx iter = this.iteratorEx();

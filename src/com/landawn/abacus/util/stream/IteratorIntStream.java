@@ -1327,6 +1327,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextInt());
@@ -1338,6 +1340,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public int[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -1347,6 +1351,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntList toIntList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -1366,6 +1372,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <C extends Collection<Integer>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1386,6 +1394,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Integer> result = supplier.get();
 
@@ -1406,6 +1416,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Integer> result = supplier.get();
 
@@ -1422,6 +1434,8 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             int element = 0;
@@ -1440,6 +1454,8 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1479,6 +1495,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public int reduce(int identity, IntBinaryOperator op) {
+        assertNotClosed();
+
         try {
             int result = identity;
 
@@ -1494,6 +1512,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt reduce(IntBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalInt.empty();
@@ -1513,6 +1533,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1570,6 +1592,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalInt.empty();
@@ -1596,6 +1620,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalInt.empty();
@@ -1629,6 +1655,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public OptionalInt kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1645,6 +1672,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             long result = 0;
 
@@ -1660,6 +1689,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1681,6 +1712,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1690,6 +1723,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final IntSummaryStatistics result = new IntSummaryStatistics();
 
@@ -1705,6 +1740,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextInt())) {
@@ -1720,6 +1757,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextInt()) == false) {
@@ -1735,6 +1774,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextInt())) {
@@ -1750,6 +1791,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 int e = elements.nextInt();
@@ -1767,6 +1810,8 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalInt.empty();

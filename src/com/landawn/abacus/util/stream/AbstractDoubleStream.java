@@ -881,6 +881,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public double sum() {
+        assertNotClosed();
+
         try {
             return summation().sum();
         } finally {
@@ -904,6 +906,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             return summation().average();
         } finally {
@@ -913,6 +917,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble first() {
+        assertNotClosed();
+
         try {
             final DoubleIterator iter = this.iteratorEx();
 
@@ -924,6 +930,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble last() {
+        assertNotClosed();
+
         try {
             final DoubleIterator iter = this.iteratorEx();
 
@@ -945,6 +953,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final DoubleIterator iter = this.iteratorEx();
 
@@ -968,6 +978,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalDouble findFirstOrLast(Try.DoublePredicate<E> predicateForFirst,
             Try.DoublePredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final DoubleIteratorEx iter = iteratorEx();
             MutableDouble last = null;
@@ -995,6 +1007,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Optional<Map<Percentage, Double>> percentiles() {
+        assertNotClosed();
+
         try {
             final double[] a = sorted().toArray();
 
@@ -1011,6 +1025,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final double[] a = sorted().toArray();
 
@@ -1026,6 +1042,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final DoubleIteratorEx iter = this.iteratorEx();

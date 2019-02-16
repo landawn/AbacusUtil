@@ -894,6 +894,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ByteConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
@@ -905,6 +907,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public byte[] toArray() {
+        assertNotClosed();
+
         try {
             return N.copyOfRange(elements, fromIndex, toIndex);
         } finally {
@@ -914,6 +918,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteList toByteList() {
+        assertNotClosed();
+
         try {
             return ByteList.of(N.copyOfRange(elements, fromIndex, toIndex));
         } finally {
@@ -923,6 +929,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public List<Byte> toList() {
+        assertNotClosed();
+
         try {
             final List<Byte> result = new ArrayList<>(toIndex - fromIndex);
 
@@ -938,6 +946,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Set<Byte> toSet() {
+        assertNotClosed();
+
         try {
             final Set<Byte> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -953,6 +963,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <C extends Collection<Byte>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -968,6 +980,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<Byte> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -983,6 +997,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Byte> result = supplier.get();
 
@@ -998,6 +1014,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<Byte> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1013,6 +1031,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Byte> result = supplier.get();
 
@@ -1029,6 +1049,8 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -1045,6 +1067,8 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1082,6 +1106,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte first() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalByte.of(elements[fromIndex]) : OptionalByte.empty();
         } finally {
@@ -1091,6 +1117,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte last() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalByte.of(elements[toIndex - 1]) : OptionalByte.empty();
         } finally {
@@ -1100,6 +1128,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final int size = toIndex - fromIndex;
 
@@ -1117,6 +1147,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public byte reduce(byte identity, ByteBinaryOperator op) {
+        assertNotClosed();
+
         try {
             byte result = identity;
 
@@ -1132,6 +1164,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte reduce(ByteBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalByte.empty();
@@ -1151,6 +1185,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1194,6 +1230,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte min() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalByte.empty();
@@ -1209,6 +1247,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte max() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalByte.empty();
@@ -1225,6 +1265,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public OptionalByte kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (k > toIndex - fromIndex) {
@@ -1241,6 +1282,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             return sum(elements, fromIndex, toIndex);
         } finally {
@@ -1250,6 +1293,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1263,6 +1308,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return toIndex - fromIndex;
         } finally {
@@ -1372,6 +1419,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final ByteSummaryStatistics result = new ByteSummaryStatistics();
 
@@ -1387,6 +1436,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1402,6 +1453,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i]) == false) {
@@ -1417,6 +1470,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1432,6 +1487,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1447,6 +1504,8 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = toIndex - 1; i >= fromIndex; i--) {
                 if (predicate.test(elements[i])) {

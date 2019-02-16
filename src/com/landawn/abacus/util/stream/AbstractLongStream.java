@@ -878,6 +878,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public OptionalLong first() {
+        assertNotClosed();
+
         try {
             final LongIterator iter = this.iteratorEx();
 
@@ -889,6 +891,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public OptionalLong last() {
+        assertNotClosed();
+
         try {
             final LongIterator iter = this.iteratorEx();
 
@@ -910,6 +914,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public OptionalLong onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final LongIterator iter = this.iteratorEx();
 
@@ -933,6 +939,8 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalLong findFirstOrLast(Try.LongPredicate<E> predicateForFirst,
             Try.LongPredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final LongIteratorEx iter = iteratorEx();
             MutableLong last = null;
@@ -960,6 +968,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Optional<Map<Percentage, Long>> percentiles() {
+        assertNotClosed();
+
         try {
             final long[] a = sorted().toArray();
 
@@ -975,6 +985,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final long[] a = sorted().toArray();
 
@@ -990,6 +1002,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final LongIteratorEx iter = this.iteratorEx();

@@ -1760,6 +1760,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.next());
@@ -1773,6 +1775,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        assertNotClosed();
 
         try {
             T prev = (T) NONE;
@@ -1807,6 +1810,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        assertNotClosed();
 
         try {
             T prev = (T) NONE;
@@ -1850,6 +1854,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     <A> A[] toArray(A[] a) {
+        assertNotClosed();
+
         try {
             return elements.toArray(a);
         } finally {
@@ -1859,6 +1865,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public List<T> toList() {
+        assertNotClosed();
+
         try {
             final List<T> result = new ArrayList<>();
 
@@ -1874,6 +1882,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Set<T> toSet() {
+        assertNotClosed();
+
         try {
             final Set<T> result = new HashSet<>();
 
@@ -1889,6 +1899,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1904,6 +1916,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<T> result = new Multiset<>();
 
@@ -1919,6 +1933,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<T> result = supplier.get();
 
@@ -1934,6 +1950,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<T> result = new LongMultiset<>();
 
@@ -1949,6 +1967,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<T> result = supplier.get();
 
@@ -1965,6 +1985,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             T element = null;
@@ -1983,6 +2005,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -2023,6 +2047,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             T element = null;
@@ -2040,6 +2066,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public T reduce(T identity, BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         try {
             T result = identity;
 
@@ -2055,6 +2083,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -2074,6 +2104,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -2089,6 +2121,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
+        assertNotClosed();
+
         try {
             final A container = collector.supplier().get();
             final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -2224,6 +2258,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> min(Comparator<? super T> comparator) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -2250,6 +2286,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> max(Comparator<? super T> comparator) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -2283,6 +2321,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -2326,6 +2365,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -2335,6 +2376,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.next())) {
@@ -2350,6 +2393,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.next()) == false) {
@@ -2365,6 +2410,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.next())) {
@@ -2380,6 +2427,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 T e = elements.next();
@@ -2397,6 +2446,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return (Optional<T>) Optional.empty();

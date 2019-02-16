@@ -1333,6 +1333,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
             final Try.Predicate<? super T, E2> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final ObjIteratorEx<T> iter = iteratorEx();
             T last = (T) NONE;
@@ -1357,6 +1359,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U seed,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final ObjIteratorEx<T> iter = iteratorEx();
             T last = (T) NONE;
@@ -1381,6 +1385,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final ObjIteratorEx<T> iter = iteratorEx();
             U seed = null;
@@ -1407,6 +1413,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     @SafeVarargs
     public final boolean containsAll(final T... a) {
+        assertNotClosed();
+
         try {
             if (N.isNullOrEmpty(a)) {
                 return true;
@@ -1432,6 +1440,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public boolean containsAll(final Collection<? extends T> c) {
+        assertNotClosed();
+
         try {
             if (N.isNullOrEmpty(c)) {
                 return true;
@@ -1454,6 +1464,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<T> first() {
+        assertNotClosed();
+
         try {
             final Iterator<T> iter = this.iterator();
 
@@ -1469,6 +1481,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<T> last() {
+        assertNotClosed();
+
         try {
             final Iterator<T> iter = this.iterator();
 
@@ -1490,6 +1504,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<T> onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final Iterator<T> iter = this.iteratorEx();
 
@@ -2005,6 +2021,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<Map<Percentage, T>> percentiles() {
+        assertNotClosed();
+
         try {
             final Object[] a = sorted().toArray();
 
@@ -2020,6 +2038,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator) {
+        assertNotClosed();
+
         try {
             final Object[] a = sorted(comparator).toArray();
 
@@ -2228,6 +2248,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
+        assertNotClosed();
+
         try {
             final Object[] src = toArray();
             final A[] res = generator.apply(src.length);
@@ -2245,6 +2267,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public DataSet toDataSet(boolean isFirstHeader) {
+        assertNotClosed();
+
         try {
             if (isFirstHeader) {
                 final ObjIterator<T> iter = this.iterator();
@@ -2289,6 +2313,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final IteratorEx<T> iter = this.iteratorEx();
@@ -2305,6 +2331,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public boolean hasDuplicates() {
+        assertNotClosed();
+
         try {
             final Set<T> set = new HashSet<>();
             final Iterator<T> iter = iterator();
@@ -2469,6 +2497,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(Writer writer, Try.Function<? super T, String, IOException> toLine) throws IOException {
+        assertNotClosed();
+
         try {
             final Iterator<T> iter = iterator();
             final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
@@ -2511,6 +2541,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
+        assertNotClosed();
 
         try {
             final Iterator<T> iter = iterator();

@@ -885,6 +885,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public OptionalByte first() {
+        assertNotClosed();
+
         try {
             final ByteIterator iter = this.iteratorEx();
 
@@ -896,6 +898,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public OptionalByte last() {
+        assertNotClosed();
+
         try {
             final ByteIterator iter = this.iteratorEx();
 
@@ -917,6 +921,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public OptionalByte onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final ByteIterator iter = this.iteratorEx();
 
@@ -940,6 +946,8 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalByte findFirstOrLast(Try.BytePredicate<E> predicateForFirst,
             Try.BytePredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final ByteIteratorEx iter = iteratorEx();
             MutableByte last = null;
@@ -967,6 +975,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Optional<Map<Percentage, Byte>> percentiles() {
+        assertNotClosed();
+
         try {
             final byte[] a = sorted().toArray();
 
@@ -982,6 +992,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final byte[] a = sorted().toArray();
 
@@ -997,6 +1009,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final ByteIteratorEx iter = this.iteratorEx();

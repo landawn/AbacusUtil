@@ -1044,6 +1044,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextLong());
@@ -1055,6 +1057,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public long[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -1064,6 +1068,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongList toLongList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -1083,6 +1089,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <C extends Collection<Long>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1103,6 +1111,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Long> result = supplier.get();
 
@@ -1123,6 +1133,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Long> result = supplier.get();
 
@@ -1139,6 +1151,8 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             long element = 0;
@@ -1157,6 +1171,8 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1196,6 +1212,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public long reduce(long identity, LongBinaryOperator op) {
+        assertNotClosed();
+
         try {
             long result = identity;
 
@@ -1211,6 +1229,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong reduce(LongBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalLong.empty();
@@ -1230,6 +1250,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1287,6 +1309,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalLong.empty();
@@ -1313,6 +1337,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalLong.empty();
@@ -1346,6 +1372,7 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     public OptionalLong kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1362,6 +1389,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public long sum() {
+        assertNotClosed();
+
         try {
             long result = 0;
 
@@ -1377,6 +1406,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1398,6 +1429,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1407,6 +1440,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final LongSummaryStatistics result = new LongSummaryStatistics();
 
@@ -1422,6 +1457,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextLong())) {
@@ -1437,6 +1474,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextLong()) == false) {
@@ -1452,6 +1491,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextLong())) {
@@ -1467,6 +1508,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 long e = elements.nextLong();
@@ -1484,6 +1527,8 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalLong.empty();

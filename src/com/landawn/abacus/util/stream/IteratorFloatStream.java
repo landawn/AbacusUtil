@@ -1039,6 +1039,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextFloat());
@@ -1050,6 +1052,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public float[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -1059,6 +1063,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatList toFloatList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -1078,6 +1084,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <C extends Collection<Float>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1098,6 +1106,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Multiset<Float> toMultiset(Supplier<? extends Multiset<Float>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Float> result = supplier.get();
 
@@ -1118,6 +1128,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public LongMultiset<Float> toLongMultiset(Supplier<? extends LongMultiset<Float>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Float> result = supplier.get();
 
@@ -1134,6 +1146,8 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             float element = 0;
@@ -1152,6 +1166,8 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1191,6 +1207,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public float reduce(float identity, FloatBinaryOperator op) {
+        assertNotClosed();
+
         try {
             float result = identity;
 
@@ -1206,6 +1224,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat reduce(FloatBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalFloat.empty();
@@ -1225,6 +1245,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1282,6 +1304,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalFloat.empty();
@@ -1308,6 +1332,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalFloat.empty();
@@ -1341,6 +1367,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public OptionalFloat kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1357,6 +1384,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1366,6 +1395,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final FloatSummaryStatistics result = new FloatSummaryStatistics();
 
@@ -1381,6 +1412,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextFloat())) {
@@ -1396,6 +1429,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextFloat()) == false) {
@@ -1411,6 +1446,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextFloat())) {
@@ -1426,6 +1463,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findFirst(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 float e = elements.nextFloat();
@@ -1443,6 +1482,8 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findLast(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalFloat.empty();

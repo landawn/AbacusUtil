@@ -1203,6 +1203,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
@@ -1214,6 +1216,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public long[] toArray() {
+        assertNotClosed();
+
         try {
             return N.copyOfRange(elements, fromIndex, toIndex);
         } finally {
@@ -1223,6 +1227,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongList toLongList() {
+        assertNotClosed();
+
         try {
             return LongList.of(N.copyOfRange(elements, fromIndex, toIndex));
         } finally {
@@ -1232,6 +1238,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public List<Long> toList() {
+        assertNotClosed();
+
         try {
             final List<Long> result = new ArrayList<>(toIndex - fromIndex);
 
@@ -1247,6 +1255,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Set<Long> toSet() {
+        assertNotClosed();
+
         try {
             final Set<Long> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1262,6 +1272,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <C extends Collection<Long>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1277,6 +1289,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<Long> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1292,6 +1306,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Long> result = supplier.get();
 
@@ -1307,6 +1323,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<Long> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1322,6 +1340,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Long> result = supplier.get();
 
@@ -1338,6 +1358,8 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -1354,6 +1376,8 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1391,6 +1415,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong first() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalLong.of(elements[fromIndex]) : OptionalLong.empty();
         } finally {
@@ -1400,6 +1426,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong last() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalLong.of(elements[toIndex - 1]) : OptionalLong.empty();
         } finally {
@@ -1409,6 +1437,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final int size = toIndex - fromIndex;
 
@@ -1426,6 +1456,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public long reduce(long identity, LongBinaryOperator op) {
+        assertNotClosed();
+
         try {
             long result = identity;
 
@@ -1441,6 +1473,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong reduce(LongBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalLong.empty();
@@ -1460,6 +1494,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1503,6 +1539,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong min() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalLong.empty();
@@ -1518,6 +1556,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong max() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalLong.empty();
@@ -1534,6 +1574,7 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public OptionalLong kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (k > toIndex - fromIndex) {
@@ -1550,6 +1591,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public long sum() {
+        assertNotClosed();
+
         try {
             return sum(elements, fromIndex, toIndex);
         } finally {
@@ -1559,6 +1602,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1572,6 +1617,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return toIndex - fromIndex;
         } finally {
@@ -1681,6 +1728,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final LongSummaryStatistics result = new LongSummaryStatistics();
 
@@ -1696,6 +1745,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1711,6 +1762,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i]) == false) {
@@ -1726,6 +1779,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1741,6 +1796,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1756,6 +1813,8 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = toIndex - 1; i >= fromIndex; i--) {
                 if (predicate.test(elements[i])) {

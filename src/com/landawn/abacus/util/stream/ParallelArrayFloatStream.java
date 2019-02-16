@@ -818,6 +818,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public double sum() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return 0d;
@@ -833,6 +835,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();

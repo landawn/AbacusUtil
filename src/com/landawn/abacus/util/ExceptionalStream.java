@@ -1561,6 +1561,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public void forEach(Try.Consumer<? super T, ? extends E> action) throws E {
         N.checkArgNotNull(action, "action");
+        assertNotClosed();
 
         try {
             while (elements.hasNext()) {
@@ -1572,6 +1573,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> min(Comparator<? super T> comparator) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -1600,6 +1603,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
+        assertNotClosed();
 
         try {
             final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
@@ -1611,6 +1615,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> max(Comparator<? super T> comparator) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -1646,6 +1652,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
         N.checkArgNotNull(keyExtractor, "keyExtractor");
+        assertNotClosed();
 
         try {
             final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
@@ -1658,6 +1665,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public boolean anyMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
+        assertNotClosed();
 
         try {
             while (elements.hasNext()) {
@@ -1674,6 +1682,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public boolean allMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
+        assertNotClosed();
 
         try {
             while (elements.hasNext()) {
@@ -1690,6 +1699,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public boolean noneMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
+        assertNotClosed();
 
         try {
             while (elements.hasNext()) {
@@ -1706,6 +1716,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public Optional<T> findFirst(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
+        assertNotClosed();
 
         try {
             while (elements.hasNext()) {
@@ -1724,6 +1735,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public Optional<T> findLast(final Try.Predicate<? super T, ? extends E> predicate) throws E {
         N.checkArgNotNull(predicate, "predicate");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1750,6 +1762,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> first() throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -1762,6 +1776,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> last() throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return Optional.empty();
@@ -1780,6 +1796,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Object[] toArray() throws E {
+        assertNotClosed();
+
         try {
             return toList().toArray();
         } finally {
@@ -1789,6 +1807,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <A> A[] toArray(IntFunction<A[]> generator) throws E {
         N.checkArgNotNull(generator, "generator");
+        assertNotClosed();
 
         try {
             final List<T> list = toList();
@@ -1800,6 +1819,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public List<T> toList() throws E {
+        assertNotClosed();
+
         try {
             final List<T> result = new ArrayList<>();
 
@@ -1814,6 +1835,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Set<T> toSet() throws E {
+        assertNotClosed();
+
         try {
             final Set<T> result = new HashSet<>();
 
@@ -1829,6 +1852,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <C extends Collection<T>> C toCollection(final Supplier<C> supplier) throws E {
         N.checkArgNotNull(supplier, "supplier");
+        assertNotClosed();
 
         try {
             final C result = supplier.get();
@@ -1911,6 +1935,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(mergeFunction, "mergeFunction");
         N.checkArgNotNull(mapFactory, "mapFactory");
+        assertNotClosed();
 
         try {
             final M result = mapFactory.get();
@@ -1981,6 +2006,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(downstream, "downstream");
         N.checkArgNotNull(mapFactory, "mapFactory");
+        assertNotClosed();
 
         try {
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -2057,6 +2083,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(keyExtractor, "keyExtractor");
         N.checkArgNotNull(valueMapper, "valueMapper");
         N.checkArgNotNull(mapFactory, "mapFactory");
+        assertNotClosed();
 
         try {
             final M result = mapFactory.get();
@@ -2081,6 +2108,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public long count() throws E {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -2095,6 +2124,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @throws E
      */
     public Optional<T> onlyOne() throws DuplicatedResultException, E {
+        assertNotClosed();
+
         try {
             Optional<T> result = Optional.empty();
 
@@ -2113,6 +2144,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalInt sumInt(Try.ToIntFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalInt.empty();
@@ -2131,6 +2164,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalLong sumLong(Try.ToLongFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalLong.empty();
@@ -2149,6 +2184,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalDouble sumDouble(Try.ToDoubleFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -2167,6 +2204,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalDouble averageInt(Try.ToIntFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -2187,6 +2226,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalDouble averageLong(Try.ToLongFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -2207,6 +2248,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public OptionalDouble averageDouble(Try.ToDoubleFunction<T, E> func) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -2226,6 +2269,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public T reduce(T identity, Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
+        assertNotClosed();
 
         try {
             T result = identity;
@@ -2242,6 +2286,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public Optional<T> reduce(Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(accumulator, "accumulator");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -2263,6 +2308,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
+        assertNotClosed();
 
         try {
             final R result = supplier.get();
@@ -2282,6 +2328,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(supplier, "supplier");
         N.checkArgNotNull(accumulator, "accumulator");
         N.checkArgNotNull(finisher, "finisher");
+        assertNotClosed();
 
         try {
             final R result = supplier.get();
@@ -2298,6 +2345,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <R, A> R collect(final Collector<? super T, A, R> collector) throws E {
         N.checkArgNotNull(collector, "collector");
+        assertNotClosed();
 
         try {
             final A container = collector.supplier().get();
@@ -2316,6 +2364,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <R, RR, A> RR collectAndThen(final Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func) throws E {
         N.checkArgNotNull(collector, "collector");
         N.checkArgNotNull(func, "func");
+        assertNotClosed();
 
         try {
             final A container = collector.supplier().get();
@@ -2501,6 +2550,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             } else {
                 throw (E) ex;
             }
+        }
+    }
+
+    void assertNotClosed() {
+        if (isClosed) {
+            throw new IllegalStateException("This stream has been closed");
         }
     }
 

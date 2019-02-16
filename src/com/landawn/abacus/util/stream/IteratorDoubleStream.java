@@ -1043,6 +1043,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextDouble());
@@ -1054,6 +1056,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public double[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -1063,6 +1067,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleList toDoubleList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -1082,6 +1088,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <C extends Collection<Double>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1102,6 +1110,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Multiset<Double> toMultiset(Supplier<? extends Multiset<Double>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Double> result = supplier.get();
 
@@ -1122,6 +1132,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongMultiset<Double> toLongMultiset(Supplier<? extends LongMultiset<Double>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Double> result = supplier.get();
 
@@ -1138,6 +1150,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             double element = 0;
@@ -1156,6 +1170,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1195,6 +1211,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public double reduce(double identity, DoubleBinaryOperator op) {
+        assertNotClosed();
+
         try {
             double result = identity;
 
@@ -1210,6 +1228,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble reduce(DoubleBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1229,6 +1249,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1286,6 +1308,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1312,6 +1336,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1345,6 +1371,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public OptionalDouble kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1361,6 +1388,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1370,6 +1399,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final DoubleSummaryStatistics result = new DoubleSummaryStatistics();
 
@@ -1385,6 +1416,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextDouble())) {
@@ -1400,6 +1433,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextDouble()) == false) {
@@ -1415,6 +1450,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextDouble())) {
@@ -1430,6 +1467,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 double e = elements.nextDouble();
@@ -1447,6 +1486,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();

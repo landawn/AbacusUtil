@@ -2124,6 +2124,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
@@ -2137,6 +2139,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        assertNotClosed();
 
         try {
             int cursor = fromIndex;
@@ -2155,6 +2158,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
         N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        assertNotClosed();
 
         try {
             int cursor = fromIndex;
@@ -2171,6 +2175,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Object[] toArray() {
+        assertNotClosed();
+
         try {
             return N.copyOfRange(elements, fromIndex, toIndex);
         } finally {
@@ -2179,6 +2185,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     <A> A[] toArray(A[] a) {
+        assertNotClosed();
+
         try {
             if (a.length < (toIndex - fromIndex)) {
                 a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
@@ -2194,6 +2202,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
+        assertNotClosed();
+
         try {
             return toArray(generator.apply(toIndex - fromIndex));
         } finally {
@@ -2203,6 +2213,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public List<T> toList() {
+        assertNotClosed();
+
         try {
             // return N.asList(N.copyOfRange(elements, fromIndex, toIndex));
 
@@ -2224,6 +2236,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Set<T> toSet() {
+        assertNotClosed();
+
         try {
             final Set<T> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -2239,6 +2253,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -2254,6 +2270,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<T> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -2269,6 +2287,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<T> result = supplier.get();
 
@@ -2284,6 +2304,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -2299,6 +2321,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<T> result = supplier.get();
 
@@ -2315,6 +2339,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -2331,6 +2357,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -2370,6 +2398,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -2385,6 +2415,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> first() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? Optional.of(elements[fromIndex]) : Optional.<T> empty();
         } finally {
@@ -2394,6 +2426,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> last() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? Optional.of(elements[toIndex - 1]) : Optional.<T> empty();
         } finally {
@@ -2403,6 +2437,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final int size = toIndex - fromIndex;
 
@@ -2420,6 +2456,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public T reduce(T identity, BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         try {
             T result = identity;
 
@@ -2435,6 +2473,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return Optional.empty();
@@ -2454,6 +2494,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -2469,6 +2511,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R, A> R collect(Collector<? super T, A, R> collector) {
+        assertNotClosed();
+
         try {
             final A container = collector.supplier().get();
             final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -2535,6 +2579,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> min(Comparator<? super T> comparator) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return Optional.empty();
@@ -2550,6 +2596,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> max(Comparator<? super T> comparator) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return Optional.empty();
@@ -2566,6 +2614,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (k > toIndex - fromIndex) {
@@ -2582,6 +2631,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return toIndex - fromIndex;
         } finally {
@@ -2692,6 +2743,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -2707,6 +2760,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i]) == false) {
@@ -2722,6 +2777,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -2737,6 +2794,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -2752,6 +2811,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = toIndex - 1; i >= fromIndex; i--) {
                 if (predicate.test(elements[i])) {

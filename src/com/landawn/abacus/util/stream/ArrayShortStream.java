@@ -979,6 +979,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
@@ -990,6 +992,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public short[] toArray() {
+        assertNotClosed();
+
         try {
             return N.copyOfRange(elements, fromIndex, toIndex);
         } finally {
@@ -999,6 +1003,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortList toShortList() {
+        assertNotClosed();
+
         try {
             return ShortList.of(N.copyOfRange(elements, fromIndex, toIndex));
         } finally {
@@ -1008,6 +1014,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public List<Short> toList() {
+        assertNotClosed();
+
         try {
             final List<Short> result = new ArrayList<>(toIndex - fromIndex);
 
@@ -1023,6 +1031,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Set<Short> toSet() {
+        assertNotClosed();
+
         try {
             final Set<Short> result = new HashSet<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1038,6 +1048,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <C extends Collection<Short>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -1053,6 +1065,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
+        assertNotClosed();
+
         try {
             final Multiset<Short> result = new Multiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1068,6 +1082,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset(Supplier<? extends Multiset<Short>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Short> result = supplier.get();
 
@@ -1083,6 +1099,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
+        assertNotClosed();
+
         try {
             final LongMultiset<Short> result = new LongMultiset<>(N.initHashCapacity(toIndex - fromIndex));
 
@@ -1098,6 +1116,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset(Supplier<? extends LongMultiset<Short>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Short> result = supplier.get();
 
@@ -1114,6 +1134,8 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
 
@@ -1130,6 +1152,8 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1167,6 +1191,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort first() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalShort.of(elements[fromIndex]) : OptionalShort.empty();
         } finally {
@@ -1176,6 +1202,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort last() {
+        assertNotClosed();
+
         try {
             return fromIndex < toIndex ? OptionalShort.of(elements[toIndex - 1]) : OptionalShort.empty();
         } finally {
@@ -1185,6 +1213,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final int size = toIndex - fromIndex;
 
@@ -1202,6 +1232,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public short reduce(short identity, ShortBinaryOperator op) {
+        assertNotClosed();
+
         try {
             short result = identity;
 
@@ -1217,6 +1249,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort reduce(ShortBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalShort.empty();
@@ -1236,6 +1270,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1279,6 +1315,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort min() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalShort.empty();
@@ -1294,6 +1332,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort max() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalShort.empty();
@@ -1310,6 +1350,7 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public OptionalShort kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (k > toIndex - fromIndex) {
@@ -1326,6 +1367,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             return sum(elements, fromIndex, toIndex);
         } finally {
@@ -1335,6 +1378,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (fromIndex == toIndex) {
                 return OptionalDouble.empty();
@@ -1348,6 +1393,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return toIndex - fromIndex;
         } finally {
@@ -1457,6 +1504,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final ShortSummaryStatistics result = new ShortSummaryStatistics();
 
@@ -1472,6 +1521,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1487,6 +1538,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i]) == false) {
@@ -1502,6 +1555,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1517,6 +1572,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (predicate.test(elements[i])) {
@@ -1532,6 +1589,8 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             for (int i = toIndex - 1; i >= fromIndex; i--) {
                 if (predicate.test(elements[i])) {

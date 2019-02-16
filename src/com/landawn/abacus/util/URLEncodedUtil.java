@@ -323,8 +323,9 @@ public final class URLEncodedUtil {
         return encode(url, parameters, Charsets.UTF_8);
     }
 
+    @SuppressWarnings("rawtypes")
     public static String encode(final String url, final Object parameters, final Charset charset) {
-        if (parameters == null) {
+        if (parameters == null || (parameters instanceof Map && ((Map) parameters).isEmpty())) {
             return url;
         }
 
@@ -345,8 +346,9 @@ public final class URLEncodedUtil {
         encode(output, parameters, Charsets.UTF_8);
     }
 
+    @SuppressWarnings("rawtypes")
     public static void encode(final StringBuilder output, final Object parameters, final Charset charset) {
-        if (parameters == null) {
+        if (parameters == null || (parameters instanceof Map && ((Map) parameters).isEmpty())) {
             return;
         }
 

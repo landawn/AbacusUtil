@@ -854,6 +854,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextShort());
@@ -865,6 +867,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public short[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -874,6 +878,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortList toShortList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -893,6 +899,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <C extends Collection<Short>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -913,6 +921,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset(Supplier<? extends Multiset<Short>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Short> result = supplier.get();
 
@@ -933,6 +943,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset(Supplier<? extends LongMultiset<Short>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Short> result = supplier.get();
 
@@ -949,6 +961,8 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             short element = 0;
@@ -967,6 +981,8 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1006,6 +1022,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public short reduce(short identity, ShortBinaryOperator op) {
+        assertNotClosed();
+
         try {
             short result = identity;
 
@@ -1021,6 +1039,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort reduce(ShortBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalShort.empty();
@@ -1040,6 +1060,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -1097,6 +1119,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalShort.empty();
@@ -1123,6 +1147,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalShort.empty();
@@ -1156,6 +1182,7 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public OptionalShort kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1172,6 +1199,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             long result = 0;
 
@@ -1187,6 +1216,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1208,6 +1239,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1217,6 +1250,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final ShortSummaryStatistics result = new ShortSummaryStatistics();
 
@@ -1232,6 +1267,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextShort())) {
@@ -1247,6 +1284,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextShort()) == false) {
@@ -1262,6 +1301,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextShort())) {
@@ -1277,6 +1318,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 short e = elements.nextShort();
@@ -1294,6 +1337,8 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalShort.empty();

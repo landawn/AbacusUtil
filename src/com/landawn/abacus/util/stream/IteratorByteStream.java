@@ -735,6 +735,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.ByteConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextByte());
@@ -746,6 +748,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public byte[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -755,6 +759,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteList toByteList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -774,6 +780,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <C extends Collection<Byte>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -794,6 +802,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Byte> result = supplier.get();
 
@@ -814,6 +824,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Byte> result = supplier.get();
 
@@ -830,6 +842,8 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             byte element = 0;
@@ -848,6 +862,8 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -887,6 +903,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public byte reduce(byte identity, ByteBinaryOperator op) {
+        assertNotClosed();
+
         try {
             byte result = identity;
 
@@ -902,6 +920,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte reduce(ByteBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalByte.empty();
@@ -921,6 +941,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -978,6 +1000,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalByte.empty();
@@ -1004,6 +1028,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalByte.empty();
@@ -1037,6 +1063,7 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     public OptionalByte kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1053,6 +1080,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             long result = 0;
 
@@ -1068,6 +1097,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1089,6 +1120,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1098,6 +1131,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final ByteSummaryStatistics result = new ByteSummaryStatistics();
 
@@ -1113,6 +1148,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextByte())) {
@@ -1128,6 +1165,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextByte()) == false) {
@@ -1143,6 +1182,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextByte())) {
@@ -1158,6 +1199,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 byte e = elements.nextByte();
@@ -1175,6 +1218,8 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalByte.empty();

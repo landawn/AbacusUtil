@@ -1399,6 +1399,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @SequentialOnly
     public String join(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
+        s.assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
             final Iterator<Entry<K, V>> iter = this.iterator();

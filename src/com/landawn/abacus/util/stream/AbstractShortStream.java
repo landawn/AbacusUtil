@@ -880,6 +880,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public OptionalShort first() {
+        assertNotClosed();
+
         try {
             final ShortIterator iter = this.iteratorEx();
 
@@ -891,6 +893,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public OptionalShort last() {
+        assertNotClosed();
+
         try {
             final ShortIterator iter = this.iteratorEx();
 
@@ -912,6 +916,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public OptionalShort onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final ShortIterator iter = this.iteratorEx();
 
@@ -935,6 +941,8 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
             Try.ShortPredicate<E> predicateForLast) throws E, E2 {
+        assertNotClosed();
+
         try {
             final ShortIteratorEx iter = iteratorEx();
             MutableShort last = null;
@@ -962,6 +970,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Optional<Map<Percentage, Short>> percentiles() {
+        assertNotClosed();
+
         try {
             final short[] a = sorted().toArray();
 
@@ -977,6 +987,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final short[] a = sorted().toArray();
 
@@ -992,6 +1004,8 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final ShortIteratorEx iter = this.iteratorEx();

@@ -2634,6 +2634,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     <A> A[] toArray(A[] a) {
+        assertNotClosed();
+
         try {
             if (a.length < (toIndex - fromIndex)) {
                 a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);

@@ -735,6 +735,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.CharConsumer<E> action) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 action.accept(elements.nextChar());
@@ -746,6 +748,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public char[] toArray() {
+        assertNotClosed();
+
         try {
             return elements.toArray();
         } finally {
@@ -755,6 +759,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharList toCharList() {
+        assertNotClosed();
+
         try {
             return elements.toList();
         } finally {
@@ -774,6 +780,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <C extends Collection<Character>> C toCollection(Supplier<? extends C> supplier) {
+        assertNotClosed();
+
         try {
             final C result = supplier.get();
 
@@ -794,6 +802,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
+        assertNotClosed();
+
         try {
             final Multiset<Character> result = supplier.get();
 
@@ -814,6 +824,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
+        assertNotClosed();
+
         try {
             final LongMultiset<Character> result = supplier.get();
 
@@ -830,6 +842,8 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             char element = 0;
@@ -848,6 +862,8 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -887,6 +903,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public char reduce(char identity, CharBinaryOperator op) {
+        assertNotClosed();
+
         try {
             char result = identity;
 
@@ -902,6 +920,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar reduce(CharBinaryOperator op) {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalChar.empty();
@@ -921,6 +941,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         try {
             final R result = supplier.get();
 
@@ -978,6 +1000,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar min() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalChar.empty();
@@ -1004,6 +1028,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar max() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalChar.empty();
@@ -1037,6 +1063,7 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public OptionalChar kthLargest(int k) {
         N.checkArgPositive(k, "k");
+        assertNotClosed();
 
         try {
             if (elements.hasNext() == false) {
@@ -1053,6 +1080,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public int sum() {
+        assertNotClosed();
+
         try {
             long result = 0;
 
@@ -1068,6 +1097,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalDouble average() {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalDouble.empty();
@@ -1089,6 +1120,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public long count() {
+        assertNotClosed();
+
         try {
             return elements.count();
         } finally {
@@ -1098,6 +1131,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharSummaryStatistics summarize() {
+        assertNotClosed();
+
         try {
             final CharSummaryStatistics result = new CharSummaryStatistics();
 
@@ -1113,6 +1148,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextChar())) {
@@ -1128,6 +1165,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextChar()) == false) {
@@ -1143,6 +1182,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 if (predicate.test(elements.nextChar())) {
@@ -1158,6 +1199,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             while (elements.hasNext()) {
                 char e = elements.nextChar();
@@ -1175,6 +1218,8 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         try {
             if (elements.hasNext() == false) {
                 return OptionalChar.empty();

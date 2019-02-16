@@ -795,6 +795,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
+    void assertNotClosed() {
+        if (isClosed) {
+            throw new IllegalStateException("This stream has been closed");
+        }
+    }
+
     protected static Splitor checkSplitor(final Splitor splitor) {
         N.checkArgNotNull(splitor, "splitor");
 

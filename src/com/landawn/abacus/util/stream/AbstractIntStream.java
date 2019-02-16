@@ -879,6 +879,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public OptionalInt first() {
+        assertNotClosed();
+
         try {
             final IntIterator iter = this.iteratorEx();
 
@@ -890,6 +892,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public OptionalInt last() {
+        assertNotClosed();
+
         try {
             final IntIterator iter = this.iteratorEx();
 
@@ -911,6 +915,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public OptionalInt onlyOne() throws DuplicatedResultException {
+        assertNotClosed();
+
         try {
             final IntIterator iter = this.iteratorEx();
 
@@ -934,6 +940,8 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public <E extends Exception, E2 extends Exception> OptionalInt findFirstOrLast(Try.IntPredicate<E> predicateForFirst, Try.IntPredicate<E> predicateForLast)
             throws E, E2 {
+        assertNotClosed();
+
         try {
             final IntIteratorEx iter = iteratorEx();
             MutableInt last = null;
@@ -961,6 +969,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Optional<Map<Percentage, Integer>> percentiles() {
+        assertNotClosed();
+
         try {
             final int[] a = sorted().toArray();
 
@@ -976,6 +986,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeAndPercentiles() {
+        assertNotClosed();
+
         try {
             final int[] a = sorted().toArray();
 
@@ -991,6 +1003,8 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        assertNotClosed();
+
         try {
             final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseCachedBuffer(true);
             final IntIteratorEx iter = this.iteratorEx();
