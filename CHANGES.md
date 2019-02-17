@@ -1,4 +1,4 @@
-### 1.5
+### 1.5.1
  
 * Change the stream implementation: Streams will be automatically closed after execution(any terminal method is executed).
 

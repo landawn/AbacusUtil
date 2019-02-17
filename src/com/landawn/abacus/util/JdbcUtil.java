@@ -4730,147 +4730,197 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            ExceptionalStream<T, SQLException> result = null;
-            ResultSet rs = null;
+            final ExceptionalIterator<T, SQLException> lazyIter = ExceptionalIterator
+                    .of(new Try.Supplier<ExceptionalIterator<T, SQLException>, SQLException>() {
+                        private ExceptionalIterator<T, SQLException> internalIter;
 
-            try {
-                rs = stmt.executeQuery();
-                final ResultSet resultSet = rs;
+                        @Override
+                        public ExceptionalIterator<T, SQLException> get() throws SQLException {
+                            if (internalIter == null) {
+                                ResultSet rs = null;
 
-                final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-                    private boolean hasNext;
+                                try {
+                                    rs = stmt.executeQuery();
+                                    final ResultSet resultSet = rs;
 
-                    @Override
-                    public boolean hasNext() throws SQLException {
-                        if (hasNext == false) {
-                            hasNext = resultSet.next();
+                                    internalIter = new ExceptionalIterator<T, SQLException>() {
+                                        private boolean hasNext;
+
+                                        @Override
+                                        public boolean hasNext() throws SQLException {
+                                            if (hasNext == false) {
+                                                hasNext = resultSet.next();
+                                            }
+
+                                            return hasNext;
+                                        }
+
+                                        @Override
+                                        public T next() throws SQLException {
+                                            if (hasNext() == false) {
+                                                throw new NoSuchElementException();
+                                            }
+
+                                            hasNext = false;
+
+                                            return recordGetter.apply(resultSet);
+                                        }
+
+                                        @Override
+                                        public void skip(final long n) throws SQLException {
+                                            if (n <= 0) {
+                                                return;
+                                            }
+
+                                            final long m = hasNext ? n - 1 : n;
+                                            hasNext = false;
+
+                                            JdbcUtil.skip(resultSet, m);
+                                        }
+
+                                        @Override
+                                        public long count() throws SQLException {
+                                            long cnt = hasNext ? 1 : 0;
+                                            hasNext = false;
+
+                                            while (resultSet.next()) {
+                                                cnt++;
+                                            }
+
+                                            return cnt;
+                                        }
+
+                                        @Override
+                                        public void close() throws SQLException {
+                                            try {
+                                                JdbcUtil.closeQuietly(resultSet);
+                                            } finally {
+                                                closeAfterExecutionIfAllowed();
+                                            }
+                                        }
+                                    };
+                                } finally {
+                                    if (internalIter == null) {
+                                        try {
+                                            JdbcUtil.closeQuietly(rs);
+                                        } finally {
+                                            closeAfterExecutionIfAllowed();
+                                        }
+                                    }
+                                }
+                            }
+
+                            return internalIter;
                         }
+                    });
 
-                        return hasNext;
-                    }
-
-                    @Override
-                    public T next() throws SQLException {
-                        if (hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        hasNext = false;
-
-                        return recordGetter.apply(resultSet);
-                    }
-
-                    @Override
-                    public void skip(final long n) throws SQLException {
-                        if (n <= 0) {
-                            return;
-                        }
-
-                        final long m = hasNext ? n - 1 : n;
-
-                        JdbcUtil.skip(resultSet, m);
-
-                        hasNext = false;
-                    }
-                };
-
-                result = ExceptionalStream.newStream(iter).onClose(new Try.Runnable<SQLException>() {
-                    @Override
-                    public void run() throws SQLException {
-                        try {
-                            JdbcUtil.closeQuietly(resultSet);
-                        } finally {
-                            closeAfterExecutionIfAllowed();
-                        }
-                    }
-                });
-            } finally {
-                if (result == null) {
-                    try {
-                        JdbcUtil.closeQuietly(rs);
-                    } finally {
-                        closeAfterExecutionIfAllowed();
-                    }
+            return ExceptionalStream.newStream(lazyIter).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    lazyIter.close();
                 }
-            }
-
-            return result;
+            });
         }
 
         public <T> ExceptionalStream<T, SQLException> stream(final BiRecordGetter<T, RuntimeException> recordGetter) throws SQLException {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            ExceptionalStream<T, SQLException> result = null;
-            ResultSet rs = null;
+            final ExceptionalIterator<T, SQLException> lazyIter = ExceptionalIterator
+                    .of(new Try.Supplier<ExceptionalIterator<T, SQLException>, SQLException>() {
+                        private ExceptionalIterator<T, SQLException> internalIter;
 
-            try {
-                rs = stmt.executeQuery();
-                final ResultSet resultSet = rs;
+                        @Override
+                        public ExceptionalIterator<T, SQLException> get() throws SQLException {
+                            if (internalIter == null) {
+                                ResultSet rs = null;
 
-                final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
-                    private List<String> columnLabels = null;
-                    private boolean hasNext;
+                                try {
+                                    rs = stmt.executeQuery();
+                                    final ResultSet resultSet = rs;
 
-                    @Override
-                    public boolean hasNext() throws SQLException {
-                        if (hasNext == false) {
-                            hasNext = resultSet.next();
+                                    internalIter = new ExceptionalIterator<T, SQLException>() {
+                                        private List<String> columnLabels = null;
+                                        private boolean hasNext;
+
+                                        @Override
+                                        public boolean hasNext() throws SQLException {
+                                            if (hasNext == false) {
+                                                hasNext = resultSet.next();
+                                            }
+
+                                            return hasNext;
+                                        }
+
+                                        @Override
+                                        public T next() throws SQLException {
+                                            if (hasNext() == false) {
+                                                throw new NoSuchElementException();
+                                            }
+
+                                            hasNext = false;
+
+                                            if (columnLabels == null) {
+                                                columnLabels = JdbcUtil.getColumnLabelList(resultSet);
+                                            }
+
+                                            return recordGetter.apply(resultSet, columnLabels);
+                                        }
+
+                                        @Override
+                                        public void skip(final long n) throws SQLException {
+                                            if (n <= 0) {
+                                                return;
+                                            }
+
+                                            final long m = hasNext ? n - 1 : n;
+                                            hasNext = false;
+
+                                            JdbcUtil.skip(resultSet, m);
+                                        }
+
+                                        @Override
+                                        public long count() throws SQLException {
+                                            long cnt = hasNext ? 1 : 0;
+                                            hasNext = false;
+
+                                            while (resultSet.next()) {
+                                                cnt++;
+                                            }
+
+                                            return cnt;
+                                        }
+
+                                        @Override
+                                        public void close() throws SQLException {
+                                            try {
+                                                JdbcUtil.closeQuietly(resultSet);
+                                            } finally {
+                                                closeAfterExecutionIfAllowed();
+                                            }
+                                        }
+                                    };
+                                } finally {
+                                    if (internalIter == null) {
+                                        try {
+                                            JdbcUtil.closeQuietly(rs);
+                                        } finally {
+                                            closeAfterExecutionIfAllowed();
+                                        }
+                                    }
+                                }
+                            }
+
+                            return internalIter;
                         }
+                    });
 
-                        return hasNext;
-                    }
-
-                    @Override
-                    public T next() throws SQLException {
-                        if (hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        hasNext = false;
-
-                        if (columnLabels == null) {
-                            columnLabels = JdbcUtil.getColumnLabelList(resultSet);
-                        }
-
-                        return recordGetter.apply(resultSet, columnLabels);
-                    }
-
-                    @Override
-                    public void skip(final long n) throws SQLException {
-                        if (n <= 0) {
-                            return;
-                        }
-
-                        final long m = hasNext ? n - 1 : n;
-
-                        JdbcUtil.skip(resultSet, m);
-
-                        hasNext = false;
-                    }
-                };
-
-                result = ExceptionalStream.newStream(iter).onClose(new Try.Runnable<SQLException>() {
-                    @Override
-                    public void run() throws SQLException {
-                        try {
-                            JdbcUtil.closeQuietly(resultSet);
-                        } finally {
-                            closeAfterExecutionIfAllowed();
-                        }
-                    }
-                });
-            } finally {
-                if (result == null) {
-                    try {
-                        JdbcUtil.closeQuietly(rs);
-                    } finally {
-                        closeAfterExecutionIfAllowed();
-                    }
+            return ExceptionalStream.newStream(lazyIter).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    lazyIter.close();
                 }
-            }
-
-            return result;
+            });
         }
 
         public boolean exists() throws SQLException {

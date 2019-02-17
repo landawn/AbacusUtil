@@ -661,6 +661,17 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 hasNext = false;
             }
+
+            @Override
+            public long count() throws SQLException {
+                long cnt = 0;
+
+                while (resultSet.next()) {
+                    cnt++;
+                }
+
+                return cnt;
+            }
         };
 
         return newStream(iter);
@@ -821,7 +832,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 next = NONE;
                 return result;
             }
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     public ExceptionalStream<T, E> takeWhile(final Try.Predicate<? super T, ? extends E> predicate) {
@@ -857,7 +868,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return next;
             }
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     public ExceptionalStream<T, E> dropWhile(final Try.Predicate<? super T, ? extends E> predicate) {
@@ -902,7 +913,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return next;
             }
 
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     /**
@@ -1305,7 +1316,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     public ExceptionalStream<Stream<T>, E> split(final int size) {
@@ -1438,7 +1449,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return elements.next();
             }
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     public ExceptionalStream<T, E> limit(final long maxSize) {
@@ -1462,7 +1473,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return elements.next();
             }
 
-        }, closeHandlers);
+        }, sorted, comparator, closeHandlers);
     }
 
     public ExceptionalStream<T, E> sorted() {
@@ -2414,7 +2425,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
-    public Stream<T> __() {
+    Stream<T> unchecked() {
         if (N.isNullOrEmpty(this.closeHandlers)) {
             return Stream.of(new ObjIteratorEx<T>() {
                 @Override
@@ -2439,6 +2450,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 public void skip(long n) {
                     try {
                         elements.skip(n);
+                    } catch (Exception e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
+
+                @Override
+                public long count() {
+                    try {
+                        return elements.count();
                     } catch (Exception e) {
                         throw N.toRuntimeException(e);
                     }
@@ -2472,6 +2492,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                         throw N.toRuntimeException(e);
                     }
                 }
+
+                @Override
+                public long count() {
+                    try {
+                        return elements.count();
+                    } catch (Exception e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
             }).onClose(new Runnable() {
                 @Override
                 public void run() {
@@ -2484,6 +2513,114 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             });
         }
     }
+
+    public Stream<T> __() {
+        return unchecked();
+    }
+
+    //    public <E2 extends Exception> ExceptionalStream<T, E2> __(final Class<E2> targetExceptionType) {
+    //        N.checkArgNotNull(targetExceptionType, "targetExceptionType");
+    //
+    //        final Constructor<E2> msgCauseConstructor = ClassUtil.getDeclaredConstructor(targetExceptionType, String.class, Throwable.class);
+    //        final Constructor<E2> causeOnlyConstructor = ClassUtil.getDeclaredConstructor(targetExceptionType, Throwable.class);
+    //
+    //        N.checkArgument(msgCauseConstructor != null || causeOnlyConstructor != null,
+    //                "No constructor found with parameters: (String.class, Throwable.class), or (Throwable.class)");
+    //
+    //        final Function<Exception, E2> convertE = msgCauseConstructor != null ? new Function<Exception, E2>() {
+    //            @Override
+    //            public E2 apply(Exception e) {
+    //                return ClassUtil.invokeConstructor(msgCauseConstructor, e.getMessage(), e);
+    //            }
+    //        } : new Function<Exception, E2>() {
+    //            @Override
+    //            public E2 apply(Exception e) {
+    //                return ClassUtil.invokeConstructor(causeOnlyConstructor, e);
+    //            }
+    //        };
+    //
+    //        Deque<Try.Runnable<? extends E2>> newCloseHandlers = null;
+    //
+    //        if (closeHandlers != null) {
+    //            newCloseHandlers = new ArrayDeque<>(1);
+    //            newCloseHandlers.add(new Try.Runnable<E2>() {
+    //                @Override
+    //                public void run() throws E2 {
+    //                    try {
+    //                        close();
+    //                    } catch (Exception e) {
+    //                        throw convertE.apply(e);
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        return newStream(new ExceptionalIterator<T, E2>() {
+    //            private ExceptionalIterator<T, E> iter = null;
+    //            private boolean initialized = false;
+    //
+    //            @Override
+    //            public boolean hasNext() throws E2 {
+    //                if (initialized == false) {
+    //                    init();
+    //                }
+    //
+    //                try {
+    //                    return iter.hasNext();
+    //                } catch (Exception e) {
+    //                    throw convertE.apply(e);
+    //                }
+    //            }
+    //
+    //            @Override
+    //            public T next() throws E2 {
+    //                if (initialized == false) {
+    //                    init();
+    //                }
+    //
+    //                try {
+    //                    return iter.next();
+    //                } catch (Exception e) {
+    //                    throw convertE.apply(e);
+    //                }
+    //            }
+    //
+    //            @Override
+    //            public void skip(final long n) throws E2 {
+    //                if (initialized == false) {
+    //                    init();
+    //                }
+    //
+    //                try {
+    //                    iter.skip(n);
+    //                } catch (Exception e) {
+    //                    throw convertE.apply(e);
+    //                }
+    //            }
+    //
+    //            @Override
+    //            public long count() throws E2 {
+    //                if (initialized == false) {
+    //                    init();
+    //                }
+    //
+    //                try {
+    //                    return iter.count();
+    //                } catch (Exception e) {
+    //                    throw convertE.apply(e);
+    //                }
+    //            }
+    //
+    //            private void init() {
+    //                if (initialized == false) {
+    //                    initialized = true;
+    //
+    //                    iter = ExceptionalStream.this.elements;
+    //
+    //                }
+    //            }
+    //        }, sorted, comparator, newCloseHandlers);
+    //    }
 
     public <R> R __(Try.Function<? super ExceptionalStream<T, E>, R, ? extends E> transfer) throws E {
         N.checkArgNotNull(transfer, "transfer");
