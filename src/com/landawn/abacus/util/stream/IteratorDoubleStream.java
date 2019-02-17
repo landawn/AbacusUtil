@@ -185,6 +185,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextDouble();
 
@@ -193,8 +195,6 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextDouble();
                         hasNext = true;
@@ -992,8 +992,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -1002,8 +1002,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public double nextDouble() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextDouble();
@@ -1012,8 +1012,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -1022,8 +1022,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -1032,8 +1032,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public double[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();

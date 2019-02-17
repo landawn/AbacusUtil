@@ -181,6 +181,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextFloat();
 
@@ -189,8 +191,6 @@ class IteratorFloatStream extends AbstractFloatStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextFloat();
                         hasNext = true;
@@ -988,8 +988,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -998,8 +998,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public float nextFloat() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextFloat();
@@ -1008,8 +1008,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -1018,8 +1018,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -1028,8 +1028,8 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public float[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();

@@ -168,14 +168,14 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -1848,10 +1848,10 @@ class ArrayFloatStream extends AbstractFloatStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public FloatStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public FloatStream cached() {
+    //        return this;
+    //    }
 
     @Override
     FloatIteratorEx iteratorEx() {

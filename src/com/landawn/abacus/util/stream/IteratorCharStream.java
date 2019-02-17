@@ -173,6 +173,8 @@ class IteratorCharStream extends AbstractCharStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextChar();
 
@@ -181,8 +183,6 @@ class IteratorCharStream extends AbstractCharStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextChar();
                         hasNext = true;
@@ -684,8 +684,8 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -694,8 +694,8 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public char nextChar() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextChar();
@@ -704,8 +704,8 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -714,8 +714,8 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -724,8 +724,8 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public char[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();

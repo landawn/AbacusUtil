@@ -178,6 +178,8 @@ class IteratorShortStream extends AbstractShortStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextShort();
 
@@ -186,8 +188,6 @@ class IteratorShortStream extends AbstractShortStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextShort();
                         hasNext = true;
@@ -803,8 +803,8 @@ class IteratorShortStream extends AbstractShortStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -813,8 +813,8 @@ class IteratorShortStream extends AbstractShortStream {
             @Override
             public short nextShort() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextShort();
@@ -823,8 +823,8 @@ class IteratorShortStream extends AbstractShortStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -833,8 +833,8 @@ class IteratorShortStream extends AbstractShortStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -843,8 +843,8 @@ class IteratorShortStream extends AbstractShortStream {
             @Override
             public short[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();

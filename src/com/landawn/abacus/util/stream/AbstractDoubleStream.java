@@ -841,10 +841,10 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return top(n, DOUBLE_COMPARATOR);
     }
 
-    @Override
-    public DoubleStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public DoubleStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper) {

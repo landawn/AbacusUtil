@@ -173,6 +173,8 @@ class IteratorByteStream extends AbstractByteStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextByte();
 
@@ -181,8 +183,6 @@ class IteratorByteStream extends AbstractByteStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextByte();
                         hasNext = true;
@@ -684,8 +684,8 @@ class IteratorByteStream extends AbstractByteStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -694,8 +694,8 @@ class IteratorByteStream extends AbstractByteStream {
             @Override
             public byte nextByte() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextByte();
@@ -704,8 +704,8 @@ class IteratorByteStream extends AbstractByteStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -714,8 +714,8 @@ class IteratorByteStream extends AbstractByteStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -724,8 +724,8 @@ class IteratorByteStream extends AbstractByteStream {
             @Override
             public byte[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();

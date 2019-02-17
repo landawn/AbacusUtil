@@ -169,14 +169,14 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -1940,10 +1940,10 @@ class ArrayLongStream extends AbstractLongStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? LONG_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public LongStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public LongStream cached() {
+    //        return this;
+    //    }
 
     @Override
     LongIteratorEx iteratorEx() {

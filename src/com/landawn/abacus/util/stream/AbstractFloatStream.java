@@ -842,10 +842,10 @@ abstract class AbstractFloatStream extends FloatStream {
         return FloatStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    @Override
-    public FloatStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public FloatStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper) {

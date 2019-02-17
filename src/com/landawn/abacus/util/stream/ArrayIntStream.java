@@ -175,14 +175,14 @@ class ArrayIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -2318,10 +2318,10 @@ class ArrayIntStream extends AbstractIntStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public IntStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public IntStream cached() {
+    //        return this;
+    //    }
 
     @Override
     IntIteratorEx iteratorEx() {

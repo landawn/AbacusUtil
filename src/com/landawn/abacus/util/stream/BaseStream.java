@@ -346,14 +346,14 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     @SequentialOnly
     S prepend(S stream);
 
-    /**
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    @SequentialOnly
-    S cached();
+    //    /**
+    //     * <br />
+    //     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+    //     * 
+    //     * @return
+    //     */
+    //    @SequentialOnly
+    //    S cached();
 
     /**
      * <br />

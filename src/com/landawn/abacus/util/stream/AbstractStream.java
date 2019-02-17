@@ -26,7 +26,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -1033,16 +1032,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> Stream<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
-        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
-
-        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
-            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
-        }
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
 
                 return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
                     @Override
@@ -1056,12 +1050,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final Stream<U> s = Stream.of(b).cached();
-
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                return s.filter(new Predicate<U>() {
+                return Stream.of(b).filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
                         return predicate.test(t, u);
@@ -1079,18 +1071,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> Stream<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
-        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();
-
-        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
-            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
-        }
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
 
                 return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
                     @Override
@@ -1122,7 +1109,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final Stream<U> s = Stream.of(b).cached();
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();
 
@@ -1131,7 +1117,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public Stream<Pair<T, U>> apply(final T t) {
                 final MutableBoolean joined = MutableBoolean.of(false);
 
-                return s.filter(new Predicate<U>() {
+                return Stream.of(b).filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
                         return predicate.test(t, u);
@@ -1180,16 +1166,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> Stream<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
-        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
-
-        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
-            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
-        }
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
 
                 return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
                     @Override
@@ -1203,14 +1184,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final Stream<U> s = Stream.of(b).cached();
-
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
                 final MutableBoolean joined = MutableBoolean.of(false);
 
-                return s.filter(new Predicate<U>() {
+                return Stream.of(b).filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
                         return predicate.test(t, u);
@@ -1241,18 +1220,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> Stream<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
-        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();
-
-        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
-            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
-        }
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
 
                 return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
                     @Override
@@ -1284,14 +1258,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final Stream<U> s = Stream.of(b).cached();
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                return s.filter(new Predicate<U>() {
+                return Stream.of(b).filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
                         return predicate.test(t, u);
@@ -2461,16 +2434,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, T valueForNoneA, T2 valueForNoneB, T3 valueForNoneC,
             TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
         return Stream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-    }
-
-    @Override
-    public Stream<T> cached() {
-        return newStream((T[]) toArray(), sorted, cmp);
-    }
-
-    @Override
-    public Stream<T> cached(IntFunction<T[]> generator) {
-        return newStream(toArray(generator), sorted, cmp);
     }
 
     @Override

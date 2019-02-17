@@ -839,10 +839,10 @@ abstract class AbstractIntStream extends IntStream {
         return IntStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    @Override
-    public IntStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public IntStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper) {

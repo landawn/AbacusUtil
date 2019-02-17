@@ -845,10 +845,10 @@ abstract class AbstractByteStream extends ByteStream {
     //        return Pair.of(headd(), taill());
     //    }
 
-    @Override
-    public ByteStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public ByteStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper) {

@@ -834,10 +834,10 @@ abstract class AbstractCharStream extends CharStream {
         return CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    @Override
-    public CharStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public CharStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper) {

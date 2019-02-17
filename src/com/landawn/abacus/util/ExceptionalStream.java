@@ -872,6 +872,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             public boolean hasNext() throws E {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.next();
 
@@ -880,8 +882,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.next();
                         hasNext = true;
@@ -1422,8 +1422,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public boolean hasNext() throws E {
                 if (skipped == false) {
-                    skip(n);
                     skipped = true;
+                    skip(n);
                 }
 
                 return elements.hasNext();
@@ -1432,8 +1432,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public T next() throws E {
                 if (skipped == false) {
-                    skip(n);
                     skipped = true;
+                    skip(n);
                 }
 
                 return elements.next();

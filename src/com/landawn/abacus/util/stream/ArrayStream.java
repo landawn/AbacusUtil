@@ -176,14 +176,14 @@ class ArrayStream<T> extends AbstractStream<T> {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -2826,10 +2826,10 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
     }
 
-    @Override
-    public Stream<T> cached() {
-        return this;
-    }
+    //    @Override
+    //    public Stream<T> cached() {
+    //        return this;
+    //    }
 
     /**
      * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.

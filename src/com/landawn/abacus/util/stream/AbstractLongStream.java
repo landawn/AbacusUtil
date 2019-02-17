@@ -838,10 +838,10 @@ abstract class AbstractLongStream extends LongStream {
         return LongStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    @Override
-    public LongStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public LongStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper) {

@@ -1489,17 +1489,17 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> prepend(Collection<? extends T> c);
 
-    /**
-     * Returns a reusable stream which can be repeatedly used.
-     * 
-     * <br />
-     * All elements will be loaded to memory.
-     * 
-     * @param generator
-     * @return
-     */
-    @SequentialOnly
-    public abstract Stream<T> cached(IntFunction<T[]> generator);
+    //    /**
+    //     * Returns a reusable stream which can be repeatedly used.
+    //     * 
+    //     * <br />
+    //     * All elements will be loaded to memory.
+    //     * 
+    //     * @param generator
+    //     * @return
+    //     */
+    //    @SequentialOnly
+    //    public abstract Stream<T> cached(IntFunction<T[]> generator);
 
     @SequentialOnly
     public abstract Stream<T> queued();
@@ -8336,15 +8336,15 @@ public abstract class Stream<T>
         split, splitToList, splitToSet, splitAt, splitBy, sliding, slidingToList, //
         intersection, difference, symmetricDifference, //
         reversed, shuffled, rotated, distinct, hasDuplicates, //
-        append, prepend, cached, indexed, skip, skipLast, limit, step, //
+        append, prepend, indexed, skip, skipLast, limit, step, //
         queued, merge, zipWith, persist, //
         combinations, permutations, orderedPermutations, percentiles, cartesianProduct, //
         collapse, rangeMap, scan, intersperse, top, kthLargest, //
         count, findFirstOrLast, findFirstAndLast, //
-        last, head, /*HEADD,*/ tail, /*TAILL,*/ headAndTail, /*HEAD_AND_TAILL,*/ //
+        last, head, /*HEADD, tail, TAILL, headAndTail, HEAD_AND_TAILL,*/ //
         toArray, toList, toSte, toMultiset, toLongMultiset, toMatrix, toDataSet, //
         boxed, iterator, asIntStream, asLongStream, asFloatStream, asDoubleStream, //
-        select, println, tried, onClosed, close;
+        select, println, onClosed, close;
     }
 
     /**
@@ -8380,17 +8380,5 @@ public abstract class Stream<T>
         sorted, sortedBy, reverseSorted, cached, resversed, shuffled, rotated, //
         groupBy, groupByToEntity, partitionBy, partitionByToEntity, countBy, countByToEntry; //
         // HEADD, TAILL, HEAD_AND_TAILL;
-    }
-
-    /**
-     * LAIIO = Loading All Immediately Intermediate Operations.
-     * 
-     * Intermediate operations which will load or go through all the elements in the stream when it's called.
-     * <br />
-     * These operation are stateful intermediate operations, which means that subsequent operations no longer operate on the backing collection/iterator, but on an internal state.
-     *
-     */
-    public static enum LAIIO {
-        cached/*, HEADD, TAILL, HEAD_AND_TAILL*/;
     }
 }

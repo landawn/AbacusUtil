@@ -1,10 +1,10 @@
 ### 1.5
  
-* Change the stream implementation: close it after execution(any terminal method is executed).
+* Change the stream implementation: Streams will be automatically closed after execution(any terminal method is executed).
 
-* Remove `Stream.head/tail/headAndTail`.
+* Remove `Stream.try` because Streams will be automatically closed after execution.
 
-* Remove `Stream.try` because the all streams will be automatically closed after execution.
+* Remove `Stream.head/tail/headAndTail/cached`.
 
 * Rename `Stream.of(File/Path...)` to `Stream.lines(File/Path...)`.
 

@@ -198,6 +198,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.next();
 
@@ -206,8 +208,6 @@ class IteratorStream<T> extends AbstractStream<T> {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.next();
                         hasNext = true;
@@ -1709,8 +1709,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -1719,8 +1719,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public T next() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.next();
@@ -1729,8 +1729,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -1739,8 +1739,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -1749,8 +1749,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public <A> A[] toArray(A[] a) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray(a);
@@ -2206,12 +2206,16 @@ class IteratorStream<T> extends AbstractStream<T> {
                 if (iter == null) {
                     final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
 
-                    while (elements.hasNext()) {
-                        if (dqueue.size() >= n) {
-                            dqueue.pollFirst();
-                        }
+                    try {
+                        while (elements.hasNext()) {
+                            if (dqueue.size() >= n) {
+                                dqueue.pollFirst();
+                            }
 
-                        dqueue.offerLast(elements.next());
+                            dqueue.offerLast(elements.next());
+                        }
+                    } finally {
+                        IteratorStream.this.close();
                     }
                 }
             }

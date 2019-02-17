@@ -164,14 +164,14 @@ class ArrayCharStream extends AbstractCharStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -1566,10 +1566,10 @@ class ArrayCharStream extends AbstractCharStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public CharStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public CharStream cached() {
+    //        return this;
+    //    }
 
     @Override
     CharIteratorEx iteratorEx() {

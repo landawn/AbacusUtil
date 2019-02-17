@@ -3625,7 +3625,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3638,7 +3638,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -3651,7 +3651,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3664,7 +3664,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -3864,7 +3864,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3878,7 +3878,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -3893,7 +3893,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3908,7 +3908,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -3955,7 +3955,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3968,7 +3968,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -3981,7 +3981,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -3994,7 +3994,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -4309,7 +4309,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -4323,7 +4323,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;
@@ -4338,7 +4338,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<T>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<T>) column.get(i))));
         }
 
         return result;
@@ -4353,7 +4353,7 @@ public class RowDataSet implements DataSet, Cloneable {
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
-            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i)).cached()));
+            column.set(i, func.apply(Stream.of((List<Object[]>) column.get(i))));
         }
 
         return result;

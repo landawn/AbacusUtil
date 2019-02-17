@@ -165,14 +165,14 @@ class ArrayShortStream extends AbstractShortStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -1651,10 +1651,10 @@ class ArrayShortStream extends AbstractShortStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public ShortStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public ShortStream cached() {
+    //        return this;
+    //    }
 
     @Override
     ShortIteratorEx iteratorEx() {

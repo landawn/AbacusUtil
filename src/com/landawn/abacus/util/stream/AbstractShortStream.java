@@ -840,10 +840,10 @@ abstract class AbstractShortStream extends ShortStream {
         return ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    @Override
-    public ShortStream cached() {
-        return newStream(toArray(), sorted);
-    }
+    //    @Override
+    //    public ShortStream cached() {
+    //        return newStream(toArray(), sorted);
+    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper) {

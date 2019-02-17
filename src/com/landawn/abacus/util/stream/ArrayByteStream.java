@@ -164,14 +164,14 @@ class ArrayByteStream extends AbstractByteStream {
             public boolean hasNext() {
                 if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
+                        dropped = true;
+
                         do {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
                             }
                         } while (++cursor < toIndex);
-
-                        dropped = true;
                     } else {
                         hasNext = true;
                     }
@@ -1566,10 +1566,10 @@ class ArrayByteStream extends AbstractByteStream {
         return new IteratorStream<>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
-    @Override
-    public ByteStream cached() {
-        return this;
-    }
+    //    @Override
+    //    public ByteStream cached() {
+    //        return this;
+    //    }
 
     @Override
     ByteIteratorEx iteratorEx() {

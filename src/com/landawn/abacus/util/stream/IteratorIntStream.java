@@ -192,6 +192,8 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     if (dropped == false) {
+                        dropped = true;
+
                         while (elements.hasNext()) {
                             next = elements.nextInt();
 
@@ -200,8 +202,6 @@ class IteratorIntStream extends AbstractIntStream {
                                 break;
                             }
                         }
-
-                        dropped = true;
                     } else if (elements.hasNext()) {
                         next = elements.nextInt();
                         hasNext = true;
@@ -1276,8 +1276,8 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public boolean hasNext() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.hasNext();
@@ -1286,8 +1286,8 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public int nextInt() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.nextInt();
@@ -1296,8 +1296,8 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public long count() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.count();
@@ -1306,8 +1306,8 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void skip(long n2) {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 elements.skip(n2);
@@ -1316,8 +1316,8 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public int[] toArray() {
                 if (skipped == false) {
-                    elements.skip(n);
                     skipped = true;
+                    elements.skip(n);
                 }
 
                 return elements.toArray();
