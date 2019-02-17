@@ -1147,6 +1147,10 @@ public abstract class Stream<T>
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
      * It may cause <code>out of memory error</code> if <code>n</code> is big enough.
+     * 
+     * <br />
+     * 
+     * All the elements will be loaded to get the last {@code n} elements and the Stream will be closed after that, if a terminal operation is triggered.
      *
      * @param n
      * @return

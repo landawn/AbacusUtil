@@ -2559,11 +2559,15 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<T> last(final int n) {
         N.checkArgNotNegative(n, "n");
 
-        if (toIndex - fromIndex <= n) {
-            return this;
-        }
+        try {
+            if (toIndex - fromIndex <= n) {
+                return this;
+            }
 
-        return newStream(elements, toIndex - n, toIndex, sorted, cmp);
+            return newStream(elements, toIndex - n, toIndex, sorted, cmp);
+        } finally {
+            close();
+        }
     }
 
     @Override

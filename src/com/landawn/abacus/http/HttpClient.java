@@ -409,8 +409,11 @@ public final class HttpClient extends AbstractHttpClient {
                 connection.setReadTimeout(readTimeout);
             }
 
-            connection.setDoInput(settings.doInput());
-            connection.setDoOutput(settings.doOutput());
+            if (settings != null) {
+                connection.setDoInput(settings.doInput());
+                connection.setDoOutput(settings.doOutput());
+            }
+
             connection.setUseCaches(false);
 
             setHttpProperties(connection, settings == null || settings.headers().isEmpty() ? _settings : settings);
@@ -449,7 +452,6 @@ public final class HttpClient extends AbstractHttpClient {
         final HttpHeaders headers = settings.headers();
 
         if (headers != null) {
-
             Object headerValue = null;
 
             for (String headerName : headers.headerNameSet()) {

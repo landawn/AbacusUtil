@@ -2189,21 +2189,30 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         return newStream(new ObjIteratorEx<T>() {
             private Iterator<T> iter;
+            private boolean initialized = false;
 
             @Override
             public boolean hasNext() {
-                init();
+                if (initialized == false) {
+                    init();
+                }
+
                 return iter.hasNext();
             }
 
             @Override
             public T next() {
-                init();
+                if (initialized == false) {
+                    init();
+                }
+
                 return iter.next();
             }
 
             private void init() {
-                if (iter == null) {
+                if (initialized == false) {
+                    initialized = true;
+
                     final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
 
                     try {
@@ -2217,6 +2226,8 @@ class IteratorStream<T> extends AbstractStream<T> {
                     } finally {
                         IteratorStream.this.close();
                     }
+
+                    iter = dqueue.iterator();
                 }
             }
         }, sorted, cmp);

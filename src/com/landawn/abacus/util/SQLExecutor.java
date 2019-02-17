@@ -2027,14 +2027,40 @@ public class SQLExecutor implements Closeable {
             final JdbcSettings jdbcSettings, final Object... parameters) {
         checkJdbcSettingsForAllQuery(jdbcSettings);
 
-        //    return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).call(new Function<Stream<T>, List<T>> () {
-        //        @Override
-        //        public List<T> apply(Stream<T> t) {
-        //            return t.toList();
-        //        }
-        //    });
+        if (jdbcSettings == null || N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
+            return list(sql, statementSetter, recordGetter, jdbcSettings, parameters);
+        }
 
-        return streamAll(sql, statementSetter, recordGetter, jdbcSettings, parameters).toList();
+        final Collection<String> dss = jdbcSettings.getQueryWithDataSources();
+        List<List<T>> resultList = null;
+
+        if (jdbcSettings.isQueryInParallel()) {
+            resultList = Stream.of(dss).map(new Function<String, JdbcSettings>() {
+                @Override
+                public JdbcSettings apply(String ds) {
+                    final JdbcSettings newJdbcSettings = jdbcSettings.copy();
+                    newJdbcSettings.setQueryWithDataSources(null);
+                    newJdbcSettings.setQueryWithDataSource(ds);
+                    return newJdbcSettings;
+                }
+            }).parallel(dss.size()).map(new Function<JdbcSettings, List<T>>() {
+                @Override
+                public List<T> apply(JdbcSettings newJdbcSettings) {
+                    return list(sql, statementSetter, recordGetter, newJdbcSettings, parameters);
+                }
+            }).toList();
+        } else {
+            final JdbcSettings newJdbcSettings = jdbcSettings.copy();
+            newJdbcSettings.setQueryWithDataSources(null);
+            resultList = new ArrayList<>(dss.size());
+
+            for (String ds : dss) {
+                newJdbcSettings.setQueryWithDataSource(ds);
+                resultList.add(list(sql, statementSetter, recordGetter, newJdbcSettings, parameters));
+            }
+        }
+
+        return Iterables.flatten(resultList);
     }
 
     private void checkJdbcSettingsForAllQuery(JdbcSettings jdbcSettings) {
@@ -2052,7 +2078,28 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> listAll(final List<String> sqls, final StatementSetter statementSetter,
             final JdbcUtil.BiRecordGetter<T, RuntimeException> recordGetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return streamAll(sqls, statementSetter, recordGetter, jdbcSettings, parameters).toList();
+        if (sqls.size() == 1) {
+            return listAll(sqls.get(0), statementSetter, recordGetter, jdbcSettings, parameters);
+        }
+
+        List<List<T>> resultList = null;
+
+        if (jdbcSettings != null && jdbcSettings.isQueryInParallel()) {
+            resultList = Stream.of(sqls).parallel(sqls.size()).map(new Function<String, List<T>>() {
+                @Override
+                public List<T> apply(String sql) {
+                    return listAll(sql, statementSetter, recordGetter, jdbcSettings, parameters);
+                }
+            }).toList();
+        } else {
+            resultList = new ArrayList<>(sqls.size());
+
+            for (String sql : sqls) {
+                resultList.add(listAll(sql, statementSetter, recordGetter, jdbcSettings, parameters));
+            }
+        }
+
+        return Iterables.flatten(resultList);
     }
 
     /**

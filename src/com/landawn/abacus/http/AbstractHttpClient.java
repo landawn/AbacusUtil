@@ -399,10 +399,12 @@ public abstract class AbstractHttpClient implements Closeable {
     protected String getContentType(HttpSettings settings) {
         String contentType = null;
 
-        if (settings.getContentFormat() != null) {
-            contentType = HTTP.getContentType(settings.getContentFormat());
-        } else {
-            contentType = (String) settings.headers().get(HttpHeaders.CONTENT_TYPE);
+        if (settings != null) {
+            if (settings.getContentFormat() != null) {
+                contentType = HTTP.getContentType(settings.getContentFormat());
+            } else {
+                contentType = (String) settings.headers().get(HttpHeaders.CONTENT_TYPE);
+            }
         }
 
         if (N.isNullOrEmpty(contentType)) {
@@ -419,10 +421,12 @@ public abstract class AbstractHttpClient implements Closeable {
     protected String getContentEncoding(HttpSettings settings) {
         String contentEncoding = null;
 
-        if (settings.getContentFormat() != null) {
-            contentEncoding = HTTP.getContentEncoding(settings.getContentFormat());
-        } else {
-            contentEncoding = (String) settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+        if (settings != null) {
+            if (settings.getContentFormat() != null) {
+                contentEncoding = HTTP.getContentEncoding(settings.getContentFormat());
+            } else {
+                contentEncoding = (String) settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+            }
         }
 
         if (N.isNullOrEmpty(contentEncoding)) {
