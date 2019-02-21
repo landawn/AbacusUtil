@@ -544,7 +544,7 @@ public class SQLExecutor implements Closeable {
 
         _jdbcSettings.freeze();
 
-        this._sqlMapper = sqlMapper;
+        this._sqlMapper = sqlMapper == null ? new SQLMapper() : sqlMapper;
         this._namingPolicy = namingPolicy == null ? NamingPolicy.LOWER_CASE_WITH_UNDERSCORE : namingPolicy;
         this._asyncExecutor = asyncExecutor == null ? new AsyncExecutor(64, 300, TimeUnit.SECONDS) : asyncExecutor;
         this._isReadOnly = isReadOnly;
@@ -736,7 +736,7 @@ public class SQLExecutor implements Closeable {
     public final <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         String idPropName = checkGeneratedIdPropName(jdbcSettings);
         DataSource ds = null;
@@ -867,7 +867,7 @@ public class SQLExecutor implements Closeable {
             final List<?> parametersList) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         String idPropName = checkGeneratedIdPropName(jdbcSettings);
 
@@ -1107,7 +1107,7 @@ public class SQLExecutor implements Closeable {
     public final int update(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         DataSource ds = null;
         Connection localConn = null;
@@ -1173,7 +1173,7 @@ public class SQLExecutor implements Closeable {
     public int batchUpdate(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final List<?> parametersList) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         final int len = parametersList.size();
         final int batchSize = getBatchSize(jdbcSettings);
@@ -2060,7 +2060,7 @@ public class SQLExecutor implements Closeable {
             }
         }
 
-        return Iterables.flatten(resultList);
+        return N.concat(resultList);
     }
 
     private void checkJdbcSettingsForAllQuery(JdbcSettings jdbcSettings) {
@@ -2099,7 +2099,7 @@ public class SQLExecutor implements Closeable {
             }
         }
 
-        return Iterables.flatten(resultList);
+        return N.concat(resultList);
     }
 
     /**
@@ -2555,7 +2555,7 @@ public class SQLExecutor implements Closeable {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         resultExtractor = checkResultSetExtractor(namedSQL, resultExtractor);
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         T result = null;
 
@@ -3031,7 +3031,7 @@ public class SQLExecutor implements Closeable {
             final Object... parameters) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = statementSetter == null ? StatementSetter.DEFAULT : statementSetter;
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
+        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
         final DataSource ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
         final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT);
@@ -3111,7 +3111,7 @@ public class SQLExecutor implements Closeable {
     public final void execute(final Connection conn, final String sql, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
-        final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL);
+        final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL, _sqlMapper.getAttrs(sql));
 
         final SQLOperation op = StringUtil.startsWithIgnoreCase(namedSQL.getPureSQL().trim(), "select") ? SQLOperation.SELECT : SQLOperation.UPDATE;
         DataSource ds = null;
@@ -3589,13 +3589,13 @@ public class SQLExecutor implements Closeable {
         return resultExtractor;
     }
 
-    protected JdbcSettings checkJdbcSettings(final JdbcSettings jdbcSettings, final NamedSQL namedSQL) {
+    protected JdbcSettings checkJdbcSettings(final JdbcSettings jdbcSettings, final NamedSQL namedSQL, final Map<String, String> attrs) {
         JdbcSettings newJdbcSettings = null;
 
         if (jdbcSettings == null) {
-            newJdbcSettings = setJdbcSettingsForNamedSQL(_jdbcSettings, namedSQL);
+            newJdbcSettings = setJdbcSettingsForNamedSQL(_jdbcSettings, namedSQL, attrs);
         } else {
-            newJdbcSettings = setJdbcSettingsForNamedSQL(jdbcSettings, namedSQL);
+            newJdbcSettings = setJdbcSettingsForNamedSQL(jdbcSettings, namedSQL, attrs);
         }
 
         if ((newJdbcSettings.getOffset() < 0) || (newJdbcSettings.getCount() < 0)) {
@@ -3605,13 +3605,11 @@ public class SQLExecutor implements Closeable {
         return newJdbcSettings;
     }
 
-    protected JdbcSettings setJdbcSettingsForNamedSQL(JdbcSettings jdbcSettings, final NamedSQL namedSQL) {
-        if ((namedSQL == null) || N.isNullOrEmpty(namedSQL.getAttribes())) {
+    protected JdbcSettings setJdbcSettingsForNamedSQL(JdbcSettings jdbcSettings, final NamedSQL namedSQL, final Map<String, String> attrs) {
+        if ((namedSQL == null) || N.isNullOrEmpty(attrs)) {
             return jdbcSettings;
         } else {
             jdbcSettings = jdbcSettings.copy();
-
-            Map<String, String> attrs = namedSQL.getAttribes();
 
             String attr = attrs.get(SQLMapper.BATCH_SIZE);
             if (attr != null) {

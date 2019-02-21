@@ -1761,7 +1761,7 @@ public final class CouchbaseExecutor implements Closeable {
         }
 
         if (namedSQL == null) {
-            namedSQL = NamedSQL.parse(sql, null);
+            namedSQL = NamedSQL.parse(sql);
         }
 
         return namedSQL;

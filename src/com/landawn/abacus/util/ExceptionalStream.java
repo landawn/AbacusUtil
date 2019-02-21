@@ -802,6 +802,58 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return columnIndex;
     }
 
+    @SafeVarargs
+    public static <T, E extends Exception> ExceptionalStream<T, E> concat(final ExceptionalStream<? extends T, E>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return concat(N.asList(a));
+    }
+
+    public static <T, E extends Exception> ExceptionalStream<T, E> concat(final Collection<? extends ExceptionalStream<? extends T, E>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        final Deque<Try.Runnable<? extends E>> closeHandlers = new ArrayDeque<>();
+
+        for (ExceptionalStream<? extends T, E> e : c) {
+            if (N.notNullOrEmpty(e.closeHandlers)) {
+                closeHandlers.addAll(e.closeHandlers);
+            }
+        }
+
+        return newStream(new ExceptionalIterator<T, E>() {
+            private final Iterator<? extends ExceptionalStream<? extends T, E>> iterators = c.iterator();
+            private ExceptionalStream<? extends T, E> cur;
+            private ExceptionalIterator<? extends T, E> iter;
+
+            @Override
+            public boolean hasNext() throws E {
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.elements;
+                }
+
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public T next() throws E {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return iter.next();
+            }
+        }, closeHandlers);
+    }
+
     public ExceptionalStream<T, E> filter(final Try.Predicate<? super T, ? extends E> predicate) {
         N.checkArgNotNull(predicate, "predicate");
 
@@ -1299,6 +1351,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return res;
             }
         }, false, null, closeHandlers);
+    }
+
+    public ExceptionalStream<T, E> append(ExceptionalStream<T, E> s) {
+        return concat(this, s);
+    }
+
+    public ExceptionalStream<T, E> prepend(ExceptionalStream<T, E> s) {
+        return concat(s, this);
     }
 
     public ExceptionalStream<T, E> peek(final Try.Consumer<? super T, ? extends E> action) {

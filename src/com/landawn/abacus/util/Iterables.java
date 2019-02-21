@@ -27,9 +27,6 @@ import java.util.Map;
 import java.util.RandomAccess;
 import java.util.Set;
 
-import com.landawn.abacus.util.Fn.Factory;
-import com.landawn.abacus.util.function.IntFunction;
-
 /**
  * It's an extension and wrapper for Google Guava.
  * 
@@ -364,25 +361,5 @@ public final class Iterables {
 
             return OptionalInt.empty();
         }
-    }
-
-    public static <T> List<T> flatten(List<? extends Collection<? extends T>> cc) {
-        return flatten(cc, Factory.<T> ofList());
-    }
-
-    public static <T, C extends Collection<T>> C flatten(Collection<? extends Collection<? extends T>> cc, IntFunction<C> supplier) {
-        int totalSize = 0;
-
-        for (Collection<? extends T> c : cc) {
-            totalSize += c.size();
-        }
-
-        final C result = supplier.apply(totalSize);
-
-        for (Collection<? extends T> c : cc) {
-            result.addAll(c);
-        }
-
-        return result;
     }
 }

@@ -2060,7 +2060,7 @@ public final class SQLiteExecutor {
     }
 
     private NamedSQL parseSQL(String sql) {
-        return NamedSQL.parse(sql, null);
+        return NamedSQL.parse(sql);
     }
 
     private String parseStringCondition(String expr) {

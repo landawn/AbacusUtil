@@ -1277,6 +1277,7 @@ public final class JdbcUtil {
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
+     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
      */
     @SuppressWarnings("resource")
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
@@ -1309,6 +1310,7 @@ public final class JdbcUtil {
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
+     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
      */
     public static PreparedQuery prepareQuery(final Connection conn, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
             throws SQLException {
@@ -1365,6 +1367,7 @@ public final class JdbcUtil {
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
+     * @see {@link JdbcUtil#prepareCall(Connection, String, Object...)}
      */
     @SuppressWarnings("resource")
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds,
@@ -1397,6 +1400,7 @@ public final class JdbcUtil {
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
+     * @see {@link JdbcUtil#prepareCall(Connection, String, Object...)}
      */
     public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final Try.Function<Connection, CallableStatement, SQLException> stmtCreator)
             throws SQLException {
@@ -4953,6 +4957,56 @@ public final class JdbcUtil {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param recordConsumer
+         * @param orElseAction
+         * @throws SQLException
+         * @throws E
+         * @throws E2
+         */
+        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final RecordConsumer<E> recordConsumer, Try.Runnable<E2> orElseAction)
+                throws SQLException, E, E2 {
+            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(orElseAction, "orElseAction");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    recordConsumer.accept(rs);
+                } else {
+                    orElseAction.run();
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+        }
+
+        /**
+         * 
+         * @param recordConsumer
+         * @param orElseAction
+         * @throws SQLException
+         * @throws E
+         * @throws E2
+         */
+        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final BiRecordConsumer<E> recordConsumer, Try.Runnable<E2> orElseAction)
+                throws SQLException, E, E2 {
+            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(orElseAction, "orElseAction");
+            assertNotClosed();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
+                } else {
+                    orElseAction.run();
                 }
             } finally {
                 closeAfterExecutionIfAllowed();

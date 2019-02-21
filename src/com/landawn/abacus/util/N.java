@@ -107,6 +107,7 @@ import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
+import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
@@ -19723,8 +19724,12 @@ public final class N {
     }
 
     public static <T> List<T> concat(final Collection<? extends Collection<? extends T>> c) {
+        return concat(c, Factory.<T> ofList());
+    }
+
+    public static <T, C extends Collection<T>> C concat(final Collection<? extends Collection<? extends T>> c, final IntFunction<C> supplier) {
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
+            return supplier.apply(0);
         }
 
         int count = 0;
@@ -19735,7 +19740,7 @@ public final class N {
             }
         }
 
-        final List<T> result = new ArrayList<>(count);
+        final C result = supplier.apply(count);
 
         for (Collection<? extends T> e : c) {
             if (N.notNullOrEmpty(e)) {

@@ -1,3 +1,8 @@
+### 1.5.3
+
+* Improvements and bug fix.
+
+
 ### 1.5.2
  
 * Change the stream implementation: Streams will be automatically closed after execution(any terminal method is executed).

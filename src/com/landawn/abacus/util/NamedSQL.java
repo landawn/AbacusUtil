@@ -16,7 +16,6 @@ package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
@@ -48,12 +47,10 @@ public final class NamedSQL {
     private List<String> couchbaseNamedParameters;
     private int parameterCount;
     private int couchbaseParameterCount;
-    private final Map<String, String> attrs;
 
     @SuppressWarnings({ "unchecked" })
-    private NamedSQL(String sql, Map<String, String> attrs) {
+    private NamedSQL(String sql) {
         this.namedSQL = sql.trim();
-        this.attrs = ImmutableMap.copyOf(attrs);
 
         final List<String> words = SQLParser.parse(namedSQL);
 
@@ -102,16 +99,12 @@ public final class NamedSQL {
     }
 
     public static NamedSQL parse(String sql) {
-        return parse(sql, null);
-    }
-
-    public static NamedSQL parse(String sql, Map<String, String> attrs) {
         NamedSQL result = null;
         PoolableWrapper<NamedSQL> w = pool.get(sql);
 
         if ((w == null) || (w.value() == null)) {
             synchronized (pool) {
-                result = new NamedSQL(sql, attrs);
+                result = new NamedSQL(sql);
                 pool.put(sql, PoolableWrapper.of(result, LIVE_TIME, MAX_IDLE_TIME));
             }
         } else {
@@ -155,10 +148,6 @@ public final class NamedSQL {
         } else {
             return namedParameters;
         }
-    }
-
-    public Map<String, String> getAttribes() {
-        return attrs;
     }
 
     public int getParameterCount() {
@@ -274,6 +263,6 @@ public final class NamedSQL {
 
     @Override
     public String toString() {
-        return "[NamedSQL] " + namedSQL + " [PureSQL] " + pureSQL + " [Attribues] " + attrs;
+        return "[NamedSQL] " + namedSQL + " [PureSQL] " + pureSQL;
     }
 }

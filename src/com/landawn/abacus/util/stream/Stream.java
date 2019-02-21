@@ -1436,7 +1436,7 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract boolean hasDuplicates();
 
-    @SequentialOnly
+    @ParallelSupported
     public abstract Stream<T> skipNull();
 
     @ParallelSupported
@@ -1526,17 +1526,17 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector);
 
-    @SequentialOnly
+    @ParallelSupported
     public abstract <T2, R> Stream<R> zipWith(final Stream<T2> b, final BiFunction<? super T, ? super T2, R> zipFunction);
 
-    @SequentialOnly
+    @ParallelSupported
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
-    @SequentialOnly
+    @ParallelSupported
     public abstract <T2, R> Stream<R> zipWith(final Stream<T2> b, final T valueForNoneA, final T2 valueForNoneB,
             final BiFunction<? super T, ? super T2, R> zipFunction);
 
-    @SequentialOnly
+    @ParallelSupported
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final T valueForNoneA, final T2 valueForNoneB, final T3 valueForNoneC,
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
@@ -8341,12 +8341,11 @@ public abstract class Stream<T>
         intersection, difference, symmetricDifference, //
         reversed, shuffled, rotated, distinct, hasDuplicates, //
         append, prepend, indexed, skip, skipLast, limit, step, //
-        queued, merge, zipWith, persist, //
+        join, queued, merge, persist, //
         combinations, permutations, orderedPermutations, percentiles, cartesianProduct, //
-        collapse, rangeMap, scan, intersperse, top, kthLargest, //
+        collapse, rangeMap, scan, intersperse, top, kthLargest, last, //
         count, findFirstOrLast, findFirstAndLast, //
-        last, head, /*HEADD, tail, TAILL, headAndTail, HEAD_AND_TAILL,*/ //
-        toArray, toList, toSte, toMultiset, toLongMultiset, toMatrix, toDataSet, //
+        toArray, toList, toSet, toMultiset, toLongMultiset, toMatrix, toDataSet, //
         boxed, iterator, asIntStream, asLongStream, asFloatStream, asDoubleStream, //
         select, println, onClosed, close;
     }
@@ -8363,13 +8362,13 @@ public abstract class Stream<T>
     public static enum PSO {
         map, slidingMap, mapToEntry, mapTo_, mapFirst, mapFirstOrElse, mapLast, mapLastOrElse, //
         flatMap, flattMap, flatMapp, flatMapTo_, //
-        filter, takeWhile, dropWhile, removeIf, removeWhile, skipNull, //
-        sorted, reverseSorted, distinctBy, distinct_filter, join, peek, peekFirst, peekLast, //
+        filter, takeWhile, dropWhile, removeIf, skipNull, //
+        sorted, reverseSorted, distinctBy, distinct_filter, peek, peekFirst, peekLast, //
         groupBy, groupByEntry, groupTo, partitionBy, partitionByToEntry, paritionTo, countBy, countByToEntry, //
         min, minBy, max, maxBy, sumInt, sumLong, sumDouble, averageInt, averageLong, averageDouble, //
         toMap, toMulitmap, summerize, summerizze, //
         forEach, forEachPair, forEachTriple, anyMatch, allMatch, noneMatch, findFirst, findLast, findAny, //
-        reduce, collect, innerJoin, fullJoin, leftJoin, rightJoin;
+        reduce, collect, innerJoin, fullJoin, leftJoin, rightJoin, zipWith;
     }
 
     /**
@@ -8381,7 +8380,7 @@ public abstract class Stream<T>
      * 
      */
     public static enum LAIO {
-        sorted, sortedBy, reverseSorted, cached, resversed, shuffled, rotated, //
+        sorted, sortedBy, reverseSorted, resversed, shuffled, rotated, last_n, //
         groupBy, groupByToEntity, partitionBy, partitionByToEntity, countBy, countByToEntry; //
         // HEADD, TAILL, HEAD_AND_TAILL;
     }
