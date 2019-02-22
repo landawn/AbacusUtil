@@ -375,8 +375,8 @@ public abstract class AbstractHttpClient implements Closeable {
             contentFormat = settings.getContentFormat();
 
             if (contentFormat == null) {
-                String contentType = (String) settings.headers().get(HttpHeaders.CONTENT_TYPE);
-                String contentEncoding = (String) settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+                String contentType = (String) settings.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+                String contentEncoding = (String) settings.headers().get(HttpHeaders.Names.CONTENT_ENCODING);
 
                 contentFormat = HTTP.getContentFormat(contentType, contentEncoding);
             }
@@ -386,8 +386,8 @@ public abstract class AbstractHttpClient implements Closeable {
             contentFormat = _settings.getContentFormat();
 
             if (contentFormat == null) {
-                String contentType = (String) _settings.headers().get(HttpHeaders.CONTENT_TYPE);
-                String contentEncoding = (String) _settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+                String contentType = (String) _settings.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+                String contentEncoding = (String) _settings.headers().get(HttpHeaders.Names.CONTENT_ENCODING);
 
                 contentFormat = HTTP.getContentFormat(contentType, contentEncoding);
             }
@@ -403,7 +403,7 @@ public abstract class AbstractHttpClient implements Closeable {
             if (settings.getContentFormat() != null) {
                 contentType = HTTP.getContentType(settings.getContentFormat());
             } else {
-                contentType = (String) settings.headers().get(HttpHeaders.CONTENT_TYPE);
+                contentType = (String) settings.headers().get(HttpHeaders.Names.CONTENT_TYPE);
             }
         }
 
@@ -411,7 +411,7 @@ public abstract class AbstractHttpClient implements Closeable {
             if (_settings.getContentFormat() != null) {
                 contentType = HTTP.getContentType(_settings.getContentFormat());
             } else {
-                contentType = (String) _settings.headers().get(HttpHeaders.CONTENT_TYPE);
+                contentType = (String) _settings.headers().get(HttpHeaders.Names.CONTENT_TYPE);
             }
         }
 
@@ -425,7 +425,7 @@ public abstract class AbstractHttpClient implements Closeable {
             if (settings.getContentFormat() != null) {
                 contentEncoding = HTTP.getContentEncoding(settings.getContentFormat());
             } else {
-                contentEncoding = (String) settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+                contentEncoding = (String) settings.headers().get(HttpHeaders.Names.CONTENT_ENCODING);
             }
         }
 
@@ -433,7 +433,7 @@ public abstract class AbstractHttpClient implements Closeable {
             if (_settings.getContentFormat() != null) {
                 contentEncoding = HTTP.getContentEncoding(_settings.getContentFormat());
             } else {
-                contentEncoding = (String) _settings.headers().get(HttpHeaders.CONTENT_ENCODING);
+                contentEncoding = (String) _settings.headers().get(HttpHeaders.Names.CONTENT_ENCODING);
             }
         }
 

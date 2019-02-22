@@ -321,7 +321,7 @@ public final class HttpClient extends AbstractHttpClient {
         }
 
         if (N.notNullOrEmpty(contentType)) {
-            connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, contentType);
+            connection.setRequestProperty(HttpHeaders.Names.CONTENT_TYPE, contentType);
         }
 
         String contentEncoding = getContentEncoding(settings);
@@ -331,7 +331,7 @@ public final class HttpClient extends AbstractHttpClient {
         }
 
         if (N.notNullOrEmpty(contentEncoding)) {
-            connection.setRequestProperty(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+            connection.setRequestProperty(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
         }
 
         return HTTP.wrapOutputStream(connection.getOutputStream(), contentFormat == null ? getContentFormat(settings) : contentFormat);
@@ -346,7 +346,7 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     ContentFormat getContentFormat(final HttpURLConnection connection) {
-        return HTTP.getContentFormat(connection.getHeaderField(HttpHeaders.CONTENT_TYPE), connection.getHeaderField(HttpHeaders.CONTENT_ENCODING));
+        return HTTP.getContentFormat(connection.getHeaderField(HttpHeaders.Names.CONTENT_TYPE), connection.getHeaderField(HttpHeaders.Names.CONTENT_ENCODING));
     }
 
     public HttpURLConnection openConnection(HttpMethod httpMethod) {
@@ -461,7 +461,7 @@ public final class HttpClient extends AbstractHttpClient {
 
                 headerValue = headers.get(headerName);
 
-                if (headerName.equals(HttpHeaders.USE_CACHES)) {
+                if (headerName.equals(HTTP.USE_CACHES)) {
                     if (Boolean.valueOf((headerValue.toString())) == true) {
                         connection.setUseCaches(true);
                     }

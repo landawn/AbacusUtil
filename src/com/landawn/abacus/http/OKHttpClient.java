@@ -319,10 +319,10 @@ public final class OKHttpClient extends AbstractHttpClient {
                 requestBuilder.method(httpMethod.name(), body);
 
                 if (N.notNullOrEmpty(contentType)) {
-                    requestBuilder.addHeader(HttpHeaders.CONTENT_TYPE, contentType);
+                    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_TYPE, contentType);
                 }
                 if (N.notNullOrEmpty(contentEncoding)) {
-                    requestBuilder.addHeader(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+                    requestBuilder.addHeader(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
                 }
             } else {
                 requestBuilder.method(httpMethod.name(), null);
@@ -335,8 +335,8 @@ public final class OKHttpClient extends AbstractHttpClient {
                 throw new RuntimeException(httpResponse.code() + ": " + httpResponse.message());
             }
 
-            final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.CONTENT_TYPE),
-                    httpResponse.header(HttpHeaders.CONTENT_ENCODING));
+            final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
+                    httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
 
             if (isOneWayRequest(settings)) {
                 return null;

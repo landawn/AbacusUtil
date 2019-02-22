@@ -1,5 +1,9 @@
 ### 1.5.3
 
+* Rename `Joiner.append(key, value)` to `Joiner.appendEntry(key, value)`.
+
+* Refactoring `HttpHeaders`.
+
 * Improvements and bug fix.
 
 

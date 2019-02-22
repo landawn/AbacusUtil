@@ -259,173 +259,9 @@ public class Joiner implements AutoCloseable {
         return this;
     }
 
-    public Joiner append(String key, boolean value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, char value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, int value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, long value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, float value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, double value) {
-        if (isEmptyKeyValueDelimiter) {
-            prepareBuilder().append(key).append(value);
-        } else {
-            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, String value) {
-        if (value != null || skipNull == false) {
-            if (isEmptyKeyValueDelimiter) {
-                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.trim() : value));
-            } else {
-                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.trim() : value));
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, CharSequence value) {
-        if (value != null || skipNull == false) {
-            if (isEmptyKeyValueDelimiter) {
-                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.toString().trim() : value));
-            } else {
-                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.toString().trim() : value));
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, StringBuffer value) {
-        if (value != null || skipNull == false) {
-            if (value == null) {
-                if (isEmptyKeyValueDelimiter) {
-                    prepareBuilder().append(key).append(nullText);
-                } else {
-                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
-                }
-            } else {
-                if (isEmptyKeyValueDelimiter) {
-                    prepareBuilder().append(key).append(value);
-                } else {
-                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, char[] value) {
-        if (value != null || skipNull == false) {
-            if (value == null) {
-                if (isEmptyKeyValueDelimiter) {
-                    prepareBuilder().append(key).append(nullText);
-                } else {
-                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
-                }
-            } else {
-                if (isEmptyKeyValueDelimiter) {
-                    prepareBuilder().append(key).append(value);
-                } else {
-                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner append(String key, Object value) {
-        if (value != null || skipNull == false) {
-            if (isEmptyKeyValueDelimiter) {
-                prepareBuilder().append(key).append(toString(value));
-            } else {
-                prepareBuilder().append(key).append(keyValueDelimiter).append(toString(value));
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner appendEntry(Map.Entry<?, ?> entry) {
-        if (skipNull == false || (entry != null && entry.getValue() != null)) {
-            if (entry == null) {
-                append(nullText);
-            } else {
-                append(toString(entry.getKey()), toString(entry.getValue()));
-            }
-        }
-
-        return this;
-    }
-
     public Joiner appendIf(boolean b, Object element) {
         if (b) {
             append(element);
-        }
-
-        return this;
-    }
-
-    public Joiner appendIf(boolean b, String key, Object value) {
-        if (b) {
-            append(key, value);
-        }
-
-        return this;
-    }
-
-    public Joiner appendEntryIf(boolean b, Map.Entry<?, ?> entry) {
-        if (b) {
-            appendEntry(entry);
         }
 
         return this;
@@ -903,6 +739,170 @@ public class Joiner implements AutoCloseable {
             if (i >= toIndex) {
                 break;
             }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, boolean value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, char value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, int value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, long value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, float value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, double value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, String value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.trim() : value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.trim() : value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, CharSequence value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.toString().trim() : value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.toString().trim() : value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, StringBuffer value) {
+        if (value != null || skipNull == false) {
+            if (value == null) {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(nullText);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
+                }
+            } else {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(value);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, char[] value) {
+        if (value != null || skipNull == false) {
+            if (value == null) {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(nullText);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
+                }
+            } else {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(value);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(String key, Object value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(toString(value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(toString(value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(Map.Entry<?, ?> entry) {
+        if (skipNull == false || (entry != null && entry.getValue() != null)) {
+            if (entry == null) {
+                append(nullText);
+            } else {
+                appendEntry(toString(entry.getKey()), toString(entry.getValue()));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntryIf(boolean b, String key, Object value) {
+        if (b) {
+            appendEntry(key, value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntryIf(boolean b, Map.Entry<?, ?> entry) {
+        if (b) {
+            appendEntry(entry);
         }
 
         return this;

@@ -50,6 +50,7 @@ public final class HTTP {
     public static final String READ_TIMEOUT = "readTimeout";
     public static final String CONTENT_FORMAT = "contentFormat";
     public static final String IS_ONE_WAY_REQUEST = "isOneWayRequest";
+    public static final String USE_CACHES = "useCaches";
 
     static final String JSON = "json";
     static final String XML = "xml";
@@ -60,7 +61,7 @@ public final class HTTP {
     static final String URL_ENCODED = "urlencoded";
 
     // ...
-    static final Set<String> NON_HTTP_PROP_NAMES = ImmutableSet.of(HTTP.SSL_SOCKET_FACTORY, HTTP.CONNECTION_TIMEOUT, HTTP.READ_TIMEOUT, HttpHeaders.USE_CACHES,
+    static final Set<String> NON_HTTP_PROP_NAMES = ImmutableSet.of(HTTP.SSL_SOCKET_FACTORY, HTTP.CONNECTION_TIMEOUT, HTTP.READ_TIMEOUT, HTTP.USE_CACHES,
             HTTP.CONTENT_FORMAT, HTTP.IS_ONE_WAY_REQUEST);
 
     static final JSONParser jsonParser = ParserFactory.createJSONParser();
@@ -90,15 +91,15 @@ public final class HTTP {
     private static final Map<ContentFormat, String> contentFormat2Type = new EnumMap<ContentFormat, String>(ContentFormat.class);
 
     static {
-        contentFormat2Type.put(ContentFormat.XML, HttpHeaders.APPLICATION_XML);
-        contentFormat2Type.put(ContentFormat.XML_LZ4, HttpHeaders.APPLICATION_XML);
-        contentFormat2Type.put(ContentFormat.XML_SNAPPY, HttpHeaders.APPLICATION_XML);
-        contentFormat2Type.put(ContentFormat.XML_GZIP, HttpHeaders.APPLICATION_XML);
-        contentFormat2Type.put(ContentFormat.JSON, HttpHeaders.APPLICATION_JSON);
-        contentFormat2Type.put(ContentFormat.JSON_LZ4, HttpHeaders.APPLICATION_JSON);
-        contentFormat2Type.put(ContentFormat.JSON_SNAPPY, HttpHeaders.APPLICATION_JSON);
-        contentFormat2Type.put(ContentFormat.JSON_GZIP, HttpHeaders.APPLICATION_JSON);
-        contentFormat2Type.put(ContentFormat.KRYO, HttpHeaders.APPLICATION_KRYO);
+        contentFormat2Type.put(ContentFormat.XML, HttpHeaders.Values.APPLICATION_XML);
+        contentFormat2Type.put(ContentFormat.XML_LZ4, HttpHeaders.Values.APPLICATION_XML);
+        contentFormat2Type.put(ContentFormat.XML_SNAPPY, HttpHeaders.Values.APPLICATION_XML);
+        contentFormat2Type.put(ContentFormat.XML_GZIP, HttpHeaders.Values.APPLICATION_XML);
+        contentFormat2Type.put(ContentFormat.JSON, HttpHeaders.Values.APPLICATION_JSON);
+        contentFormat2Type.put(ContentFormat.JSON_LZ4, HttpHeaders.Values.APPLICATION_JSON);
+        contentFormat2Type.put(ContentFormat.JSON_SNAPPY, HttpHeaders.Values.APPLICATION_JSON);
+        contentFormat2Type.put(ContentFormat.JSON_GZIP, HttpHeaders.Values.APPLICATION_JSON);
+        contentFormat2Type.put(ContentFormat.KRYO, HttpHeaders.Values.APPLICATION_KRYO);
     }
 
     private static final Map<ContentFormat, String> contentFormat2Encoding = new EnumMap<ContentFormat, String>(ContentFormat.class);

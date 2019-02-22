@@ -237,8 +237,8 @@ public class OkHttpRequest {
 
         try (Response resp = execute(method)) {
             if (resp.isSuccessful()) {
-                final ContentFormat responseContentFormat = HTTP.getContentFormat(resp.header(HttpHeaders.CONTENT_TYPE),
-                        resp.header(HttpHeaders.CONTENT_ENCODING));
+                final ContentFormat responseContentFormat = HTTP.getContentFormat(resp.header(HttpHeaders.Names.CONTENT_TYPE),
+                        resp.header(HttpHeaders.Names.CONTENT_ENCODING));
 
                 final InputStream is = HTTP.wrapInputStream(resp.body().byteStream(), responseContentFormat);
 

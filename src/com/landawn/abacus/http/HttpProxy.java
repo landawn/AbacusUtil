@@ -453,13 +453,13 @@ public final class HttpProxy {
                         String contentType = HTTP.getContentType(_contentFormat);
 
                         if (N.notNullOrEmpty(contentType)) {
-                            connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, contentType);
+                            connection.setRequestProperty(HttpHeaders.Names.CONTENT_TYPE, contentType);
                         }
 
                         String contentEncoding = HTTP.getContentEncoding(_contentFormat);
 
                         if (N.notNullOrEmpty(contentEncoding)) {
-                            connection.setRequestProperty(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+                            connection.setRequestProperty(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
                         }
                     }
 

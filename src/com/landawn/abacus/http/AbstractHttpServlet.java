@@ -52,14 +52,14 @@ public abstract class AbstractHttpServlet extends HttpServlet {
     }
 
     protected boolean isUrlEncoded(HttpServletRequest request) throws IOException {
-        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
+        String contentType = request.getHeader(HttpHeaders.Names.CONTENT_TYPE);
 
         return N.notNullOrEmpty(contentType) && contentType.indexOf(URL_ENCODED) >= 0;
     }
 
     protected ContentFormat getContentFormat(HttpServletRequest request) {
-        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-        String contentEncoding = request.getHeader(HttpHeaders.CONTENT_ENCODING);
+        String contentType = request.getHeader(HttpHeaders.Names.CONTENT_TYPE);
+        String contentEncoding = request.getHeader(HttpHeaders.Names.CONTENT_ENCODING);
 
         ContentFormat contentFormat = HTTP.getContentFormat(contentType, contentEncoding);
 
@@ -82,7 +82,7 @@ public abstract class AbstractHttpServlet extends HttpServlet {
         final String contentEncoding = HTTP.getContentEncoding(contentFormat);
 
         if (N.notNullOrEmpty(contentEncoding)) {
-            response.setHeader(HttpHeaders.CONTENT_ENCODING, contentEncoding);
+            response.setHeader(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
         }
 
         final OutputStream os = new UncloseableOutputStream(response.getOutputStream());
