@@ -2,7 +2,7 @@
 
 * Rename `Joiner.append(key, value)` to `Joiner.appendEntry(key, value)`.
 
-* Refactoring `HttpHeaders`.
+* Refactoring `HttpHeaders/HttpClient`.
 
 * Improvements and bug fix.
 
