@@ -28,6 +28,7 @@ public final class HttpSettings {
     private int connectionTimeout;
     private int readTimeout;
     private SSLSocketFactory sslSocketFactory;
+    private boolean useCaches = false;
     private boolean doInput = true;
     private boolean doOutput = true;
     private boolean isOneWayRequest = false;
@@ -46,6 +47,12 @@ public final class HttpSettings {
         return connectionTimeout;
     }
 
+    /**
+     * Note: Only for {@code HttpClient}, not for {@code OKHttpClient}.
+     * 
+     * @param connTimeout
+     * @return
+     */
     public HttpSettings setConnectionTimeout(int connTimeout) {
         this.connectionTimeout = connTimeout;
 
@@ -56,6 +63,12 @@ public final class HttpSettings {
         return readTimeout;
     }
 
+    /**
+     * Note: Only for {@code HttpClient}, not for {@code OKHttpClient}.
+     *  
+     * @param readTimeout
+     * @return
+     */
     public HttpSettings setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
 
@@ -66,8 +79,29 @@ public final class HttpSettings {
         return this.sslSocketFactory;
     }
 
+    /**
+     * 
+     * @param sslSocketFactory
+     * @return
+     */
     public HttpSettings setSSLSocketFactory(final SSLSocketFactory sslSocketFactory) {
         this.sslSocketFactory = sslSocketFactory;
+
+        return this;
+    }
+
+    public boolean getUseCaches() {
+        return useCaches;
+    }
+
+    /**
+     * Note: Only for {@code HttpClient}, not for {@code OKHttpClient}.
+     * 
+     * @param useCaches
+     * @return
+     */
+    public HttpSettings setUseCaches(boolean useCaches) {
+        this.useCaches = useCaches;
 
         return this;
     }
@@ -82,7 +116,8 @@ public final class HttpSettings {
     }
 
     /**
-     * 
+     * Note: Only for {@code HttpClient}, not for {@code OKHttpClient}.
+     *  
      * @param doInput
      * @return
      * @see java.net.HttpURLConnection#setDoInput(boolean)
@@ -103,6 +138,7 @@ public final class HttpSettings {
     }
 
     /**
+     * Note: Only for {@code HttpClient}, not for {@code OKHttpClient}.
      * 
      * @param doOutput
      * @return
@@ -183,17 +219,19 @@ public final class HttpSettings {
         return new HttpSettings().setConnectionTimeout(connectionTimeout)
                 .setReadTimeout(readTimeout)
                 .setSSLSocketFactory(sslSocketFactory)
+                .setUseCaches(useCaches)
                 .doInput(doInput)
                 .doOutput(doOutput)
                 .isOneWayRequest(isOneWayRequest)
                 .setContentFormat(contentFormat)
-                .headers(headers);
+                .headers(headers.copy());
     }
 
     @Override
     public String toString() {
-        return "{connectionTimeout=" + connectionTimeout + ", readTimeout=" + readTimeout + ", sslSocketFactory=" + sslSocketFactory + ", doInput=" + doInput
-                + ", doOutput=" + doOutput + ", isOneWayRequest=" + isOneWayRequest + ", contentFormat=" + contentFormat + ", headers=" + headers + "}";
+        return "{connectionTimeout=" + connectionTimeout + ", readTimeout=" + readTimeout + ", sslSocketFactory=" + sslSocketFactory + ", useCaches="
+                + useCaches + ", doInput=" + doInput + ", doOutput=" + doOutput + ", isOneWayRequest=" + isOneWayRequest + ", contentFormat=" + contentFormat
+                + ", headers=" + headers + "}";
     }
 
 }

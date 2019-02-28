@@ -304,6 +304,13 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return new SetMultimap<K, E>((Map<K, Set<E>>) map, valueType);
     }
 
+    public static <K, E> SetMultimap<K, E> wrapp(final Map<K, Set<E>> map, final Supplier<? extends Set<E>> valueSupplier) {
+        N.checkArgNotNull(map, "map");
+        N.checkArgNotNull(valueSupplier, "valueSupplier");
+
+        return new SetMultimap<K, E>(map, valueSupplier);
+    }
+
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from(final Map<? extends K, ? extends E> map,
             final IntFunction<M> multimapSupplier) {
@@ -355,6 +362,11 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
             final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final IntFunction<M> multimapSupplier) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    public static <K, E, V extends Collection<E>> Multimap<K, E, V> wrap(final Map<K, V> map, final Supplier<? extends V> valueSupplier) {
         throw new UnsupportedOperationException();
     }
 

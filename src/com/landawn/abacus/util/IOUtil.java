@@ -507,6 +507,10 @@ public final class IOUtil {
         return readChars(file, 0, Integer.MAX_VALUE);
     }
 
+    public static char[] readChars(final File file, final Charset encoding) throws UncheckedIOException {
+        return readChars(file, 0, Integer.MAX_VALUE, encoding);
+    }
+
     public static char[] readChars(final File file, final long offset, final int maxLen) throws UncheckedIOException {
         return readChars(file, 0, maxLen, Charsets.UTF_8);
     }
@@ -529,6 +533,10 @@ public final class IOUtil {
 
     public static char[] readChars(final InputStream is) throws UncheckedIOException {
         return readChars(is, 0, Integer.MAX_VALUE);
+    }
+
+    public static char[] readChars(final InputStream is, final Charset encoding) throws UncheckedIOException {
+        return readChars(is, 0, Integer.MAX_VALUE, encoding);
     }
 
     public static char[] readChars(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
@@ -607,6 +615,10 @@ public final class IOUtil {
         return readString(file, 0, Integer.MAX_VALUE);
     }
 
+    public static String readString(final File file, final Charset encoding) throws UncheckedIOException {
+        return readString(file, 0, Integer.MAX_VALUE, encoding);
+    }
+
     public static String readString(final File file, final long offset, final int maxLen) throws UncheckedIOException {
         return readString(file, offset, maxLen, Charsets.UTF_8);
     }
@@ -619,6 +631,10 @@ public final class IOUtil {
 
     public static String readString(final InputStream is) throws UncheckedIOException {
         return readString(is, 0, Integer.MAX_VALUE);
+    }
+
+    public static String readString(final InputStream is, final Charset encoding) throws UncheckedIOException {
+        return readString(is, 0, Integer.MAX_VALUE, encoding);
     }
 
     public static String readString(final InputStream is, final long offset, final int maxLen) throws UncheckedIOException {
@@ -706,6 +722,10 @@ public final class IOUtil {
         return readLines(file, 0, Integer.MAX_VALUE);
     }
 
+    public static List<String> readLines(final File file, final Charset encoding) throws UncheckedIOException {
+        return readLines(file, 0, Integer.MAX_VALUE, encoding);
+    }
+
     public static List<String> readLines(final File file, final int offset, final int count) throws UncheckedIOException {
         return readLines(file, offset, count, Charsets.UTF_8);
     }
@@ -728,6 +748,10 @@ public final class IOUtil {
 
     public static List<String> readLines(final InputStream is) throws UncheckedIOException {
         return readLines(is, 0, Integer.MAX_VALUE);
+    }
+
+    public static List<String> readLines(final InputStream is, final Charset encoding) throws UncheckedIOException {
+        return readLines(is, 0, Integer.MAX_VALUE, encoding);
     }
 
     public static List<String> readLines(final InputStream is, final int offset, final int count) throws UncheckedIOException {
@@ -1377,6 +1401,10 @@ public final class IOUtil {
         write(out, chars, 0, chars.length);
     }
 
+    public static void write(final File out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        write(out, chars, 0, chars.length, charset);
+    }
+
     public static void write(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
         write(out, chars, offset, len, Charsets.UTF_8);
     }
@@ -1387,6 +1415,10 @@ public final class IOUtil {
 
     public static void write(final OutputStream out, final char[] chars) throws UncheckedIOException {
         write(out, chars, 0, chars.length);
+    }
+
+    public static void write(final OutputStream out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        write(out, chars, 0, chars.length, charset);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
@@ -1799,6 +1831,10 @@ public final class IOUtil {
 
     public static void append(final File out, final char[] chars) throws UncheckedIOException {
         append(out, chars, 0, chars.length);
+    }
+
+    public static void append(final File out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        append(out, chars, 0, chars.length, charset);
     }
 
     public static void append(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {

@@ -1196,6 +1196,11 @@ public final class N {
         return new BiMap<>(keyMapSupplier, valueMapSupplier);
     }
 
+    public static <K, E, V extends Collection<E>> Multimap<K, E, V> newMultimap(final Supplier<? extends Map<K, V>> mapSupplier,
+            final Supplier<? extends V> valueSupplier) {
+        return new Multimap<>(mapSupplier, valueSupplier);
+    }
+
     public static <K, E> ListMultimap<K, E> newListMultimap() {
         return new ListMultimap<>();
     }

@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -121,23 +122,23 @@ public class Joiner implements AutoCloseable {
         return this;
     }
 
-    /**
-     * Get the {@code StringBuilder} from object factory to improve performance if it's set to true, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} or {@code close()} to recycle the {@code StringBuilder}.
-     * 
-     * @param reuseStringBuilder
-     * @return
-     * @deprecated replaced by {@code #reuseCachedBuffer(boolean)}
-     */
-    @Deprecated
-    public Joiner reuseStringBuilder(boolean reuseStringBuilder) {
-        if (buffer != null) {
-            throw new IllegalStateException("Can't reset because the StringBuilder has been created");
-        }
-
-        this.useCachedBuffer = reuseStringBuilder;
-
-        return this;
-    }
+    //    /**
+    //     * Get the {@code StringBuilder} from object factory to improve performance if it's set to true, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} or {@code close()} to recycle the {@code StringBuilder}.
+    //     * 
+    //     * @param reuseStringBuilder
+    //     * @return
+    //     * @deprecated replaced by {@code #reuseCachedBuffer(boolean)}
+    //     */
+    //    @Deprecated
+    //    public Joiner reuseStringBuilder(boolean reuseStringBuilder) {
+    //        if (buffer != null) {
+    //            throw new IllegalStateException("Can't reset because the StringBuilder has been created");
+    //        }
+    //
+    //        this.useCachedBuffer = reuseStringBuilder;
+    //
+    //        return this;
+    //    }
 
     /**
      * Improving performance by set {@code useCachedBuffer=true}, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} or {@code close()} to recycle the cached buffer.
@@ -259,9 +260,17 @@ public class Joiner implements AutoCloseable {
         return this;
     }
 
-    public Joiner appendIf(boolean b, Object element) {
+    public Joiner appendIfNotNull(Object element) {
+        if (element != null) {
+            prepareBuilder().append(toString(element));
+        }
+
+        return this;
+    }
+
+    public Joiner appendIf(boolean b, Supplier<?> supplier) {
         if (b) {
-            append(element);
+            append(supplier.get());
         }
 
         return this;
@@ -892,21 +901,21 @@ public class Joiner implements AutoCloseable {
         return this;
     }
 
-    public Joiner appendEntryIf(boolean b, String key, Object value) {
-        if (b) {
-            appendEntry(key, value);
-        }
-
-        return this;
-    }
-
-    public Joiner appendEntryIf(boolean b, Map.Entry<?, ?> entry) {
-        if (b) {
-            appendEntry(entry);
-        }
-
-        return this;
-    }
+    //    public Joiner appendEntryIf(boolean b, String key, Object value) {
+    //        if (b) {
+    //            appendEntry(key, value);
+    //        }
+    //
+    //        return this;
+    //    }
+    //
+    //    public Joiner appendEntryIf(boolean b, Map.Entry<?, ?> entry) {
+    //        if (b) {
+    //            appendEntry(entry);
+    //        }
+    //
+    //        return this;
+    //    }
 
     public Joiner appendEntries(final Map<?, ?> m) {
         if (N.notNullOrEmpty(m)) {

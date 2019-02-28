@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.http;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -27,18 +28,39 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public class HttpResponse {
+    private final long sentRequestAtMillis;
+    private final long receivedResponseAtMillis;
     private final int code;
     private final String message;
     private final Map<String, List<String>> headers;
-    private final String body;
+    private final byte[] body;
     private final ContentFormat bodyFormat;
 
-    HttpResponse(int code, String message, Map<String, List<String>> headers, String body, ContentFormat bodyFormat) {
+    HttpResponse(long sentRequestAtMillis, long receivedResponseAtMillis, int code, String message, Map<String, List<String>> headers, byte[] body,
+            ContentFormat bodyFormat) {
+        this.sentRequestAtMillis = sentRequestAtMillis;
+        this.receivedResponseAtMillis = receivedResponseAtMillis;
         this.code = code;
         this.message = message;
         this.headers = headers;
         this.body = body;
         this.bodyFormat = bodyFormat;
+    }
+
+    /**
+     * Returns true if the code is in [200..300), which means the request was successfully received,
+     * understood, and accepted.
+     */
+    public boolean isSuccessful() {
+        return code >= 200 && code < 300;
+    }
+
+    public long sentRequestAtMillis() {
+        return sentRequestAtMillis;
+    }
+
+    public long receivedResponseAtMillis() {
+        return receivedResponseAtMillis;
     }
 
     public int code() {
@@ -53,21 +75,27 @@ public class HttpResponse {
         return headers;
     }
 
-    public String body() {
+    public byte[] body() {
         return body;
     }
 
     public <T> T body(Class<T> resultClass) {
         N.checkArgNotNull(resultClass, "resultClass");
 
+        if (byte[].class.equals(resultClass)) {
+            return (T) body;
+        }
+
         final Type<Object> type = N.typeOf(resultClass);
+        final Charset charset = HTTP.getCharset(headers);
+        final String str = new String(body, charset);
 
         if (resultClass.equals(String.class)) {
-            return (T) body;
+            return (T) str;
         } else if (type.isSerializable()) {
-            return (T) type.valueOf(body);
+            return (T) type.valueOf(str);
         } else {
-            return HTTP.getParser(bodyFormat).deserialize(resultClass, body);
+            return HTTP.getParser(bodyFormat).deserialize(resultClass, str);
         }
     }
 
@@ -75,48 +103,33 @@ public class HttpResponse {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((body == null) ? 0 : body.hashCode());
-        result = prime * result + ((bodyFormat == null) ? 0 : bodyFormat.hashCode());
         result = prime * result + code;
-        result = prime * result + ((headers == null) ? 0 : headers.hashCode());
         result = prime * result + ((message == null) ? 0 : message.hashCode());
+        result = prime * result + ((headers == null) ? 0 : headers.hashCode());
+        result = prime * result + ((bodyFormat == null) ? 0 : bodyFormat.hashCode());
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        HttpResponse other = (HttpResponse) obj;
-        if (body == null) {
-            if (other.body != null)
-                return false;
-        } else if (!body.equals(other.body))
-            return false;
-        if (bodyFormat != other.bodyFormat)
-            return false;
-        if (code != other.code)
-            return false;
-        if (headers == null) {
-            if (other.headers != null)
-                return false;
-        } else if (!headers.equals(other.headers))
-            return false;
-        if (message == null) {
-            if (other.message != null)
-                return false;
-        } else if (!message.equals(other.message))
-            return false;
-        return true;
+        }
+
+        if (obj instanceof HttpResponse) {
+            final HttpResponse other = (HttpResponse) obj;
+
+            return code == other.code && N.equals(message, other.message) && N.equals(headers, other.headers) && N.equals(bodyFormat, other.bodyFormat)
+                    && N.equals(body, other.body);
+        }
+
+        return false;
     }
 
     @Override
     public String toString() {
-        return "{code=" + code + ", message=" + message + ", headers=" + headers + ", body=" + body + ", bodyFormat=" + bodyFormat + "}";
+        return "{sentRequestAtMillis=" + sentRequestAtMillis + ", receivedResponseAtMillis=" + receivedResponseAtMillis + ", code=" + code + ", message="
+                + message + ", headers=" + headers + ", bodyFormat=" + bodyFormat + ", body=" + body(String.class) + "}";
     }
-
 }

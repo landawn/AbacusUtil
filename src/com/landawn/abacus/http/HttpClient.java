@@ -25,9 +25,11 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.concurrent.Callable;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -40,7 +42,6 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.BufferedReader;
 import com.landawn.abacus.util.BufferedWriter;
-import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Objectory;
@@ -125,68 +126,6 @@ public final class HttpClient extends AbstractHttpClient {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout, settings, sharedActiveConnectionCounter);
     }
 
-    //    public static HttpClient of(String url) {
-    //        return new HttpClient(url);
-    //    }
-    //
-    //    public static HttpClient of(String url, long connTimeout, long readTimeout) {
-    //        return new HttpClient(url, DEFAULT_MAX_CONNECTION, connTimeout, readTimeout);
-    //    }
-
-    @Deprecated
-    public static String get(final String url, final Object parameters, final HttpSettings settings) {
-        return get(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> T get(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        return HttpClient.create(URLEncodedUtil.encode(url, parameters)).get(resultClass, (Object) null, settings);
-    }
-
-    @Deprecated
-    public static ContinuableFuture<String> asyncGet(final String url, final Object parameters, final HttpSettings settings) {
-        return asyncGet(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        final Callable<T> cmd = new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                return get(resultClass, url, parameters, settings);
-            }
-        };
-
-        return asyncExecutor.execute(cmd);
-    }
-
-    @Deprecated
-    public static String delete(final String url, final Object parameters, final HttpSettings settings) {
-        return delete(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> T delete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        return HttpClient.create(URLEncodedUtil.encode(url, parameters)).delete(resultClass, (Object) null, settings);
-    }
-
-    @Deprecated
-    public static ContinuableFuture<String> asyncDelete(final String url, final Object parameters, final HttpSettings settings) {
-        return asyncDelete(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        final Callable<T> cmd = new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                return delete(resultClass, url, parameters, settings);
-            }
-        };
-
-        return asyncExecutor.execute(cmd);
-    }
-
     @Override
     public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         return execute(resultClass, null, null, httpMethod, request, settings);
@@ -220,6 +159,7 @@ public final class HttpClient extends AbstractHttpClient {
             final Object request, final HttpSettings settings) {
         final ContentFormat requestContentFormat = getContentFormat(settings);
         final HttpURLConnection connection = openConnection(httpMethod, request, request != null, settings);
+        final long sentRequestAtMillis = System.currentTimeMillis();
         InputStream is = null;
         OutputStream os = null;
 
@@ -255,7 +195,7 @@ public final class HttpClient extends AbstractHttpClient {
             final int code = connection.getResponseCode();
 
             if ((code < 200 || code >= 300) && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
-                throw new RuntimeException(code + ": " + connection.getResponseMessage());
+                throw new UncheckedIOException(new IOException(code + ": " + connection.getResponseMessage()));
             }
 
             final ContentFormat responseContentFormat = getContentFormat(connection);
@@ -279,20 +219,25 @@ public final class HttpClient extends AbstractHttpClient {
 
                     return null;
                 } else {
+                    final Map<String, List<String>> respHeaders = connection.getHeaderFields();
+
                     if (resultClass != null && resultClass.equals(HttpResponse.class)) {
-                        return (T) new HttpResponse(code, connection.getResponseMessage(), connection.getHeaderFields(), IOUtil.readString(is),
-                                responseContentFormat);
+                        final byte[] respBody = IOUtil.readBytes(is);
+
+                        return (T) new HttpResponse(sentRequestAtMillis, System.currentTimeMillis(), code, connection.getResponseMessage(), respHeaders,
+                                respBody, responseContentFormat);
                     } else {
                         final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
+                        final Charset charset = HTTP.getCharset(respHeaders);
 
                         if (type == null) {
-                            return (T) IOUtil.readString(is);
+                            return (T) IOUtil.readString(is, charset);
                         } else if (byte[].class.equals(resultClass)) {
                             return (T) IOUtil.readBytes(is);
                         } else if (type.isSerializable()) {
-                            return (T) type.valueOf(IOUtil.readString(is));
+                            return (T) type.valueOf(IOUtil.readString(is, charset));
                         } else {
-                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, is);
+                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, IOUtil.newBufferedReader(is, charset));
                         }
                     }
                 }
@@ -365,17 +310,18 @@ public final class HttpClient extends AbstractHttpClient {
         return openConnection(httpMethod, null, doOutput, settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, final Object request, boolean doOutput, HttpSettings settings) {
+    public HttpURLConnection openConnection(HttpMethod httpMethod, final Object queryParameters, boolean doOutput, HttpSettings settings) {
         HttpURLConnection connection = null;
+
+        if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
+            _activeConnectionCounter.decrementAndGet();
+            throw new AbacusException("Can not get connection, exceeded max connection number: " + _maxConnection);
+        }
 
         try {
             synchronized (_netURL) {
-                if (_activeConnectionCounter.get() > _maxConnection) {
-                    throw new AbacusException("Can not get connection, exceeded max connection number: " + _maxConnection);
-                }
-
-                if (request != null && (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE))) {
-                    connection = (HttpURLConnection) new URL(URLEncodedUtil.encode(_url, request)).openConnection();
+                if (queryParameters != null && (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE))) {
+                    connection = (HttpURLConnection) new URL(URLEncodedUtil.encode(_url, queryParameters)).openConnection();
                 } else {
                     connection = (HttpURLConnection) _netURL.openConnection();
                 }
@@ -414,7 +360,7 @@ public final class HttpClient extends AbstractHttpClient {
                 connection.setDoOutput(settings.doOutput());
             }
 
-            connection.setUseCaches(false);
+            connection.setUseCaches((settings != null && settings.getUseCaches()) || (_settings != null && _settings.getUseCaches()));
 
             setHttpProperties(connection, settings == null || settings.headers().isEmpty() ? _settings : settings);
 
@@ -424,8 +370,6 @@ public final class HttpClient extends AbstractHttpClient {
 
             connection.setDoOutput(doOutput);
             connection.setRequestMethod(httpMethod.name());
-
-            _activeConnectionCounter.incrementAndGet();
 
             return connection;
         } catch (IOException e) {
@@ -455,30 +399,20 @@ public final class HttpClient extends AbstractHttpClient {
             Object headerValue = null;
 
             for (String headerName : headers.headerNameSet()) {
-                if (HTTP.NON_HTTP_PROP_NAMES.contains(headerName)) {
-                    continue;
-                }
-
                 headerValue = headers.get(headerName);
 
-                if (headerName.equals(HTTP.USE_CACHES)) {
-                    if (Boolean.valueOf((headerValue.toString())) == true) {
-                        connection.setUseCaches(true);
+                if (headerValue instanceof Collection) {
+                    final Iterator<Object> iter = ((Collection<Object>) headerValue).iterator();
+
+                    if (iter.hasNext()) {
+                        connection.setRequestProperty(headerName, N.stringOf(iter.next()));
+                    }
+
+                    while (iter.hasNext()) {
+                        connection.addRequestProperty(headerName, N.stringOf(iter.next()));
                     }
                 } else {
-                    if (headerValue instanceof Collection) {
-                        final Iterator<Object> iter = ((Collection<Object>) headerValue).iterator();
-
-                        if (iter.hasNext()) {
-                            connection.setRequestProperty(headerName, N.stringOf(iter.next()));
-                        }
-
-                        while (iter.hasNext()) {
-                            connection.addRequestProperty(headerName, N.stringOf(iter.next()));
-                        }
-                    } else {
-                        connection.setRequestProperty(headerName, N.stringOf(headerValue));
-                    }
+                    connection.setRequestProperty(headerName, N.stringOf(headerValue));
                 }
             }
         }

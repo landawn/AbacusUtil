@@ -256,6 +256,13 @@ public class Multimap<K, E, V extends Collection<E>> {
         return res;
     }
 
+    public static <K, E, V extends Collection<E>> Multimap<K, E, V> wrap(final Map<K, V> map, final Supplier<? extends V> valueSupplier) {
+        N.checkArgNotNull(map, "map");
+        N.checkArgNotNull(valueSupplier, "valueSupplier");
+
+        return new Multimap<>(map, valueSupplier);
+    }
+
     public V get(final Object key) {
         return valueMap.get(key);
     }

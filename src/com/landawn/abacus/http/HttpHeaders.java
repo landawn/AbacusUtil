@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.annotations.Beta;
+import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -455,8 +456,24 @@ public final class HttpHeaders {
         this.map = new HashMap<>();
     }
 
+    HttpHeaders(final Map<String, Object> headers) {
+        this.map = headers;
+    }
+
     public static HttpHeaders create() {
         return new HttpHeaders();
+    }
+
+    public static HttpHeaders of(final Map<String, Object> headers) {
+        N.checkArgNotNull(headers);
+
+        return new HttpHeaders(headers);
+    }
+
+    public static HttpHeaders copyOf(final Map<String, Object> headers) {
+        N.checkArgNotNull(headers);
+
+        return new HttpHeaders(new HashMap<>(headers));
     }
 
     public HttpHeaders setAcceptCharset(String acceptCharset) {

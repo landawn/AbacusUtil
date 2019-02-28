@@ -22,10 +22,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +41,6 @@ import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.BufferedReader;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.ByteArrayOutputStream;
-import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Objectory;
@@ -154,68 +154,6 @@ public final class OKHttpClient extends AbstractHttpClient {
         return new OKHttpClient(client, url, maxConnection, settings, sharedActiveConnectionCounter);
     }
 
-    //    public static OKHttpClient of(String url) {
-    //        return new OKHttpClient(url);
-    //    }
-    //
-    //    public static OKHttpClient of(String url, long connTimeout, long readTimeout) {
-    //        return new OKHttpClient(url, DEFAULT_MAX_CONNECTION, connTimeout, readTimeout);
-    //    }
-
-    @Deprecated
-    public static String get(final String url, final Object parameters, final HttpSettings settings) {
-        return get(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> T get(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        return OKHttpClient.create(URLEncodedUtil.encode(url, parameters)).get(resultClass, (Object) null, settings);
-    }
-
-    @Deprecated
-    public static ContinuableFuture<String> asyncGet(final String url, final Object parameters, final HttpSettings settings) {
-        return asyncGet(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        final Callable<T> cmd = new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                return get(resultClass, url, parameters, settings);
-            }
-        };
-
-        return asyncExecutor.execute(cmd);
-    }
-
-    @Deprecated
-    public static String delete(final String url, final Object parameters, final HttpSettings settings) {
-        return delete(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> T delete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        return OKHttpClient.create(URLEncodedUtil.encode(url, parameters)).delete(resultClass, (Object) null, settings);
-    }
-
-    @Deprecated
-    public static ContinuableFuture<String> asyncDelete(final String url, final Object parameters, final HttpSettings settings) {
-        return asyncDelete(String.class, url, parameters, settings);
-    }
-
-    @Deprecated
-    public static <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final String url, final Object parameters, final HttpSettings settings) {
-        final Callable<T> cmd = new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                return delete(resultClass, url, parameters, settings);
-            }
-        };
-
-        return asyncExecutor.execute(cmd);
-    }
-
     @Override
     public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
         return execute(resultClass, null, null, httpMethod, request, settings);
@@ -248,18 +186,17 @@ public final class OKHttpClient extends AbstractHttpClient {
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
             final Object request, final HttpSettings settings) {
 
-        if (_activeConnectionCounter.get() > _maxConnection) {
-            throw new AbacusException("Can not get connection, exceeded max connection number: " + _maxConnection);
-        }
-
         final ContentFormat requestContentFormat = getContentFormat(settings);
         final String contentType = getContentType(settings);
         final String contentEncoding = getContentEncoding(settings);
 
+        if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
+            _activeConnectionCounter.decrementAndGet();
+            throw new AbacusException("Can not get connection, exceeded max connection number: " + _maxConnection);
+        }
+
         okhttp3.Request httpRequest = null;
         okhttp3.Response httpResponse = null;
-
-        _activeConnectionCounter.incrementAndGet();
 
         try {
             final okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder()
@@ -332,7 +269,7 @@ public final class OKHttpClient extends AbstractHttpClient {
             httpResponse = client.newCall(httpRequest).execute();
 
             if (httpResponse.isSuccessful() == false && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
-                throw new RuntimeException(httpResponse.code() + ": " + httpResponse.message());
+                throw new UncheckedIOException(new IOException(httpResponse.code() + ": " + httpResponse.message()));
             }
 
             final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
@@ -358,20 +295,23 @@ public final class OKHttpClient extends AbstractHttpClient {
 
                     return null;
                 } else {
+                    Map<String, List<String>> respHeaders = httpResponse.headers().toMultimap();
+
                     if (resultClass != null && resultClass.equals(HttpResponse.class)) {
-                        return (T) new HttpResponse(httpResponse.code(), httpResponse.message(), httpResponse.headers().toMultimap(), IOUtil.readString(is),
-                                responseContentFormat);
+                        return (T) new HttpResponse(httpResponse.sentRequestAtMillis(), httpResponse.receivedResponseAtMillis(), httpResponse.code(),
+                                httpResponse.message(), respHeaders, IOUtil.readBytes(is), responseContentFormat);
                     } else {
                         final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
+                        final Charset charset = HTTP.getCharset(respHeaders);
 
                         if (type == null) {
-                            return (T) IOUtil.readString(is);
+                            return (T) IOUtil.readString(is, charset);
                         } else if (byte[].class.equals(resultClass)) {
                             return (T) IOUtil.readBytes(is);
                         } else if (type.isSerializable()) {
-                            return (T) type.valueOf(IOUtil.readString(is));
+                            return (T) type.valueOf(IOUtil.readString(is, charset));
                         } else {
-                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, is);
+                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, IOUtil.newBufferedReader(is, charset));
                         }
                     }
                 }
@@ -381,8 +321,8 @@ public final class OKHttpClient extends AbstractHttpClient {
         } finally {
             _activeConnectionCounter.decrementAndGet();
 
-            if (httpResponse != null && httpResponse.body() != null) {
-                httpResponse.body().close();
+            if (httpResponse != null) {
+                httpResponse.close();
             }
         }
     }
@@ -395,10 +335,6 @@ public final class OKHttpClient extends AbstractHttpClient {
             Object headerValue = null;
 
             for (String headerName : headers.headerNameSet()) {
-                if (HTTP.NON_HTTP_PROP_NAMES.contains(headerName)) {
-                    continue;
-                }
-
                 headerValue = headers.get(headerName);
 
                 if (headerValue instanceof Collection) {

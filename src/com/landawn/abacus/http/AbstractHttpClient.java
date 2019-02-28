@@ -91,96 +91,128 @@ public abstract class AbstractHttpClient implements Closeable {
         return get(String.class);
     }
 
-    public String get(final Object parameters) {
-        return get(String.class, parameters);
+    public String get(final HttpSettings settings) {
+        return get(String.class, settings);
     }
 
-    public String get(final Object parameters, final HttpSettings settings) {
-        return get(String.class, parameters, settings);
+    public String get(final Object queryParameters) {
+        return get(String.class, queryParameters);
+    }
+
+    public String get(final Object queryParameters, final HttpSettings settings) {
+        return get(String.class, queryParameters, settings);
     }
 
     public <T> T get(final Class<T> resultClass) {
-        return get(resultClass, (Object) null);
+        return get(resultClass, null, _settings);
     }
 
-    public <T> T get(final Class<T> resultClass, final Object parameters) {
-        return get(resultClass, parameters, _settings);
+    public <T> T get(final Class<T> resultClass, final HttpSettings settings) {
+        return get(resultClass, null, settings);
     }
 
-    public <T> T get(final Class<T> resultClass, final Object parameters, final HttpSettings settings) {
-        return execute(resultClass, HttpMethod.GET, parameters, settings);
+    public <T> T get(final Class<T> resultClass, final Object queryParameters) {
+        return get(resultClass, queryParameters, _settings);
+    }
+
+    public <T> T get(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+        return execute(resultClass, HttpMethod.GET, queryParameters, settings);
     }
 
     public ContinuableFuture<String> asyncGet() {
         return asyncGet(String.class);
     }
 
-    public ContinuableFuture<String> asyncGet(final Object parameters) {
-        return asyncGet(String.class, parameters);
+    public ContinuableFuture<String> asyncGet(final HttpSettings settings) {
+        return asyncGet(String.class, settings);
     }
 
-    public ContinuableFuture<String> asyncGet(final Object parameters, final HttpSettings settings) {
-        return asyncGet(String.class, parameters, settings);
+    public ContinuableFuture<String> asyncGet(final Object queryParameters) {
+        return asyncGet(String.class, queryParameters);
+    }
+
+    public ContinuableFuture<String> asyncGet(final Object queryParameters, final HttpSettings settings) {
+        return asyncGet(String.class, queryParameters, settings);
     }
 
     public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass) {
-        return asyncGet(resultClass, (Object) null);
+        return asyncGet(resultClass, null, _settings);
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Object parameters) {
-        return asyncGet(resultClass, parameters, _settings);
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final HttpSettings settings) {
+        return asyncGet(resultClass, null, settings);
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Object parameters, final HttpSettings settings) {
-        return asyncExecute(resultClass, HttpMethod.GET, parameters, settings);
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Object queryParameters) {
+        return asyncGet(resultClass, queryParameters, _settings);
+    }
+
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+        return asyncExecute(resultClass, HttpMethod.GET, queryParameters, settings);
     }
 
     public String delete() {
         return delete(String.class);
     }
 
-    public String delete(final Object parameters) {
-        return delete(String.class, parameters);
+    public String delete(final HttpSettings settings) {
+        return delete(String.class, settings);
     }
 
-    public String delete(final Object parameters, final HttpSettings settings) {
-        return delete(String.class, parameters, settings);
+    public String delete(final Object queryParameters) {
+        return delete(String.class, queryParameters);
+    }
+
+    public String delete(final Object queryParameters, final HttpSettings settings) {
+        return delete(String.class, queryParameters, settings);
     }
 
     public <T> T delete(final Class<T> resultClass) {
-        return delete(resultClass, (Object) null);
+        return delete(resultClass, null, _settings);
     }
 
-    public <T> T delete(final Class<T> resultClass, final Object parameters) {
-        return delete(resultClass, parameters, _settings);
+    public <T> T delete(final Class<T> resultClass, final HttpSettings settings) {
+        return delete(resultClass, null, settings);
     }
 
-    public <T> T delete(final Class<T> resultClass, final Object parameters, final HttpSettings settings) {
-        return execute(resultClass, HttpMethod.DELETE, parameters, settings);
+    public <T> T delete(final Class<T> resultClass, final Object queryParameters) {
+        return delete(resultClass, queryParameters, _settings);
+    }
+
+    public <T> T delete(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+        return execute(resultClass, HttpMethod.DELETE, queryParameters, settings);
     }
 
     public ContinuableFuture<String> asyncDelete() {
         return asyncDelete(String.class);
     }
 
-    public ContinuableFuture<String> asyncDelete(final Object parameters) {
-        return asyncDelete(String.class, parameters);
+    public ContinuableFuture<String> asyncDelete(final HttpSettings settings) {
+        return asyncDelete(String.class, settings);
     }
 
-    public ContinuableFuture<String> asyncDelete(final Object parameters, final HttpSettings settings) {
-        return asyncDelete(String.class, parameters, settings);
+    public ContinuableFuture<String> asyncDelete(final Object queryParameters) {
+        return asyncDelete(String.class, queryParameters);
+    }
+
+    public ContinuableFuture<String> asyncDelete(final Object queryParameters, final HttpSettings settings) {
+        return asyncDelete(String.class, queryParameters, settings);
     }
 
     public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass) {
-        return asyncDelete(resultClass, (Object) null);
+        return asyncDelete(resultClass, null, _settings);
     }
 
-    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Object parameters) {
-        return asyncDelete(resultClass, parameters, _settings);
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final HttpSettings settings) {
+        return asyncDelete(resultClass, null, settings);
     }
 
-    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Object parameters, final HttpSettings settings) {
-        return asyncExecute(resultClass, HttpMethod.DELETE, parameters, settings);
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Object queryParameters) {
+        return asyncDelete(resultClass, queryParameters, _settings);
+    }
+
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+        return asyncExecute(resultClass, HttpMethod.DELETE, queryParameters, settings);
     }
 
     public String post(final Object request) {

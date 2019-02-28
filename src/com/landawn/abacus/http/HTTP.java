@@ -17,10 +17,11 @@ package com.landawn.abacus.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
 import com.landawn.abacus.annotation.Internal;
@@ -31,8 +32,8 @@ import com.landawn.abacus.parser.Parser;
 import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.parser.SerializationConfig;
 import com.landawn.abacus.parser.XMLParser;
+import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.IOUtil;
-import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.LZ4BlockOutputStream;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectPool;
@@ -45,12 +46,6 @@ import com.landawn.abacus.util.ObjectPool;
  */
 @Internal
 public final class HTTP {
-    public static final String SSL_SOCKET_FACTORY = "sslSocketFactory";
-    public static final String CONNECTION_TIMEOUT = "connectionTimeout";
-    public static final String READ_TIMEOUT = "readTimeout";
-    public static final String CONTENT_FORMAT = "contentFormat";
-    public static final String IS_ONE_WAY_REQUEST = "isOneWayRequest";
-    public static final String USE_CACHES = "useCaches";
 
     static final String JSON = "json";
     static final String XML = "xml";
@@ -59,10 +54,6 @@ public final class HTTP {
     static final String LZ4 = "lz4";
     static final String KRYO = "kryo";
     static final String URL_ENCODED = "urlencoded";
-
-    // ...
-    static final Set<String> NON_HTTP_PROP_NAMES = ImmutableSet.of(HTTP.SSL_SOCKET_FACTORY, HTTP.CONNECTION_TIMEOUT, HTTP.READ_TIMEOUT, HTTP.USE_CACHES,
-            HTTP.CONTENT_FORMAT, HTTP.IS_ONE_WAY_REQUEST);
 
     static final JSONParser jsonParser = ParserFactory.createJSONParser();
     static final XMLParser xmlParser = ParserFactory.isXMLAvailable() ? ParserFactory.createXMLParser() : null;
@@ -262,5 +253,20 @@ public final class HTTP {
         }
 
         os.flush();
+    }
+
+    static Charset getCharset(Map<String, List<String>> headers) {
+        Charset charset = Charsets.UTF_8;
+
+        if (headers != null && headers.containsKey(HttpHeaders.Names.CONTENT_TYPE)) {
+            for (String value : headers.get(HttpHeaders.Names.CONTENT_TYPE)) {
+                if (value.indexOf("charset=") >= 0) {
+                    charset = Charsets.get(value.substring(value.indexOf("charset=") + "charset=".length()));
+                    break;
+                }
+            }
+        }
+
+        return charset;
     }
 }
