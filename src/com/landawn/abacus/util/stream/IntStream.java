@@ -422,24 +422,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayIntStream(a, startIndex, endIndex);
     }
 
-    public static IntStream of(final int[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(new Function<int[], IntStream>() {
-            @Override
-            public IntStream apply(int[] t) {
-                return IntStream.of(t);
-            }
-        });
-    }
-
-    public static IntStream of(final int[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(new Function<int[][], IntStream>() {
-            @Override
-            public IntStream apply(int[][] t) {
-                return IntStream.of(t);
-            }
-        });
-    }
-
     public static IntStream of(final Integer[] a) {
         return Stream.of(a).mapToInt(Fnn.unboxI());
     }
@@ -576,6 +558,154 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
                 }
 
                 return c1;
+            }
+        };
+
+        return of(iter);
+    }
+
+    private static final Function<int[], IntStream> flatMapper = new Function<int[], IntStream>() {
+        @Override
+        public IntStream apply(int[] t) {
+            return IntStream.of(t);
+        }
+    };
+
+    private static final Function<int[][], IntStream> flatMappper = new Function<int[][], IntStream>() {
+        @Override
+        public IntStream apply(int[][] t) {
+            return IntStream.flat(t);
+        }
+    };
+
+    public static IntStream flat(final int[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(flatMapper);
+    }
+
+    public static IntStream flat(final int[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static IntStream flatV(final int[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (int[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final IntIterator iter = new IntIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static IntStream flatV(final int[][] a, final int valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (int[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final IntIterator iter = new IntIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
+                }
             }
         };
 

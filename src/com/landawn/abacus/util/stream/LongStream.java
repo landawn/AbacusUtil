@@ -394,24 +394,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayLongStream(a, startIndex, endIndex);
     }
 
-    public static LongStream of(final long[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(new Function<long[], LongStream>() {
-            @Override
-            public LongStream apply(long[] t) {
-                return LongStream.of(t);
-            }
-        });
-    }
-
-    public static LongStream of(final long[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(new Function<long[][], LongStream>() {
-            @Override
-            public LongStream apply(long[][] t) {
-                return LongStream.of(t);
-            }
-        });
-    }
-
     public static LongStream of(final Long[] a) {
         return Stream.of(a).mapToLong(Fnn.unboxL());
     }
@@ -469,6 +451,20 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return of(iter);
     }
 
+    private static final Function<long[], LongStream> flatMapper = new Function<long[], LongStream>() {
+        @Override
+        public LongStream apply(long[] t) {
+            return LongStream.of(t);
+        }
+    };
+
+    private static final Function<long[][], LongStream> flatMappper = new Function<long[][], LongStream>() {
+        @Override
+        public LongStream apply(long[][] t) {
+            return LongStream.flat(t);
+        }
+    };
+
     public static LongStream of(final java.util.stream.LongStream stream) {
         return of(new LongIteratorEx() {
             private PrimitiveIterator.OfLong iter = null;
@@ -515,6 +511,140 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                 stream.close();
             }
         });
+    }
+
+    public static LongStream flat(final long[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(flatMapper);
+    }
+
+    public static LongStream flat(final long[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static LongStream flatV(final long[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (long[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final LongIterator iter = new LongIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static LongStream flatV(final long[][] a, final long valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (long[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final LongIterator iter = new LongIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
+                }
+            }
+        };
+
+        return of(iter);
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {

@@ -1263,6 +1263,30 @@ public final class Sheet<R, C, E> implements Cloneable {
         }
     }
 
+    public <X extends Exception> void forEachH(Try.TriConsumer<R, C, E, X> action) throws X {
+        for (R rowKey : _rowKeySet) {
+            for (C columnKey : _columnKeySet) {
+                if (_initialized) {
+                    action.accept(rowKey, columnKey, get(rowKey, columnKey));
+                } else {
+                    action.accept(rowKey, columnKey, null);
+                }
+            }
+        }
+    }
+
+    public <X extends Exception> void forEachV(Try.TriConsumer<R, C, E, X> action) throws X {
+        for (C columnKey : _columnKeySet) {
+            for (R rowKey : _rowKeySet) {
+                if (_initialized) {
+                    action.accept(rowKey, columnKey, get(rowKey, columnKey));
+                } else {
+                    action.accept(rowKey, columnKey, null);
+                }
+            }
+        }
+    }
+
     /**
      * 
      * @return a stream of Cells based on the order of row.

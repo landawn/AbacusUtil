@@ -2314,6 +2314,144 @@ public abstract class Stream<T>
         return EntryStream.of(map).filterByKey(keyFilter).values();
     }
 
+    public static <T> Stream<T> flat(final T[][] a) {
+        return of(a).flatMapp(Fn.<T[]> identity());
+    }
+
+    public static <T> Stream<T> flat(final T[][][] a) {
+        return of(a).flatMapp(e -> e).flatMapp(Fn.<T[]> identity());
+    }
+
+    public static <T> Stream<T> flat(final Collection<? extends Collection<? extends T>> c) {
+        return of(c).flattMap(Fn.<Collection<? extends T>> identity());
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Stream<T> flatV(final T[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (T[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public T next() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static <T> Stream<T> flatV(final T[][] a, final T valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (T[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public T next() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
     public static <T> Stream<T> repeat(final T element, final long n) {
         N.checkArgNotNegative(n, "n");
 

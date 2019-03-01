@@ -401,24 +401,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayByteStream(a, startIndex, endIndex);
     }
 
-    public static ByteStream of(final byte[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(new Function<byte[], ByteStream>() {
-            @Override
-            public ByteStream apply(byte[] t) {
-                return ByteStream.of(t);
-            }
-        });
-    }
-
-    public static ByteStream of(final byte[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(new Function<byte[][], ByteStream>() {
-            @Override
-            public ByteStream apply(byte[][] t) {
-                return ByteStream.of(t);
-            }
-        });
-    }
-
     public static ByteStream of(final Byte[] a) {
         return Stream.of(a).mapToByte(Fnn.unboxB());
     }
@@ -469,6 +451,154 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                     iterator = ByteIterator.empty();
                 } else {
                     iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
+    private static final Function<byte[], ByteStream> flatMapper = new Function<byte[], ByteStream>() {
+        @Override
+        public ByteStream apply(byte[] t) {
+            return ByteStream.of(t);
+        }
+    };
+
+    private static final Function<byte[][], ByteStream> flatMappper = new Function<byte[][], ByteStream>() {
+        @Override
+        public ByteStream apply(byte[][] t) {
+            return ByteStream.flat(t);
+        }
+    };
+
+    public static ByteStream flat(final byte[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(flatMapper);
+    }
+
+    public static ByteStream flat(final byte[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static ByteStream flatV(final byte[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (byte[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final ByteIterator iter = new ByteIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static ByteStream flatV(final byte[][] a, final byte valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (byte[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final ByteIterator iter = new ByteIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
                 }
             }
         };

@@ -1,3 +1,14 @@
+### 1.5.4
+
+* Rename `Stream/ByteStream/.../DoubleStream.of(T[][]/byte[][]/.../double[][])` to `Stream/ByteStream/.../DoubleStream.flat(T[][]/byte[][]/.../double[][])`.
+
+* Add `Stream/ByteStream/.../DoubleStream.flatV(T[][]/byte[][]/.../double[][])`.
+
+* Refactoring `HttpHeaders/HttpClient`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.3
 
 * Rename `Joiner.append(key, value)` to `Joiner.appendEntry(key, value)`.

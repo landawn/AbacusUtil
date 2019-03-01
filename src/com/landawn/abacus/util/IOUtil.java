@@ -375,10 +375,18 @@ public final class IOUtil {
     }
 
     public static byte[] chars2Bytes(final char[] chars, final Charset charset) {
+        if (N.isNullOrEmpty(chars)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return chars2Bytes(chars, 0, chars.length, charset);
     }
 
     public static byte[] chars2Bytes(final char[] chars, final int offset, final int len, Charset charset) {
+        if (len == 0 && N.len(chars) >= offset) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         charset = charset == null ? Charsets.UTF_8 : charset;
 
         if (stringEncodeMethod == null) {
@@ -393,10 +401,18 @@ public final class IOUtil {
     }
 
     public static char[] bytes2Chars(final byte[] bytes, final Charset charset) {
+        if (N.isNullOrEmpty(bytes)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         return bytes2Chars(bytes, 0, bytes.length, charset);
     }
 
     public static char[] bytes2Chars(final byte bytes[], final int offset, final int len, Charset charset) {
+        if (len == 0 && N.len(bytes) >= offset) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         charset = charset == null ? Charsets.UTF_8 : charset;
 
         if (stringDecodeMethod == null) {
@@ -1085,10 +1101,18 @@ public final class IOUtil {
     }
 
     public static void writeLines(final File file, final Object[] lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(file, lines, 0, lines.length);
     }
 
     public static void writeLines(final File file, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.len(lines) >= offset) {
+            return;
+        }
+
         Writer writer = null;
 
         try {
@@ -1105,35 +1129,67 @@ public final class IOUtil {
     }
 
     public static void writeLines(final OutputStream os, final Object[] lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(os, lines, false);
     }
 
     public static void writeLines(final OutputStream os, final Object[] lines, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(os, lines, 0, lines.length, flush);
     }
 
     public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.len(lines) >= offset) {
+            return;
+        }
+
         writeLines(os, lines, offset, count, false);
     }
 
     public static void writeLines(final OutputStream os, final Object[] lines, final int offset, final int count, final boolean flush)
             throws UncheckedIOException {
+        if (count == 0 && N.len(lines) >= offset) {
+            return;
+        }
+
         writeLines(new OutputStreamWriter(os), lines, offset, count, flush);
     }
 
     public static void writeLines(final Writer writer, final Object[] lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(writer, lines, false);
     }
 
     public static void writeLines(final Writer writer, final Object[] lines, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(writer, lines, 0, lines.length, flush);
     }
 
     public static void writeLines(final Writer writer, final Object[] lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.len(lines) >= offset) {
+            return;
+        }
+
         writeLines(writer, lines, offset, count, false);
     }
 
     public static void writeLines(final Writer writer, final Object[] lines, final int offset, int count, final boolean flush) throws UncheckedIOException {
+        if (count == 0 && N.len(lines) >= offset) {
+            return;
+        }
+
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
 
@@ -1171,10 +1227,18 @@ public final class IOUtil {
     }
 
     public static void writeLines(final File file, final Collection<?> lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(file, lines, 0, lines.size());
     }
 
     public static void writeLines(final File file, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.size(lines) >= offset) {
+            return;
+        }
+
         Writer writer = null;
 
         try {
@@ -1191,36 +1255,68 @@ public final class IOUtil {
     }
 
     public static void writeLines(final OutputStream os, final Collection<?> lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(os, lines, false);
     }
 
     public static void writeLines(final OutputStream os, final Collection<?> lines, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(os, lines, 0, lines.size(), flush);
     }
 
     public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.size(lines) >= offset) {
+            return;
+        }
+
         writeLines(os, lines, offset, count, false);
     }
 
     public static void writeLines(final OutputStream os, final Collection<?> lines, final int offset, final int count, final boolean flush)
             throws UncheckedIOException {
+        if (count == 0 && N.size(lines) >= offset) {
+            return;
+        }
+
         writeLines(new OutputStreamWriter(os), lines, offset, count, flush);
     }
 
     public static void writeLines(final Writer writer, final Collection<?> lines) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(writer, lines, false);
     }
 
     public static void writeLines(final Writer writer, final Collection<?> lines, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(lines)) {
+            return;
+        }
+
         writeLines(writer, lines, 0, lines.size(), flush);
     }
 
     public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, final int count) throws UncheckedIOException {
+        if (count == 0 && N.size(lines) >= offset) {
+            return;
+        }
+
         writeLines(writer, lines, offset, count, false);
     }
 
     public static void writeLines(final Writer writer, final Collection<?> lines, final int offset, int count, final boolean flush)
             throws UncheckedIOException {
+        if (count == 0 && N.size(lines) >= offset) {
+            return;
+        }
+
         boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
 
@@ -1398,63 +1494,123 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final char[] chars) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length);
     }
 
     public static void write(final File out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length, charset);
     }
 
     public static void write(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void write(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars2Bytes(chars, offset, len, charset));
     }
 
     public static void write(final OutputStream out, final char[] chars) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length);
     }
 
     public static void write(final OutputStream out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length, charset);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars, offset, len, charset, false);
     }
 
     public static void write(final OutputStream out, final char[] chars, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length, flush);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final boolean flush) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars, offset, len, Charsets.UTF_8, flush);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset, final boolean flush)
             throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars2Bytes(chars, offset, len, charset), flush);
     }
 
     public static void write(final Writer out, final char[] chars) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length);
     }
 
     public static void write(final Writer out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         write(out, chars, offset, len, false);
     }
 
     public static void write(final Writer out, final char[] chars, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         write(out, chars, 0, chars.length, flush);
     }
 
     public static void write(final Writer out, final char[] chars, final int offset, final int len, final boolean flush) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         try {
             out.write(chars, offset, len);
 
@@ -1467,10 +1623,18 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final byte[] bytes) throws UncheckedIOException {
+        if (N.isNullOrEmpty(bytes)) {
+            return;
+        }
+
         write(out, bytes, 0, bytes.length);
     }
 
     public static void write(final File out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(bytes) >= offset) {
+            return;
+        }
+
         OutputStream os = null;
 
         try {
@@ -1491,18 +1655,34 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final byte[] bytes) throws UncheckedIOException {
+        if (N.isNullOrEmpty(bytes)) {
+            return;
+        }
+
         write(out, bytes, 0, bytes.length);
     }
 
     public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(bytes) >= offset) {
+            return;
+        }
+
         write(out, bytes, offset, len, false);
     }
 
     public static void write(final OutputStream out, final byte[] bytes, final boolean flush) throws UncheckedIOException {
+        if (N.isNullOrEmpty(bytes)) {
+            return;
+        }
+
         write(out, bytes, 0, bytes.length, flush);
     }
 
     public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len, final boolean flush) throws UncheckedIOException {
+        if (len == 0 && N.len(bytes) >= offset) {
+            return;
+        }
+
         try {
             out.write(bytes, offset, len);
 
@@ -1806,10 +1986,18 @@ public final class IOUtil {
     }
 
     public static void append(final File out, final byte[] bytes) throws UncheckedIOException {
+        if (N.isNullOrEmpty(bytes)) {
+            return;
+        }
+
         append(out, bytes, 0, bytes.length);
     }
 
     public static void append(final File out, final byte[] bytes, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(bytes) >= offset) {
+            return;
+        }
+
         OutputStream os = null;
 
         try {
@@ -1830,18 +2018,34 @@ public final class IOUtil {
     }
 
     public static void append(final File out, final char[] chars) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         append(out, chars, 0, chars.length);
     }
 
     public static void append(final File out, final char[] chars, final Charset charset) throws UncheckedIOException {
+        if (N.isNullOrEmpty(chars)) {
+            return;
+        }
+
         append(out, chars, 0, chars.length, charset);
     }
 
     public static void append(final File out, final char[] chars, final int offset, final int len) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         append(out, chars, offset, len, Charsets.UTF_8);
     }
 
     public static void append(final File out, final char[] chars, final int offset, final int len, final Charset charset) throws UncheckedIOException {
+        if (len == 0 && N.len(chars) >= offset) {
+            return;
+        }
+
         append(out, chars2Bytes(chars, offset, len, charset));
     }
 

@@ -595,24 +595,6 @@ public abstract class CharStream
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayCharStream(a, startIndex, endIndex);
     }
 
-    public static CharStream of(final char[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(new Function<char[], CharStream>() {
-            @Override
-            public CharStream apply(char[] t) {
-                return CharStream.of(t);
-            }
-        });
-    }
-
-    public static CharStream of(final char[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(new Function<char[][], CharStream>() {
-            @Override
-            public CharStream apply(char[][] t) {
-                return CharStream.of(t);
-            }
-        });
-    }
-
     /**
      * Takes the chars in the specified String as the elements of the Stream
      * 
@@ -715,6 +697,154 @@ public abstract class CharStream
                     iterator = CharIterator.empty();
                 } else {
                     iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
+    private static final Function<char[], CharStream> flatMapper = new Function<char[], CharStream>() {
+        @Override
+        public CharStream apply(char[] t) {
+            return CharStream.of(t);
+        }
+    };
+
+    private static final Function<char[][], CharStream> flatMappper = new Function<char[][], CharStream>() {
+        @Override
+        public CharStream apply(char[][] t) {
+            return CharStream.flat(t);
+        }
+    };
+
+    public static CharStream flat(final char[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(flatMapper);
+    }
+
+    public static CharStream flat(final char[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static CharStream flatV(final char[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (char[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final CharIterator iter = new CharIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static CharStream flatV(final char[][] a, final char valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (char[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final CharIterator iter = new CharIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
                 }
             }
         };

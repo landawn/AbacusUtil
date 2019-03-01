@@ -377,24 +377,6 @@ public abstract class ShortStream
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayShortStream(a, startIndex, endIndex);
     }
 
-    public static ShortStream of(final short[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(new Function<short[], ShortStream>() {
-            @Override
-            public ShortStream apply(short[] t) {
-                return ShortStream.of(t);
-            }
-        });
-    }
-
-    public static ShortStream of(final short[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(new Function<short[][], ShortStream>() {
-            @Override
-            public ShortStream apply(short[][] t) {
-                return ShortStream.of(t);
-            }
-        });
-    }
-
     public static ShortStream of(final Short[] a) {
         return Stream.of(a).mapToShort(Fnn.unboxS());
     }
@@ -445,6 +427,154 @@ public abstract class ShortStream
                     iterator = ShortIterator.empty();
                 } else {
                     iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
+    private static final Function<short[], ShortStream> flatMapper = new Function<short[], ShortStream>() {
+        @Override
+        public ShortStream apply(short[] t) {
+            return ShortStream.of(t);
+        }
+    };
+
+    private static final Function<short[][], ShortStream> flatMappper = new Function<short[][], ShortStream>() {
+        @Override
+        public ShortStream apply(short[][] t) {
+            return ShortStream.flat(t);
+        }
+    };
+
+    public static ShortStream flat(final short[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(flatMapper);
+    }
+
+    public static ShortStream flat(final short[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static ShortStream flatV(final short[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (short[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final ShortIterator iter = new ShortIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static ShortStream flatV(final short[][] a, final short valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (short[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final ShortIterator iter = new ShortIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
                 }
             }
         };

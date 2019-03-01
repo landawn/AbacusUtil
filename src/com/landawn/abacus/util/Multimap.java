@@ -1023,6 +1023,30 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
     }
 
+    public <X extends Exception> void flatForEach(Try.Consumer<? super E, X> action) throws X {
+        N.checkArgNotNull(action);
+
+        for (V v : valueMap.values()) {
+            for (E e : v) {
+                action.accept(e);
+            }
+        }
+    }
+
+    public <X extends Exception> void flatForEach(Try.BiConsumer<? super K, ? super E, X> action) throws X {
+        N.checkArgNotNull(action);
+
+        K key = null;
+
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            key = entry.getKey();
+
+            for (E e : entry.getValue()) {
+                action.accept(key, e);
+            }
+        }
+    }
+
     /**
      * The implementation is equivalent to performing the following steps for this Multimap:
      * 
@@ -1334,6 +1358,10 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     public EntryStream<K, V> entryStream() {
         return EntryStream.of(valueMap);
+    }
+
+    public EntryStream<K, E> flatStream() {
+        return EntryStream.of(valueMap).flattMapValue(Fn.<V> identity());
     }
 
     public void clear() {

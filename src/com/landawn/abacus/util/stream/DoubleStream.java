@@ -394,24 +394,6 @@ public abstract class DoubleStream
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayDoubleStream(a, startIndex, endIndex);
     }
 
-    public static DoubleStream of(final double[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(new Function<double[], DoubleStream>() {
-            @Override
-            public DoubleStream apply(double[] t) {
-                return DoubleStream.of(t);
-            }
-        });
-    }
-
-    public static DoubleStream of(final double[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(new Function<double[][], DoubleStream>() {
-            @Override
-            public DoubleStream apply(double[][] t) {
-                return DoubleStream.of(t);
-            }
-        });
-    }
-
     public static DoubleStream of(final Double[] a) {
         return Stream.of(a).mapToDouble(Fnn.unboxD());
     }
@@ -469,6 +451,20 @@ public abstract class DoubleStream
         return of(iter);
     }
 
+    private static final Function<double[], DoubleStream> flatMapper = new Function<double[], DoubleStream>() {
+        @Override
+        public DoubleStream apply(double[] t) {
+            return DoubleStream.of(t);
+        }
+    };
+
+    private static final Function<double[][], DoubleStream> flatMappper = new Function<double[][], DoubleStream>() {
+        @Override
+        public DoubleStream apply(double[][] t) {
+            return DoubleStream.flat(t);
+        }
+    };
+
     public static DoubleStream of(final java.util.stream.DoubleStream stream) {
         return of(new DoubleIteratorEx() {
             private PrimitiveIterator.OfDouble iter = null;
@@ -515,6 +511,140 @@ public abstract class DoubleStream
                 stream.close();
             }
         });
+    }
+
+    public static DoubleStream flat(final double[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(flatMapper);
+    }
+
+    public static DoubleStream flat(final double[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static DoubleStream flatV(final double[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (double[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final DoubleIterator iter = new DoubleIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static DoubleStream flatV(final double[][] a, final double valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (double[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final DoubleIterator iter = new DoubleIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
+                }
+            }
+        };
+
+        return of(iter);
     }
 
     @SafeVarargs

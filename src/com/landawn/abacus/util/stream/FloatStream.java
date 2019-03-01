@@ -394,24 +394,6 @@ public abstract class FloatStream
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayFloatStream(a, startIndex, endIndex);
     }
 
-    public static FloatStream of(final float[][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(new Function<float[], FloatStream>() {
-            @Override
-            public FloatStream apply(float[] t) {
-                return FloatStream.of(t);
-            }
-        });
-    }
-
-    public static FloatStream of(final float[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(new Function<float[][], FloatStream>() {
-            @Override
-            public FloatStream apply(float[][] t) {
-                return FloatStream.of(t);
-            }
-        });
-    }
-
     public static FloatStream of(final Float[] a) {
         return Stream.of(a).mapToFloat(Fnn.unboxF());
     }
@@ -462,6 +444,154 @@ public abstract class FloatStream
                     iterator = FloatIterator.empty();
                 } else {
                     iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
+    private static final Function<float[], FloatStream> flatMapper = new Function<float[], FloatStream>() {
+        @Override
+        public FloatStream apply(float[] t) {
+            return FloatStream.of(t);
+        }
+    };
+
+    private static final Function<float[][], FloatStream> flatMappper = new Function<float[][], FloatStream>() {
+        @Override
+        public FloatStream apply(float[][] t) {
+            return FloatStream.flat(t);
+        }
+    };
+
+    public static FloatStream flat(final float[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(flatMapper);
+    }
+
+    public static FloatStream flat(final float[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(flatMappper);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @return
+     */
+    public static FloatStream flatV(final float[][] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+
+        for (float[] e : a) {
+            n += N.len(e);
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final long count = n;
+
+        final FloatIterator iter = new FloatIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                while (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    if (rowNum < rows - 1) {
+                        rowNum++;
+                    } else {
+                        rowNum = 0;
+                        colNum++;
+                    }
+                }
+
+                return a[rowNum++][colNum];
+            }
+        };
+
+        return of(iter);
+    }
+
+    /**
+     * vertical {@code flatMap}
+     * 
+     * @param a
+     * @param valueForNone
+     * @return
+     */
+    public static FloatStream flatV(final float[][] a, final float valueForNone) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        }
+
+        long n = 0;
+        int maxLen = 0;
+
+        for (float[] e : a) {
+            n += N.len(e);
+            maxLen = N.max(maxLen, N.len(e));
+        }
+
+        if (n == 0) {
+            return empty();
+        }
+
+        final int rows = N.len(a);
+        final int cols = maxLen;
+        final long count = rows + cols;
+
+        final FloatIterator iter = new FloatIteratorEx() {
+            private int rowNum = 0;
+            private int colNum = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < count;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cnt++ >= count) {
+                    throw new NoSuchElementException();
+                }
+
+                if (rowNum == rows) {
+                    rowNum = 0;
+                    colNum++;
+                }
+
+                if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                    rowNum++;
+                    return valueForNone;
+                } else {
+                    return a[rowNum++][colNum];
                 }
             }
         };
