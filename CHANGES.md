@@ -2,8 +2,6 @@
 
 * Rename `Stream/ByteStream/.../DoubleStream.of(T[][]/byte[][]/.../double[][])` to `Stream/ByteStream/.../DoubleStream.flat(T[][]/byte[][]/.../double[][])`.
 
-* Add `Stream/ByteStream/.../DoubleStream.flatV(T[][]/byte[][]/.../double[][])`.
-
 * Refactoring `HttpHeaders/HttpClient`.
 
 * Improvements and bug fix.

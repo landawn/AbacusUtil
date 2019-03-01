@@ -517,21 +517,13 @@ public abstract class DoubleStream
         return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(flatMapper);
     }
 
-    public static DoubleStream flat(final double[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(flatMappper);
-    }
-
-    /**
-     * vertical {@code flatMap}
-     * 
-     * @param a
-     * @return
-     */
-    public static DoubleStream flatV(final double[][] a) {
+    public static DoubleStream flat(final double[][] a, final boolean vertically) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         } else if (a.length == 1) {
             return of(a[0]);
+        } else if (vertically == false) {
+            return Stream.of(a).flatMapToDouble(flatMapper);
         }
 
         long n = 0;
@@ -584,14 +576,7 @@ public abstract class DoubleStream
         return of(iter);
     }
 
-    /**
-     * vertical {@code flatMap}
-     * 
-     * @param a
-     * @param valueForNone
-     * @return
-     */
-    public static DoubleStream flatV(final double[][] a, final double valueForNone) {
+    public static DoubleStream flat(final double[][] a, final double valueForNone, final boolean vertically) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         } else if (a.length == 1) {
@@ -612,39 +597,77 @@ public abstract class DoubleStream
 
         final int rows = N.len(a);
         final int cols = maxLen;
-        final long count = rows + cols;
+        final long count = rows * cols;
+        DoubleIterator iter = null;
 
-        final DoubleIterator iter = new DoubleIteratorEx() {
-            private int rowNum = 0;
-            private int colNum = 0;
-            private long cnt = 0;
+        if (vertically) {
+            iter = new DoubleIteratorEx() {
+                private int rowNum = 0;
+                private int colNum = 0;
+                private long cnt = 0;
 
-            @Override
-            public boolean hasNext() {
-                return cnt < count;
-            }
-
-            @Override
-            public double nextDouble() {
-                if (cnt++ >= count) {
-                    throw new NoSuchElementException();
+                @Override
+                public boolean hasNext() {
+                    return cnt < count;
                 }
 
-                if (rowNum == rows) {
-                    rowNum = 0;
-                    colNum++;
+                @Override
+                public double nextDouble() {
+                    if (cnt++ >= count) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (rowNum == rows) {
+                        rowNum = 0;
+                        colNum++;
+                    }
+
+                    if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                        rowNum++;
+                        return valueForNone;
+                    } else {
+                        return a[rowNum++][colNum];
+                    }
+                }
+            };
+
+        } else {
+            iter = new DoubleIteratorEx() {
+                private int rowNum = 0;
+                private int colNum = 0;
+                private long cnt = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return cnt < count;
                 }
 
-                if (a[rowNum] == null || colNum >= a[rowNum].length) {
-                    rowNum++;
-                    return valueForNone;
-                } else {
-                    return a[rowNum++][colNum];
+                @Override
+                public double nextDouble() {
+                    if (cnt++ >= count) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (colNum >= cols) {
+                        colNum = 0;
+                        rowNum++;
+                    }
+
+                    if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                        colNum++;
+                        return valueForNone;
+                    } else {
+                        return a[rowNum][colNum++];
+                    }
                 }
-            }
-        };
+            };
+        }
 
         return of(iter);
+    }
+
+    public static DoubleStream flat(final double[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(flatMappper);
     }
 
     @SafeVarargs

@@ -469,21 +469,13 @@ public abstract class FloatStream
         return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(flatMapper);
     }
 
-    public static FloatStream flat(final float[][][] a) {
-        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(flatMappper);
-    }
-
-    /**
-     * vertical {@code flatMap}
-     * 
-     * @param a
-     * @return
-     */
-    public static FloatStream flatV(final float[][] a) {
+    public static FloatStream flat(final float[][] a, final boolean vertically) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         } else if (a.length == 1) {
             return of(a[0]);
+        } else if (vertically == false) {
+            return Stream.of(a).flatMapToFloat(flatMapper);
         }
 
         long n = 0;
@@ -536,14 +528,7 @@ public abstract class FloatStream
         return of(iter);
     }
 
-    /**
-     * vertical {@code flatMap}
-     * 
-     * @param a
-     * @param valueForNone
-     * @return
-     */
-    public static FloatStream flatV(final float[][] a, final float valueForNone) {
+    public static FloatStream flat(final float[][] a, final float valueForNone, final boolean vertically) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         } else if (a.length == 1) {
@@ -564,39 +549,77 @@ public abstract class FloatStream
 
         final int rows = N.len(a);
         final int cols = maxLen;
-        final long count = rows + cols;
+        final long count = rows * cols;
+        FloatIterator iter = null;
 
-        final FloatIterator iter = new FloatIteratorEx() {
-            private int rowNum = 0;
-            private int colNum = 0;
-            private long cnt = 0;
+        if (vertically) {
+            iter = new FloatIteratorEx() {
+                private int rowNum = 0;
+                private int colNum = 0;
+                private long cnt = 0;
 
-            @Override
-            public boolean hasNext() {
-                return cnt < count;
-            }
-
-            @Override
-            public float nextFloat() {
-                if (cnt++ >= count) {
-                    throw new NoSuchElementException();
+                @Override
+                public boolean hasNext() {
+                    return cnt < count;
                 }
 
-                if (rowNum == rows) {
-                    rowNum = 0;
-                    colNum++;
+                @Override
+                public float nextFloat() {
+                    if (cnt++ >= count) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (rowNum == rows) {
+                        rowNum = 0;
+                        colNum++;
+                    }
+
+                    if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                        rowNum++;
+                        return valueForNone;
+                    } else {
+                        return a[rowNum++][colNum];
+                    }
+                }
+            };
+
+        } else {
+            iter = new FloatIteratorEx() {
+                private int rowNum = 0;
+                private int colNum = 0;
+                private long cnt = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return cnt < count;
                 }
 
-                if (a[rowNum] == null || colNum >= a[rowNum].length) {
-                    rowNum++;
-                    return valueForNone;
-                } else {
-                    return a[rowNum++][colNum];
+                @Override
+                public float nextFloat() {
+                    if (cnt++ >= count) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (colNum >= cols) {
+                        colNum = 0;
+                        rowNum++;
+                    }
+
+                    if (a[rowNum] == null || colNum >= a[rowNum].length) {
+                        colNum++;
+                        return valueForNone;
+                    } else {
+                        return a[rowNum][colNum++];
+                    }
                 }
-            }
-        };
+            };
+        }
 
         return of(iter);
+    }
+
+    public static FloatStream flat(final float[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(flatMappper);
     }
 
     public static FloatStream repeat(final float element, final long n) {
