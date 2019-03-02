@@ -107,7 +107,7 @@ public class HttpResponse {
         result = prime * result + ((message == null) ? 0 : message.hashCode());
         result = prime * result + ((headers == null) ? 0 : headers.hashCode());
         result = prime * result + ((bodyFormat == null) ? 0 : bodyFormat.hashCode());
-        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result + ((body == null) ? 0 : N.hashCode(body));
         return result;
     }
 

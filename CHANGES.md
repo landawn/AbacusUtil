@@ -2,6 +2,18 @@
 
 * Rename `Stream/ByteStream/.../DoubleStream.of(T[][]/byte[][]/.../double[][])` to `Stream/ByteStream/.../DoubleStream.flat(T[][]/byte[][]/.../double[][])`.
 
+* Rename `Stream.list(File)` to `Stream.listFiles(File)`.
+
+* Change `Stream<Map.Entry<T, Integer>> Multiset/LongMultiset.stream()` to `Stream<T> Multiset/LongMultiset.stream()`.
+
+* Add `Multiset/LongMultiset.flatStream()`.
+
+* Add `N.formatJSON`.
+
+* Add `Points`.
+
+* Add `Files`, copied from Google Guava under Apache License v2. The purpose is to provide unified API.
+
 * Refactoring `HttpHeaders/HttpClient`.
 
 * Improvements and bug fix.

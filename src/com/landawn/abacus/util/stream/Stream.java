@@ -2923,7 +2923,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static Stream<File> list(final File parentPath) {
+    public static Stream<File> listFiles(final File parentPath) {
         if (!parentPath.exists()) {
             return empty();
         }
@@ -2931,7 +2931,7 @@ public abstract class Stream<T>
         return of(parentPath.listFiles());
     }
 
-    public static Stream<File> list(final File parentPath, final boolean recursively) {
+    public static Stream<File> listFiles(final File parentPath, final boolean recursively) {
         if (!parentPath.exists()) {
             return empty();
         } else if (recursively == false) {

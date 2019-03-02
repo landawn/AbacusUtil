@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
@@ -1401,17 +1401,57 @@ public final class LongMultiset<T> implements Iterable<T> {
         return newValue;
     }
 
-    public Stream<Entry<T, Long>> stream() {
-        return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<T, MutableLong>, Map.Entry<T, Long>>() {
-            @Override
-            public Entry<T, Long> apply(Entry<T, MutableLong> t) {
-                return new SimpleImmutableEntry<>(t.getKey(), t.getValue().value());
-            }
-        });
+    public Stream<T> stream() {
+        return Stream.of(valueMap.keySet());
     }
 
+    public Stream<T> flatStream() {
+        final Iterator<Map.Entry<T, MutableLong>> entryIter = valueMap.entrySet().iterator();
+
+        final Iterator<T> iter = new ObjIterator<T>() {
+            private Map.Entry<T, MutableLong> entry = null;
+            private T element = null;
+            private long count = 0;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (cnt >= count) {
+                    while (cnt >= count && entryIter.hasNext()) {
+                        entry = entryIter.next();
+                        element = entry.getKey();
+                        count = entry.getValue().value();
+                        cnt = 0;
+                    }
+                }
+
+                return cnt < count;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+
+                return element;
+            }
+        };
+
+        return Stream.of(iter);
+    }
+
+    private static final Function<MutableLong, Long> TO_LONG = new Function<MutableLong, Long>() {
+        @Override
+        public Long apply(MutableLong t) {
+            return t.value();
+        }
+    };
+
     public EntryStream<T, Long> entryStream() {
-        return stream().mapToEntry(Fn.<Map.Entry<T, Long>> identity());
+        return EntryStream.of(valueMap).mapValue(TO_LONG);
     }
 
     public <R, E extends Exception> R apply(Try.Function<? super LongMultiset<T>, R, E> func) throws E {

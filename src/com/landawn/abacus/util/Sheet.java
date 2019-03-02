@@ -36,6 +36,9 @@ import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
+ * <li>
+ * {@code R} = Row, {@code C} = Column, {@code H} = Horizontal, {@code V} = Vertical.
+ * </li>
  *
  * @since 0.8
  *

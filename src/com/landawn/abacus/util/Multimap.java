@@ -1360,10 +1360,6 @@ public class Multimap<K, E, V extends Collection<E>> {
         return EntryStream.of(valueMap);
     }
 
-    public EntryStream<K, E> flatStream() {
-        return EntryStream.of(valueMap).flattMapValue(Fn.<V> identity());
-    }
-
     public void clear() {
         valueMap.clear();
     }

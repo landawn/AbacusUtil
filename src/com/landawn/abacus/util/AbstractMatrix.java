@@ -22,6 +22,9 @@ import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
+ * <li>
+ * {@code R} = Row, {@code C} = Column, {@code H} = Horizontal, {@code V} = Vertical.
+ * </li>
  *
  * @param <A>
  * @param <PL>

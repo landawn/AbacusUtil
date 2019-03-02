@@ -101,6 +101,7 @@ import com.landawn.abacus.parser.DeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig.JDC;
 import com.landawn.abacus.parser.JSONSerializationConfig;
+import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
 import com.landawn.abacus.parser.XMLDeserializationConfig.XDC;
 import com.landawn.abacus.parser.XMLSerializationConfig;
@@ -27275,6 +27276,18 @@ public final class N {
     public static <T> T fromJSON(final Type<? extends T> targetType, final String json, final int fromIndex, final int toIndex,
             final JSONDeserializationConfig config) {
         return Utils.jsonParser.deserialize(targetType.clazz(), json, fromIndex, toIndex, setConfig(targetType, config, true));
+    }
+
+    public static String formatJSON(final String json) {
+        return formatJSON(Object.class, json);
+    }
+
+    public static String formatJSON(final Class<?> type, final String json) {
+        return toJSON(fromJSON(type, json), JSC.create().setPrettyFormat(true));
+    }
+
+    public static String formatJSON(final Type<?> type, final String json) {
+        return toJSON(fromJSON(type, json), JSC.create().setPrettyFormat(true));
     }
 
     public static String toXML(final Object obj) {
