@@ -1227,6 +1227,14 @@ public final class LongMultiset<T> implements Iterable<T> {
         return result;
     }
 
+    public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
+        N.checkArgNotNull(action);
+
+        for (T e : valueMap.keySet()) {
+            action.accept(e);
+        }
+    }
+
     public <E extends Exception> void forEach(final Try.ObjLongConsumer<? super T, E> action) throws E {
         N.checkArgNotNull(action);
 

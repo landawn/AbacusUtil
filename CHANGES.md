@@ -1,3 +1,12 @@
+### 1.5.5
+ 
+* Add `Multimap.forEachKey/forEachValue/flatForEachValue`.
+
+* Add `Multiset/LongMultiset.forEach(Consumer<? super T> action)`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.4
 
 * Rename `Stream/ByteStream/.../DoubleStream.of(T[][]/byte[][]/.../double[][])` to `Stream/ByteStream/.../DoubleStream.flat(T[][]/byte[][]/.../double[][])`.

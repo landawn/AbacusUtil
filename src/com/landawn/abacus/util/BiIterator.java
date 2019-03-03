@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -61,6 +62,59 @@ public abstract class BiIterator<A, B> extends ImmutableIterator<Pair<A, B>> {
 
     public static <A, B> BiIterator<A, B> empty() {
         return EMPTY;
+    }
+
+    public static <K, V> BiIterator<K, V> of(final Map<K, V> map) {
+        if (N.isNullOrEmpty(map)) {
+            return empty();
+        }
+
+        return new BiIterator<K, V>() {
+            private final Iterator<Map.Entry<K, V>> iter = map.entrySet().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public Pair<K, V> next() {
+                return Pair.from(iter.next());
+            }
+
+            @Override
+            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<K, V, E> action) throws E {
+                N.checkArgNotNull(action);
+
+                Map.Entry<K, V> entry = null;
+
+                while (iter.hasNext()) {
+                    entry = iter.next();
+                    action.accept(entry.getKey(), entry.getValue());
+                }
+            }
+
+            @Override
+            public <R> ObjIterator<R> map(final BiFunction<K, V, R> mapper) {
+                N.checkArgNotNull(mapper);
+
+                return new ObjIterator<R>() {
+                    private Map.Entry<K, V> entry = null;
+
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        entry = iter.next();
+
+                        return mapper.apply(entry.getKey(), entry.getValue());
+                    }
+                };
+            }
+        };
     }
 
     /**
