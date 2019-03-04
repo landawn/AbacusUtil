@@ -2435,19 +2435,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Predicate}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param predicate 
      * @return
      */
     @Beta
-    public static <T> Predicate<T> sp(final Object target, final Predicate<T> predicate) {
-        N.checkArgNotNull(target, "target");
+    public static <T> Predicate<T> sp(final Object mutex, final Predicate<T> predicate) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(predicate, "predicate");
 
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return predicate.test(t);
                 }
             }
@@ -2457,20 +2457,20 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Predicate}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param a
      * @param biPredicate
      * @return
      */
     @Beta
-    public static <A, T> Predicate<T> sp(final Object target, final A a, final BiPredicate<A, T> biPredicate) {
-        N.checkArgNotNull(target, "target");
+    public static <A, T> Predicate<T> sp(final Object mutex, final A a, final BiPredicate<A, T> biPredicate) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biPredicate, "biPredicate");
 
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return biPredicate.test(a, t);
                 }
             }
@@ -2480,21 +2480,21 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Predicate}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param a
      * @param b
      * @param triPredicate
      * @return
      */
     @Beta
-    public static <A, B, T> Predicate<T> sp(final Object target, final A a, final B b, final TriPredicate<A, B, T> triPredicate) {
-        N.checkArgNotNull(target, "target");
+    public static <A, B, T> Predicate<T> sp(final Object mutex, final A a, final B b, final TriPredicate<A, B, T> triPredicate) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(triPredicate, "triPredicate");
 
         return new Predicate<T>() {
             @Override
             public boolean test(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return triPredicate.test(a, b, t);
                 }
             }
@@ -2504,19 +2504,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code BiPredicate}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param biPredicate
      * @return
      */
     @Beta
-    public static <T, U> BiPredicate<T, U> sp(final Object target, final BiPredicate<T, U> biPredicate) {
-        N.checkArgNotNull(target, "target");
+    public static <T, U> BiPredicate<T, U> sp(final Object mutex, final BiPredicate<T, U> biPredicate) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biPredicate, "biPredicate");
 
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return biPredicate.test(t, u);
                 }
             }
@@ -2526,19 +2526,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Consumer}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param consumer
      * @return
      */
     @Beta
-    public static <T> Consumer<T> sc(final Object target, final Consumer<T> consumer) {
-        N.checkArgNotNull(target, "target");
+    public static <T> Consumer<T> sc(final Object mutex, final Consumer<T> consumer) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(consumer, "consumer");
 
         return new Consumer<T>() {
             @Override
             public void accept(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     consumer.accept(t);
                 }
             }
@@ -2548,20 +2548,20 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Consumer}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param a
      * @param biConsumer
      * @return
      */
     @Beta
-    public static <A, T> Consumer<T> sc(final Object target, final A a, final BiConsumer<A, T> biConsumer) {
-        N.checkArgNotNull(target, "target");
+    public static <A, T> Consumer<T> sc(final Object mutex, final A a, final BiConsumer<A, T> biConsumer) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biConsumer, "biConsumer");
 
         return new Consumer<T>() {
             @Override
             public void accept(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     biConsumer.accept(a, t);
                 }
             }
@@ -2571,19 +2571,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code BiConsumer}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param biConsumer
      * @return
      */
     @Beta
-    public static <T, U> BiConsumer<T, U> sc(final Object target, final BiConsumer<T, U> biConsumer) {
-        N.checkArgNotNull(target, "target");
+    public static <T, U> BiConsumer<T, U> sc(final Object mutex, final BiConsumer<T, U> biConsumer) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biConsumer, "biConsumer");
 
         return new BiConsumer<T, U>() {
             @Override
             public void accept(T t, U u) {
-                synchronized (target) {
+                synchronized (mutex) {
                     biConsumer.accept(t, u);
                 }
             }
@@ -2593,19 +2593,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Function}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param function
      * @return
      */
     @Beta
-    public static <T, R> Function<T, R> sf(final Object target, final Function<T, R> function) {
-        N.checkArgNotNull(target, "target");
+    public static <T, R> Function<T, R> sf(final Object mutex, final Function<T, R> function) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(function, "function");
 
         return new Function<T, R>() {
             @Override
             public R apply(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return function.apply(t);
                 }
             }
@@ -2615,20 +2615,20 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code Function}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param u
      * @param biFunction
      * @return
      */
     @Beta
-    public static <A, T, R> Function<T, R> sf(final Object target, final A a, final BiFunction<A, T, R> biFunction) {
-        N.checkArgNotNull(target, "target");
+    public static <A, T, R> Function<T, R> sf(final Object mutex, final A a, final BiFunction<A, T, R> biFunction) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biFunction, "biFunction");
 
         return new Function<T, R>() {
             @Override
             public R apply(T t) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return biFunction.apply(a, t);
                 }
             }
@@ -2638,19 +2638,19 @@ public final class Fn extends Comparators {
     /**
      * Synchronized {@code BiFunction}
      * 
-     * @param target to synchronized on
+     * @param mutex to synchronized on
      * @param biFunction
      * @return
      */
     @Beta
-    public static <T, U, R> BiFunction<T, U, R> sf(final Object target, final BiFunction<T, U, R> biFunction) {
-        N.checkArgNotNull(target, "target");
+    public static <T, U, R> BiFunction<T, U, R> sf(final Object mutex, final BiFunction<T, U, R> biFunction) {
+        N.checkArgNotNull(mutex, "mutex");
         N.checkArgNotNull(biFunction, "biFunction");
 
         return new BiFunction<T, U, R>() {
             @Override
             public R apply(T t, U u) {
-                synchronized (target) {
+                synchronized (mutex) {
                     return biFunction.apply(t, u);
                 }
             }

@@ -1053,17 +1053,6 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
     }
 
-    /**
-     * 
-     * @param action
-     * @throws X
-     * @deprecated replaced by {@code flatForEachValue(com.landawn.abacus.util.Try.Consumer)}
-     */
-    @Deprecated
-    public <X extends Exception> void flatForEach(Try.Consumer<? super E, X> action) throws X {
-        flatForEachValue(action);
-    }
-
     public <X extends Exception> void flatForEachValue(Try.Consumer<? super E, X> action) throws X {
         N.checkArgNotNull(action);
 

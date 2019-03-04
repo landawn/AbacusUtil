@@ -76,12 +76,22 @@ public final class Indexed<T> extends AbstractIndexed {
 
     @Override
     public int hashCode() {
-        return (int) index + (value == null ? 0 : value.hashCode()) * 31;
+        return (int) (index * 31 + (value == null ? 0 : value.hashCode()));
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Indexed && ((Indexed<T>) obj).index == index && N.equals(((Indexed<T>) obj).value, value);
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Timed) {
+            final Indexed<?> other = (Indexed<?>) obj;
+
+            return this.index == other.index && N.equals(this.value, other.value);
+        }
+
+        return false;
     }
 
     @Override

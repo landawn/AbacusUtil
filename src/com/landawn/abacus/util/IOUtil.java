@@ -941,6 +941,16 @@ public final class IOUtil {
     /**
      *
      * @param file
+     * @param buf 
+     * @return
+     */
+    public static int read(final File file, final byte[] buf) throws UncheckedIOException {
+        return read(file, buf, 0, buf.length);
+    }
+
+    /**
+     *
+     * @param file
      * @param buf
      * @param off the start offset in array <code>b</code> at which the data is written.
      * @param len
@@ -957,6 +967,16 @@ public final class IOUtil {
         } finally {
             closeQuietly(is);
         }
+    }
+
+    /**
+     *
+     * @param is
+     * @param buf 
+     * @return
+     */
+    public static int read(final InputStream is, final byte[] buf) throws IOException {
+        return read(is, buf, 0, buf.length);
     }
 
     /**
@@ -996,6 +1016,14 @@ public final class IOUtil {
         return n;
     }
 
+    public static int read(final File file, final char[] buf) throws UncheckedIOException {
+        return read(file, buf, 0, buf.length);
+    }
+
+    public static int read(final File file, final char[] buf, final Charset charset) throws UncheckedIOException {
+        return read(file, buf, 0, buf.length, charset);
+    }
+
     /**
      *
      * @param file
@@ -1005,16 +1033,24 @@ public final class IOUtil {
      * @return
      */
     public static int read(final File file, final char[] buf, final int off, final int len) throws UncheckedIOException {
+        return read(file, buf, off, len, Charsets.UTF_8);
+    }
+
+    public static int read(final File file, final char[] buf, final int off, final int len, final Charset charset) throws UncheckedIOException {
         Reader reader = null;
 
         try {
-            reader = new FileReader(file);
+            reader = new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.UTF_8 : charset);
             return read(reader, buf, off, len);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
             closeQuietly(reader);
         }
+    }
+
+    public static int read(final Reader reader, final char[] buf) throws IOException {
+        return read(reader, buf, 0, buf.length);
     }
 
     /**

@@ -14,235 +14,184 @@
 
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.Callable;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.Runnable;
-
 /**
  * 
  * @since 0.8
  * 
- * @author Haiyang Li
- * @deprecated replaced by {@code Fn#sp(Object, Predicate), Fn#sc(Object, Consumer), Fn#sf(Object, Function)}
+ * @author Haiyang Li 
  */
-@Deprecated
 public final class Synchronized<T> {
-    private final T target;
+    private final T mutex;
 
-    Synchronized(final T target) {
-        this.target = target;
+    Synchronized(final T mutex) {
+        N.checkArgNotNull(mutex);
+
+        this.mutex = mutex;
     }
 
-    public static <T> Synchronized<T> on(final T target) {
-        N.checkArgNotNull(target);
+    public static <T> Synchronized<T> on(final T mutex) {
+        N.checkArgNotNull(mutex);
 
-        return new Synchronized<>(target);
+        return new Synchronized<>(mutex);
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param cmd
      * @return
      */
-    public static <T> Runnable run(final T target, final Try.Runnable<RuntimeException> cmd) {
-        N.checkArgNotNull(target);
+    public static <T, E extends Exception> void run(final T mutex, final Try.Runnable<E> cmd) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(cmd);
 
-        return new Runnable() {
-            @Override
-            public void run() {
-                synchronized (target) {
-                    cmd.run();
-                }
-            }
-        };
+        synchronized (mutex) {
+            cmd.run();
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param cmd
      * @return
      */
-    public static <T, R> Callable<R> call(final T target, final Try.Callable<R, RuntimeException> cmd) {
-        N.checkArgNotNull(target);
+    public static <T, R, E extends Exception> R call(final T mutex, final Try.Callable<R, RuntimeException> cmd) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(cmd);
 
-        return new Callable<R>() {
-            @Override
-            public R call() {
-                synchronized (target) {
-                    return cmd.call();
-                }
-            }
-        };
+        synchronized (mutex) {
+            return cmd.call();
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param predicate
      * @return
      */
-    public static <T> Predicate<T> test(final T target, final Try.Predicate<T, RuntimeException> predicate) {
-        N.checkArgNotNull(target);
+    public static <T, E extends Exception> boolean test(final T mutex, final Try.Predicate<T, E> predicate) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(predicate);
 
-        return new Predicate<T>() {
-            @Override
-            public boolean test(T t) {
-                synchronized (target) {
-                    return predicate.test(t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            return predicate.test(mutex);
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param predicate
      * @return
      */
-    public static <T, U> Predicate<U> test(final T target, final Try.BiPredicate<T, U, RuntimeException> predicate) {
-        N.checkArgNotNull(target);
+    public static <T, U, E extends Exception> boolean test(final T mutex, final U u, final Try.BiPredicate<T, U, E> predicate) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(predicate);
 
-        return new Predicate<U>() {
-            @Override
-            public boolean test(U t) {
-                synchronized (target) {
-                    return predicate.test(target, t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            return predicate.test(mutex, u);
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param consumer
      * @return
      */
-    public static <T, U> Consumer<U> accept(final T target, final Try.Consumer<U, RuntimeException> consumer) {
-        N.checkArgNotNull(target);
+    public static <T, E extends Exception> void accept(final T mutex, final Try.Consumer<T, E> consumer) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(consumer);
 
-        return new Consumer<U>() {
-            @Override
-            public void accept(U t) {
-                synchronized (target) {
-                    consumer.accept(t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            consumer.accept(mutex);
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param consumer
      * @return
      */
-    public static <T, U> Consumer<U> accept(final T target, final Try.BiConsumer<T, U, RuntimeException> consumer) {
-        N.checkArgNotNull(target);
+    public static <T, U, E extends Exception> void accept(final T mutex, final U u, final Try.BiConsumer<T, U, E> consumer) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(consumer);
 
-        return new Consumer<U>() {
-            @Override
-            public void accept(U t) {
-                synchronized (target) {
-                    consumer.accept(target, t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            consumer.accept(mutex, u);
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param funciton
      * @return
      */
-    public static <T, U, R> Function<U, R> apply(final T target, final Try.Function<U, R, RuntimeException> funciton) {
-        N.checkArgNotNull(target);
+    public static <T, R, E extends Exception> R apply(final T mutex, final Try.Function<T, R, E> funciton) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(funciton);
 
-        return new Function<U, R>() {
-            @Override
-            public R apply(U t) {
-                synchronized (target) {
-                    return funciton.apply(t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            return funciton.apply(mutex);
+        }
     }
 
     /**
      * 
-     * @param target to locked on.
+     * @param mutex to locked on.
      * @param funciton
      * @return
      */
-    public static <T, U, R> Function<U, R> apply(final T target, final Try.BiFunction<T, U, R, RuntimeException> funciton) {
-        N.checkArgNotNull(target);
+    public static <T, U, R, E extends Exception> R apply(final T mutex, final U u, final Try.BiFunction<T, U, R, E> funciton) throws E {
+        N.checkArgNotNull(mutex);
         N.checkArgNotNull(funciton);
 
-        return new Function<U, R>() {
-            @Override
-            public R apply(U t) {
-                synchronized (target) {
-                    return funciton.apply(target, t);
-                }
-            }
-        };
+        synchronized (mutex) {
+            return funciton.apply(mutex, u);
+        }
     }
 
     public <E extends Exception> void run(final Try.Runnable<E> cmd) throws E {
-        N.checkArgNotNull(target);
         N.checkArgNotNull(cmd);
 
-        synchronized (target) {
+        synchronized (mutex) {
             cmd.run();
         }
     }
 
     public <R, E extends Exception> R call(final Try.Callable<R, E> cmd) throws E {
-        N.checkArgNotNull(target);
         N.checkArgNotNull(cmd);
 
-        synchronized (target) {
+        synchronized (mutex) {
             return cmd.call();
         }
     }
 
     public <E extends Exception> boolean test(final Try.Predicate<? super T, E> predicate) throws E {
-        N.checkArgNotNull(target);
         N.checkArgNotNull(predicate);
 
-        synchronized (target) {
-            return predicate.test(target);
+        synchronized (mutex) {
+            return predicate.test(mutex);
         }
     }
 
     public <E extends Exception> void accept(final Try.Consumer<? super T, E> consumer) throws E {
-        N.checkArgNotNull(target);
         N.checkArgNotNull(consumer);
 
-        synchronized (target) {
-            consumer.accept(target);
+        synchronized (mutex) {
+            consumer.accept(mutex);
         }
     }
 
     public <R, E extends Exception> R apply(final Try.Function<? super T, R, E> function) throws E {
-        N.checkArgNotNull(target);
         N.checkArgNotNull(function);
 
-        synchronized (target) {
-            return function.apply(target);
+        synchronized (mutex) {
+            return function.apply(mutex);
         }
     }
 }

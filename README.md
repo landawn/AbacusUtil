@@ -19,6 +19,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Indexed](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Indexed_view.html), 
 [If](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/If_view.html), 
 [Try](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Try_view.html), 
+[Synchronzed](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Synchronzed_view.html), 
 [Retry](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Retry_view.html), 
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
 [Multimap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multimap_view.html),
@@ -56,7 +57,8 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [HttpClient](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/HttpClient_view.html), 
 [OkHttpRequest](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/OkHttpRequest_view.html), 
 [Profiler](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Profiler_view.html), 
-[CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html)...
+[CodeGenerator](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/CodeGenerator_view.html), 
+[f](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/f_view.html)...
 
 * Primitive Mutable: 
 [MutableBoolean](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MutableBoolean_view.html), 

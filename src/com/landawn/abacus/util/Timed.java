@@ -21,8 +21,8 @@ package com.landawn.abacus.util;
  * @author Haiyang Li
  */
 public class Timed<T> {
-    private final T value;
     private final long timeInMillis;
+    private final T value;
 
     private Timed(T value, long timeInMillis) {
         this.value = value;
@@ -33,11 +33,40 @@ public class Timed<T> {
         return new Timed<>(value, timeInMillis);
     }
 
+    /**
+     * 
+     * @return time in milliseconds.
+     */
+    public long time() {
+        return timeInMillis;
+    }
+
     public T value() {
         return value;
     }
 
-    public long time() {
-        return timeInMillis;
+    @Override
+    public int hashCode() {
+        return (int) (timeInMillis * 31 + (value == null ? 0 : value.hashCode()));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Timed) {
+            final Timed<?> other = (Timed<?>) obj;
+
+            return this.timeInMillis == other.timeInMillis && N.equals(this.value, other.value);
+        }
+
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return timeInMillis + ": " + N.toString(value);
     }
 }

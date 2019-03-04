@@ -35,6 +35,14 @@ public class ImmutableEntry<K, V> extends AbstractMap.SimpleImmutableEntry<K, V>
         super(entry);
     }
 
+    public static <K, V> ImmutableEntry<K, V> of(K key, V value) {
+        return new ImmutableEntry<>(key, value);
+    }
+
+    public static <K, V> ImmutableEntry<K, V> from(Map.Entry<? extends K, ? extends V> entry) {
+        return new ImmutableEntry<K, V>(entry.getKey(), entry.getValue());
+    }
+
     /**
      * Always throw UnsupportedOperationException.
      * 

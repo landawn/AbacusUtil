@@ -622,6 +622,26 @@ public final class N {
         return (Type<T>) type;
     }
 
+    /**
+     *
+     * @param targetClass
+     * @param str
+     * @return the default value of the specified <code>targetClass</code> if the specified string is null.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T valueOf(final Class<? extends T> targetClass, final String str) {
+        return (str == null) ? defaultValueOf(targetClass) : (T) N.typeOf(targetClass).valueOf(str);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T defaultValueOf(final Class<T> cls) {
+        return (T) N.typeOf(cls).defaultValue();
+    }
+
+    public static <T> T defaultIfNull(final T obj, final T defaultForNull) {
+        return obj == null ? defaultForNull : obj;
+    }
+
     @SuppressWarnings("unchecked")
     //    @SafeVarargs
     //    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
@@ -708,26 +728,6 @@ public final class N {
      */
     public static String stringOf(final Object obj) {
         return (obj == null) ? null : N.typeOf(obj.getClass()).stringOf(obj);
-    }
-
-    /**
-     *
-     * @param targetClass
-     * @param str
-     * @return the default value of the specified <code>targetClass</code> if the specified string is null.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<? extends T> targetClass, final String str) {
-        return (str == null) ? defaultValueOf(targetClass) : (T) N.typeOf(targetClass).valueOf(str);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T defaultValueOf(final Class<T> cls) {
-        return (T) N.typeOf(cls).defaultValue();
-    }
-
-    public static <T> T defaultIfNull(final T obj, final T defaultForNull) {
-        return obj == null ? defaultForNull : obj;
     }
 
     public static <E extends Enum<E>> List<E> enumListOf(final Class<E> enumClass) {
@@ -1714,6 +1714,8 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Collection<T> c, final A[] a) {
+        N.checkArgNotNull(a);
+
         if (N.isNullOrEmpty(c)) {
             return a;
         }
@@ -1723,6 +1725,7 @@ public final class N {
 
     public static <A, T extends A> A[] toArray(final Collection<T> c, final int fromIndex, final int toIndex, final A[] a) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
+        N.checkArgNotNull(a);
 
         if (N.isNullOrEmpty(c)) {
             return a;
@@ -1749,7 +1752,48 @@ public final class N {
         }
     }
 
+    public static <A, T extends A> A[] toArray(final Collection<T> c, final IntFunction<A[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier);
+
+        if (N.isNullOrEmpty(c)) {
+            return arraySupplier.apply(0);
+        }
+
+        return toArray(c, arraySupplier);
+    }
+
+    public static <A, T extends A> A[] toArray(final Collection<T> c, final int fromIndex, final int toIndex, final IntFunction<A[]> arraySupplier) {
+        N.checkArgNotNull(arraySupplier);
+        N.checkFromToIndex(fromIndex, toIndex, size(c));
+
+        if (N.isNullOrEmpty(c)) {
+            return arraySupplier.apply(0);
+        } else if (fromIndex == 0 || toIndex == c.size()) {
+            return c.toArray(arraySupplier.apply(c.size()));
+        } else if (c instanceof List) {
+            return ((List<T>) c).subList(fromIndex, toIndex).toArray(arraySupplier.apply(toIndex - fromIndex));
+        } else {
+            final A[] res = arraySupplier.apply(toIndex - fromIndex);
+            final Iterator<T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (idx < toIndex && iter.hasNext()) {
+                res[idx - fromIndex] = iter.next();
+                idx++;
+            }
+
+            return res;
+        }
+    }
+
     public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c) {
+        N.checkArgNotNull(targetClass);
+
         if (N.isNullOrEmpty(c)) {
             return N.newArray(targetClass.getComponentType(), 0);
         }
@@ -1758,6 +1802,7 @@ public final class N {
     }
 
     public static <A, T extends A> A[] toArray(final Class<A[]> targetClass, final Collection<T> c, final int fromIndex, final int toIndex) {
+        N.checkArgNotNull(targetClass);
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         final A[] res = N.newArray(targetClass.getComponentType(), toIndex - fromIndex);
@@ -1902,19 +1947,19 @@ public final class N {
         return result;
     }
 
-    public static byte[] toByteArray(final Collection<Byte> c) {
+    public static byte[] toByteArray(final Collection<? extends Number> c) {
         return toByteArray(c, (byte) 0);
     }
 
-    public static byte[] toByteArray(final Collection<Byte> c, final int fromIndex, final int toIndex) {
+    public static byte[] toByteArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toByteArray(c, fromIndex, toIndex, (byte) 0);
     }
 
-    public static byte[] toByteArray(final Collection<Byte> c, final byte defaultForNull) {
+    public static byte[] toByteArray(final Collection<? extends Number> c, final byte defaultForNull) {
         return toByteArray(c, 0, size(c), defaultForNull);
     }
 
-    public static byte[] toByteArray(final Collection<Byte> c, final int fromIndex, final int toIndex, final byte defaultForNull) {
+    public static byte[] toByteArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final byte defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -1925,18 +1970,18 @@ public final class N {
         byte[] result = new byte[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Byte> list = (List<Byte>) c;
-            Byte val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.byteValue();
                 }
             }
         } else {
-            final Iterator<Byte> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -1946,13 +1991,13 @@ public final class N {
                 }
             }
 
-            Byte val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.byteValue();
                 }
             }
         }
@@ -1960,19 +2005,19 @@ public final class N {
         return result;
     }
 
-    public static short[] toShortArray(final Collection<Short> c) {
+    public static short[] toShortArray(final Collection<? extends Number> c) {
         return toShortArray(c, (short) 0);
     }
 
-    public static short[] toShortArray(final Collection<Short> c, final int fromIndex, final int toIndex) {
+    public static short[] toShortArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toShortArray(c, fromIndex, toIndex, (short) 0);
     }
 
-    public static short[] toShortArray(final Collection<Short> c, final short defaultForNull) {
+    public static short[] toShortArray(final Collection<? extends Number> c, final short defaultForNull) {
         return toShortArray(c, 0, size(c), defaultForNull);
     }
 
-    public static short[] toShortArray(final Collection<Short> c, final int fromIndex, final int toIndex, final short defaultForNull) {
+    public static short[] toShortArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final short defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -1983,18 +2028,18 @@ public final class N {
         short[] result = new short[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Short> list = (List<Short>) c;
-            Short val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.shortValue();
                 }
             }
         } else {
-            final Iterator<Short> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -2004,13 +2049,13 @@ public final class N {
                 }
             }
 
-            Short val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.shortValue();
                 }
             }
         }
@@ -2018,19 +2063,19 @@ public final class N {
         return result;
     }
 
-    public static int[] toIntArray(final Collection<Integer> c) {
+    public static int[] toIntArray(final Collection<? extends Number> c) {
         return toIntArray(c, 0);
     }
 
-    public static int[] toIntArray(final Collection<Integer> c, final int fromIndex, final int toIndex) {
+    public static int[] toIntArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toIntArray(c, fromIndex, toIndex, 0);
     }
 
-    public static int[] toIntArray(final Collection<Integer> c, final int defaultForNull) {
+    public static int[] toIntArray(final Collection<? extends Number> c, final int defaultForNull) {
         return toIntArray(c, 0, size(c), defaultForNull);
     }
 
-    public static int[] toIntArray(final Collection<Integer> c, final int fromIndex, final int toIndex, final int defaultForNull) {
+    public static int[] toIntArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final int defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -2041,18 +2086,18 @@ public final class N {
         int[] result = new int[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Integer> list = (List<Integer>) c;
-            Integer val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.intValue();
                 }
             }
         } else {
-            final Iterator<Integer> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -2062,13 +2107,13 @@ public final class N {
                 }
             }
 
-            Integer val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.intValue();
                 }
             }
         }
@@ -2076,19 +2121,19 @@ public final class N {
         return result;
     }
 
-    public static long[] toLongArray(final Collection<Long> c) {
+    public static long[] toLongArray(final Collection<? extends Number> c) {
         return toLongArray(c, 0);
     }
 
-    public static long[] toLongArray(final Collection<Long> c, final int fromIndex, final int toIndex) {
+    public static long[] toLongArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toLongArray(c, fromIndex, toIndex, 0);
     }
 
-    public static long[] toLongArray(final Collection<Long> c, final long defaultForNull) {
+    public static long[] toLongArray(final Collection<? extends Number> c, final long defaultForNull) {
         return toLongArray(c, 0, size(c), defaultForNull);
     }
 
-    public static long[] toLongArray(final Collection<Long> c, final int fromIndex, final int toIndex, final long defaultForNull) {
+    public static long[] toLongArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final long defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -2099,18 +2144,18 @@ public final class N {
         long[] result = new long[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Long> list = (List<Long>) c;
-            Long val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.longValue();
                 }
             }
         } else {
-            final Iterator<Long> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -2120,13 +2165,13 @@ public final class N {
                 }
             }
 
-            Long val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.longValue();
                 }
             }
         }
@@ -2134,19 +2179,19 @@ public final class N {
         return result;
     }
 
-    public static float[] toFloatArray(final Collection<Float> c) {
+    public static float[] toFloatArray(final Collection<? extends Number> c) {
         return toFloatArray(c, 0);
     }
 
-    public static float[] toFloatArray(final Collection<Float> c, final int fromIndex, final int toIndex) {
+    public static float[] toFloatArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toFloatArray(c, fromIndex, toIndex, 0);
     }
 
-    public static float[] toFloatArray(final Collection<Float> c, final float defaultForNull) {
+    public static float[] toFloatArray(final Collection<? extends Number> c, final float defaultForNull) {
         return toFloatArray(c, 0, size(c), defaultForNull);
     }
 
-    public static float[] toFloatArray(final Collection<Float> c, final int fromIndex, final int toIndex, final float defaultForNull) {
+    public static float[] toFloatArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final float defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -2157,18 +2202,18 @@ public final class N {
         float[] result = new float[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Float> list = (List<Float>) c;
-            Float val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.floatValue();
                 }
             }
         } else {
-            final Iterator<Float> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -2178,13 +2223,13 @@ public final class N {
                 }
             }
 
-            Float val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.floatValue();
                 }
             }
         }
@@ -2192,19 +2237,19 @@ public final class N {
         return result;
     }
 
-    public static double[] toDoubleArray(final Collection<Double> c) {
+    public static double[] toDoubleArray(final Collection<? extends Number> c) {
         return toDoubleArray(c, 0);
     }
 
-    public static double[] toDoubleArray(final Collection<Double> c, final int fromIndex, final int toIndex) {
+    public static double[] toDoubleArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex) {
         return toDoubleArray(c, fromIndex, toIndex, 0);
     }
 
-    public static double[] toDoubleArray(final Collection<Double> c, final double defaultForNull) {
+    public static double[] toDoubleArray(final Collection<? extends Number> c, final double defaultForNull) {
         return toDoubleArray(c, 0, size(c), defaultForNull);
     }
 
-    public static double[] toDoubleArray(final Collection<Double> c, final int fromIndex, final int toIndex, final double defaultForNull) {
+    public static double[] toDoubleArray(final Collection<? extends Number> c, final int fromIndex, final int toIndex, final double defaultForNull) {
         N.checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (fromIndex == toIndex) {
@@ -2215,18 +2260,18 @@ public final class N {
         double[] result = new double[len];
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<Double> list = (List<Double>) c;
-            Double val = null;
+            final List<? extends Number> list = (List<? extends Number>) c;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = list.get(i + fromIndex)) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.doubleValue();
                 }
             }
         } else {
-            final Iterator<Double> iter = c.iterator();
+            final Iterator<? extends Number> iter = c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -2236,13 +2281,13 @@ public final class N {
                 }
             }
 
-            Double val = null;
+            Number val = null;
 
             for (int i = 0; i < len; i++) {
                 if ((val = iter.next()) == null) {
                     result[i] = defaultForNull;
                 } else {
-                    result[i] = val;
+                    result[i] = val.doubleValue();
                 }
             }
         }
@@ -4423,434 +4468,6 @@ public final class N {
         }
     }
 
-    public static int compare(final boolean a, final boolean b) {
-        return (a == b) ? 0 : (a ? 1 : -1);
-    }
-
-    public static int compare(final byte a, final byte b) {
-        return (a < b) ? -1 : ((a == b) ? 0 : 1);
-    }
-
-    public static int compare(final short a, final short b) {
-        return (a < b) ? -1 : ((a == b) ? 0 : 1);
-    }
-
-    public static int compare(final int a, final int b) {
-        return (a < b) ? -1 : ((a == b) ? 0 : 1);
-    }
-
-    public static int compare(final long a, final long b) {
-        return (a < b) ? -1 : ((a == b) ? 0 : 1);
-    }
-
-    public static int compare(final float a, final float b) {
-        return Float.compare(a, b);
-    }
-
-    public static int compare(final double a, final double b) {
-        return Double.compare(a, b);
-    }
-
-    public static <T extends Comparable<? super T>> int compare(final T a, final T b) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
-    }
-
-    /**
-     * Returns 0 if the arguments are identical and {@code c.compare(a, b)}
-     * otherwise. Consequently, if both arguments are {@code null} 0 is
-     * returned.
-     *
-     * <p>
-     * Note that if one of the arguments is {@code null}, a
-     * {@code NullPointerException} may or may not be thrown depending on what
-     * ordering policy, if any, the {@link Comparator Comparator} chooses to
-     * have for {@code null} values.
-     *
-     * @param <T>
-     *            the type of the objects being compared
-     * @param a
-     *            an object
-     * @param b
-     *            an object to be compared with {@code a}
-     * @param cmp
-     *            the {@code Comparator} to compare the first two arguments
-     * @return 0 if the arguments are identical and {@code c.compare(a, b)}
-     *         otherwise.
-     * @see Comparable
-     * @see Comparator
-     */
-    public static <T> int compare(final T a, final T b, final Comparator<? super T> cmp) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? NATURAL_ORDER : cmp).compare(a, b));
-    }
-
-    /**
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
-        int res = N.compare(a1, b1);
-
-        return res == 0 ? N.compare(a2, b2) : res;
-    }
-
-    /**
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @param a3
-     * @param b3
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
-        int res = 0;
-
-        if ((res = N.compare(a1, b1)) != 0) {
-            return res;
-        } else if ((res = N.compare(a2, b2)) != 0) {
-            return res;
-        }
-
-        return N.compare(a3, b3);
-    }
-
-    /** 
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @param a3
-     * @param b3
-     * @param a4
-     * @param b4
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> int compare(T1 a1, T1 b1, T2 a2,
-            T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
-        int res = 0;
-
-        if ((res = N.compare(a1, b1)) != 0) {
-            return res;
-        } else if ((res = N.compare(a2, b2)) != 0) {
-            return res;
-        } else if ((res = N.compare(a3, b3)) != 0) {
-            return res;
-        }
-
-        return N.compare(a4, b4);
-    }
-
-    /**
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @param a3
-     * @param b3
-     * @param a4
-     * @param b4
-     * @param a5
-     * @param b5
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> int compare(
-            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
-        int res = 0;
-
-        if ((res = N.compare(a1, b1)) != 0) {
-            return res;
-        } else if ((res = N.compare(a2, b2)) != 0) {
-            return res;
-        } else if ((res = N.compare(a3, b3)) != 0) {
-            return res;
-        } else if ((res = N.compare(a4, b4)) != 0) {
-            return res;
-        }
-
-        return N.compare(a5, b5);
-    }
-
-    /**
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @param a3
-     * @param b3
-     * @param a4
-     * @param b4
-     * @param a5
-     * @param b5
-     * @param a6
-     * @param b6
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>> int compare(
-            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6) {
-        int res = 0;
-
-        if ((res = N.compare(a1, b1)) != 0) {
-            return res;
-        } else if ((res = N.compare(a2, b2)) != 0) {
-            return res;
-        } else if ((res = N.compare(a3, b3)) != 0) {
-            return res;
-        } else if ((res = N.compare(a4, b4)) != 0) {
-            return res;
-        } else if ((res = N.compare(a5, b5)) != 0) {
-            return res;
-        }
-
-        return N.compare(a6, b6);
-    }
-
-    /**
-     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6), (a7, b7)</code> until they're not equal.
-     * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
-     * @param a1
-     * @param b1
-     * @param a2
-     * @param b2
-     * @param a3
-     * @param b3
-     * @param a4
-     * @param b4
-     * @param a5
-     * @param b5
-     * @param a6
-     * @param b6
-     * @param a7
-     * @param b7
-     * @return
-     */
-    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>, T7 extends Comparable<T7>> int compare(
-            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6, T7 a7, T7 b7) {
-        int res = 0;
-
-        if ((res = N.compare(a1, b1)) != 0) {
-            return res;
-        } else if ((res = N.compare(a2, b2)) != 0) {
-            return res;
-        } else if ((res = N.compare(a3, b3)) != 0) {
-            return res;
-        } else if ((res = N.compare(a4, b4)) != 0) {
-            return res;
-        } else if ((res = N.compare(a5, b5)) != 0) {
-            return res;
-        } else if ((res = N.compare(a6, b6)) != 0) {
-            return res;
-        }
-
-        return N.compare(a7, b7);
-    }
-
-    public static int compare(final boolean[] a, final boolean[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final char[] a, final char[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] > b[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final byte[] a, final byte[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] > b[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final short[] a, final short[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] > b[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final int[] a, final int[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] > b[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final long[] a, final long[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if (a[i] != b[i]) {
-                return a[i] > b[i] ? 1 : -1;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final float[] a, final float[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        int value = 0;
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if ((value = Float.compare(a[i], b[i])) != 0) {
-                return value;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static int compare(final double[] a, final double[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        int value = 0;
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if ((value = Double.compare(a[i], b[i])) != 0) {
-                return value;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static <T extends Comparable<? super T>> int compare(final T[] a, final T[] b) {
-        final Comparator<T> cmp = NULL_MIN_COMPARATOR;
-        return compare(a, b, cmp);
-    }
-
-    public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
-
-        int value = 0;
-
-        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
-            if ((value = cmp.compare(a[i], b[i])) != 0) {
-                return value;
-            }
-        }
-
-        return a.length - b.length;
-    }
-
-    public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b) {
-        final Comparator<T> cmp = NULL_MIN_COMPARATOR;
-        return compare(a, b, cmp);
-    }
-
-    public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : -1;
-        } else if (N.isNullOrEmpty(b)) {
-            return 1;
-        }
-
-        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
-
-        final Iterator<T> iterA = a.iterator();
-        final Iterator<T> iterB = b.iterator();
-        int value = 0;
-
-        for (int i = 0, minLen = min(a.size(), b.size()); i < minLen; i++) {
-            if ((value = cmp.compare(iterA.next(), iterB.next())) != 0) {
-                return value;
-            }
-        }
-
-        return a.size() - b.size();
-    }
-
-    public static int compareIgnoreCase(final String a, final String b) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareToIgnoreCase(b));
-    }
-
     /**
      * Returns an empty {@code List} that is immutable.
      * 
@@ -6705,6 +6322,644 @@ public final class N {
         return result;
     }
 
+    public static int compare(final boolean a, final boolean b) {
+        return (a == b) ? 0 : (a ? 1 : -1);
+    }
+
+    public static int compare(final byte a, final byte b) {
+        return (a < b) ? -1 : ((a == b) ? 0 : 1);
+    }
+
+    public static int compare(final short a, final short b) {
+        return (a < b) ? -1 : ((a == b) ? 0 : 1);
+    }
+
+    public static int compare(final int a, final int b) {
+        return (a < b) ? -1 : ((a == b) ? 0 : 1);
+    }
+
+    public static int compare(final long a, final long b) {
+        return (a < b) ? -1 : ((a == b) ? 0 : 1);
+    }
+
+    public static int compare(final float a, final float b) {
+        return Float.compare(a, b);
+    }
+
+    public static int compare(final double a, final double b) {
+        return Double.compare(a, b);
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final T a, final T b) {
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
+    }
+
+    /**
+     * Returns 0 if the arguments are identical and {@code c.compare(a, b)}
+     * otherwise. Consequently, if both arguments are {@code null} 0 is
+     * returned.
+     *
+     * <p>
+     * Note that if one of the arguments is {@code null}, a
+     * {@code NullPointerException} may or may not be thrown depending on what
+     * ordering policy, if any, the {@link Comparator Comparator} chooses to
+     * have for {@code null} values.
+     *
+     * @param <T>
+     *            the type of the objects being compared
+     * @param a
+     *            an object
+     * @param b
+     *            an object to be compared with {@code a}
+     * @param cmp
+     *            the {@code Comparator} to compare the first two arguments
+     * @return 0 if the arguments are identical and {@code c.compare(a, b)}
+     *         otherwise.
+     * @see Comparable
+     * @see Comparator
+     */
+    public static <T> int compare(final T a, final T b, final Comparator<? super T> cmp) {
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? NATURAL_ORDER : cmp).compare(a, b));
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
+        int res = N.compare(a1, b1);
+
+        return res == 0 ? N.compare(a2, b2) : res;
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        }
+
+        return N.compare(a3, b3);
+    }
+
+    /** 
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> int compare(T1 a1, T1 b1, T2 a2,
+            T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        }
+
+        return N.compare(a4, b4);
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        } else if ((res = N.compare(a4, b4)) != 0) {
+            return res;
+        }
+
+        return N.compare(a5, b5);
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @param a6
+     * @param b6
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        } else if ((res = N.compare(a4, b4)) != 0) {
+            return res;
+        } else if ((res = N.compare(a5, b5)) != 0) {
+            return res;
+        }
+
+        return N.compare(a6, b6);
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6), (a7, b7)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @param a6
+     * @param b6
+     * @param a7
+     * @param b7
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>, T6 extends Comparable<T6>, T7 extends Comparable<T7>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5, T6 a6, T6 b6, T7 a7, T7 b7) {
+        int res = 0;
+
+        if ((res = N.compare(a1, b1)) != 0) {
+            return res;
+        } else if ((res = N.compare(a2, b2)) != 0) {
+            return res;
+        } else if ((res = N.compare(a3, b3)) != 0) {
+            return res;
+        } else if ((res = N.compare(a4, b4)) != 0) {
+            return res;
+        } else if ((res = N.compare(a5, b5)) != 0) {
+            return res;
+        } else if ((res = N.compare(a6, b6)) != 0) {
+            return res;
+        }
+
+        return N.compare(a7, b7);
+    }
+
+    public static int compare(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final boolean[] a, final int fromIndexA, final boolean[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final char[] a, final int fromIndexA, final char[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final byte[] a, final int fromIndexA, final byte[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final short[] a, final int fromIndexA, final short[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final int[] a, final int fromIndexA, final int[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final long[] a, final int fromIndexA, final long[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = Float.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final float[] a, final int fromIndexA, final float[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        int value = 0;
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if ((value = Float.compare(a[i], b[j])) != 0) {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compare(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = Double.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static int compare(final double[] a, final int fromIndexA, final double[] b, final int fromIndexB, final int len) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        int value = 0;
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if ((value = Double.compare(a[i], b[j])) != 0) {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final T[] a, final T[] b) {
+        final Comparator<T> cmp = NATURAL_ORDER;
+
+        return compare(a, b, cmp);
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final T[] a, final int fromIndexA, final T[] b, final int fromIndexB, final int len) {
+        final Comparator<T> cmp = NATURAL_ORDER;
+
+        return compare(a, fromIndexA, b, fromIndexB, len, cmp);
+    }
+
+    public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = cmp.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length - b.length;
+    }
+
+    public static <T> int compare(final T[] a, final int fromIndexA, final T[] b, final int fromIndexB, final int len, Comparator<? super T> cmp) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, len(a));
+        N.checkFromIndexSize(fromIndexB, len, len(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
+
+        int value = 0;
+
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if ((value = cmp.compare(a[i], b[j])) != 0) {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b) {
+        final Comparator<T> cmp = NATURAL_ORDER;
+
+        return compare(a, b, cmp);
+    }
+
+    public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : -1;
+        } else if (N.isNullOrEmpty(b)) {
+            return 1;
+        }
+
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
+
+        final Iterator<T> iterA = a.iterator();
+        final Iterator<T> iterB = b.iterator();
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.size(), b.size()); i < minLen; i++) {
+            if ((value = cmp.compare(iterA.next(), iterB.next())) != 0) {
+                return value;
+            }
+        }
+
+        return a.size() - b.size();
+    }
+
+    public static <T> int compare(final Collection<T> a, int fromIndexA, final Collection<T> b, int fromIndexB, final int len, Comparator<? super T> cmp) {
+        N.checkArgNotNegative(len, "len");
+        N.checkFromIndexSize(fromIndexA, len, size(a));
+        N.checkFromIndexSize(fromIndexB, len, size(b));
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return 0;
+        }
+
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
+        final Iterator<T> iterA = a.iterator();
+        final Iterator<T> iterB = b.iterator();
+
+        while (fromIndexA-- > 0) {
+            iterA.next();
+        }
+
+        while (fromIndexB-- > 0) {
+            iterB.next();
+        }
+
+        int value = 0;
+
+        for (int i = 0; i < len; i++) {
+            if ((value = cmp.compare(iterA.next(), iterB.next())) != 0) {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    public static int compareIgnoreCase(final String a, final String b) {
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareToIgnoreCase(b));
+    }
+
     /**
      * Method equals.
      *
@@ -6883,10 +7138,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final boolean[] a, final int fromIndexA, final boolean[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -6924,10 +7176,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final char[] a, final int fromIndexA, final char[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -6965,10 +7214,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final byte[] a, final int fromIndexA, final byte[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7006,10 +7252,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final short[] a, final int fromIndexA, final short[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7047,10 +7290,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final int[] a, final int fromIndexA, final int[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7088,10 +7328,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final long[] a, final int fromIndexA, final long[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7129,10 +7366,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final float[] a, final int fromIndexA, final float[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7170,10 +7404,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final double[] a, final int fromIndexA, final double[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7211,10 +7442,7 @@ public final class N {
      * @return
      */
     public static boolean equals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7244,10 +7472,7 @@ public final class N {
     }
 
     public static boolean deepEquals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -7280,10 +7505,7 @@ public final class N {
      * @return
      */
     public static boolean equalsIgnoreCase(final String[] a, final int fromIndexA, final String[] b, final int fromIndexB, final int len) {
-        if (len < 0) {
-            throw new IllegalArgumentException("'len' can not be negative");
-        }
-
+        N.checkArgNotNegative(len, "len");
         N.checkFromIndexSize(fromIndexA, len, len(a));
         N.checkFromIndexSize(fromIndexB, len, len(b));
 
@@ -9375,18 +9597,22 @@ public final class N {
      * 
      * @param pair
      * @param predicate
+     * @return
      * @throws NullPointerExceptoin if the specified {@code pair} or {@code predicate} is {@code null}.
      * @throws E
      */
-    public static <T, E extends Exception> void swapIf(final Pair<T, T> pair, Try.Predicate<? super Pair<T, T>, E> predicate) throws E {
+    public static <T, E extends Exception> boolean swapIf(final Pair<T, T> pair, Try.Predicate<? super Pair<T, T>, E> predicate) throws E {
         if (predicate.test(pair)) {
             pair.set(pair.right, pair.left);
+            return true;
         }
+
+        return false;
     }
 
     /**
      * 
-     * @param triple
+     * @param triple 
      * @throws NullPointerExceptoin if the specified {@code pair} is {@code null}.
      */
     public static <T, M> void swap(final Triple<T, M, T> triple) {
@@ -9399,15 +9625,19 @@ public final class N {
      * 
      * @param triple
      * @param predicate
+     * @return
      * @throws NullPointerExceptoin if the specified {@code triple} or {@code predicate} is {@code null}.
      * @throws E
      */
-    public static <T, M, E extends Exception> void swapIf(final Triple<T, M, T> triple, Try.Predicate<? super Triple<T, M, T>, E> predicate) throws E {
+    public static <T, M, E extends Exception> boolean swapIf(final Triple<T, M, T> triple, Try.Predicate<? super Triple<T, M, T>, E> predicate) throws E {
         if (predicate.test(triple)) {
             final T left = triple.left;
             triple.setLeft(triple.right);
             triple.setRight(left);
+            return true;
         }
+
+        return false;
     }
 
     public static void fill(final boolean[] a, final boolean val) {
@@ -9604,19 +9834,19 @@ public final class N {
      * Fill the properties of the entity with random values.
      * 
      * @param entityClass entity class with getter/setter methods
-     * @param len
+     * @param count
      * @return
      * @deprecated
      */
     @Deprecated
-    public static <T> List<T> fill(Class<T> entityClass, int len) {
+    public static <T> List<T> fill(Class<T> entityClass, int count) {
         if (N.isEntity(entityClass) == false) {
             throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
-        final List<T> resultList = new ArrayList<>(len);
+        final List<T> resultList = new ArrayList<>(count);
 
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < count; i++) {
             final T entity = N.newInstance(entityClass);
             fill(entity);
             resultList.add(entity);
@@ -26225,7 +26455,7 @@ public final class N {
      * @see #median(int...)
      */
     public static <T extends Comparable<? super T>> T median(final T a, final T b, final T c) {
-        return (T) median(a, b, c, NULL_MIN_COMPARATOR);
+        return (T) median(a, b, c, NATURAL_ORDER);
     }
 
     /** 
@@ -26237,7 +26467,9 @@ public final class N {
      * @return the median of the values
      * @see #median(int...)
      */
-    public static <T> T median(final T a, final T b, final T c, final Comparator<? super T> cmp) {
+    public static <T> T median(final T a, final T b, final T c, Comparator<? super T> cmp) {
+        cmp = cmp == null ? NATURAL_ORDER : cmp;
+
         int ab = cmp.compare(a, b);
         int ac = cmp.compare(a, c);
         int bc = 0;

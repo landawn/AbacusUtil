@@ -4,6 +4,10 @@
 
 * Add `Multiset/LongMultiset.forEach(Consumer<? super T> action)`.
 
+* Add `IntObjPair/LongObjPair/DoubleObjPair`.
+
+* Refactoring `Synchronized`.
+
 * Improvements and bug fix.
 
 

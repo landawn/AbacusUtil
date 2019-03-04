@@ -16,7 +16,9 @@ package com.landawn.abacus.http.okhttp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,12 +31,14 @@ import com.landawn.abacus.http.HttpHeaders;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 import okhttp3.CacheControl;
+import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -181,6 +185,41 @@ public class OkHttpRequest {
         return this;
     }
 
+    public OkHttpRequest body(final Map<?, ?> formBodyByMap) {
+        if (N.isNullOrEmpty(formBodyByMap)) {
+            this.body = Util.EMPTY_REQUEST;
+            return this;
+        }
+
+        final FormBody.Builder builder = new FormBody.Builder();
+
+        for (Map.Entry<?, ?> entry : formBodyByMap.entrySet()) {
+            builder.add(N.stringOf(entry.getKey()), N.stringOf(entry.getValue()));
+        }
+
+        this.body = builder.build();
+        return this;
+    }
+
+    public OkHttpRequest body(final Object formBodyByEntity) {
+        if (formBodyByEntity == null) {
+            this.body = Util.EMPTY_REQUEST;
+            return this;
+        }
+
+        final Class<?> cls = formBodyByEntity.getClass();
+        N.checkArgument(N.isEntity(cls), "{} is not an entity class with getter/setter methods", cls);
+
+        final FormBody.Builder builder = new FormBody.Builder();
+
+        for (Map.Entry<String, Method> entry : ClassUtil.getPropGetMethodList(cls).entrySet()) {
+            builder.add(entry.getKey(), N.stringOf(ClassUtil.getPropValue(formBodyByEntity, entry.getValue())));
+        }
+
+        this.body = builder.build();
+        return this;
+    }
+
     public OkHttpRequest body(RequestBody body) {
         this.body = body;
         return this;
@@ -257,11 +296,11 @@ public class OkHttpRequest {
         }
     }
 
-    public ContinuableFuture<Response> asyncGet() throws IOException {
+    public ContinuableFuture<Response> asyncGet() {
         return asyncGet(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncGet(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncGet(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
@@ -271,11 +310,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass) throws IOException {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass) {
         return asyncGet(resultClass, DEFAULT_EXECUTOR);
     }
 
-    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Executor executor) throws IOException {
+    public <T> ContinuableFuture<T> asyncGet(final Class<T> resultClass, final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<T, IOException>() {
             @Override
             public T call() throws IOException {
@@ -285,11 +324,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public ContinuableFuture<Response> asyncPost() throws IOException {
+    public ContinuableFuture<Response> asyncPost() {
         return asyncPost(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncPost(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncPost(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
@@ -299,11 +338,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass) throws IOException {
+    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass) {
         return asyncPost(resultClass, DEFAULT_EXECUTOR);
     }
 
-    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass, final Executor executor) throws IOException {
+    public <T> ContinuableFuture<T> asyncPost(final Class<T> resultClass, final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<T, IOException>() {
             @Override
             public T call() throws IOException {
@@ -313,11 +352,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public ContinuableFuture<Response> asyncPut() throws IOException {
+    public ContinuableFuture<Response> asyncPut() {
         return asyncPut(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncPut(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncPut(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
@@ -327,11 +366,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass) throws IOException {
+    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass) {
         return asyncPut(resultClass, DEFAULT_EXECUTOR);
     }
 
-    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass, final Executor executor) throws IOException {
+    public <T> ContinuableFuture<T> asyncPut(final Class<T> resultClass, final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<T, IOException>() {
             @Override
             public T call() throws IOException {
@@ -341,11 +380,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public ContinuableFuture<Response> asyncDelete() throws IOException {
+    public ContinuableFuture<Response> asyncDelete() {
         return asyncDelete(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncDelete(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncDelete(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
@@ -355,11 +394,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass) throws IOException {
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass) {
         return asyncDelete(resultClass, DEFAULT_EXECUTOR);
     }
 
-    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Executor executor) throws IOException {
+    public <T> ContinuableFuture<T> asyncDelete(final Class<T> resultClass, final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<T, IOException>() {
             @Override
             public T call() throws IOException {
@@ -369,11 +408,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public ContinuableFuture<Response> asyncHead() throws IOException {
+    public ContinuableFuture<Response> asyncHead() {
         return asyncHead(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncHead(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncHead(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
@@ -383,11 +422,11 @@ public class OkHttpRequest {
         }, executor);
     }
 
-    public ContinuableFuture<Response> asyncPatch() throws IOException {
+    public ContinuableFuture<Response> asyncPatch() {
         return asyncPatch(DEFAULT_EXECUTOR);
     }
 
-    public ContinuableFuture<Response> asyncPatch(final Executor executor) throws IOException {
+    public ContinuableFuture<Response> asyncPatch(final Executor executor) {
         return ContinuableFuture.call(new Try.Callable<Response, IOException>() {
             @Override
             public Response call() throws IOException {
