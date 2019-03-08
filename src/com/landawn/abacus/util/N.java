@@ -11647,6 +11647,48 @@ public final class N {
         return cp;
     }
 
+    public static <T> T[] copy(Class<T[]> newType, Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.newArray(newType.getComponentType(), 0);
+        }
+
+        return N.copyOf(a, a.length, newType);
+    }
+
+    public static <T> T[][] copy(Class<T[][]> newType, Object[][] a) {
+        final Class<T[]> componentType = (Class<T[]>) newType.getComponentType();
+
+        if (N.isNullOrEmpty(a)) {
+            return N.newArray(componentType, 0);
+        }
+
+        final int len = N.len(a);
+        final T[][] result = N.newArray(componentType, len);
+
+        for (int i = 0; i < len; i++) {
+            result[i] = copy(componentType, a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T> T[][][] copy(Class<T[][][]> newType, Object[][][] a) {
+        final Class<T[][]> componentType = (Class<T[][]>) newType.getComponentType();
+
+        if (N.isNullOrEmpty(a)) {
+            return N.newArray(componentType, 0);
+        }
+
+        final int len = N.len(a);
+        final T[][][] result = N.newArray(componentType, len);
+
+        for (int i = 0; i < len; i++) {
+            result[i] = copy(componentType, a[i]);
+        }
+
+        return result;
+    }
+
     public static void sort(final boolean[] a) {
         Array.sort(a);
     }

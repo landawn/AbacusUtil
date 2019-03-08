@@ -1308,48 +1308,6 @@ public final class f {
         return result;
     }
 
-    public static <T> T[] copy(Class<T[]> newType, Object[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return N.newArray(newType.getComponentType(), 0);
-        }
-
-        return N.copyOf(a, a.length, newType);
-    }
-
-    public static <T> T[][] copy(Class<T[][]> newType, Object[][] a) {
-        final Class<T[]> componentType = (Class<T[]>) newType.getComponentType();
-
-        if (N.isNullOrEmpty(a)) {
-            return N.newArray(componentType, 0);
-        }
-
-        final int len = N.len(a);
-        final T[][] result = N.newArray(componentType, len);
-
-        for (int i = 0; i < len; i++) {
-            result[i] = copy(componentType, a[i]);
-        }
-
-        return result;
-    }
-
-    public static <T> T[][][] copy(Class<T[][][]> newType, Object[][][] a) {
-        final Class<T[][]> componentType = (Class<T[][]>) newType.getComponentType();
-
-        if (N.isNullOrEmpty(a)) {
-            return N.newArray(componentType, 0);
-        }
-
-        final int len = N.len(a);
-        final T[][][] result = N.newArray(componentType, len);
-
-        for (int i = 0; i < len; i++) {
-            result[i] = copy(componentType, a[i]);
-        }
-
-        return result;
-    }
-
     public static <T> void println(final T[] a) {
         if (a == null) {
             N.println("null");
@@ -13883,6 +13841,51 @@ public final class f {
         return result;
     }
 
+    public static char[] toChar(final int[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final char[] result = new char[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = (char) a[i];
+        }
+
+        return result;
+    }
+
+    public static char[][] toChar(final int[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final char[][] result = new char[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toChar(a[i]);
+        }
+
+        return result;
+    }
+
+    public static char[][][] toChar(final int[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final char[][][] result = new char[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toChar(a[i]);
+        }
+
+        return result;
+    }
+
     public static byte[] toByte(final boolean[] a) {
         if (a == null) {
             return null;
@@ -13923,6 +13926,51 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             result[i] = toByte(a[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] toShort(final byte[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final short[] result = new short[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i];
+        }
+
+        return result;
+    }
+
+    public static short[][] toShort(final byte[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final short[][] result = new short[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toShort(a[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] toShort(final byte[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = N.len(a);
+        final short[][][] result = new short[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toShort(a[i]);
         }
 
         return result;
@@ -14108,96 +14156,6 @@ public final class f {
         return result;
     }
 
-    public static long[] toLong(final boolean[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[] result = new long[len];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = a[i] ? 1 : 0;
-        }
-
-        return result;
-    }
-
-    public static long[][] toLong(final boolean[][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][] result = new long[len][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toLong(a[i]);
-        }
-
-        return result;
-    }
-
-    public static long[][][] toLong(final boolean[][][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][][] result = new long[len][][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toLong(a[i]);
-        }
-
-        return result;
-    }
-
-    public static long[] toLong(final char[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[] result = new long[len];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = a[i];
-        }
-
-        return result;
-    }
-
-    public static long[][] toLong(final char[][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][] result = new long[len][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toLong(a[i]);
-        }
-
-        return result;
-    }
-
-    public static long[][][] toLong(final char[][][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][][] result = new long[len][][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toLong(a[i]);
-        }
-
-        return result;
-    }
-
     public static long[] toLong(final byte[] a) {
         if (a == null) {
             return null;
@@ -14328,51 +14286,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             result[i] = toLong(a[i]);
-        }
-
-        return result;
-    }
-
-    public static float[] toFloat(final char[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final float[] result = new float[len];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = a[i];
-        }
-
-        return result;
-    }
-
-    public static float[][] toFloat(final char[][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final float[][] result = new float[len][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toFloat(a[i]);
-        }
-
-        return result;
-    }
-
-    public static float[][][] toFloat(final char[][][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final float[][][] result = new float[len][][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toFloat(a[i]);
         }
 
         return result;
@@ -14553,51 +14466,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             result[i] = toFloat(a[i]);
-        }
-
-        return result;
-    }
-
-    public static double[] toDouble(final char[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final double[] result = new double[len];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = a[i];
-        }
-
-        return result;
-    }
-
-    public static double[][] toDouble(final char[][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final double[][] result = new double[len][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toDouble(a[i]);
-        }
-
-        return result;
-    }
-
-    public static double[][][] toDouble(final char[][][] a) {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final double[][][] result = new double[len][][];
-
-        for (int i = 0; i < len; i++) {
-            result[i] = toDouble(a[i]);
         }
 
         return result;

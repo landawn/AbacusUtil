@@ -1,3 +1,14 @@
+### 1.5.6
+ 
+* Move `f.copy(Class<T[][]>, Object[][]` to `N`.
+
+* Remove `Collectors.pairing`, replaced by `Collectors.combine`.
+
+* Change the implementation of `ParallelArrayStream/ParallelIteratorStream.collect(Collector)`: All `Collector` will be executed with multiple threads, regardless the `Characteristics`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.5
  
 * Add `Multimap.forEachKey/forEachValue/flatForEachValue`.

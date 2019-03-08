@@ -109,12 +109,16 @@ import com.landawn.abacus.util.function.TriFunction;
 public class Collectors {
     static final Object NONE = new Object();
 
+    @Deprecated
     static final Set<Characteristics> CH_CONCURRENT_ID = Collections
             .unmodifiableSet(EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH));
+    @Deprecated
     static final Set<Characteristics> CH_CONCURRENT_NOID = Collections.unmodifiableSet(EnumSet.of(Characteristics.CONCURRENT, Characteristics.UNORDERED));
-    static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
+
     static final Set<Characteristics> CH_UNORDERED_ID = Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH));
-    static final Set<Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED));
+    static final Set<Characteristics> CH_UNORDERED_NOID = Collections.unmodifiableSet(EnumSet.of(Characteristics.UNORDERED));
+
+    static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
     static final Set<Characteristics> CH_NOID = Collections.emptySet();
 
     // ============================================================================================================
@@ -1351,7 +1355,7 @@ public class Collectors {
         final BinaryOperator<Holder<Optional<T>>> combiner = (BinaryOperator) onlyOne_combiner;
         final Function<Holder<Optional<T>>, Optional<T>> finisher = (Function) onlyOne_finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
@@ -1393,7 +1397,7 @@ public class Collectors {
         @Override
         public Holder<Object> apply(Holder<Object> t, Holder<Object> u) {
             if (t.value() != NONE && u.value() != NONE) {
-                throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
+                throw new UnsupportedOperationException("The 'first' and 'last' Collector only can be used in sequential stream");
             }
 
             return t.value() != NONE ? t : u;
@@ -1408,9 +1412,10 @@ public class Collectors {
     };
 
     /** 
+     * Only works for sequential Stream.
      * 
      * @return
-     * @throws IllegalStateException operated by multiple threads
+     * @throws UnsupportedOperationException operated by multiple threads
      */
     @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, Optional<T>> first() {
@@ -1423,9 +1428,10 @@ public class Collectors {
     }
 
     /**
+     * Only works for sequential Stream.
      * 
      * @return 
-     * @throws IllegalStateException operated by multiple threads
+     * @throws UnsupportedOperationException operated by multiple threads
      */
     @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, Optional<T>> last() {
@@ -1438,10 +1444,11 @@ public class Collectors {
     }
 
     /**
+     * Only works for sequential Stream.
      * 
      * @param n
      * @return
-     * @throws IllegalStateException operated by multiple threads
+     * @throws UnsupportedOperationException operated by multiple threads
      */
     public static <T> Collector<T, ?, List<T>> first(final int n) {
         N.checkArgNotNegative(n, "n");
@@ -1466,7 +1473,7 @@ public class Collectors {
             @Override
             public List<T> apply(List<T> a, List<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
-                    throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
+                    throw new UnsupportedOperationException("The 'first' and 'last' Collector only can be used in sequential stream");
                 }
 
                 return a.size() > 0 ? a : b;
@@ -1477,10 +1484,11 @@ public class Collectors {
     }
 
     /**
+     * Only works for sequential Stream.
      * 
      * @param n
      * @return
-     * @throws IllegalStateException operated by multiple threads
+     * @throws UnsupportedOperationException operated by multiple threads
      */
     public static <T> Collector<T, ?, List<T>> last(final int n) {
         N.checkArgNotNegative(n, "n");
@@ -1509,7 +1517,7 @@ public class Collectors {
             @Override
             public Deque<T> apply(Deque<T> a, Deque<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
-                    throw new IllegalStateException("The 'first' and 'last' Collector only can be used in sequential stream");
+                    throw new UnsupportedOperationException("The 'first' and 'last' Collector only can be used in sequential stream");
                 }
 
                 while (b.size() < n && !a.isEmpty()) {
@@ -1842,7 +1850,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
@@ -1982,90 +1990,6 @@ public class Collectors {
     /**
      * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
      * <br />
-     * Returns a {@code Collector} which aggregates the results of two supplied
-     * collectors using the supplied finisher function.
-     * 
-     * <p>
-     * This method returns a
-     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting
-     * collector</a> if both downstream collectors are short-circuiting. The
-     * collection might stop when both downstream collectors report that the
-     * collection is complete.
-     *
-     * @param <T> the type of the input elements
-     * @param <A1> the intermediate accumulation type of the first collector
-     * @param <A2> the intermediate accumulation type of the second collector
-     * @param <R1> the result type of the first collector
-     * @param <R2> the result type of the second collector
-     * @param <R> the final result type
-     * @param c1 the first collector
-     * @param c2 the second collector
-     * @param finisher the function which merges two results into the single
-     *        one.
-     * @return a {@code Collector} which aggregates the results of two supplied
-     *         collectors.
-     */
-    public static <T, A1, A2, R1, R2, R> Collector<T, ?, R> pairing(final Collector<? super T, A1, R1> c1, final Collector<? super T, A2, R2> c2,
-            final BiFunction<? super R1, ? super R2, ? extends R> finisher) {
-        final Supplier<A1> c1Supplier = c1.supplier();
-        final Supplier<A2> c2Supplier = c2.supplier();
-        final BiConsumer<A1, ? super T> c1Accumulator = c1.accumulator();
-        final BiConsumer<A2, ? super T> c2Accumulator = c2.accumulator();
-        final BinaryOperator<A1> c1Combiner = c1.combiner();
-        final BinaryOperator<A2> c2combiner = c2.combiner();
-
-        final Supplier<Pair<A1, A2>> supplier = new Supplier<Pair<A1, A2>>() {
-            @Override
-            public Pair<A1, A2> get() {
-                return Pair.of(c1Supplier.get(), c2Supplier.get());
-            }
-        };
-
-        final BiConsumer<Pair<A1, A2>, T> accumulator = new BiConsumer<Pair<A1, A2>, T>() {
-            @Override
-            public void accept(Pair<A1, A2> t, T u) {
-                c1Accumulator.accept(t.left, u);
-                c2Accumulator.accept(t.right, u);
-            }
-        };
-
-        final BinaryOperator<Pair<A1, A2>> combiner = new BinaryOperator<Pair<A1, A2>>() {
-            @Override
-            public Pair<A1, A2> apply(Pair<A1, A2> t, Pair<A1, A2> u) {
-                t.left = c1Combiner.apply(t.left, u.left);
-                t.right = c2combiner.apply(t.right, u.right);
-
-                return t;
-            }
-        };
-
-        final Function<Pair<A1, A2>, R> resFinisher = new Function<Pair<A1, A2>, R>() {
-            @Override
-            public R apply(Pair<A1, A2> t) {
-                final R1 r1 = c1.finisher().apply(t.left);
-                final R2 r2 = c2.finisher().apply(t.right);
-
-                return finisher.apply(r1, r2);
-            }
-        };
-
-        Set<Characteristics> characteristics = CH_NOID;
-
-        if (N.notNullOrEmpty(c1.characteristics()) && N.notNullOrEmpty(c2.characteristics())) {
-            if ((c1.characteristics() == CH_CONCURRENT_ID || c1.characteristics() == CH_CONCURRENT_NOID)
-                    && (c2.characteristics() == CH_CONCURRENT_ID || c2.characteristics() == CH_CONCURRENT_NOID)) {
-                characteristics = CH_CONCURRENT_NOID;
-            } else if (c1.characteristics().contains(Characteristics.UNORDERED) && c2.characteristics().contains(Characteristics.UNORDERED)) {
-                characteristics = CH_UNORDERED;
-            }
-        }
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, resFinisher, characteristics);
-    }
-
-    /**
-     * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
-     * <br />
      * 
      * Returns a {@code Collector} which finds the minimal and maximal element
      * according to the supplied comparator, then applies finisher function to
@@ -2099,7 +2023,7 @@ public class Collectors {
             }
         };
 
-        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher2);
+        return combine(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher2);
     }
 
     /**
@@ -2205,7 +2129,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("unchecked")
@@ -2309,7 +2233,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
@@ -2465,7 +2389,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = SummingInt_Combiner;
         final Function<long[], Integer> finisher = SummingInt_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalInt> summingIntt(final ToIntFunction<? super T> mapper) {
@@ -2481,7 +2405,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = SummingInt_Combiner_2;
         final Function<long[], OptionalInt> finisher = SummingInt_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, Long> summingLong(final ToLongFunction<? super T> mapper) {
@@ -2497,7 +2421,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = SummingLong_Combiner;
         final Function<long[], Long> finisher = SummingLong_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalLong> summingLongg(final ToLongFunction<? super T> mapper) {
@@ -2513,7 +2437,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = SummingLong_Combiner_2;
         final Function<long[], OptionalLong> finisher = SummingLong_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, Double> summingDouble(final ToDoubleFunction<? super T> mapper) {
@@ -2529,7 +2453,7 @@ public class Collectors {
         final BinaryOperator<KahanSummation> combiner = SummingDouble_Combiner;
         final Function<KahanSummation, Double> finisher = SummingDouble_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> summingDoubble(final ToDoubleFunction<? super T> mapper) {
@@ -2545,7 +2469,7 @@ public class Collectors {
         final BinaryOperator<KahanSummation> combiner = SummingDouble_Combiner_2;
         final Function<KahanSummation, OptionalDouble> finisher = SummingDouble_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, BigInteger> summingBigInteger(final Function<? super T, BigInteger> mapper) {
@@ -2561,7 +2485,7 @@ public class Collectors {
         final BinaryOperator<BigInteger[]> combiner = SummingBigInteger_Combiner;
         final Function<BigInteger[], BigInteger> finisher = SummingBigInteger_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, BigDecimal> summingBigDecimal(final Function<? super T, BigDecimal> mapper) {
@@ -2577,7 +2501,7 @@ public class Collectors {
         final BinaryOperator<BigDecimal[]> combiner = SummingBigDecimal_Combiner;
         final Function<BigDecimal[], BigDecimal> finisher = SummingBigDecimal_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
@@ -2594,7 +2518,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = AveragingInt_Combiner;
         final Function<long[], Double> finisher = AveragingInt_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingIntt(final ToIntFunction<? super T> mapper) {
@@ -2611,7 +2535,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = AveragingInt_Combiner;
         final Function<long[], OptionalDouble> finisher = AveragingInt_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
@@ -2628,7 +2552,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = AveragingLong_Combiner;
         final Function<long[], Double> finisher = AveragingLong_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingLongg(final ToLongFunction<? super T> mapper) {
@@ -2645,7 +2569,7 @@ public class Collectors {
         final BinaryOperator<long[]> combiner = AveragingLong_Combiner;
         final Function<long[], OptionalDouble> finisher = AveragingLong_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
@@ -2661,7 +2585,7 @@ public class Collectors {
         final BinaryOperator<KahanSummation> combiner = AveragingDouble_Combiner;
         final Function<KahanSummation, Double> finisher = AveragingDouble_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingDoubble(final ToDoubleFunction<? super T> mapper) {
@@ -2677,7 +2601,7 @@ public class Collectors {
         final BinaryOperator<KahanSummation> combiner = AveragingDouble_Combiner;
         final Function<KahanSummation, OptionalDouble> finisher = AveragingDouble_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, BigDecimal> averagingBigInteger(final Function<? super T, BigInteger> mapper) {
@@ -2694,7 +2618,7 @@ public class Collectors {
         final BinaryOperator<Pair<BigInteger, MutableLong>> combiner = AveragingBigInteger_Combiner;
         final Function<Pair<BigInteger, MutableLong>, BigDecimal> finisher = AveragingBigInteger_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, BigDecimal> averagingBigDecimal(final Function<? super T, BigDecimal> mapper) {
@@ -2711,7 +2635,7 @@ public class Collectors {
         final BinaryOperator<Pair<BigDecimal, MutableLong>> combiner = AveragingBigDecimal_Combiner;
         final Function<Pair<BigDecimal, MutableLong>, BigDecimal> finisher = AveragingBigDecimal_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T> Collector<T, ?, CharSummaryStatistics> summarizingChar(final ToCharFunction<? super T> mapper) {
@@ -2726,7 +2650,7 @@ public class Collectors {
 
         final BinaryOperator<CharSummaryStatistics> combiner = SummarizingChar_Combiner;
 
-        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
@@ -2741,7 +2665,7 @@ public class Collectors {
 
         final BinaryOperator<ByteSummaryStatistics> combiner = SummarizingByte_Combiner;
 
-        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
@@ -2756,7 +2680,7 @@ public class Collectors {
 
         final BinaryOperator<ShortSummaryStatistics> combiner = SummarizingShort_Combiner;
 
-        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, IntSummaryStatistics> summarizingInt(final ToIntFunction<? super T> mapper) {
@@ -2771,7 +2695,7 @@ public class Collectors {
 
         final BinaryOperator<IntSummaryStatistics> combiner = SummarizingInt_Combiner;
 
-        return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, LongSummaryStatistics> summarizingLong(final ToLongFunction<? super T> mapper) {
@@ -2786,7 +2710,7 @@ public class Collectors {
 
         final BinaryOperator<LongSummaryStatistics> combiner = SummarizingLong_Combiner;
 
-        return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
@@ -2801,7 +2725,7 @@ public class Collectors {
 
         final BinaryOperator<FloatSummaryStatistics> combiner = SummarizingFloat_Combiner;
 
-        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, DoubleSummaryStatistics> summarizingDouble(final ToDoubleFunction<? super T> mapper) {
@@ -2816,7 +2740,7 @@ public class Collectors {
 
         final BinaryOperator<DoubleSummaryStatistics> combiner = SummarizingDouble_Combiner;
 
-        return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, T> reducing(final T identity, final BinaryOperator<T> op) {
@@ -2838,7 +2762,7 @@ public class Collectors {
         @SuppressWarnings("rawtypes")
         final Function<Holder<T>, T> finisher = (Function) Reducing_Finisher_0;
 
-        return new CollectorImpl<>(holderSupplier(identity), accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(holderSupplier(identity), accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2854,7 +2778,7 @@ public class Collectors {
         final BinaryOperator<OptHolder<T>> combiner = (BinaryOperator) Reducing_Combiner;
         final Function<OptHolder<T>, Optional<T>> finisher = (Function) Reducing_Finisher;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2876,7 +2800,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2903,7 +2827,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T, U> Collector<T, ?, U> reducing(final U identity, final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
@@ -2926,7 +2850,7 @@ public class Collectors {
         @SuppressWarnings("rawtypes")
         final Function<Holder<U>, U> finisher = (Function) Reducing_Finisher_0;
 
-        return new CollectorImpl<>(holderSupplier(identity), accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(holderSupplier(identity), accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2942,7 +2866,7 @@ public class Collectors {
         final BinaryOperator<MappingOptHolder<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
         final Function<MappingOptHolder<T, U>, Optional<U>> finisher = (Function) Reducing_Finisher_2;
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("unchecked")
@@ -3016,7 +2940,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     @SuppressWarnings("rawtypes")
@@ -3042,7 +2966,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
@@ -3128,7 +3052,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
@@ -3217,13 +3141,15 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     /**
      * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
      * <br />
      * 
+     * Only works for sequential Stream.
+     * <br />
      * 
      * Returns a collector which collects input elements into {@code List}
      * removing the elements following their dominator element. The dominator
@@ -3277,7 +3203,7 @@ public class Collectors {
             @Override
             public List<T> apply(List<T> a, List<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
-                    throw new IllegalStateException("The 'dominators' Collector only can be used in sequential streams");
+                    throw new UnsupportedOperationException("The 'dominators' Collector only can be used in sequential streams");
                 }
 
                 if (a.isEmpty()) {
@@ -3367,7 +3293,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <T, K> Collector<T, ?, ConcurrentMap<K, List<T>>> groupingByConcurrent(Function<? super T, ? extends K> classifier) {
@@ -3415,27 +3341,31 @@ public class Collectors {
         @SuppressWarnings("unchecked")
         final Supplier<ConcurrentMap<K, A>> mangledFactory = (Supplier<ConcurrentMap<K, A>>) mapFactory;
 
-        @SuppressWarnings("unchecked")
-        final Function<A, A> downstreamFinisher = (Function<A, A>) downstream.finisher();
+        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
+            return new CollectorImpl<>(mangledFactory, accumulator, combiner, CH_UNORDERED_ID);
+        } else {
+            @SuppressWarnings("unchecked")
+            final Function<A, A> downstreamFinisher = (Function<A, A>) downstream.finisher();
 
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return downstreamFinisher.apply(v);
-            }
-        };
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return downstreamFinisher.apply(v);
+                }
+            };
 
-        final Function<ConcurrentMap<K, A>, M> finisher = new Function<ConcurrentMap<K, A>, M>() {
-            @Override
-            public M apply(ConcurrentMap<K, A> intermediate) {
-                replaceAll(intermediate, function);
-                @SuppressWarnings("unchecked")
-                M castResult = (M) intermediate;
-                return castResult;
-            }
-        };
+            final Function<ConcurrentMap<K, A>, M> finisher = new Function<ConcurrentMap<K, A>, M>() {
+                @Override
+                public M apply(ConcurrentMap<K, A> intermediate) {
+                    replaceAll(intermediate, function);
+                    @SuppressWarnings("unchecked")
+                    M castResult = (M) intermediate;
+                    return castResult;
+                }
+            };
 
-        return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+            return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_UNORDERED_NOID);
+        }
     }
 
     public static <T> Collector<T, ?, Map<Boolean, List<T>>> partitioningBy(Predicate<? super T> predicate) {
@@ -3486,7 +3416,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
@@ -3548,7 +3478,7 @@ public class Collectors {
 
         final BinaryOperator<M> combiner = (BinaryOperator<M>) mapMerger(mergeFunction);
 
-        return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     /**
@@ -3699,7 +3629,7 @@ public class Collectors {
 
         final BinaryOperator<M> combiner = (BinaryOperator<M>) concurrentMapMerger(mergeFunction);
 
-        return new CollectorImpl<T, M, M>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, M, M>(mapFactory, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T, K, V> Collector<T, ?, BiMap<K, V>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
@@ -3775,7 +3705,7 @@ public class Collectors {
 
         final BinaryOperator<M> combiner = Collectors.<K, U, V, M> multimapMerger();
 
-        return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, DataSet> toDataSet() {
