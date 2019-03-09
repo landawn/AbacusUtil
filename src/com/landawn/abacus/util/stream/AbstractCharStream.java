@@ -97,6 +97,16 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final CharFunction<T[]> mapper) {
+        return flatMapToObj(new CharFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(char t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public CharStream skip(final long n, final CharConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -298,6 +308,35 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public char nextChar() {
+                return (res = accumulator.apply(res, iter.nextChar()));
+            }
+        }, false);
+    }
+
+    @Override
+    public CharStream scan(final char seed, final CharBiFunction<Character> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new CharIteratorEx() {
+            private boolean isFirst = true;
+            private char res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextChar()));
             }
         }, false);

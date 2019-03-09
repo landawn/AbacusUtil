@@ -89,6 +89,8 @@ public abstract class ShortStream
 
     public abstract <T> Stream<T> flattMapToObj(ShortFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(ShortFunction<T[]> mapper);
+
     public abstract ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction);
 
     /**
@@ -142,6 +144,16 @@ public abstract class ShortStream
      */
     @SequentialOnly
     public abstract ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator, final boolean seedIncluded);
 
     /**
      * <br />

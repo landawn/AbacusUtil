@@ -88,6 +88,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract <T> Stream<T> flattMapToObj(ByteFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(ByteFunction<T[]> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -153,6 +155,16 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     @SequentialOnly
     public abstract ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator, final boolean seedIncluded);
 
     /**
      * 

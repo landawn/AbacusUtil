@@ -1601,9 +1601,25 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public <R, E extends Exception> List<R> scan(final R seed, final Try.BiFunction<? super R, ? super T, R, E> accumulator) throws E {
+        return scan(seed, accumulator, false);
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     * @throws E
+     */
+    public <R, E extends Exception> List<R> scan(final R seed, final Try.BiFunction<? super R, ? super T, R, E> accumulator, boolean seedIncluded) throws E {
         N.checkArgNotNull(accumulator);
 
         final List<R> result = new ArrayList<>();
+
+        if (seedIncluded) {
+            result.add(seed);
+        }
 
         if (N.isNullOrEmpty(coll)) {
             return result;

@@ -98,6 +98,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final DoubleFunction<T[]> mapper) {
+        return flatMapToObj(new DoubleFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(double t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public DoubleStream skip(final long n, final DoubleConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -299,6 +309,35 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public double nextDouble() {
+                return (res = accumulator.apply(res, iter.nextDouble()));
+            }
+        }, false);
+    }
+
+    @Override
+    public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final DoubleIteratorEx iter = iteratorEx();
+
+        return newStream(new DoubleIteratorEx() {
+            private boolean isFirst = true;
+            private double res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextDouble()));
             }
         }, false);

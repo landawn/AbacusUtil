@@ -1,3 +1,12 @@
+### 1.5.7
+ 
+* Add `Stream/IntStream/.../DoubleStream.scan(seed, accumulator, seedIncluded)`.
+
+* Add `ByteStream/IntStream/.../DoubleStream.flatMappToObj(ByteFunction<T[]> mapper)`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.6
  
 * Move `f.copy(Class<T[][]>, Object[][]` to `N`.

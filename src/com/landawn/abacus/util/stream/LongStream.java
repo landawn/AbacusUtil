@@ -103,6 +103,20 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <T> Stream<T> flattMapToObj(LongFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(LongFunction<T[]> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    @SequentialOnly
     public abstract LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction);
 
     /**
@@ -156,6 +170,16 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     @SequentialOnly
     public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator, final boolean seedIncluded);
 
     /**
      * <br />

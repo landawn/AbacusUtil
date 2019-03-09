@@ -99,6 +99,16 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final FloatFunction<T[]> mapper) {
+        return flatMapToObj(new FloatFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(float t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public FloatStream skip(final long n, final FloatConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -300,6 +310,35 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public float nextFloat() {
+                return (res = accumulator.apply(res, iter.nextFloat()));
+            }
+        }, false);
+    }
+
+    @Override
+    public FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final FloatIteratorEx iter = iteratorEx();
+
+        return newStream(new FloatIteratorEx() {
+            private boolean isFirst = true;
+            private float res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextFloat()));
             }
         }, false);

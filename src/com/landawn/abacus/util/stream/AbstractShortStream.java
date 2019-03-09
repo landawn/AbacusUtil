@@ -97,6 +97,16 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final ShortFunction<T[]> mapper) {
+        return flatMapToObj(new ShortFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(short t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ShortStream skip(final long n, final ShortConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -298,6 +308,35 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public short nextShort() {
+                return (res = accumulator.apply(res, iter.nextShort()));
+            }
+        }, false);
+    }
+
+    @Override
+    public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final ShortIteratorEx iter = iteratorEx();
+
+        return newStream(new ShortIteratorEx() {
+            private boolean isFirst = true;
+            private short res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextShort()));
             }
         }, false);

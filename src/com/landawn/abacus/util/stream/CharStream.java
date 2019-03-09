@@ -143,6 +143,8 @@ public abstract class CharStream
 
     public abstract <T> Stream<T> flattMapToObj(CharFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(CharFunction<T[]> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -208,6 +210,16 @@ public abstract class CharStream
      */
     @SequentialOnly
     public abstract CharStream scan(final char seed, final CharBiFunction<Character> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract CharStream scan(final char seed, final CharBiFunction<Character> accumulator, final boolean seedIncluded);
 
     public abstract CharList toCharList();
 

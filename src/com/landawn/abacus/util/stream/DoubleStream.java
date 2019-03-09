@@ -100,6 +100,8 @@ public abstract class DoubleStream
 
     public abstract <T> Stream<T> flattMapToObj(DoubleFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(DoubleFunction<T[]> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -165,6 +167,16 @@ public abstract class DoubleStream
      */
     @SequentialOnly
     public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator, final boolean seedIncluded);
 
     /**
      * <br />

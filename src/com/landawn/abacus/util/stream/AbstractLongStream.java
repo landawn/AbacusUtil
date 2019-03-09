@@ -96,6 +96,16 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final LongFunction<T[]> mapper) {
+        return flatMapToObj(new LongFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(long t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public LongStream skip(final long n, final LongConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -297,6 +307,35 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public long nextLong() {
+                return (res = accumulator.apply(res, iter.nextLong()));
+            }
+        }, false);
+    }
+
+    @Override
+    public LongStream scan(final long seed, final LongBiFunction<Long> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new LongIteratorEx() {
+            private boolean isFirst = true;
+            private long res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextLong()));
             }
         }, false);

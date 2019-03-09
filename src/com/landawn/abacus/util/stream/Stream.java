@@ -603,6 +603,16 @@ public abstract class Stream<T>
     public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator);
 
     /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator, final boolean seedIncluded);
+
+    /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
      * <br />

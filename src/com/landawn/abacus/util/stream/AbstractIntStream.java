@@ -97,6 +97,16 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final IntFunction<T[]> mapper) {
+        return flatMapToObj(new IntFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(int t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public IntStream skip(final long n, final IntConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -298,6 +308,35 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public int nextInt() {
+                return (res = accumulator.apply(res, iter.nextInt()));
+            }
+        }, false);
+    }
+
+    @Override
+    public IntStream scan(final int seed, final IntBiFunction<Integer> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new IntIteratorEx() {
+            private boolean isFirst = true;
+            private int res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextInt()));
             }
         }, false);

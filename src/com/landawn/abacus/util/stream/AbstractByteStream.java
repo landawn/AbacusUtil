@@ -97,6 +97,16 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public <T> Stream<T> flatMappToObj(final ByteFunction<T[]> mapper) {
+        return flatMapToObj(new ByteFunction<Stream<T>>() {
+            @Override
+            public Stream<T> apply(byte t) {
+                return Stream.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ByteStream skip(final long n, final ByteConsumer action) {
         N.checkArgNotNegative(n, "n");
 
@@ -298,6 +308,35 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public byte nextByte() {
+                return (res = accumulator.apply(res, iter.nextByte()));
+            }
+        }, false);
+    }
+
+    @Override
+    public ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator, final boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ByteIteratorEx() {
+            private boolean isFirst = true;
+            private byte res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
                 return (res = accumulator.apply(res, iter.nextByte()));
             }
         }, false);

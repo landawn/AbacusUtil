@@ -644,6 +644,35 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator, boolean seedIncluded) {
+        if (seedIncluded == false) {
+            return scan(seed, accumulator);
+        }
+
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean isFirst = true;
+            private R res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return seed;
+                }
+
+                return (res = accumulator.apply(res, iter.next()));
+            }
+        }, false, null);
+    }
+
+    @Override
     public Stream<T> intersperse(final T delimiter) {
         return newStream(new ObjIteratorEx<T>() {
             private final Iterator<T> iter = iterator();

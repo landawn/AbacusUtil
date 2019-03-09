@@ -100,6 +100,8 @@ public abstract class FloatStream
 
     public abstract <T> Stream<T> flattMapToObj(FloatFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(FloatFunction<T[]> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -165,6 +167,16 @@ public abstract class FloatStream
      */
     @SequentialOnly
     public abstract FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator, final boolean seedIncluded);
 
     /**
      * <br />

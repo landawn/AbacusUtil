@@ -115,6 +115,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract <T> Stream<T> flattMapToObj(IntFunction<? extends Collection<T>> mapper);
 
+    public abstract <T> Stream<T> flatMappToObj(IntFunction<T[]> mapper);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -180,6 +182,16 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     @SequentialOnly
     public abstract IntStream scan(final int seed, final IntBiFunction<Integer> accumulator);
+
+    /**
+     * 
+     * @param seed
+     * @param accumulator
+     * @param seedIncluded
+     * @return
+     */
+    @SequentialOnly
+    public abstract IntStream scan(final int seed, final IntBiFunction<Integer> accumulator, final boolean seedIncluded);
 
     /**
      * 
