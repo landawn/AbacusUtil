@@ -3342,6 +3342,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         //        return sequential().collect(collector);
         //    }
 
+        final boolean isConcurrentCollector = N.notNullOrEmpty(collector.characteristics())
+                && collector.characteristics().contains(Collector.Characteristics.CONCURRENT);
+
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
         final BinaryOperator<A> combiner = collector.combiner();
@@ -3350,6 +3353,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<ContinuableFuture<A>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
+        final A singleContainer = isConcurrentCollector ? supplier.get() : null;
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
@@ -3363,7 +3367,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                        A container = supplier.get();
+                        A container = isConcurrentCollector ? singleContainer : supplier.get();
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
@@ -3385,7 +3389,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                     @Override
                     public A call() {
-                        A container = supplier.get();
+                        A container = isConcurrentCollector ? singleContainer : supplier.get();
                         T next = null;
 
                         try {
@@ -3415,14 +3419,18 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        A container = (A) NONE;
+        A container = isConcurrentCollector ? singleContainer : (A) NONE;
 
         try {
             for (ContinuableFuture<A> future : futureList) {
-                if (container == NONE) {
-                    container = future.get();
+                if (isConcurrentCollector) {
+                    future.get();
                 } else {
-                    container = combiner.apply(container, future.get());
+                    if (container == NONE) {
+                        container = future.get();
+                    } else {
+                        container = combiner.apply(container, future.get());
+                    }
                 }
             }
         } catch (InterruptedException | ExecutionException e) {

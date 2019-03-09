@@ -63,7 +63,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 
 /** 
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  * 
  * @see Stream 
  */

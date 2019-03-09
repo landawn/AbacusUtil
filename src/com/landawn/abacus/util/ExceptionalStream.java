@@ -50,7 +50,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  * 
  * @since 1.3
  * 

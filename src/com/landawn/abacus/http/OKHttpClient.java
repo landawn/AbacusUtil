@@ -197,6 +197,7 @@ public final class OKHttpClient extends AbstractHttpClient {
 
         okhttp3.Request httpRequest = null;
         okhttp3.Response httpResponse = null;
+        boolean closeOkHttpResponse = true;
 
         try {
             final okhttp3.Request.Builder requestBuilder = new okhttp3.Request.Builder()
@@ -268,16 +269,21 @@ public final class OKHttpClient extends AbstractHttpClient {
             httpRequest = requestBuilder.build();
             httpResponse = client.newCall(httpRequest).execute();
 
-            if (httpResponse.isSuccessful() == false && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
+            if (httpResponse.isSuccessful() == false
+                    && (resultClass == null || !(resultClass.equals(HttpResponse.class) || resultClass.equals(okhttp3.Response.class)))) {
                 throw new UncheckedIOException(new IOException(httpResponse.code() + ": " + httpResponse.message()));
             }
 
-            final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
-                    httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
-
             if (isOneWayRequest(settings)) {
                 return null;
+            } else if (resultClass.equals(okhttp3.Response.class)) {
+                closeOkHttpResponse = false;
+
+                return (T) httpResponse;
             } else {
+                final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
+                        httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
+
                 final InputStream is = HTTP.wrapInputStream(httpResponse.body().byteStream(), responseContentFormat);
 
                 if (outputStream != null) {
@@ -321,7 +327,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         } finally {
             _activeConnectionCounter.decrementAndGet();
 
-            if (httpResponse != null) {
+            if (httpResponse != null && closeOkHttpResponse) {
                 httpResponse.close();
             }
         }

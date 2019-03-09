@@ -59,7 +59,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.BaseStream.Splitor;
 
 /** 
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  * 
  */
 public final class EntryStream<K, V> implements AutoCloseable {
@@ -984,18 +984,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     @SequentialOnly
-    public ObjIterator<Map.Entry<K, V>> iterator() {
-        return s.iterator();
-    }
-
-    /**
-     * Remember to close this Stream after the iteration is done, if required.
-     * 
-     * @return
-     */
-    @SequentialOnly
-    public BiIterator<K, V> biIterator() {
-        final ObjIterator<Entry<K, V>> iter = iterator();
+    public BiIterator<K, V> iterator() {
+        final ObjIterator<Entry<K, V>> iter = s.iterator();
 
         final BooleanSupplier hasNext = new BooleanSupplier() {
             @Override
@@ -1403,7 +1393,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
         try {
             final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
-            final Iterator<Entry<K, V>> iter = this.iterator();
+            final Iterator<Entry<K, V>> iter = s.iterator();
 
             while (iter.hasNext()) {
                 joiner.appendEntry(iter.next());

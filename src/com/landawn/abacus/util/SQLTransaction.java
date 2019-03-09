@@ -169,47 +169,47 @@ public final class SQLTransaction implements Transaction {
         }
     }
 
-    /**
-     * Associate current thread with this transaction.
-     * 
-     */
-    public void attach() {
-        attach(SQLExecutor.getTransactionThreadId());
-    }
-
-    /**
-     * Associate the specified thread with this transaction.
-     * 
-     * @param threadId
-     */
-    private void attach(String ttid) {
-        if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
-        }
-
-        logger.info("Attaching transaction(id={}) to thread={}", id, ttid);
-
-        sqlExecutor.threadTransactionMap.put(ttid, this);
-    }
-
-    /**
-     * Remove this transaction from current thread.
-     * 
-     */
-    public void detach() {
-        detach(SQLExecutor.getTransactionThreadId());
-    }
-
-    /**
-     * Remove this transaction from the specified thread.
-     * 
-     * @param threadId
-     */
-    private void detach(String ttid) {
-        logger.info("Detaching transaction(id={}) from thread={}", id, ttid);
-
-        sqlExecutor.threadTransactionMap.remove(ttid);
-    }
+    //    /**
+    //     * Associate current thread with this transaction.
+    //     * 
+    //     */
+    //    public void attach() {
+    //        attach(SQLExecutor.getTransactionThreadId());
+    //    }
+    //
+    //    /**
+    //     * Associate the specified thread with this transaction.
+    //     * 
+    //     * @param threadId
+    //     */
+    //    private void attach(String ttid) {
+    //        if (!status.equals(Status.ACTIVE)) {
+    //            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+    //        }
+    //
+    //        logger.info("Attaching transaction(id={}) to thread={}", id, ttid);
+    //
+    //        sqlExecutor.threadTransactionMap.put(ttid, this);
+    //    }
+    //
+    //    /**
+    //     * Remove this transaction from current thread.
+    //     * 
+    //     */
+    //    public void detach() {
+    //        detach(SQLExecutor.getTransactionThreadId());
+    //    }
+    //
+    //    /**
+    //     * Remove this transaction from the specified thread.
+    //     * 
+    //     * @param threadId
+    //     */
+    //    private void detach(String ttid) {
+    //        logger.info("Detaching transaction(id={}) from thread={}", id, ttid);
+    //
+    //        sqlExecutor.threadTransactionMap.remove(ttid);
+    //    }
 
     private void resetAndCloseConnection() {
         if (conn == null) {

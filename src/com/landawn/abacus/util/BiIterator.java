@@ -69,8 +69,15 @@ public abstract class BiIterator<A, B> extends ImmutableIterator<Pair<A, B>> {
             return empty();
         }
 
+        return of(map.entrySet().iterator());
+    }
+
+    public static <K, V> BiIterator<K, V> of(final Iterator<Map.Entry<K, V>> iter) {
+        if (iter == null) {
+            return empty();
+        }
+
         return new BiIterator<K, V>() {
-            private final Iterator<Map.Entry<K, V>> iter = map.entrySet().iterator();
 
             @Override
             public boolean hasNext() {

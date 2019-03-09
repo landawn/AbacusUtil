@@ -238,19 +238,20 @@ public final class Sheet<R, C, E> implements Cloneable {
      * @param columnKey
      * @param value
      * @return
+     * @throws IllegalArgumentException
      */
-    public E put(R rowKey, C columnKey, E value) {
+    public E put(R rowKey, C columnKey, E value) throws IllegalArgumentException {
         checkFrozen();
 
         init();
 
-        if (!containsRow(rowKey)) {
-            addRow(rowKey, null);
-        }
-
-        if (!containsColumn(columnKey)) {
-            addColumn(columnKey, null);
-        }
+        //    if (!containsRow(rowKey)) {
+        //        addRow(rowKey, null);
+        //    }
+        //
+        //    if (!containsColumn(columnKey)) {
+        //        addColumn(columnKey, null);
+        //    }
 
         final int rowIndex = getRowIndex(rowKey);
         final int columnIndex = getColumnIndex(columnKey);
@@ -273,21 +274,29 @@ public final class Sheet<R, C, E> implements Cloneable {
         return put(point._1, point._2, value);
     }
 
-    public void putAll(Sheet<? extends R, ? extends C, ? extends E> source) {
+    /**
+     * 
+     * @param source
+     * @throws IllegalArgumentException
+     */
+    public void putAll(Sheet<? extends R, ? extends C, ? extends E> source) throws IllegalArgumentException {
         checkFrozen();
 
-        //    if (!this.rowKeySet().containsAll(source.rowKeySet())) {
-        //        throw new IllegalArgumentException(source.rowKeySet() + " are not all included in this sheet with row key set: " + this.rowKeySet());
-        //    }
-        //
-        //    if (!this.columnKeySet().containsAll(source.columnKeySet())) {
-        //        throw new IllegalArgumentException(source.columnKeySet() + " are not all included in this sheet with column key set: " + this.columnKeySet());
-        //    }
+        if (!this.rowKeySet().containsAll(source.rowKeySet())) {
+            throw new IllegalArgumentException(source.rowKeySet() + " are not all included in this sheet with row key set: " + this.rowKeySet());
+        }
+
+        if (!this.columnKeySet().containsAll(source.columnKeySet())) {
+            throw new IllegalArgumentException(source.columnKeySet() + " are not all included in this sheet with column key set: " + this.columnKeySet());
+        }
 
         final Sheet<R, C, ? extends E> tmp = (Sheet<R, C, ? extends E>) source;
+
         for (R r : tmp.rowKeySet()) {
             for (C c : tmp.columnKeySet()) {
-                this.put(r, c, tmp.get(r, c));
+                // this.put(r, c, tmp.get(r, c));
+
+                put(getRowIndex(r), getColumnIndex(c), tmp.get(r, c));
             }
         }
     }
@@ -1174,15 +1183,15 @@ public final class Sheet<R, C, E> implements Cloneable {
         return copy;
     }
 
-    public <EE, X extends Exception> Sheet<R, C, EE> merge(Sheet<? extends R, ? extends C, ? extends E> b,
-            Try.BiFunction<? super E, ? super E, EE, X> mergeFunction) throws X {
+    public <E2, E3, X extends Exception> Sheet<R, C, E3> merge(Sheet<? extends R, ? extends C, ? extends E2> b,
+            Try.BiFunction<? super E, ? super E2, E3, X> mergeFunction) throws X {
         final Set<R> newRowKeySet = N.newLinkedHashSet(this.rowKeySet());
         newRowKeySet.addAll(b.rowKeySet());
 
         final Set<C> newColumnKeySet = N.newLinkedHashSet(this.columnKeySet());
         newColumnKeySet.addAll(b.columnKeySet());
 
-        final Sheet<R, C, EE> result = new Sheet<>(newRowKeySet, newColumnKeySet);
+        final Sheet<R, C, E3> result = new Sheet<>(newRowKeySet, newColumnKeySet);
         final int[] rowIndexes1 = new int[newRowKeySet.size()], rowIndexes2 = new int[newRowKeySet.size()];
         final int[] columnIndexes1 = new int[newColumnKeySet.size()], columnIndexes2 = new int[newColumnKeySet.size()];
 
@@ -1198,7 +1207,8 @@ public final class Sheet<R, C, E> implements Cloneable {
             columnIndexes2[idx] = b.containsColumn(columnKey) ? b.getColumnIndex(columnKey) : -1;
         }
 
-        E e1 = null, e2 = null;
+        E e1 = null;
+        E2 e2 = null;
 
         for (int rowIndex = 0, rowLen = newRowKeySet.size(); rowIndex < rowLen; rowIndex++) {
             for (int columnIndex = 0, columnLen = newColumnKeySet.size(); columnIndex < columnLen; columnIndex++) {

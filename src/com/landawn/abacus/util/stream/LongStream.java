@@ -67,7 +67,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToLongFunction;
 
 /** 
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  * 
  * @see Stream 
  */

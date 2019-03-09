@@ -35,7 +35,7 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
 /** 
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  *
  * @param <T> the type of the stream elements
  * @param <A> the type of array

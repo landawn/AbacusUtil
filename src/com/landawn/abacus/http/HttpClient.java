@@ -63,8 +63,10 @@ public final class HttpClient extends AbstractHttpClient {
         if (IOUtil.IS_PLATFORM_ANDROID) {
             // ignore
         } else {
+            final int maxConnections = IOUtil.CPU_CORES * 8;
+
             System.setProperty("http.keepAlive", "true");
-            System.setProperty("http.maxConnections", "32");
+            System.setProperty("http.maxConnections", String.valueOf(maxConnections));
         }
     }
 

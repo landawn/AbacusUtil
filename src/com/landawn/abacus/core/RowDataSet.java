@@ -51,8 +51,6 @@ import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.BufferedJSONWriter;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.BufferedXMLWriter;
-import com.landawn.abacus.util.Builder;
-import com.landawn.abacus.util.Builder.DataSetBuilder;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.DateTimeFormat;
 import com.landawn.abacus.util.Fn;
@@ -8709,10 +8707,10 @@ public class RowDataSet implements DataSet, Cloneable {
         return (Sheet<Integer, String, T>) Sheet.columns(rowKeySet, this._columnNameList, this._columnList);
     }
 
-    @Override
-    public DataSetBuilder builder() {
-        return Builder.of(this);
-    }
+    //    @Override
+    //    public DataSetBuilder builder() {
+    //        return Builder.of(this);
+    //    }
 
     @Override
     public void println() {

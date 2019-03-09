@@ -123,7 +123,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * Note: This class includes codes copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
  * <br />
  * 
- * The Stream will be automatically closed after execution(A terminal method is executed).
+ * The Stream will be automatically closed after execution(A terminal method is executed/triggered).
  * 
  * @param <T> the type of the stream elements 
  * @see IntStream

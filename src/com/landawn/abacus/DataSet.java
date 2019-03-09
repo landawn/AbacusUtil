@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.BiIterator;
-import com.landawn.abacus.util.Builder.DataSetBuilder;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.ObjIterator;
@@ -247,7 +246,9 @@ public interface DataSet {
      * @param columnIndex
      * @param defaultValue
      * @return
+     * @deprecated
      */
+    @Deprecated
     <T> T getOrDefault(int columnIndex, T defaultValue);
 
     /**
@@ -257,7 +258,9 @@ public interface DataSet {
      * @param columnName
      * @param defaultValue
      * @return
+     * @deprecated
      */
+    @Deprecated
     <T> T getOrDefault(String columnName, T defaultValue);
 
     /**
@@ -4736,7 +4739,7 @@ public interface DataSet {
 
     <T> Sheet<Integer, String, T> toSheet();
 
-    DataSetBuilder builder();
+    // DataSetBuilder builder();
 
     /**
      * it's same as: N.println(toString());

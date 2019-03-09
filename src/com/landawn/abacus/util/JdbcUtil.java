@@ -6335,40 +6335,40 @@ public final class JdbcUtil {
             return status == Status.ACTIVE;
         }
 
-        /**
-         * Attaches this transaction to current thread.
-         * 
-         */
-        public void attach() {
-            final String currentThreadName = Thread.currentThread().getName();
-            final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
-            final String targetTTID = currentThreadName + "_" + resourceId;
-
-            if (attachedThreadTransacionMap.containsKey(targetTTID)) {
-                throw new IllegalStateException("Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id()
-                        + ") has already been attached to current thread: " + currentThreadName);
-            } else if (threadTransacionMap.containsKey(targetTTID)) {
-                throw new IllegalStateException(
-                        "Transaction(id=" + threadTransacionMap.get(targetTTID).id() + ") has already been created in current thread: " + currentThreadName);
-            }
-
-            attachedThreadTransacionMap.put(targetTTID, this);
-            threadTransacionMap.put(targetTTID, this);
-        }
-
-        public void detach() {
-            final String currentThreadName = Thread.currentThread().getName();
-            final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
-            final String targetTTID = currentThreadName + "_" + resourceId;
-
-            if (!attachedThreadTransacionMap.containsKey(targetTTID)) {
-                throw new IllegalStateException(
-                        "Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id() + ") is not attached to current thread: " + currentThreadName);
-            }
-
-            threadTransacionMap.remove(targetTTID);
-            attachedThreadTransacionMap.remove(targetTTID);
-        }
+        //    /**
+        //     * Attaches this transaction to current thread.
+        //     * 
+        //     */
+        //    public void attach() {
+        //        final String currentThreadName = Thread.currentThread().getName();
+        //        final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+        //        final String targetTTID = currentThreadName + "_" + resourceId;
+        //
+        //        if (attachedThreadTransacionMap.containsKey(targetTTID)) {
+        //            throw new IllegalStateException("Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id()
+        //                    + ") has already been attached to current thread: " + currentThreadName);
+        //        } else if (threadTransacionMap.containsKey(targetTTID)) {
+        //            throw new IllegalStateException(
+        //                    "Transaction(id=" + threadTransacionMap.get(targetTTID).id() + ") has already been created in current thread: " + currentThreadName);
+        //        }
+        //
+        //        attachedThreadTransacionMap.put(targetTTID, this);
+        //        threadTransacionMap.put(targetTTID, this);
+        //    }
+        //
+        //    public void detach() {
+        //        final String currentThreadName = Thread.currentThread().getName();
+        //        final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+        //        final String targetTTID = currentThreadName + "_" + resourceId;
+        //
+        //        if (!attachedThreadTransacionMap.containsKey(targetTTID)) {
+        //            throw new IllegalStateException(
+        //                    "Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id() + ") is not attached to current thread: " + currentThreadName);
+        //        }
+        //
+        //        threadTransacionMap.remove(targetTTID);
+        //        attachedThreadTransacionMap.remove(targetTTID);
+        //    }
 
         public void commit() throws SQLException {
             final int refCount = decrementAndGetRef();

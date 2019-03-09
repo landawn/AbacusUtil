@@ -2332,6 +2332,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         //        return sequential().collect(collector);
         //    }
 
+        final boolean isConcurrentCollector = N.notNullOrEmpty(collector.characteristics())
+                && collector.characteristics().contains(Collector.Characteristics.CONCURRENT);
+
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
         final BinaryOperator<A> combiner = collector.combiner();
@@ -2339,12 +2342,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final List<ContinuableFuture<A>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
+        final A singleContainer = isConcurrentCollector ? supplier.get() : null;
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<A>() {
                 @Override
                 public A call() {
-                    A container = supplier.get();
+                    A container = isConcurrentCollector ? singleContainer : supplier.get();
                     T next = null;
 
                     try {
@@ -2373,14 +2377,18 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        A container = (A) NONE;
+        A container = isConcurrentCollector ? singleContainer : (A) NONE;
 
         try {
             for (ContinuableFuture<A> future : futureList) {
-                if (container == NONE) {
-                    container = future.get();
+                if (isConcurrentCollector) {
+                    future.get();
                 } else {
-                    container = combiner.apply(container, future.get());
+                    if (container == NONE) {
+                        container = future.get();
+                    } else {
+                        container = combiner.apply(container, future.get());
+                    }
                 }
             }
         } catch (InterruptedException | ExecutionException e) {

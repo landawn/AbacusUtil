@@ -955,7 +955,7 @@ public class Collectors {
             this.accumulator = accumulator;
             this.combiner = combiner;
             this.finisher = finisher;
-            this.characteristics = characteristics;
+            this.characteristics = characteristics == null ? N.<Characteristics> emptySet() : characteristics;
         }
 
         @Override
