@@ -108,9 +108,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream skip(final long n, final CharConsumer action) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 
@@ -227,6 +225,117 @@ abstract class AbstractCharStream extends CharStream {
                 return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
             }
         });
+    }
+
+    @Override
+    public Stream<CharStream> splitBy(final CharPredicate where) {
+        N.checkArgNotNull(where);
+
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<CharStream>() {
+            private int cursor = 0;
+            private char next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                CharStream result = null;
+
+                if (cursor == 0) {
+                    final CharList list = new CharList();
+
+                    while (iter.hasNext()) {
+                        next = iter.nextChar();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            hasNext = true;
+                            break;
+                        }
+                    }
+
+                    result = new ArrayCharStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    CharIteratorEx iterEx = iter;
+
+                    if (hasNext) {
+                        iterEx = new CharIteratorEx() {
+                            private boolean isFirst = true;
+
+                            @Override
+                            public boolean hasNext() {
+                                return isFirst || iter.hasNext();
+                            }
+
+                            @Override
+                            public char nextChar() {
+                                if (hasNext() == false) {
+                                    throw new NoSuchElementException();
+                                }
+
+                                if (isFirst) {
+                                    isFirst = false;
+                                    return next;
+                                } else {
+                                    return iter.nextChar();
+                                }
+                            }
+                        };
+                    }
+
+                    result = new IteratorCharStream(iterEx, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                iter.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        while (iter.hasNext()) {
+                            next = iter.nextChar();
+
+                            if (where.test(next) == false) {
+                                hasNext = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        iter.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    iter.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+
+        }, false, null);
     }
 
     @Override
@@ -384,104 +493,6 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Stream<CharStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        return newStream(new ObjIteratorEx<CharStream>() {
-            private CharStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public CharStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final CharIterator iter = AbstractCharStream.this.iteratorEx();
-                    final CharList list = new CharList();
-
-                    while (list.size() < n && iter.hasNext()) {
-                        list.add(iter.nextChar());
-                    }
-
-                    a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public Stream<CharStream> splitBy(final CharPredicate where) {
-        N.checkArgNotNull(where);
-
-        return newStream(new ObjIteratorEx<CharStream>() {
-            private CharStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public CharStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final CharIterator iter = AbstractCharStream.this.iteratorEx();
-                    final CharList list = new CharList();
-                    char next = 0;
-                    CharStream s = null;
-
-                    while (iter.hasNext()) {
-                        next = iter.nextChar();
-
-                        if (where.test(next)) {
-                            list.add(next);
-                        } else {
-                            s = CharStream.of(next);
-
-                            break;
-                        }
-                    }
-
-                    a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
-
-                    if (s != null) {
-                        if (sorted) {
-                            a[1] = new IteratorCharStream(a[1].prepend(s).iteratorEx(), sorted, null);
-                        } else {
-                            a[1] = a[1].prepend(s);
-                        }
-                    }
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public CharStream reversed() {
         return newStream(new CharIteratorEx() {
             private boolean initialized = false;
@@ -521,6 +532,8 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -602,6 +615,8 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -704,6 +719,8 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -783,6 +800,8 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }

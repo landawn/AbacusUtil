@@ -847,8 +847,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @SequentialOnly
-    public EntryStream<K, V> limit(long n) {
-        return of(s.limit(n));
+    public EntryStream<K, V> limit(final long maxSize) {
+        return of(s.limit(maxSize));
     }
 
     @ParallelSupported

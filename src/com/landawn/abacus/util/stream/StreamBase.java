@@ -550,6 +550,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     };
 
+    static volatile boolean isListElementDataFieldGettable = true;
+    static volatile boolean isListElementDataFieldSettable = true;
     static final Field listElementDataField;
     static final Field listSizeField;
 
@@ -558,7 +560,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
         try {
             tmp = ArrayList.class.getDeclaredField("elementData");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore.
         }
 
@@ -572,7 +574,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
         try {
             tmp = ArrayList.class.getDeclaredField("size");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore.
         }
 
@@ -582,8 +584,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             listSizeField.setAccessible(true);
         }
     }
-
-    static volatile boolean isListElementDataFieldGettable = true;
 
     final Deque<Runnable> closeHandlers;
     final boolean sorted;
@@ -1231,13 +1231,36 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
             try {
                 return (T[]) listElementDataField.get(c);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 isListElementDataFieldGettable = false;
             }
         }
 
         return (T[]) c.toArray();
+    }
+
+    @SafeVarargs
+    static <T> List<T> createList(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
+            final List<T> list = new ArrayList<>();
+
+            try {
+                listElementDataField.set(list, a);
+                listSizeField.set(list, a.length);
+
+                return list;
+            } catch (Throwable e) {
+                // ignore;
+                isListElementDataFieldSettable = false;
+            }
+        }
+
+        return N.asList(a);
     }
 
     static int sum(final char[] a) {

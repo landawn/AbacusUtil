@@ -107,9 +107,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream skip(final long n, final LongConsumer action) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 
@@ -226,6 +224,117 @@ abstract class AbstractLongStream extends LongStream {
                 return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);
             }
         });
+    }
+
+    @Override
+    public Stream<LongStream> splitBy(final LongPredicate where) {
+        N.checkArgNotNull(where);
+
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<LongStream>() {
+            private int cursor = 0;
+            private long next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public LongStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                LongStream result = null;
+
+                if (cursor == 0) {
+                    final LongList list = new LongList();
+
+                    while (iter.hasNext()) {
+                        next = iter.nextLong();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            hasNext = true;
+                            break;
+                        }
+                    }
+
+                    result = new ArrayLongStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    LongIteratorEx iterEx = iter;
+
+                    if (hasNext) {
+                        iterEx = new LongIteratorEx() {
+                            private boolean isFirst = true;
+
+                            @Override
+                            public boolean hasNext() {
+                                return isFirst || iter.hasNext();
+                            }
+
+                            @Override
+                            public long nextLong() {
+                                if (hasNext() == false) {
+                                    throw new NoSuchElementException();
+                                }
+
+                                if (isFirst) {
+                                    isFirst = false;
+                                    return next;
+                                } else {
+                                    return iter.nextLong();
+                                }
+                            }
+                        };
+                    }
+
+                    result = new IteratorLongStream(iterEx, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                iter.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        while (iter.hasNext()) {
+                            next = iter.nextLong();
+
+                            if (where.test(next) == false) {
+                                hasNext = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        iter.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    iter.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+
+        }, false, null);
     }
 
     @Override
@@ -388,104 +497,6 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Stream<LongStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        return newStream(new ObjIteratorEx<LongStream>() {
-            private LongStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final LongIterator iter = AbstractLongStream.this.iteratorEx();
-                    final LongList list = new LongList();
-
-                    while (list.size() < n && iter.hasNext()) {
-                        list.add(iter.nextLong());
-                    }
-
-                    a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public Stream<LongStream> splitBy(final LongPredicate where) {
-        N.checkArgNotNull(where);
-
-        return newStream(new ObjIteratorEx<LongStream>() {
-            private LongStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final LongIterator iter = AbstractLongStream.this.iteratorEx();
-                    final LongList list = new LongList();
-                    long next = 0;
-                    LongStream s = null;
-
-                    while (iter.hasNext()) {
-                        next = iter.nextLong();
-
-                        if (where.test(next)) {
-                            list.add(next);
-                        } else {
-                            s = LongStream.of(next);
-
-                            break;
-                        }
-                    }
-
-                    a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
-
-                    if (s != null) {
-                        if (sorted) {
-                            a[1] = new IteratorLongStream(a[1].prepend(s).iteratorEx(), sorted, null);
-                        } else {
-                            a[1] = a[1].prepend(s);
-                        }
-                    }
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public LongStream reversed() {
         return newStream(new LongIteratorEx() {
             private boolean initialized = false;
@@ -525,6 +536,8 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -606,6 +619,8 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -708,6 +723,8 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -787,6 +804,8 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }

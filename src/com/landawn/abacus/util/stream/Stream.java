@@ -311,22 +311,43 @@ public abstract class Stream<T>
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
     @ParallelSupported
+    public abstract CharStream flattMapToChar(Function<? super T, char[]> mapper);
+
+    @ParallelSupported
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
+
+    @ParallelSupported
+    public abstract ByteStream flattMapToByte(Function<? super T, byte[]> mapper);
 
     @ParallelSupported
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
 
     @ParallelSupported
+    public abstract ShortStream flattMapToShort(Function<? super T, short[]> mapper);
+
+    @ParallelSupported
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
+
+    @ParallelSupported
+    public abstract IntStream flattMapToInt(Function<? super T, int[]> mapper);
 
     @ParallelSupported
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
     @ParallelSupported
+    public abstract LongStream flattMapToLong(Function<? super T, long[]> mapper);
+
+    @ParallelSupported
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
     @ParallelSupported
+    public abstract FloatStream flattMapToFloat(Function<? super T, float[]> mapper);
+
+    @ParallelSupported
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
+
+    @ParallelSupported
+    public abstract DoubleStream flattMapToDouble(Function<? super T, double[]> mapper);
 
     @ParallelSupported
     public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
@@ -624,9 +645,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<Set<T>> splitToSet(int size);
 
-    @SequentialOnly
-    public abstract Stream<Set<T>> splitToSet(Predicate<? super T> predicate);
-
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
@@ -641,13 +659,34 @@ public abstract class Stream<T>
     public abstract <C extends Collection<T>> Stream<C> split(int size, IntFunction<C> collectionSupplier);
 
     @SequentialOnly
+    public abstract <A, R> Stream<R> split(int size, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract Stream<Set<T>> splitToSet(Predicate<? super T> predicate);
+
+    @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> split(Predicate<? super T> predicate, Supplier<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> split(Predicate<? super T> predicate, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> splitAt(int where, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> splitBy(Predicate<? super T> where, Collector<? super T, A, R> collector);
 
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> sliding(int windowSize, IntFunction<C> collectionSupplier);
 
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> sliding(int windowSize, int increment, IntFunction<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> sliding(int windowSize, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> sliding(int windowSize, int increment, Collector<? super T, A, R> collector);
 
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>
@@ -1049,11 +1088,11 @@ public abstract class Stream<T>
     public abstract DataSet toDataSet();
 
     /**
-     * @param isFirstHeader
+     * @param isFirstTitle
      * @return
      */
     @SequentialOnly
-    public abstract DataSet toDataSet(boolean isFirstHeader);
+    public abstract DataSet toDataSet(boolean isFirstTitle);
 
     /**
      * 
@@ -1682,7 +1721,7 @@ public abstract class Stream<T>
 
             try {
                 array = (T[]) listElementDataField.get(c);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 isListElementDataFieldGettable = false;
             }
@@ -1850,6 +1889,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1905,6 +1946,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1960,6 +2003,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2015,6 +2060,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2070,6 +2117,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2125,6 +2174,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2180,6 +2231,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2235,6 +2288,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2510,6 +2565,8 @@ public abstract class Stream<T>
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

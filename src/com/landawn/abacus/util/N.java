@@ -514,14 +514,14 @@ public final class N {
 
         try {
             tmp = String.class.getDeclaredField("offset");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore.
         }
 
         if (tmp == null) {
             try {
                 tmp = String.class.getDeclaredField("count");
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore.
             }
         }
@@ -529,7 +529,7 @@ public final class N {
         if (tmp == null) {
             try {
                 tmp = String.class.getDeclaredField("value");
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore.
             }
         }
@@ -538,7 +538,7 @@ public final class N {
 
         try {
             tmp = ArrayList.class.getDeclaredField("elementData");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore.
         }
 
@@ -552,7 +552,7 @@ public final class N {
 
         try {
             tmp = ArrayList.class.getDeclaredField("size");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore.
         }
 
@@ -11113,7 +11113,7 @@ public final class N {
                 N.listSizeField.set(list, a.length);
 
                 return list;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 N.isListElementDataFieldSettable = false;
             }
@@ -22789,7 +22789,7 @@ public final class N {
                     c.add(null);
                     c.remove(c.size() - 1);
                     return true;
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     // ignore;
                     isListElementDataFieldSettable = false;
                 }

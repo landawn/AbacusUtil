@@ -660,6 +660,8 @@ public abstract class FloatStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

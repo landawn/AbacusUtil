@@ -224,15 +224,17 @@ class IteratorShortStream extends AbstractShortStream {
                 return mapper.applyAsShort(elements.nextShort());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -249,15 +251,17 @@ class IteratorShortStream extends AbstractShortStream {
                 return mapper.applyAsInt(elements.nextShort());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -274,15 +278,17 @@ class IteratorShortStream extends AbstractShortStream {
                 return mapper.apply(elements.nextShort());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false, null);
     }
 
@@ -520,7 +526,9 @@ class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                N.checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null);
     }
@@ -570,22 +578,89 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortStream> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
+
+        return newStream(new ObjIteratorEx<ShortStream>() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public ShortStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ShortStream result = null;
+
+                if (cursor == 0) {
+                    final ShortList list = new ShortList();
+                    int cnt = 0;
+
+                    while (cnt++ < where && elements.hasNext()) {
+                        list.add(elements.nextShort());
+                    }
+
+                    result = new ArrayShortStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    result = new IteratorShortStream(elements, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                elements.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        elements.skip(where);
+                    } else {
+                        elements.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    elements.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+        }, false, null);
+    }
+
+    @Override
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return newStream(new ObjIteratorEx<ShortList>() {
             private ShortList prev = null;
+            private boolean toSkip = false;
 
             @Override
             public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
+                if (toSkip) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
                         elements.nextShort();
                     }
 
-                    prev = null;
+                    toSkip = false;
                 }
 
                 return elements.hasNext();
@@ -611,10 +686,12 @@ class IteratorShortStream extends AbstractShortStream {
                         }
                     } else {
                         final short[] dest = new short[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
                         result = ShortList.of(dest, cnt);
                     }
-                } else {
+                }
+
+                if (result == null) {
                     result = new ShortList(windowSize);
                 }
 
@@ -622,9 +699,62 @@ class IteratorShortStream extends AbstractShortStream {
                     result.add(elements.nextShort());
                 }
 
+                toSkip = increment > windowSize;
+
                 return prev = result;
             }
 
+            @Override
+            public long count() {
+                final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    final ShortList tmp = new ShortList(windowSize);
+
+                    if (N.isNullOrEmpty(prev)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+
+                        if (m < prevSize) {
+                            tmp.addAll(prev.copy((int) m, prevSize));
+                        } else {
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    int cnt = tmp.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        tmp.add(elements.nextShort());
+                    }
+
+                    prev = tmp;
+                }
+            }
         }, false, null);
     }
 
@@ -676,6 +806,8 @@ class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -784,6 +916,8 @@ class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 elements.skip(n);
             }
         }, sorted);
@@ -792,10 +926,6 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream skip(final long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         return newStream(new ShortIteratorEx() {
             private boolean skipped = false;
@@ -1383,6 +1513,8 @@ class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 elements.skip(n);
             }
         }, sorted);

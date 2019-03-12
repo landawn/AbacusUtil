@@ -131,11 +131,11 @@ public class DBUtil {
         return result;
     }
 
-    private Try.Runnable<SQLException> createCloseHandler(final Connection conn) {
-        return new Try.Runnable<SQLException>() {
+    private Runnable createCloseHandler(final Connection conn) {
+        return new Runnable() {
             @Override
-            public void run() throws SQLException {
-                DataSourceUtils.doReleaseConnection(conn, ds);
+            public void run() {
+                DataSourceUtils.releaseConnection(conn, ds);
             }
         };
     }

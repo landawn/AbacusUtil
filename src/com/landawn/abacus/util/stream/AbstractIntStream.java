@@ -108,9 +108,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream skip(final long n, final IntConsumer action) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 
@@ -227,6 +225,117 @@ abstract class AbstractIntStream extends IntStream {
                 return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
             }
         });
+    }
+
+    @Override
+    public Stream<IntStream> splitBy(final IntPredicate where) {
+        N.checkArgNotNull(where);
+
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<IntStream>() {
+            private int cursor = 0;
+            private int next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public IntStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                IntStream result = null;
+
+                if (cursor == 0) {
+                    final IntList list = new IntList();
+
+                    while (iter.hasNext()) {
+                        next = iter.nextInt();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            hasNext = true;
+                            break;
+                        }
+                    }
+
+                    result = new ArrayIntStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    IntIteratorEx iterEx = iter;
+
+                    if (hasNext) {
+                        iterEx = new IntIteratorEx() {
+                            private boolean isFirst = true;
+
+                            @Override
+                            public boolean hasNext() {
+                                return isFirst || iter.hasNext();
+                            }
+
+                            @Override
+                            public int nextInt() {
+                                if (hasNext() == false) {
+                                    throw new NoSuchElementException();
+                                }
+
+                                if (isFirst) {
+                                    isFirst = false;
+                                    return next;
+                                } else {
+                                    return iter.nextInt();
+                                }
+                            }
+                        };
+                    }
+
+                    result = new IteratorIntStream(iterEx, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                iter.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        while (iter.hasNext()) {
+                            next = iter.nextInt();
+
+                            if (where.test(next) == false) {
+                                hasNext = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        iter.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    iter.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+
+        }, false, null);
     }
 
     @Override
@@ -389,104 +498,6 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Stream<IntStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        return newStream(new ObjIteratorEx<IntStream>() {
-            private IntStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public IntStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final IntIterator iter = AbstractIntStream.this.iteratorEx();
-                    final IntList list = new IntList();
-
-                    while (list.size() < n && iter.hasNext()) {
-                        list.add(iter.nextInt());
-                    }
-
-                    a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public Stream<IntStream> splitBy(final IntPredicate where) {
-        N.checkArgNotNull(where);
-
-        return newStream(new ObjIteratorEx<IntStream>() {
-            private IntStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public IntStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final IntIterator iter = AbstractIntStream.this.iteratorEx();
-                    final IntList list = new IntList();
-                    int next = 0;
-                    IntStream s = null;
-
-                    while (iter.hasNext()) {
-                        next = iter.nextInt();
-
-                        if (where.test(next)) {
-                            list.add(next);
-                        } else {
-                            s = IntStream.of(next);
-
-                            break;
-                        }
-                    }
-
-                    a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
-
-                    if (s != null) {
-                        if (sorted) {
-                            a[1] = new IteratorIntStream(a[1].prepend(s).iteratorEx(), sorted, null);
-                        } else {
-                            a[1] = a[1].prepend(s);
-                        }
-                    }
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public IntStream reversed() {
         return newStream(new IntIteratorEx() {
             private boolean initialized = false;
@@ -526,6 +537,8 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -607,6 +620,8 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -709,6 +724,8 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -788,6 +805,8 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }

@@ -496,7 +496,7 @@ public abstract class Observer<T> {
     }
 
     public Observer<T> skip(final long n) {
-        N.checkArgument(n >= 0, "n can't be negative");
+        N.checkArgNotNegative(n, "n");
 
         if (n > 0) {
             dispatcher.append(new Dispatcher<Object>() {
@@ -514,15 +514,15 @@ public abstract class Observer<T> {
         return this;
     }
 
-    public Observer<T> limit(final long n) {
-        N.checkArgument(n >= 0, "n can't be negative");
+    public Observer<T> limit(final long maxSize) {
+        N.checkArgNotNegative(maxSize, "maxSize");
 
         dispatcher.append(new Dispatcher<Object>() {
             private final AtomicLong counter = new AtomicLong();
 
             @Override
             public void onNext(final Object param) {
-                if (downDispatcher != null && counter.incrementAndGet() <= n) {
+                if (downDispatcher != null && counter.incrementAndGet() <= maxSize) {
                     downDispatcher.onNext(param);
                 } else {
                     hasMore = false;

@@ -229,9 +229,9 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
-                }
+                N.checkArgNotNegative(n, "n");
+
+                cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
 
             @Override
@@ -266,15 +266,17 @@ class ArrayShortStream extends AbstractShortStream {
                 return mapper.applyAsShort(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public short[] toArray() {
@@ -308,15 +310,17 @@ class ArrayShortStream extends AbstractShortStream {
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public int[] toArray() {
@@ -350,15 +354,17 @@ class ArrayShortStream extends AbstractShortStream {
                 return mapper.apply(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -606,6 +612,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -641,6 +649,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -719,11 +729,11 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public Stream<ShortStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
+    public Stream<ShortStream> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
 
         final ShortStream[] a = new ShortStream[2];
-        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
+        final int middleIndex = where < toIndex - fromIndex ? fromIndex + where : toIndex;
         a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, sorted, null);
         a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, sorted, null);
 
@@ -770,12 +780,12 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -820,12 +830,12 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -880,6 +890,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -952,12 +964,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream limit(long maxSize) {
+    public ShortStream limit(final long maxSize) {
         N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
 
         return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
@@ -965,10 +973,6 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public ShortStream skip(long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         if (n >= toIndex - fromIndex) {
             return newStream(elements, toIndex, toIndex, sorted);
@@ -1427,6 +1431,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
 
@@ -1486,6 +1492,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }
 
@@ -1630,6 +1638,8 @@ class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 

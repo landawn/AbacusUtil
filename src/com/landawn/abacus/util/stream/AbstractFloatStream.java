@@ -110,9 +110,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream skip(final long n, final FloatConsumer action) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 
@@ -229,6 +227,117 @@ abstract class AbstractFloatStream extends FloatStream {
                 return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
             }
         });
+    }
+
+    @Override
+    public Stream<FloatStream> splitBy(final FloatPredicate where) {
+        N.checkArgNotNull(where);
+
+        final FloatIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<FloatStream>() {
+            private int cursor = 0;
+            private float next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public FloatStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                FloatStream result = null;
+
+                if (cursor == 0) {
+                    final FloatList list = new FloatList();
+
+                    while (iter.hasNext()) {
+                        next = iter.nextFloat();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            hasNext = true;
+                            break;
+                        }
+                    }
+
+                    result = new ArrayFloatStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    FloatIteratorEx iterEx = iter;
+
+                    if (hasNext) {
+                        iterEx = new FloatIteratorEx() {
+                            private boolean isFirst = true;
+
+                            @Override
+                            public boolean hasNext() {
+                                return isFirst || iter.hasNext();
+                            }
+
+                            @Override
+                            public float nextFloat() {
+                                if (hasNext() == false) {
+                                    throw new NoSuchElementException();
+                                }
+
+                                if (isFirst) {
+                                    isFirst = false;
+                                    return next;
+                                } else {
+                                    return iter.nextFloat();
+                                }
+                            }
+                        };
+                    }
+
+                    result = new IteratorFloatStream(iterEx, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                iter.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        while (iter.hasNext()) {
+                            next = iter.nextFloat();
+
+                            if (where.test(next) == false) {
+                                hasNext = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        iter.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    iter.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+
+        }, false, null);
     }
 
     @Override
@@ -391,104 +500,6 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Stream<FloatStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        return newStream(new ObjIteratorEx<FloatStream>() {
-            private FloatStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public FloatStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final FloatIterator iter = AbstractFloatStream.this.iteratorEx();
-                    final FloatList list = new FloatList();
-
-                    while (list.size() < n && iter.hasNext()) {
-                        list.add(iter.nextFloat());
-                    }
-
-                    a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public Stream<FloatStream> splitBy(final FloatPredicate where) {
-        N.checkArgNotNull(where);
-
-        return newStream(new ObjIteratorEx<FloatStream>() {
-            private FloatStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public FloatStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final FloatIterator iter = AbstractFloatStream.this.iteratorEx();
-                    final FloatList list = new FloatList();
-                    float next = 0;
-                    FloatStream s = null;
-
-                    while (iter.hasNext()) {
-                        next = iter.nextFloat();
-
-                        if (where.test(next)) {
-                            list.add(next);
-                        } else {
-                            s = FloatStream.of(next);
-
-                            break;
-                        }
-                    }
-
-                    a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
-
-                    if (s != null) {
-                        if (sorted) {
-                            a[1] = new IteratorFloatStream(a[1].prepend(s).iteratorEx(), sorted, null);
-                        } else {
-                            a[1] = a[1].prepend(s);
-                        }
-                    }
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public FloatStream reversed() {
         return newStream(new FloatIteratorEx() {
             private boolean initialized = false;
@@ -528,6 +539,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -609,6 +622,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -711,6 +726,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -790,6 +807,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }

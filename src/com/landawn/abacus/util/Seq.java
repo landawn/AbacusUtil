@@ -1995,12 +1995,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     /**
      * 
-     * @param n
+     * @param where
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public Pair<List<T>, List<T>> splitAt(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative: ", n);
+    public Pair<List<T>, List<T>> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
 
         List<T> left = null;
         List<T> right = null;
@@ -2008,18 +2008,18 @@ public final class Seq<T> extends ImmutableCollection<T> {
         if (N.isNullOrEmpty(coll)) {
             left = new ArrayList<>();
             right = new ArrayList<>();
-        } else if (n == 0) {
+        } else if (where == 0) {
             left = new ArrayList<>();
             right = new ArrayList<>(coll);
-        } else if (n >= coll.size()) {
+        } else if (where >= coll.size()) {
             left = new ArrayList<>();
             right = new ArrayList<>(coll);
         } else if (coll instanceof List) {
-            left = new ArrayList<>(((List) coll).subList(0, n));
-            right = new ArrayList<>(((List) coll).subList(n, size()));
+            left = new ArrayList<>(((List) coll).subList(0, where));
+            right = new ArrayList<>(((List) coll).subList(where, size()));
         } else {
-            left = new ArrayList<>(slice(0, n));
-            right = new ArrayList<>(slice(n, size()));
+            left = new ArrayList<>(slice(0, where));
+            right = new ArrayList<>(slice(where, size()));
         }
 
         return Pair.of(left, right);

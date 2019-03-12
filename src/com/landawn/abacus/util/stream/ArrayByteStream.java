@@ -228,9 +228,9 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
-                }
+                N.checkArgNotNegative(n, "n");
+
+                cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
 
             @Override
@@ -265,15 +265,17 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.applyAsByte(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public byte[] toArray() {
@@ -307,15 +309,17 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public int[] toArray() {
@@ -349,15 +353,17 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.apply(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -605,6 +611,8 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -640,6 +648,8 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -718,11 +728,11 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
+    public Stream<ByteStream> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
 
         final ByteStream[] a = new ByteStream[2];
-        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
+        final int middleIndex = where < toIndex - fromIndex ? fromIndex + where : toIndex;
         a[0] = middleIndex == fromIndex ? ByteStream.empty() : new ArrayByteStream(elements, fromIndex, middleIndex, sorted, null);
         a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, sorted, null);
 
@@ -769,12 +779,12 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -819,12 +829,12 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -867,12 +877,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream limit(long maxSize) {
+    public ByteStream limit(final long maxSize) {
         N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
 
         return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
@@ -880,10 +886,6 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public ByteStream skip(long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         if (n >= toIndex - fromIndex) {
             return newStream(elements, toIndex, toIndex, sorted);
@@ -1342,6 +1344,8 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
 
@@ -1401,6 +1405,8 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }
 
@@ -1545,6 +1551,8 @@ class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 

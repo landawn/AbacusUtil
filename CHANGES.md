@@ -1,8 +1,12 @@
 ### 1.5.7
  
+* Add `Stream.split/splitAt/splitBy/sliding(..., Collector<? super T, A, R> collector)`.
+
 * Add `Stream/IntStream/.../DoubleStream.scan(seed, accumulator, seedIncluded)`.
 
 * Add `ByteStream/IntStream/.../DoubleStream.flatMappToObj(ByteFunction<T[]> mapper)`.
+
+* Add `JdbcUtil.batchUpdate/batchInsert(PreparedQuery...)`.
 
 * Improvements and bug fix.
 

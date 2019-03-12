@@ -135,9 +135,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
-                if (n <= 0) {
-                    return;
-                } else if (n > len - position) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n > len - position) {
                     position = len;
                 }
 
@@ -218,6 +218,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
+                N.checkArgNotNegative(n, "n");
+
                 if (iter == null) {
                     s = s.skip(n);
                 } else {
@@ -593,10 +595,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
+            public void skip(long n) throws SQLException {
+                N.checkArgNotNegative(n, "n");
 
                 final long m = hasNext ? n - 1 : n;
 
@@ -650,10 +650,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
+            public void skip(long n) throws SQLException {
+                N.checkArgNotNegative(n, "n");
 
                 final long m = hasNext ? n - 1 : n;
 
@@ -713,10 +711,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
-            public void skip(final long n) throws SQLException {
-                if (n <= 0) {
-                    return;
-                }
+            public void skip(long n) throws SQLException {
+                N.checkArgNotNegative(n, "n");
 
                 final long m = hasNext ? n - 1 : n;
 
@@ -1421,7 +1417,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
-                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                N.checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null, closeHandlers);
     }
@@ -1438,21 +1436,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public ExceptionalStream<List<T>, E> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        final ExceptionalIterator<T, E> elements = this.elements;
-
         return newStream(new ExceptionalIterator<List<T>, E>() {
             private List<T> prev = null;
+            private boolean toSkip = false;
 
             @Override
             public boolean hasNext() throws E {
-                if (prev != null && increment > windowSize) {
+                if (toSkip) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
                         elements.next();
                     }
 
-                    prev = null;
+                    toSkip = false;
                 }
 
                 return elements.hasNext();
@@ -1468,24 +1465,82 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 int cnt = 0;
 
                 if (prev != null && increment < windowSize) {
-                    result.addAll(prev.subList(windowSize - cnt, prev.size()));
+                    cnt = windowSize - increment;
+
+                    if (cnt <= 8) {
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        result.addAll(prev.subList(windowSize - cnt, windowSize));
+                    }
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
                     result.add(elements.next());
                 }
 
+                toSkip = increment > windowSize;
+
                 return prev = result;
+            }
+
+            @Override
+            public long count() throws E {
+                final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) throws E {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    final List<T> tmp = new ArrayList<>(windowSize);
+
+                    if (N.isNullOrEmpty(prev)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+
+                        if (m < prevSize) {
+                            tmp.addAll(prev.subList((int) m, prevSize));
+                        } else {
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    int cnt = tmp.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        tmp.add(elements.next());
+                    }
+
+                    prev = tmp;
+                }
             }
         }, false, null, closeHandlers);
     }
 
     public ExceptionalStream<T, E> skip(final long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         return newStream(new ExceptionalIterator<T, E>() {
             private boolean skipped = false;
@@ -1613,6 +1668,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -2508,6 +2565,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 @Override
                 public void skip(long n) {
+                    N.checkArgNotNegative(n, "n");
+
                     try {
                         elements.skip(n);
                     } catch (Exception e) {
@@ -2546,6 +2605,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 @Override
                 public void skip(long n) {
+                    N.checkArgNotNegative(n, "n");
+
                     try {
                         elements.skip(n);
                     } catch (Exception e) {
@@ -2645,18 +2706,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     //                }
     //            }
     //
-    //            @Override
-    //            public void skip(final long n) throws E2 {
-    //                if (initialized == false) {
-    //                    init();
+    //                @Override
+    //                public void skip(long n) throws E2 { 
+    //                    N.checkArgNotNegative(n, "n"); 
+    //                    
+    //                    if (initialized == false) {
+    //                        init();
+    //                    }
+    //    
+    //                    try {
+    //                        iter.skip(n);
+    //                    } catch (Exception e) {
+    //                        throw convertE.apply(e);
+    //                    }
     //                }
-    //
-    //                try {
-    //                    iter.skip(n);
-    //                } catch (Exception e) {
-    //                    throw convertE.apply(e);
-    //                }
-    //            }
     //
     //            @Override
     //            public long count() throws E2 {
@@ -2819,6 +2882,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 @Override
                 public void skip(long n) throws E {
+                    N.checkArgNotNegative(n, "n");
+
                     if (isInitialized == false) {
                         init();
                     }
@@ -2901,6 +2966,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 @Override
                 public void skip(long n) throws E {
+                    N.checkArgNotNegative(n, "n");
+
                     if (isInitialized == false) {
                         init();
                     }
@@ -2929,9 +2996,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         public abstract T next() throws E;
 
         public void skip(long n) throws E {
-            if (n <= 0) {
-                return;
-            }
+            N.checkArgNotNegative(n, "n");
 
             while (n-- > 0 && hasNext()) {
                 next();

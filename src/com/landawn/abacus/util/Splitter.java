@@ -68,9 +68,7 @@ public final class Splitter {
     }
 
     public Splitter limit(int max) {
-        if (max < 1) {
-            throw new IllegalArgumentException("'max' must be greater than 0");
-        }
+        N.checkArgPositive(max, "max");
 
         this.max = max;
 
@@ -280,9 +278,7 @@ public final class Splitter {
         }
 
         public MapSplitter limit(int max) {
-            if (max < 1) {
-                throw new IllegalArgumentException("'max' must be greater than 0");
-            }
+            N.checkArgPositive(max, "max");
 
             this.max = max;
 

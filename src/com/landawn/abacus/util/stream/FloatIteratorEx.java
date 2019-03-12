@@ -95,6 +95,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -179,6 +181,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (isInitialized == false) {
                     init();
                 }
@@ -257,6 +261,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (isInitialized == false) {
                     init();
                 }
@@ -302,6 +308,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
 
                 @Override
                 public void skip(long n) {
+                    N.checkArgNotNegative(n, "n");
+
                     iteratorEx.skip(n);
                 }
 
@@ -337,6 +345,8 @@ public abstract class FloatIteratorEx extends FloatIterator implements IteratorE
 
     @Override
     public void skip(long n) {
+        N.checkArgNotNegative(n, "n");
+
         while (n > 0 && hasNext()) {
             nextFloat();
             n--;

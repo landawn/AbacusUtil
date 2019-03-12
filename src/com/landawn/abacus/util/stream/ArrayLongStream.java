@@ -233,9 +233,9 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
-                }
+                N.checkArgNotNegative(n, "n");
+
+                cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
 
             @Override
@@ -270,15 +270,17 @@ class ArrayLongStream extends AbstractLongStream {
                 return mapper.applyAsLong(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public long[] toArray() {
@@ -312,15 +314,17 @@ class ArrayLongStream extends AbstractLongStream {
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public int[] toArray() {
@@ -354,15 +358,17 @@ class ArrayLongStream extends AbstractLongStream {
                 return mapper.applyAsFloat(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public float[] toArray() {
@@ -396,15 +402,17 @@ class ArrayLongStream extends AbstractLongStream {
                 return mapper.applyAsDouble(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public double[] toArray() {
@@ -438,15 +446,17 @@ class ArrayLongStream extends AbstractLongStream {
                 return mapper.apply(elements[cursor++]);
             }
 
-            //            @Override
-            //            public long count() {
-            //                return toIndex - cursor;
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //    }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -830,6 +840,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -865,6 +877,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -943,11 +957,11 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Stream<LongStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
+    public Stream<LongStream> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
 
         final LongStream[] a = new LongStream[2];
-        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
+        final int middleIndex = where < toIndex - fromIndex ? fromIndex + where : toIndex;
         a[0] = middleIndex == fromIndex ? LongStream.empty() : new ArrayLongStream(elements, fromIndex, middleIndex, sorted, null);
         a[1] = middleIndex == toIndex ? LongStream.empty() : new ArrayLongStream(elements, middleIndex, toIndex, sorted, null);
 
@@ -994,12 +1008,12 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -1044,12 +1058,12 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                if (n > 0) {
-                    if (n >= count()) {
-                        cursor = toIndex;
-                    } else {
-                        cursor += n * increment;
-                    }
+                N.checkArgNotNegative(n, "n");
+
+                if (n >= count()) {
+                    cursor = toIndex;
+                } else {
+                    cursor += n * increment;
                 }
             }
         }, false, null);
@@ -1104,6 +1118,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -1176,12 +1192,8 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream limit(long maxSize) {
+    public LongStream limit(final long maxSize) {
         N.checkArgNotNegative(maxSize, "maxSize");
-
-        if (maxSize >= toIndex - fromIndex) {
-            return this;
-        }
 
         return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted);
     }
@@ -1189,10 +1201,6 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public LongStream skip(long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         if (n >= toIndex - fromIndex) {
             return newStream(elements, toIndex, toIndex, sorted);
@@ -1651,6 +1659,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
 
@@ -1710,6 +1720,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }
 
@@ -1854,6 +1866,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1896,6 +1910,8 @@ class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 

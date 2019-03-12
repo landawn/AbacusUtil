@@ -723,6 +723,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - n;
                 next += n;
             }
@@ -790,6 +792,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - n;
                 next += n * by;
             }
@@ -845,6 +849,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - n;
                 next += n;
             }
@@ -914,6 +920,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - n;
                 next += n * by;
             }
@@ -964,6 +972,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

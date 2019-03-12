@@ -1332,6 +1332,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1374,6 +1376,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1439,6 +1443,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (n >= (toRowIndex - i) * cols * 1L - j) {
                     i = toRowIndex;
                     j = 0;
@@ -1529,6 +1535,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (n >= (toColumnIndex - j) * LongMatrix.this.rows * 1L - i) {
                     i = 0;
                     j = toColumnIndex;
@@ -1605,6 +1613,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -1676,6 +1686,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
                     @Override
                     public void skip(long n) {
+                        N.checkArgNotNegative(n, "n");
+
                         cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
                     }
 
@@ -1688,6 +1700,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 

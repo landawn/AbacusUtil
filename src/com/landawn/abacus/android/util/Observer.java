@@ -166,13 +166,15 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         @Override
         public O skip(final long n) {
+            N.checkArgNotNegative(n, "n");
+
             return (O) super.skip(n);
 
         }
 
         @Override
-        public O limit(final long n) {
-            return (O) super.limit(n);
+        public O limit(final long maxSize) {
+            return (O) super.limit(maxSize);
         }
 
         /*

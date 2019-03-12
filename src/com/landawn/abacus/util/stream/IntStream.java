@@ -783,6 +783,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -835,6 +837,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -887,6 +891,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -928,6 +934,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -983,6 +991,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -1034,6 +1044,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -1091,6 +1103,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -1141,6 +1155,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

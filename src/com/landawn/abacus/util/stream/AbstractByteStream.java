@@ -108,9 +108,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream skip(final long n, final ByteConsumer action) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 
@@ -227,6 +225,117 @@ abstract class AbstractByteStream extends ByteStream {
                 return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
             }
         });
+    }
+
+    @Override
+    public Stream<ByteStream> splitBy(final BytePredicate where) {
+        N.checkArgNotNull(where);
+
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<ByteStream>() {
+            private int cursor = 0;
+            private byte next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public ByteStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ByteStream result = null;
+
+                if (cursor == 0) {
+                    final ByteList list = new ByteList();
+
+                    while (iter.hasNext()) {
+                        next = iter.nextByte();
+
+                        if (where.test(next)) {
+                            list.add(next);
+                        } else {
+                            hasNext = true;
+                            break;
+                        }
+                    }
+
+                    result = new ArrayByteStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    ByteIteratorEx iterEx = iter;
+
+                    if (hasNext) {
+                        iterEx = new ByteIteratorEx() {
+                            private boolean isFirst = true;
+
+                            @Override
+                            public boolean hasNext() {
+                                return isFirst || iter.hasNext();
+                            }
+
+                            @Override
+                            public byte nextByte() {
+                                if (hasNext() == false) {
+                                    throw new NoSuchElementException();
+                                }
+
+                                if (isFirst) {
+                                    isFirst = false;
+                                    return next;
+                                } else {
+                                    return iter.nextByte();
+                                }
+                            }
+                        };
+                    }
+
+                    result = new IteratorByteStream(iterEx, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                iter.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        while (iter.hasNext()) {
+                            next = iter.nextByte();
+
+                            if (where.test(next) == false) {
+                                hasNext = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        iter.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    iter.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+
+        }, false, null);
     }
 
     @Override
@@ -384,104 +493,6 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Stream<ByteStream> splitAt(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        return newStream(new ObjIteratorEx<ByteStream>() {
-            private ByteStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final ByteIterator iter = AbstractByteStream.this.iteratorEx();
-                    final ByteList list = new ByteList();
-
-                    while (list.size() < n && iter.hasNext()) {
-                        list.add(iter.nextByte());
-                    }
-
-                    a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
-    public Stream<ByteStream> splitBy(final BytePredicate where) {
-        N.checkArgNotNull(where);
-
-        return newStream(new ObjIteratorEx<ByteStream>() {
-            private ByteStream[] a = null;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                init();
-
-                return cursor < 2;
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            private void init() {
-                if (a == null) {
-                    final ByteIterator iter = AbstractByteStream.this.iteratorEx();
-                    final ByteList list = new ByteList();
-                    byte next = 0;
-                    ByteStream s = null;
-
-                    while (iter.hasNext()) {
-                        next = iter.nextByte();
-
-                        if (where.test(next)) {
-                            list.add(next);
-                        } else {
-                            s = ByteStream.of(next);
-
-                            break;
-                        }
-                    }
-
-                    a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
-
-                    if (s != null) {
-                        if (sorted) {
-                            a[1] = new IteratorByteStream(a[1].prepend(s).iteratorEx(), sorted, null);
-                        } else {
-                            a[1] = a[1].prepend(s);
-                        }
-                    }
-                }
-            }
-
-        }, false, null);
-    }
-
-    @Override
     public ByteStream reversed() {
         return newStream(new ByteIteratorEx() {
             private boolean initialized = false;
@@ -521,6 +532,8 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -602,6 +615,8 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -704,6 +719,8 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -783,6 +800,8 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }

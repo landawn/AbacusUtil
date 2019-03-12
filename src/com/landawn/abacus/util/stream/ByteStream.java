@@ -666,6 +666,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -721,6 +723,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -772,6 +776,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -829,6 +835,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -879,6 +887,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

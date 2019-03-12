@@ -2791,10 +2791,8 @@ public class SQLExecutor implements Closeable {
                         }
 
                         @Override
-                        public void skip(final long n) {
-                            if (n <= 0) {
-                                return;
-                            }
+                        public void skip(long n) {
+                            N.checkArgNotNegative(n, "n");
 
                             if (skipped == false) {
                                 skip();
@@ -3040,7 +3038,7 @@ public class SQLExecutor implements Closeable {
         try {
             final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
-            result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Try.Runnable<SQLException>() {
+            result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Runnable() {
                 @Override
                 public void run() {
                     closeQuietly(localConn, conn, ds);

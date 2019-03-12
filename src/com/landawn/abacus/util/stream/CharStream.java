@@ -912,6 +912,8 @@ public abstract class CharStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -967,6 +969,8 @@ public abstract class CharStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -1018,6 +1022,8 @@ public abstract class CharStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n;
             }
@@ -1075,6 +1081,8 @@ public abstract class CharStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
                 next += n * by;
             }
@@ -1125,6 +1133,8 @@ public abstract class CharStream
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 cnt = n >= cnt ? 0 : cnt - (int) n;
             }
 

@@ -219,15 +219,17 @@ class IteratorCharStream extends AbstractCharStream {
                 return mapper.applyAsChar(elements.nextChar());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -244,15 +246,17 @@ class IteratorCharStream extends AbstractCharStream {
                 return mapper.applyAsInt(elements.nextChar());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -269,15 +273,17 @@ class IteratorCharStream extends AbstractCharStream {
                 return mapper.apply(elements.nextChar());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false, null);
     }
 
@@ -515,7 +521,9 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                N.checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null);
     }
@@ -565,22 +573,89 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharStream> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
+
+        return newStream(new ObjIteratorEx<CharStream>() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                CharStream result = null;
+
+                if (cursor == 0) {
+                    final CharList list = new CharList();
+                    int cnt = 0;
+
+                    while (cnt++ < where && elements.hasNext()) {
+                        list.add(elements.nextChar());
+                    }
+
+                    result = new ArrayCharStream(list.array(), 0, list.size(), sorted, null);
+                } else {
+                    result = new IteratorCharStream(elements, sorted, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                elements.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        elements.skip(where);
+                    } else {
+                        elements.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    elements.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+        }, false, null);
+    }
+
+    @Override
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return newStream(new ObjIteratorEx<CharList>() {
             private CharList prev = null;
+            private boolean toSkip = false;
 
             @Override
             public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
+                if (toSkip) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
                         elements.nextChar();
                     }
 
-                    prev = null;
+                    toSkip = false;
                 }
 
                 return elements.hasNext();
@@ -606,10 +681,12 @@ class IteratorCharStream extends AbstractCharStream {
                         }
                     } else {
                         final char[] dest = new char[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
                         result = CharList.of(dest, cnt);
                     }
-                } else {
+                }
+
+                if (result == null) {
                     result = new CharList(windowSize);
                 }
 
@@ -617,9 +694,62 @@ class IteratorCharStream extends AbstractCharStream {
                     result.add(elements.nextChar());
                 }
 
+                toSkip = increment > windowSize;
+
                 return prev = result;
             }
 
+            @Override
+            public long count() {
+                final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    final CharList tmp = new CharList(windowSize);
+
+                    if (N.isNullOrEmpty(prev)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+
+                        if (m < prevSize) {
+                            tmp.addAll(prev.copy((int) m, prevSize));
+                        } else {
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    int cnt = tmp.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        tmp.add(elements.nextChar());
+                    }
+
+                    prev = tmp;
+                }
+            }
         }, false, null);
     }
 
@@ -665,6 +795,8 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 elements.skip(n);
             }
         }, sorted);
@@ -673,10 +805,6 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream skip(final long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         return newStream(new CharIteratorEx() {
             private boolean skipped = false;
@@ -1264,6 +1392,8 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 elements.skip(n);
             }
         }, sorted);

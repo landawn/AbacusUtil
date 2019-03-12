@@ -1418,6 +1418,137 @@ public final class JdbcUtil {
     //        return new PreparedCallableQuery(stmtCreator.get());
     //    }
 
+    /**
+     * Generally, this method should be executed in transaction.
+     * 
+     * @param query
+     * @param batchSize
+     * @param batchParameters
+     * @param paramSetter
+     * @return
+     * @throws SQLException
+     * @throws E
+     */
+    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, E extends Exception> int batchUpdate(final Q query,
+            final int batchSize, final Collection<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
+            throws SQLException, E {
+        return batchUpdate(query, batchSize, batchParameters.iterator(), paramSetter);
+    }
+
+    /**
+     * Generally, this method should be executed in transaction.
+     * 
+     * @param query
+     * @param batchSize
+     * @param batchParameters
+     * @param paramSetter
+     * @return
+     * @throws SQLException
+     * @throws E
+     */
+    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, E extends Exception> int batchUpdate(final Q query,
+            final int batchSize, final Iterator<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
+            throws SQLException, E {
+        N.checkArgNotNull(query);
+        N.checkArgPositive(batchSize, "batchSize");
+        N.checkArgNotNull(batchParameters);
+        N.checkArgNotNull(paramSetter);
+
+        long result = 0;
+        final boolean closeAfterExecution = query.closeAfterExecution();
+        query.closeAfterExecution(false);
+        long cnt = 0;
+
+        try {
+            while (batchParameters.hasNext()) {
+                query.settParameters(batchParameters.next(), paramSetter);
+                query.addBatch();
+
+                if (++cnt % batchSize == 0) {
+                    result += N.sum(query.batchUpdate());
+                }
+            }
+
+            if (cnt % batchSize != 0) {
+                result += N.sum(query.batchUpdate());
+            }
+
+        } finally {
+            query.closeAfterExecution(closeAfterExecution);
+
+            if (closeAfterExecution) {
+                query.close();
+            }
+        }
+
+        return result >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
+    }
+
+    /**
+     * Generally, this method should be executed in transaction.
+     * 
+     * @param query
+     * @param batchSize
+     * @param batchParameters
+     * @param paramSetter
+     * @return
+     * @throws SQLException
+     * @throws E
+     */
+    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, ID, E extends Exception> List<ID> batchInsert(final Q query,
+            final int batchSize, final Collection<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
+            throws SQLException, E {
+        return batchInsert(query, batchSize, batchParameters.iterator(), paramSetter);
+    }
+
+    /**
+     * Generally, this method should be executed in transaction.
+     * 
+     * @param query
+     * @param batchSize
+     * @param batchParameters
+     * @param paramSetter
+     * @return
+     * @throws SQLException
+     * @throws E
+     */
+    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, ID, E extends Exception> List<ID> batchInsert(final Q query,
+            final int batchSize, final Iterator<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
+            throws SQLException, E {
+        N.checkArgNotNull(query);
+        N.checkArgPositive(batchSize, "batchSize");
+        N.checkArgNotNull(batchParameters);
+        N.checkArgNotNull(paramSetter);
+
+        final List<ID> result = new ArrayList<>();
+        final boolean closeAfterExecution = query.closeAfterExecution();
+        query.closeAfterExecution(false);
+        long cnt = 0;
+
+        try {
+            while (batchParameters.hasNext()) {
+                query.settParameters(batchParameters.next(), paramSetter);
+                query.addBatch();
+
+                if (++cnt % batchSize == 0) {
+                    result.addAll(query.<ID> batchInsert());
+                }
+            }
+
+            if (cnt % batchSize != 0) {
+                result.addAll(query.<ID> batchInsert());
+            }
+        } finally {
+            query.closeAfterExecution(closeAfterExecution);
+
+            if (closeAfterExecution) {
+                query.close();
+            }
+        }
+
+        return result;
+    }
+
     @SafeVarargs
     public static PreparedStatement prepareStatement(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -3220,7 +3351,7 @@ public final class JdbcUtil {
         boolean isBatch = false;
         boolean closeAfterExecution = true;
         boolean isClosed = false;
-        Try.Runnable<SQLException> closeHandler;
+        Runnable closeHandler;
 
         AbstractPreparedQuery(S stmt) {
             this(stmt, null);
@@ -3251,23 +3382,27 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
+        public boolean closeAfterExecution() {
+            return closeAfterExecution;
+        }
+
         /**
          * 
          * @param closeHandler A task to execute after this {@code Query} is closed
          * @return 
          */
-        public Q onClose(final Try.Runnable<SQLException> closeHandler) {
+        public Q onClose(final Runnable closeHandler) {
             checkArgNotNull(closeHandler, "closeHandler");
             assertNotClosed();
 
             if (this.closeHandler == null) {
                 this.closeHandler = closeHandler;
             } else {
-                final Try.Runnable<SQLException> tmp = this.closeHandler;
+                final Runnable tmp = this.closeHandler;
 
-                this.closeHandler = new Try.Runnable<SQLException>() {
+                this.closeHandler = new Runnable() {
                     @Override
-                    public void run() throws SQLException {
+                    public void run() {
                         try {
                             tmp.run();
                         } finally {
@@ -4058,6 +4193,32 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
+        public <T, E extends Exception> Q setParameters(final T parameter, final Try.EE.BiConsumer<? super S, ? super T, SQLException, E> paramSetter)
+                throws SQLException, E {
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            boolean isOK = false;
+
+            try {
+                paramSetter.accept(stmt, parameter);
+
+                isOK = true;
+            } finally {
+                if (isOK == false) {
+                    close();
+                }
+            }
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
         public <E extends Exception> Q settParameters(Try.EE.Consumer<? super Q, SQLException, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -4078,20 +4239,19 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param startParameterIndex
          * @param paramSetter
          * @return
          * @throws SQLException
          * @throws E
          */
-        public <E extends Exception> Q setParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super S, SQLException, E> paramSetter)
+        public <T, E extends Exception> Q settParameters(final T parameter, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
                 throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
             boolean isOK = false;
 
             try {
-                paramSetter.accept(startParameterIndex, stmt);
+                paramSetter.accept((Q) this, parameter);
 
                 isOK = true;
             } finally {
@@ -4103,32 +4263,59 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
-        /**
-         * 
-         * @param startParameterIndex
-         * @param paramSetter
-         * @return
-         * @throws SQLException
-         * @throws E
-         */
-        public <E extends Exception> Q settParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super Q, SQLException, E> paramSetter)
-                throws SQLException, E {
-            checkArgNotNull(paramSetter, "paramSetter");
-
-            boolean isOK = false;
-
-            try {
-                paramSetter.accept(startParameterIndex, (Q) this);
-
-                isOK = true;
-            } finally {
-                if (isOK == false) {
-                    close();
-                }
-            }
-
-            return (Q) this;
-        }
+        //        /**
+        //         * 
+        //         * @param startParameterIndex
+        //         * @param paramSetter
+        //         * @return
+        //         * @throws SQLException
+        //         * @throws E
+        //         */
+        //        public <E extends Exception> Q setParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super S, SQLException, E> paramSetter)
+        //                throws SQLException, E {
+        //            checkArgNotNull(paramSetter, "paramSetter");
+        //
+        //            boolean isOK = false;
+        //
+        //            try {
+        //                paramSetter.accept(startParameterIndex, stmt);
+        //
+        //                isOK = true;
+        //            } finally {
+        //                if (isOK == false) {
+        //                    close();
+        //                }
+        //            }
+        //
+        //            return (Q) this;
+        //        }
+        //
+        //        /**
+        //         * 
+        //         * @param startParameterIndex
+        //         * @param paramSetter
+        //         * @return
+        //         * @throws SQLException
+        //         * @throws E
+        //         */
+        //        public <E extends Exception> Q settParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super Q, SQLException, E> paramSetter)
+        //                throws SQLException, E {
+        //            checkArgNotNull(paramSetter, "paramSetter");
+        //
+        //            boolean isOK = false;
+        //
+        //            try {
+        //                paramSetter.accept(startParameterIndex, (Q) this);
+        //
+        //                isOK = true;
+        //            } finally {
+        //                if (isOK == false) {
+        //                    close();
+        //                }
+        //            }
+        //
+        //            return (Q) this;
+        //        }
 
         public Q addBatch() throws SQLException {
             stmt.addBatch();
@@ -4771,10 +4958,8 @@ public final class JdbcUtil {
                                         }
 
                                         @Override
-                                        public void skip(final long n) throws SQLException {
-                                            if (n <= 0) {
-                                                return;
-                                            }
+                                        public void skip(long n) throws SQLException {
+                                            N.checkArgNotNegative(n, "n");
 
                                             final long m = hasNext ? n - 1 : n;
                                             hasNext = false;
@@ -4872,10 +5057,8 @@ public final class JdbcUtil {
                                         }
 
                                         @Override
-                                        public void skip(final long n) throws SQLException {
-                                            if (n <= 0) {
-                                                return;
-                                            }
+                                        public void skip(long n) throws SQLException {
+                                            N.checkArgNotNegative(n, "n");
 
                                             final long m = hasNext ? n - 1 : n;
                                             hasNext = false;
@@ -5385,11 +5568,13 @@ public final class JdbcUtil {
                 });
             } else {
                 return asyncExecutor.execute(new Try.Callable<R, E>() {
+
                     @Override
                     public R call() throws E {
                         return func.apply(q);
                     }
                 });
+
             }
         }
 
@@ -5423,11 +5608,13 @@ public final class JdbcUtil {
                 });
             } else {
                 return asyncExecutor.execute(new Try.Callable<Void, E>() {
+
                     @Override
                     public Void call() throws E {
                         action.accept(q);
                         return null;
                     }
+
                 });
             }
         }
@@ -5451,7 +5638,7 @@ public final class JdbcUtil {
             if (arg == null) {
                 try {
                     close();
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     logger.error("Failed to close PreparedQuery", e);
                 }
 
@@ -5463,7 +5650,7 @@ public final class JdbcUtil {
             if (b == false) {
                 try {
                     close();
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     logger.error("Failed to close PreparedQuery", e);
                 }
 
@@ -5478,7 +5665,7 @@ public final class JdbcUtil {
         }
 
         @Override
-        public void close() throws SQLException {
+        public void close() {
             if (isClosed) {
                 return;
             }
@@ -5491,6 +5678,8 @@ public final class JdbcUtil {
                 } else {
                     stmt.clearParameters();
                 }
+            } catch (SQLException e) {
+                logger.error("Failed to clear the parameters set in Statements", e);
             } finally {
                 if (closeHandler == null) {
                     JdbcUtil.closeQuietly(stmt, conn);

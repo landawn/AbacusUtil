@@ -39,7 +39,6 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.IntIterator;
-import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -244,15 +243,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.apply(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false, null);
     }
 
@@ -291,7 +292,9 @@ class IteratorStream<T> extends AbstractStream<T> {
     //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                elements.skip(n >= Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
+    //            //                N.checkArgNotNegative(n, "n");
+    //            //
+    //            //                elements.skip(n > Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
     //            //            }
     //            //
     //            //            @Override
@@ -345,7 +348,9 @@ class IteratorStream<T> extends AbstractStream<T> {
     //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                elements.skip(n >= Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
+    //            //                N.checkArgNotNegative(n, "n");
+    //            //
+    //            //                elements.skip(n > Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
     //            //            }
     //            //
     //            //            @Override
@@ -500,6 +505,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             //            @Override
             //            public void skip(long n) {
+            //                N.checkArgNotNegative(n, "n");
+            //
             //                if (n > 0) {
             //                    isFirst = false;
             //                }
@@ -516,6 +523,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (n > 0) {
                     if (hasNext()) {
                         next();
@@ -569,6 +578,8 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //            @Override
             //            public void skip(long n) {
+            //                N.checkArgNotNegative(n, "n");
+            //
             //                if (n > 0) {
             //                    isFirst = false;
             //                }
@@ -599,15 +610,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false, null);
     }
 
@@ -633,15 +646,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false, null);
     }
 
@@ -658,15 +673,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsChar(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -683,15 +700,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsByte(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -708,15 +727,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsShort(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -733,15 +754,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsInt(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -758,15 +781,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsLong(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -783,15 +808,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsFloat(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -808,15 +835,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsDouble(elements.next());
             }
 
-            //            @Override
-            //            public long count() {
-            //                return elements.count();
-            //            }
+            //    @Override
+            //    public long count() {
+            //        return elements.count();
+            //    }
             //
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n);
-            //            }
+            //    @Override
+            //    public void skip(long n) {
+            //        N.checkArgNotNegative(n, "n");
+            //
+            //        elements.skip(n);
+            //    }
         }, false);
     }
 
@@ -1391,7 +1420,56 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                N.checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <A, R> Stream<R> split(final int size, final Collector<? super T, A, R> collector) {
+        N.checkArgPositive(size, "size");
+        N.checkArgNotNull(collector);
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ObjIteratorEx<R>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final A container = supplier.get();
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    accumulator.accept(container, elements.next());
+                    cnt++;
+                }
+
+                return finisher.apply(container);
+            }
+
+            @Override
+            public long count() {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null);
     }
@@ -1414,16 +1492,18 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
 
                 final C result = collectionSupplier.get();
+                boolean isFirst = true;
 
                 if (next == NONE) {
                     next = elements.next();
                 }
 
                 while (next != NONE) {
-                    if (result.size() == 0) {
+                    if (isFirst) {
                         result.add(next);
                         preCondition = predicate.test(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
+                        isFirst = false;
                     } else if (predicate.test(next) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
@@ -1440,22 +1520,211 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <A, R> Stream<R> split(final Predicate<? super T> predicate, final Collector<? super T, A, R> collector) {
+        N.checkArgNotNull(predicate);
+        N.checkArgNotNull(collector);
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private T next = (T) NONE;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return next != NONE || elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final A container = supplier.get();
+                boolean isFirst = true;
+
+                if (next == NONE) {
+                    next = elements.next();
+                }
+
+                while (next != NONE) {
+                    if (isFirst) {
+                        accumulator.accept(container, next);
+                        preCondition = predicate.test(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                        isFirst = false;
+                    } else if (predicate.test(next) == preCondition) {
+                        accumulator.accept(container, next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return finisher.apply(container);
+            }
+
+        }, false, null);
+    }
+
+    @Override
+    public Stream<Stream<T>> splitAt(final int where) {
+        N.checkArgNotNegative(where, "where");
+
+        return newStream(new ObjIteratorEx<Stream<T>>() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                Stream<T> result = null;
+
+                if (cursor == 0) {
+                    final List<T> list = new ArrayList<>();
+                    int cnt = 0;
+
+                    while (cnt++ < where && elements.hasNext()) {
+                        list.add(elements.next());
+                    }
+
+                    result = new ArrayStream<T>(Stream.toArray(list), 0, list.size(), sorted, cmp, null);
+                } else {
+                    result = new IteratorStream<T>(elements, sorted, cmp, null);
+                }
+
+                cursor++;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                elements.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        elements.skip(where);
+                    } else {
+                        elements.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    elements.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <A, R> Stream<R> splitAt(final int where, final Collector<? super T, A, R> collector) {
+        N.checkArgNotNegative(where, "where");
+        N.checkArgNotNull(collector, "collector");
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < 2;
+            }
+
+            @Override
+            public R next() {
+                if (hasNext()) {
+                    throw new NoSuchElementException();
+                }
+
+                final A container = supplier.get();
+
+                if (cursor == 0) {
+                    int cnt = 0;
+
+                    while (cnt++ < where && elements.hasNext()) {
+                        accumulator.accept(container, elements.next());
+                    }
+                } else {
+                    while (elements.hasNext()) {
+                        accumulator.accept(container, elements.next());
+                    }
+                }
+
+                cursor++;
+
+                return finisher.apply(container);
+            }
+
+            @Override
+            public long count() {
+                elements.count();
+
+                return 2 - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                } else if (n == 1) {
+                    if (cursor == 0) {
+                        elements.skip(where);
+                    } else {
+                        elements.skip(Long.MAX_VALUE);
+                    }
+                } else {
+                    elements.skip(Long.MAX_VALUE);
+                }
+
+                cursor = n >= 2 ? 2 : cursor + (int) n;
+            }
+        }, false, null);
+    }
+
+    @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private List<T> prev = null;
+            private boolean toSkip = false;
 
             @Override
             public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
+                if (toSkip) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
                         elements.next();
                     }
 
-                    prev = null;
+                    toSkip = false;
                 }
 
                 return elements.hasNext();
@@ -1486,7 +1755,61 @@ class IteratorStream<T> extends AbstractStream<T> {
                     result.add(elements.next());
                 }
 
+                toSkip = increment > windowSize;
+
                 return prev = result;
+            }
+
+            @Override
+            public long count() {
+                final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    final List<T> tmp = new ArrayList<>(windowSize);
+
+                    if (N.isNullOrEmpty(prev)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+
+                        if (m < prevSize) {
+                            tmp.addAll(prev.subList((int) m, prevSize));
+                        } else {
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    int cnt = tmp.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        tmp.add(elements.next());
+                    }
+
+                    prev = tmp;
+                }
             }
         }, false, null);
     }
@@ -1496,18 +1819,19 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return newStream(new ObjIteratorEx<C>() {
-            private C prev = null;
+            private Deque<T> queue = null;
+            private boolean toSkip = false;
 
             @Override
             public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
+                if (toSkip) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
                         elements.next();
                     }
 
-                    prev = null;
+                    toSkip = false;
                 }
 
                 return elements.hasNext();
@@ -1519,28 +1843,234 @@ class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
+                if (queue == null) {
+                    queue = new ArrayDeque<>(N.max(0, windowSize - increment));
+                }
+
                 final C result = collectionSupplier.apply(windowSize);
                 int cnt = 0;
 
-                if (prev != null && increment < windowSize) {
-                    if (prev instanceof ArrayList) {
-                        result.addAll(((ArrayList<T>) prev).subList(windowSize - cnt, prev.size()));
+                if (queue.size() > 0 && increment < windowSize) {
+                    cnt = queue.size();
+
+                    for (T e : queue) {
+                        result.add(e);
+                    }
+
+                    if (queue.size() <= increment) {
+                        queue.clear();
                     } else {
-                        cnt = windowSize - increment;
-
-                        final Iterator<T> iter = Iterators.skip(prev.iterator(), windowSize - cnt);
-
-                        while (iter.hasNext()) {
-                            result.add(iter.next());
+                        for (int i = 0; i < increment; i++) {
+                            queue.removeFirst();
                         }
                     }
                 }
 
+                T next = null;
+
                 while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
+                    next = elements.next();
+                    result.add(next);
+
+                    if (cnt > increment) {
+                        queue.add(next);
+                    }
                 }
 
-                return prev = result;
+                toSkip = increment > windowSize;
+
+                return result;
+            }
+
+            @Override
+            public long count() {
+                final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    if (N.isNullOrEmpty(queue)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+
+                        if (m < prevSize) {
+                            for (int i = 0; i < m; i++) {
+                                queue.removeFirst();
+                            }
+                        } else {
+                            if (queue != null) {
+                                queue.clear();
+                            }
+
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    if (queue == null) {
+                        queue = new ArrayDeque<>(windowSize);
+                    }
+
+                    int cnt = queue.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        queue.add(elements.next());
+                    }
+                }
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <A, R> Stream<R> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgNotNull(collector);
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private Deque<T> queue = null;
+            private boolean toSkip = false;
+
+            @Override
+            public boolean hasNext() {
+                if (toSkip) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    toSkip = false;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (queue == null) {
+                    queue = new ArrayDeque<>(N.max(0, windowSize - increment));
+                }
+
+                final A container = supplier.get();
+                int cnt = 0;
+
+                if (queue.size() > 0 && increment < windowSize) {
+                    cnt = queue.size();
+
+                    for (T e : queue) {
+                        accumulator.accept(container, e);
+                    }
+
+                    if (queue.size() <= increment) {
+                        queue.clear();
+                    } else {
+                        for (int i = 0; i < increment; i++) {
+                            queue.removeFirst();
+                        }
+                    }
+                }
+
+                T next = null;
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    next = elements.next();
+                    accumulator.accept(container, next);
+
+                    if (cnt > increment) {
+                        queue.add(next);
+                    }
+                }
+
+                toSkip = increment > windowSize;
+
+                return finisher.apply(container);
+            }
+
+            @Override
+            public long count() {
+                final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    if (N.isNullOrEmpty(queue)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+
+                        if (m < prevSize) {
+                            for (int i = 0; i < m; i++) {
+                                queue.removeFirst();
+                            }
+                        } else {
+                            if (queue != null) {
+                                queue.clear();
+                            }
+
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    if (queue == null) {
+                        queue = new ArrayDeque<>(windowSize);
+                    }
+
+                    int cnt = queue.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        queue.add(elements.next());
+                    }
+                }
             }
         }, false, null);
     }
@@ -1588,6 +2118,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 if (initialized == false) {
                     init();
                 }
@@ -1690,6 +2222,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 elements.skip(n);
             }
         }, sorted, cmp);
@@ -1698,10 +2232,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> skip(final long n) {
         N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
-            return this;
-        }
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean skipped = false;
@@ -2235,9 +2765,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skipLast(final int n) {
-        N.checkArgNotNegative(n, "n");
-
-        if (n == 0) {
+        if (n <= 0) {
             return this;
         }
 

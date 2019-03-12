@@ -8468,6 +8468,8 @@ public class RowDataSet implements DataSet, Cloneable {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 checkForComodification();
 
                 cursor = n > toRowIndex - cursor ? toRowIndex : (int) n + cursor;
@@ -8558,6 +8560,8 @@ public class RowDataSet implements DataSet, Cloneable {
 
             @Override
             public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
                 checkForComodification();
 
                 cursor = n > toRowIndex - cursor ? toRowIndex : (int) n + cursor;
