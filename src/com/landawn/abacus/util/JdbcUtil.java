@@ -443,7 +443,7 @@ public final class JdbcUtil {
             driverClass = ClassUtil.forClass("oracle.jdbc.driver.OracleDriver");
             // jdbc.url=jdbc:sqlserver://localhost:1433;Database=abacustest
         } else if (url.indexOf("sqlserver") > 0 || StringUtil.indexOfIgnoreCase(url, "sqlserver") > 0) {
-            driverClass = ClassUtil.forClass("com.microsoft.sqlserver.jdbc.SQLServerDrive");
+            driverClass = ClassUtil.forClass("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             // jdbc:db2://localhost:50000/abacustest
         } else if (url.indexOf("db2") > 0 || StringUtil.indexOfIgnoreCase(url, "db2") > 0) {
             driverClass = ClassUtil.forClass("com.ibm.db2.jcc.DB2Driver");
