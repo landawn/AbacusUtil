@@ -801,14 +801,302 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
     }
 
-    protected static Splitor checkSplitor(final Splitor splitor) {
-        N.checkArgNotNull(splitor, "splitor");
+    void checkIndex(final int index, final int length) {
+        if (index < 0 || index >= length) {
+            try {
+                N.checkIndex(index, length);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkFromToIndex(final int fromIndex, final int toIndex, final int length) {
+        if (fromIndex < 0 || fromIndex > toIndex || toIndex > length) {
+            try {
+                N.checkFromToIndex(fromIndex, toIndex, length);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkFromIndexSize(final int fromIndex, final int size, final int length) {
+        if ((length | fromIndex | size) < 0 || size > length - fromIndex) {
+            try {
+                N.checkFromIndexSize(fromIndex, size, length);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    int checkArgPositive(final int arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            try {
+                N.checkArgPositive(arg, argNameOrErrorMsg);
+            } finally {
+                close();
+            }
+        }
+
+        return arg;
+    }
+
+    long checkArgPositive(final long arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            try {
+                N.checkArgPositive(arg, argNameOrErrorMsg);
+            } finally {
+                close();
+            }
+        }
+
+        return arg;
+    }
+
+    int checkArgNotNegative(final int arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            try {
+                N.checkArgNotNegative(arg, argNameOrErrorMsg);
+            } finally {
+                close();
+            }
+        }
+
+        return arg;
+    }
+
+    long checkArgNotNegative(final long arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            try {
+                N.checkArgNotNegative(arg, argNameOrErrorMsg);
+            } finally {
+                close();
+            }
+        }
+
+        return arg;
+    }
+
+    <ARG> ARG checkArgNotNull(final ARG obj) {
+        if (obj == null) {
+            try {
+                N.checkArgNotNull(obj);
+            } finally {
+                close();
+            }
+        }
+
+        return obj;
+    }
+
+    <ARG> ARG checkArgNotNull(final ARG obj, final String errorMessage) {
+        if (obj == null) {
+            try {
+                N.checkArgNotNull(obj, errorMessage);
+            } finally {
+                close();
+            }
+        }
+
+        return obj;
+    }
+
+    void checkArgument(boolean b) {
+        if (!b) {
+            try {
+                N.checkArgument(b);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessage) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessage);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, int p1) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, long p1) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, Object p1) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, long p1, long p2) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, Object p1, Object p2) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkArgument(boolean b, String errorMessageTemplate, Object p1, Object p2, Object p3) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1, p2, p3);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b) {
+        if (!b) {
+            try {
+                N.checkState(b);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessage) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessage);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, int p1) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, long p1) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, Object p1) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, int p1, int p2) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, long p1, long p2) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, Object p1, Object p2) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1, p2);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    void checkState(boolean b, String errorMessageTemplate, Object p1, Object p2, Object p3) {
+        if (!b) {
+            try {
+                N.checkState(b, errorMessageTemplate, p1, p2, p3);
+            } finally {
+                close();
+            }
+        }
+    }
+
+    int checkMaxThreadNum(int maxThreadNum) {
+        checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
+
+        return N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
+    }
+
+    Splitor checkSplitor(final Splitor splitor) {
+        checkArgNotNull(splitor, "splitor");
 
         return splitor;
     }
 
-    protected static AsyncExecutor createAsyncExecutor(final Executor executor) {
-        N.checkArgNotNull(executor, "executor");
+    AsyncExecutor createAsyncExecutor(final Executor executor) {
+        checkArgNotNull(executor, "executor");
 
         return new AsyncExecutor(executor);
     }
@@ -1106,18 +1394,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         } else {
             return (a == NATURAL_COMPARATOR && defaultComparator.containsValue(b)) || (b == NATURAL_COMPARATOR && defaultComparator.containsValue(a));
         }
-    }
-
-    static int checkMaxThreadNum(int maxThreadNum) {
-        //    if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-        //        throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        //    }
-
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1");
-        }
-
-        return N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
     }
 
     static int toInt(long max) {

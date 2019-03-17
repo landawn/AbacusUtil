@@ -1540,7 +1540,7 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream parallelMerge(final Collection<? extends ShortStream> c, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);

@@ -135,7 +135,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream removeIf(final FloatPredicate predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new FloatPredicate() {
             @Override
@@ -147,8 +147,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream removeIf(final FloatPredicate predicate, final FloatConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new FloatPredicate() {
             @Override
@@ -165,8 +165,8 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new FloatPredicate() {
             @Override
@@ -183,7 +183,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -231,7 +231,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> splitBy(final FloatPredicate where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final FloatIteratorEx iter = iteratorEx();
 
@@ -313,7 +313,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -539,7 +539,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -622,7 +622,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -726,7 +726,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -807,7 +807,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();

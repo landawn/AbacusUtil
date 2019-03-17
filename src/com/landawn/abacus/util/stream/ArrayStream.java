@@ -92,7 +92,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             final Collection<Runnable> closeHandlers) {
         super(sorted, comparator, closeHandlers);
 
-        N.checkFromToIndex(fromIndex, toIndex, N.len(values));
+        checkFromToIndex(fromIndex, toIndex, N.len(values));
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -207,7 +207,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
             return this;
@@ -240,7 +240,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
@@ -285,7 +285,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -330,7 +330,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     //            //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                N.checkArgNotNegative(n, "n");
+    //            //                checkArgNotNegative(n, "n");
     //            //                
     //            //                cursor = n < count() ? cursor + (int) n * 2 : toIndex;
     //            //            }
@@ -380,7 +380,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     //            //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                N.checkArgNotNegative(n, "n");
+    //            //                checkArgNotNegative(n, "n");
     //            //                
     //            //                cursor = n < count() ? cursor + (int) n * 3 : toIndex;
     //            //            }
@@ -407,7 +407,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             private int cursor = fromIndex;
@@ -444,7 +444,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        if (n >= count()) {
             //            cursor = toIndex;
@@ -459,7 +459,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             private int cursor = fromIndex;
@@ -497,7 +497,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        if (n >= count()) {
             //            cursor = toIndex;
@@ -510,7 +510,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
-        N.checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForFirst);
 
         if (fromIndex == toIndex) {
             return this;
@@ -545,7 +545,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 //
                 //    @Override
                 //    public void skip(long n) {
-                //        N.checkArgNotNegative(n, "n");
+                //        checkArgNotNegative(n, "n");
                 //
                 //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
                 //    }
@@ -562,7 +562,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 @Override
                 public void skip(long n) {
-                    N.checkArgNotNegative(n, "n");
+                    checkArgNotNegative(n, "n");
 
                     if (n > 0) {
                         if (hasNext()) {
@@ -593,8 +593,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForFirst);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForElse);
 
         if (fromIndex == toIndex) {
             return (Stream<R>) this;
@@ -629,7 +629,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 //
                 //    @Override
                 //    public void skip(long n) {
-                //        N.checkArgNotNegative(n, "n");
+                //        checkArgNotNegative(n, "n");
                 //
                 //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
                 //    }
@@ -654,7 +654,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
-        N.checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForLast);
 
         if (fromIndex == toIndex) {
             return this;
@@ -690,7 +690,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 //
                 //    @Override
                 //    public void skip(long n) {
-                //        N.checkArgNotNegative(n, "n");
+                //        checkArgNotNegative(n, "n");
                 //
                 //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
                 //    }
@@ -715,8 +715,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForLast);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForElse);
 
         return newStream(new ObjIteratorEx<R>() {
             private int last = toIndex - 1;
@@ -747,7 +747,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -795,7 +795,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -839,7 +839,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -883,7 +883,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -927,7 +927,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -971,7 +971,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -1015,7 +1015,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -1059,7 +1059,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             //    }
@@ -1623,7 +1623,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private int cursor = fromIndex;
@@ -1650,7 +1650,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
@@ -1660,7 +1660,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private int cursor = fromIndex;
@@ -1687,7 +1687,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
@@ -1697,7 +1697,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
@@ -1730,7 +1730,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
@@ -1740,8 +1740,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> split(final int size, final Collector<? super T, A, R> collector) {
-        N.checkArgPositive(size, "size");
-        N.checkArgNotNull(collector);
+        checkArgPositive(size, "size");
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1778,7 +1778,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
@@ -1900,7 +1900,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> split(final Predicate<? super T> predicate, final Collector<? super T, A, R> collector) {
-        N.checkArgNotNull(collector);
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1946,7 +1946,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> splitAt(final int where) {
-        N.checkArgNotNegative(where, "where");
+        checkArgNotNegative(where, "where");
 
         final Stream<T>[] a = new Stream[2];
         final int middleIndex = where < toIndex - fromIndex ? fromIndex + where : toIndex;
@@ -1958,8 +1958,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> splitAt(final int where, final Collector<? super T, A, R> collector) {
-        N.checkArgNotNegative(where, "where");
-        N.checkArgNotNull(collector, "collector");
+        checkArgNotNegative(where, "where");
+        checkArgNotNull(collector, "collector");
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1998,7 +1998,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 cursor = n >= 2 ? 2 : cursor + (int) n;
             }
@@ -2007,7 +2007,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private int cursor = fromIndex;
@@ -2044,7 +2044,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n >= count()) {
                     cursor = toIndex;
@@ -2057,7 +2057,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private int cursor = fromIndex;
@@ -2094,7 +2094,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n >= count()) {
                     cursor = toIndex;
@@ -2108,8 +2108,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
-        N.checkArgNotNull(collectionSupplier);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collectionSupplier);
 
         return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
@@ -2150,7 +2150,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n >= count()) {
                     cursor = toIndex;
@@ -2164,8 +2164,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
-        N.checkArgNotNull(collector);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -2210,7 +2210,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n >= count()) {
                     cursor = toIndex;
@@ -2224,7 +2224,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        N.checkArgPositive(n, "n");
+        checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -2271,7 +2271,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -2341,14 +2341,14 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp);
     }
 
     @Override
     public Stream<T> skip(long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         if (n >= toIndex - fromIndex) {
             return newStream(elements, toIndex, toIndex, sorted, cmp);
@@ -2373,7 +2373,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {
@@ -2392,7 +2392,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {
@@ -2604,7 +2604,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = N.checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -2792,7 +2792,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         try {
             if (toIndex - fromIndex <= n) {
@@ -2850,7 +2850,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
-        N.checkArgPositive(k, "k");
+        checkArgPositive(k, "k");
         assertNotClosed();
 
         try {
@@ -2903,7 +2903,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
@@ -2964,7 +2964,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }

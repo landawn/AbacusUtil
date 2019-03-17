@@ -133,7 +133,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream removeIf(final BytePredicate predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new BytePredicate() {
             @Override
@@ -145,8 +145,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream removeIf(final BytePredicate predicate, final ByteConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new BytePredicate() {
             @Override
@@ -163,8 +163,8 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new BytePredicate() {
             @Override
@@ -181,7 +181,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -229,7 +229,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> splitBy(final BytePredicate where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final ByteIteratorEx iter = iteratorEx();
 
@@ -311,7 +311,7 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -532,7 +532,7 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -615,7 +615,7 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -719,7 +719,7 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -800,7 +800,7 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();

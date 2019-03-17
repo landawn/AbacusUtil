@@ -239,7 +239,7 @@ class IteratorLongStream extends AbstractLongStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -266,7 +266,7 @@ class IteratorLongStream extends AbstractLongStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -293,7 +293,7 @@ class IteratorLongStream extends AbstractLongStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -320,7 +320,7 @@ class IteratorLongStream extends AbstractLongStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -347,7 +347,7 @@ class IteratorLongStream extends AbstractLongStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -691,7 +691,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongList> splitToList(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<LongList>() {
             @Override
@@ -722,7 +722,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -775,7 +775,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> splitAt(final int where) {
-        N.checkArgNotNegative(where, "where");
+        checkArgNotNegative(where, "where");
 
         return newStream(new ObjIteratorEx<LongStream>() {
             private int cursor = 0;
@@ -820,7 +820,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -841,7 +841,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<LongList>() {
             private LongList prev = null;
@@ -917,7 +917,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -961,7 +961,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(final int n, final Comparator<? super Long> comparator) {
-        N.checkArgPositive(n, "n");
+        checkArgPositive(n, "n");
 
         return newStream(new LongIteratorEx() {
             private boolean initialized = false;
@@ -1002,7 +1002,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -1089,7 +1089,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(new LongIteratorEx() {
             private long cnt = 0;
@@ -1111,7 +1111,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }
@@ -1120,7 +1120,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream skip(final long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         return newStream(new LongIteratorEx() {
             private boolean skipped = false;
@@ -1319,7 +1319,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             while (elements.hasNext()) {
                 element = elements.nextLong();
-                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1506,7 +1506,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong kthLargest(int k) {
-        N.checkArgPositive(k, "k");
+        checkArgPositive(k, "k");
         assertNotClosed();
 
         try {
@@ -1708,7 +1708,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }
@@ -1735,7 +1735,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }

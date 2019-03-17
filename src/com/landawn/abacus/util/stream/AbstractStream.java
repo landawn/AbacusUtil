@@ -146,7 +146,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new Predicate<T>() {
             @Override
@@ -158,8 +158,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> removeIf(final Predicate<? super T> predicate, final Consumer<? super T> action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return filter(new Predicate<T>() {
             @Override
@@ -176,8 +176,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new Predicate<T>() {
             @Override
@@ -194,7 +194,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -554,7 +554,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final IteratorEx<T> iter = iteratorEx();
 
@@ -636,7 +636,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -665,8 +665,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <A, R> Stream<R> splitBy(final Predicate<? super T> where, Collector<? super T, A, R> collector) {
-        N.checkArgNotNull(where, "where");
-        N.checkArgNotNull(collector, "collector");
+        checkArgNotNull(where, "where");
+        checkArgNotNull(collector, "collector");
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -727,7 +727,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1912,7 +1912,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -1995,7 +1995,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -2111,7 +2111,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -2264,7 +2264,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<List<T>> combinations(final int len) {
         if (this instanceof ArrayStream) {
-            N.checkFromIndexSize(0, len, (int) count());
+            checkFromIndexSize(0, len, (int) count());
 
             if (len == 0) {
                 return newStream(N.asArray(N.<T> emptyList()), false, null);
@@ -2347,7 +2347,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                 @Override
                 public void skip(long n) {
-                    N.checkArgNotNegative(n, "n");
+                    checkArgNotNegative(n, "n");
 
                     cursor = n <= size - cursor ? cursor + (int) n : size;
                 }
@@ -2412,7 +2412,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 cursor = n <= size - cursor ? cursor + (int) n : size;
             }
@@ -2717,7 +2717,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
-        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+        checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
         assertNotClosed();
 
@@ -2753,7 +2753,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V> EntryStream<K, V> mapToEntryER(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
-        N.checkState(isParallel() == false, "mapToEntryER can't be applied to parallel stream");
+        checkState(isParallel() == false, "mapToEntryER can't be applied to parallel stream");
 
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
             private final EntryStream.ReusableEntry<K, V> entry = new EntryStream.ReusableEntry<>();
@@ -2771,7 +2771,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     //    @Override
     //    public <V> EntryStream<T, V> flatMapToEntryER(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
-    //        N.checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
+    //        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
     //
     //        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
     //            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();

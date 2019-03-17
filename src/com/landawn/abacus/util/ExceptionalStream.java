@@ -510,6 +510,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return rows(Object[].class, resultSet);
     }
 
+    /**
+     * 
+     * @param resultSet
+     * @param closeResultSet
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
         return rows(Object[].class, resultSet, closeResultSet);
     }
@@ -543,7 +551,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param closeResultSet
      * @return
+     * @deprecated
      */
+    @Deprecated
     public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
         N.checkArgNotNull(targetClass, "targetClass");
         N.checkArgNotNull(resultSet, "resultSet");
@@ -731,7 +741,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param columnIndex starts from 0, not 1.
      * @param closeResultSet
      * @return
+     * @deprecated
      */
+    @Deprecated
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNegative(columnIndex, "columnIndex");
@@ -768,7 +780,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param columnName
      * @param closeResultSet
      * @return
+     * @deprecated
      */
+    @Deprecated
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(columnName, "columnName");
@@ -851,7 +865,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> filter(final Try.Predicate<? super T, ? extends E> predicate) {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
 
         return newStream(new ExceptionalIterator<T, E>() {
             private final T NONE = (T) N.NULL_MASK;
@@ -884,7 +898,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> takeWhile(final Try.Predicate<? super T, ? extends E> predicate) {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
 
         return newStream(new ExceptionalIterator<T, E>() {
             private boolean hasMore = true;
@@ -920,7 +934,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> dropWhile(final Try.Predicate<? super T, ? extends E> predicate) {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
 
         return newStream(new ExceptionalIterator<T, E>() {
             private boolean hasNext = false;
@@ -988,7 +1002,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @return
      */
     public ExceptionalStream<T, E> distinctBy(final Try.Function<? super T, ?, ? extends E> keyExtractor) {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyExtractor, "keyExtractor");
 
         final Set<Object> set = new HashSet<>();
 
@@ -1001,7 +1015,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <U> ExceptionalStream<U, E> map(final Try.Function<? super T, ? extends U, ? extends E> mapper) {
-        N.checkArgNotNull(mapper, "mapper");
+        checkArgNotNull(mapper, "mapper");
 
         return newStream(new ExceptionalIterator<U, E>() {
             @Override
@@ -1017,7 +1031,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <R> ExceptionalStream<R, E> flatMap(final Try.Function<? super T, ? extends ExceptionalStream<? extends R, ? extends E>, ? extends E> mapper) {
-        N.checkArgNotNull(mapper, "mapper");
+        checkArgNotNull(mapper, "mapper");
 
         final ExceptionalIterator<R, E> iter = new ExceptionalIterator<R, E>() {
             private ExceptionalIterator<? extends R, ? extends E> cur = null;
@@ -1086,7 +1100,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <R> ExceptionalStream<R, E> flattMap(final Try.Function<? super T, ? extends Collection<? extends R>, ? extends E> mapper) {
-        N.checkArgNotNull(mapper, "mapper");
+        checkArgNotNull(mapper, "mapper");
 
         return flatMap(new Try.Function<T, ExceptionalStream<? extends R, ? extends E>, E>() {
             @Override
@@ -1138,9 +1152,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public <K, V> ExceptionalStream<Map.Entry<K, List<V>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<? extends Map<K, List<V>>> mapFactory) {
-        N.checkArgNotNull(classifier, "classifier");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(classifier, "classifier");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(mapFactory, "mapFactory");
 
         return newStream(new ExceptionalIterator<Map.Entry<K, List<V>>, E>() {
             private Iterator<Map.Entry<K, List<V>>> iter = null;
@@ -1185,10 +1199,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<? extends Map<K, V>> mapFactory) {
-        N.checkArgNotNull(classifier, "classifier");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mergeFunction, "mergeFunction");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(classifier, "classifier");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(mergeFunction, "mergeFunction");
+        checkArgNotNull(mapFactory, "mapFactory");
 
         return newStream(new ExceptionalIterator<Map.Entry<K, V>, E>() {
             private Iterator<Map.Entry<K, V>> iter = null;
@@ -1231,10 +1245,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory)
             throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(downstream, "downstream");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(downstream, "downstream");
+        checkArgNotNull(mapFactory, "mapFactory");
 
         return newStream(new ExceptionalIterator<Map.Entry<K, D>, E>() {
             private Iterator<Map.Entry<K, D>> iter = null;
@@ -1283,8 +1297,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public ExceptionalStream<T, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
             final Try.BiFunction<? super T, ? super T, T, ? extends E> mergeFunction) {
-        N.checkArgNotNull(collapsible, "collapsible");
-        N.checkArgNotNull(mergeFunction, "mergeFunction");
+        checkArgNotNull(collapsible, "collapsible");
+        checkArgNotNull(mergeFunction, "mergeFunction");
 
         final ExceptionalIterator<T, E> iter = elements;
 
@@ -1316,9 +1330,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Supplier<R> supplier,
             final Try.BiConsumer<R, ? super T, ? extends E> accumulator) {
-        N.checkArgNotNull(collapsible, "collapsible");
-        N.checkArgNotNull(supplier, "supplier");
-        N.checkArgNotNull(accumulator, "accumulator");
+        checkArgNotNull(collapsible, "collapsible");
+        checkArgNotNull(supplier, "supplier");
+        checkArgNotNull(accumulator, "accumulator");
 
         final ExceptionalIterator<T, E> iter = elements;
 
@@ -1358,7 +1372,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> peek(final Try.Consumer<? super T, ? extends E> action) {
-        N.checkArgNotNull(action, "action");
+        checkArgNotNull(action, "action");
 
         return newStream(new ExceptionalIterator<T, E>() {
             @Override
@@ -1385,7 +1399,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<List<T>, E> splitToList(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ExceptionalIterator<List<T>, E>() {
             @Override
@@ -1417,7 +1431,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -1434,7 +1448,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<List<T>, E> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ExceptionalIterator<List<T>, E>() {
             private List<T> prev = null;
@@ -1502,7 +1516,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1540,7 +1554,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> skip(final long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         return newStream(new ExceptionalIterator<T, E>() {
             private boolean skipped = false;
@@ -1568,7 +1582,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<T, E> limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(new ExceptionalIterator<T, E>() {
             private long cnt = 0;
@@ -1668,7 +1682,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public void skip(long n) throws E {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -1688,7 +1702,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public void forEach(Try.Consumer<? super T, ? extends E> action) throws E {
-        N.checkArgNotNull(action, "action");
+        checkArgNotNull(action, "action");
         assertNotClosed();
 
         try {
@@ -1730,7 +1744,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     @SuppressWarnings("rawtypes")
 
     public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyExtractor, "keyExtractor");
         assertNotClosed();
 
         try {
@@ -1779,7 +1793,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     @SuppressWarnings("rawtypes")
 
     public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyExtractor, "keyExtractor");
         assertNotClosed();
 
         try {
@@ -1792,7 +1806,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public boolean anyMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
         assertNotClosed();
 
         try {
@@ -1809,7 +1823,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public boolean allMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
         assertNotClosed();
 
         try {
@@ -1826,7 +1840,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public boolean noneMatch(final Try.Predicate<? super T, ? extends E> predicate) throws E {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
         assertNotClosed();
 
         try {
@@ -1843,7 +1857,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> findFirst(final Try.Predicate<? super T, ? extends E> predicate) throws E {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
         assertNotClosed();
 
         try {
@@ -1862,7 +1876,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> findLast(final Try.Predicate<? super T, ? extends E> predicate) throws E {
-        N.checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(predicate, "predicate");
         assertNotClosed();
 
         try {
@@ -1934,7 +1948,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <A> A[] toArray(IntFunction<A[]> generator) throws E {
-        N.checkArgNotNull(generator, "generator");
+        checkArgNotNull(generator, "generator");
         assertNotClosed();
 
         try {
@@ -1979,7 +1993,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <C extends Collection<T>> C toCollection(final Supplier<C> supplier) throws E {
-        N.checkArgNotNull(supplier, "supplier");
+        checkArgNotNull(supplier, "supplier");
         assertNotClosed();
 
         try {
@@ -2059,10 +2073,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<M> mapFactory) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mergeFunction, "mergeFunction");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(mergeFunction, "mergeFunction");
+        checkArgNotNull(mapFactory, "mapFactory");
         assertNotClosed();
 
         try {
@@ -2130,10 +2144,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     public <K, V, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory)
             throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(downstream, "downstream");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(downstream, "downstream");
+        checkArgNotNull(mapFactory, "mapFactory");
         assertNotClosed();
 
         try {
@@ -2208,9 +2222,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public <K, V, M extends Map<K, List<V>>> M groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
             Try.Function<? super T, ? extends V, ? extends E> valueMapper, Supplier<M> mapFactory) throws E {
-        N.checkArgNotNull(keyExtractor, "keyExtractor");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mapFactory, "mapFactory");
+        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(valueMapper, "valueMapper");
+        checkArgNotNull(mapFactory, "mapFactory");
         assertNotClosed();
 
         try {
@@ -2396,7 +2410,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public T reduce(T identity, Try.BinaryOperator<T, ? extends E> accumulator) throws E {
-        N.checkArgNotNull(accumulator, "accumulator");
+        checkArgNotNull(accumulator, "accumulator");
         assertNotClosed();
 
         try {
@@ -2413,7 +2427,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public Optional<T> reduce(Try.BinaryOperator<T, ? extends E> accumulator) throws E {
-        N.checkArgNotNull(accumulator, "accumulator");
+        checkArgNotNull(accumulator, "accumulator");
         assertNotClosed();
 
         try {
@@ -2434,8 +2448,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
-        N.checkArgNotNull(supplier, "supplier");
-        N.checkArgNotNull(accumulator, "accumulator");
+        checkArgNotNull(supplier, "supplier");
+        checkArgNotNull(accumulator, "accumulator");
         assertNotClosed();
 
         try {
@@ -2453,9 +2467,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     public <R, RR> RR collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
             final Try.Function<? super R, ? extends RR, E> finisher) throws E {
-        N.checkArgNotNull(supplier, "supplier");
-        N.checkArgNotNull(accumulator, "accumulator");
-        N.checkArgNotNull(finisher, "finisher");
+        checkArgNotNull(supplier, "supplier");
+        checkArgNotNull(accumulator, "accumulator");
+        checkArgNotNull(finisher, "finisher");
         assertNotClosed();
 
         try {
@@ -2472,7 +2486,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <R, A> R collect(final Collector<? super T, A, R> collector) throws E {
-        N.checkArgNotNull(collector, "collector");
+        checkArgNotNull(collector, "collector");
         assertNotClosed();
 
         try {
@@ -2490,8 +2504,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public <R, RR, A> RR collectAndThen(final Collector<? super T, A, R> collector, final Try.Function<? super R, ? extends RR, E> func) throws E {
-        N.checkArgNotNull(collector, "collector");
-        N.checkArgNotNull(func, "func");
+        checkArgNotNull(collector, "collector");
+        checkArgNotNull(func, "func");
         assertNotClosed();
 
         try {
@@ -2640,12 +2654,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     //    public <E2 extends Exception> ExceptionalStream<T, E2> __(final Class<E2> targetExceptionType) {
-    //        N.checkArgNotNull(targetExceptionType, "targetExceptionType");
+    //        checkArgNotNull(targetExceptionType, "targetExceptionType");
     //
     //        final Constructor<E2> msgCauseConstructor = ClassUtil.getDeclaredConstructor(targetExceptionType, String.class, Throwable.class);
     //        final Constructor<E2> causeOnlyConstructor = ClassUtil.getDeclaredConstructor(targetExceptionType, Throwable.class);
     //
-    //        N.checkArgument(msgCauseConstructor != null || causeOnlyConstructor != null,
+    //        checkArgument(msgCauseConstructor != null || causeOnlyConstructor != null,
     //                "No constructor found with parameters: (String.class, Throwable.class), or (Throwable.class)");
     //
     //        final Function<Exception, E2> convertE = msgCauseConstructor != null ? new Function<Exception, E2>() {
@@ -2708,7 +2722,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     //
     //                @Override
     //                public void skip(long n) throws E2 { 
-    //                    N.checkArgNotNegative(n, "n"); 
+    //                    checkArgNotNegative(n, "n"); 
     //                    
     //                    if (initialized == false) {
     //                        init();
@@ -2746,13 +2760,13 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     //    }
 
     public <R> R __(Try.Function<? super ExceptionalStream<T, E>, R, ? extends E> transfer) throws E {
-        N.checkArgNotNull(transfer, "transfer");
+        checkArgNotNull(transfer, "transfer");
 
         return transfer.apply(this);
     }
 
     public ExceptionalStream<T, E> onClose(final Try.Runnable<? extends E> closeHandler) {
-        N.checkArgNotNull(closeHandler, "closeHandler");
+        checkArgNotNull(closeHandler, "closeHandler");
 
         final Deque<Try.Runnable<? extends E>> newCloseHandlers = new ArrayDeque<>(N.size(closeHandlers) + 1);
 
@@ -2816,6 +2830,68 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     void assertNotClosed() {
         if (isClosed) {
             throw new IllegalStateException("This stream has been closed");
+        }
+    }
+
+    private int checkArgPositive(final int arg, final String argNameOrErrorMsg) {
+        if (arg <= 0) {
+            try {
+                N.checkArgPositive(arg, argNameOrErrorMsg);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        }
+
+        return arg;
+    }
+
+    private long checkArgNotNegative(final long arg, final String argNameOrErrorMsg) {
+        if (arg < 0) {
+            try {
+                N.checkArgNotNegative(arg, argNameOrErrorMsg);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        }
+
+        return arg;
+    }
+
+    private <ARG> ARG checkArgNotNull(final ARG obj, final String errorMessage) {
+        if (obj == null) {
+            try {
+                N.checkArgNotNull(obj, errorMessage);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        }
+
+        return obj;
+    }
+
+    private void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessageTemplate, p1, p2);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
         }
     }
 

@@ -88,7 +88,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     IteratorStream(final Iterator<? extends T> values, final boolean sorted, final Comparator<? super T> comparator, final Collection<Runnable> closeHandlers) {
         super(sorted, comparator, closeHandlers);
 
-        N.checkArgNotNull(values);
+        checkArgNotNull(values);
 
         ObjIteratorEx<T> tmp = null;
 
@@ -250,7 +250,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -292,7 +292,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                N.checkArgNotNegative(n, "n");
+    //            //                checkArgNotNegative(n, "n");
     //            //
     //            //                elements.skip(n > Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
     //            //            }
@@ -348,7 +348,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     //
     //            //            @Override
     //            //            public void skip(long n) {
-    //            //                N.checkArgNotNegative(n, "n");
+    //            //                checkArgNotNegative(n, "n");
     //            //
     //            //                elements.skip(n > Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
     //            //            }
@@ -365,7 +365,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -417,7 +417,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -483,7 +483,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
-        N.checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForFirst);
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean isFirst = true;
@@ -505,7 +505,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             //            @Override
             //            public void skip(long n) {
-            //                N.checkArgNotNegative(n, "n");
+            //                checkArgNotNegative(n, "n");
             //
             //                if (n > 0) {
             //                    isFirst = false;
@@ -523,7 +523,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n > 0) {
                     if (hasNext()) {
@@ -548,8 +548,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForFirst);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForElse);
 
         return newStream(new ObjIteratorEx<R>() {
             private boolean isFirst = true;
@@ -578,7 +578,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //            @Override
             //            public void skip(long n) {
-            //                N.checkArgNotNegative(n, "n");
+            //                checkArgNotNegative(n, "n");
             //
             //                if (n > 0) {
             //                    isFirst = false;
@@ -591,7 +591,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
-        N.checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForLast);
 
         return newStream(new ObjIteratorEx<T>() {
             @Override
@@ -617,7 +617,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -626,8 +626,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForLast);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForElse);
 
         return newStream(new ObjIteratorEx<R>() {
             @Override
@@ -653,7 +653,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -680,7 +680,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -707,7 +707,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -734,7 +734,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -761,7 +761,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -788,7 +788,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -815,7 +815,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -842,7 +842,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -1387,7 +1387,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<C>() {
             @Override
@@ -1420,7 +1420,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -1429,8 +1429,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> split(final int size, final Collector<? super T, A, R> collector) {
-        N.checkArgPositive(size, "size");
-        N.checkArgNotNull(collector);
+        checkArgPositive(size, "size");
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1467,7 +1467,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -1521,8 +1521,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> split(final Predicate<? super T> predicate, final Collector<? super T, A, R> collector) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(collector);
+        checkArgNotNull(predicate);
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1573,7 +1573,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> splitAt(final int where) {
-        N.checkArgNotNegative(where, "where");
+        checkArgNotNegative(where, "where");
 
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private int cursor = 0;
@@ -1618,7 +1618,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1639,8 +1639,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> splitAt(final int where, final Collector<? super T, A, R> collector) {
-        N.checkArgNotNegative(where, "where");
-        N.checkArgNotNull(collector, "collector");
+        checkArgNotNegative(where, "where");
+        checkArgNotNull(collector, "collector");
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -1688,7 +1688,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1709,7 +1709,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private List<T> prev = null;
@@ -1777,7 +1777,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1816,7 +1816,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<C>() {
             private Deque<T> queue = null;
@@ -1899,7 +1899,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -1944,8 +1944,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
-        N.checkArgNotNull(collector);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
@@ -2032,7 +2032,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -2077,7 +2077,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        N.checkArgPositive(n, "n");
+        checkArgPositive(n, "n");
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean initialized = false;
@@ -2118,7 +2118,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -2200,7 +2200,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(new ObjIteratorEx<T>() {
             private long cnt = 0;
@@ -2222,7 +2222,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }
@@ -2231,7 +2231,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skip(final long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean skipped = false;
@@ -2304,7 +2304,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {
@@ -2339,7 +2339,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {
@@ -2548,7 +2548,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
             while (elements.hasNext()) {
                 element = elements.next();
-                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -2711,7 +2711,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         if (n == 0) {
             return new IteratorStream<>(ObjIteratorEx.EMPTY, sorted, cmp, closeHandlers);
@@ -2863,7 +2863,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
-        N.checkArgPositive(k, "k");
+        checkArgPositive(k, "k");
         assertNotClosed();
 
         try {

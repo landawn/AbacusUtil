@@ -1702,7 +1702,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream parallelMerge(final Collection<? extends LongStream> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);

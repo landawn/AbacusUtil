@@ -405,7 +405,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableBoolean isFirst = MutableBoolean.of(true);
@@ -479,7 +479,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableBoolean isFirst = MutableBoolean.of(true);
@@ -557,8 +557,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForFirst);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
             return super.mapFirstOrElse(mapperForFirst, mapperForElse);
@@ -577,8 +577,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForLast);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
             return super.mapLastOrElse(mapperForLast, mapperForElse);
@@ -1700,7 +1700,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1771,7 +1771,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1970,7 +1970,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
 
-                            key = N.checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
+                            key = checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
                             value = map.get(key);
 
                             if (value == null) {
@@ -2843,7 +2843,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     //    @Override
     //    public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
     //            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
-    //        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+    //        checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
     //                batchInterval);
     //
     //        if (maxThreadNum <= 1) {

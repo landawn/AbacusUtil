@@ -1844,7 +1844,7 @@ public abstract class CharStream
      * @return
      */
     public static CharStream parallelMerge(final Collection<? extends CharStream> c, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);

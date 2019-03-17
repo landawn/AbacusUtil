@@ -1439,7 +1439,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream parallelMerge(final Collection<? extends DoubleStream> c, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);

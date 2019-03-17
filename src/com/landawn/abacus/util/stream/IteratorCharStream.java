@@ -226,7 +226,7 @@ class IteratorCharStream extends AbstractCharStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -253,7 +253,7 @@ class IteratorCharStream extends AbstractCharStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -280,7 +280,7 @@ class IteratorCharStream extends AbstractCharStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -490,7 +490,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharList> splitToList(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<CharList>() {
             @Override
@@ -521,7 +521,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -574,7 +574,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharStream> splitAt(final int where) {
-        N.checkArgNotNegative(where, "where");
+        checkArgNotNegative(where, "where");
 
         return newStream(new ObjIteratorEx<CharStream>() {
             private int cursor = 0;
@@ -619,7 +619,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -640,7 +640,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<CharList>() {
             private CharList prev = null;
@@ -716,7 +716,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -773,7 +773,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(new CharIteratorEx() {
             private long cnt = 0;
@@ -795,7 +795,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }
@@ -804,7 +804,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream skip(final long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         return newStream(new CharIteratorEx() {
             private boolean skipped = false;
@@ -1003,7 +1003,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             while (elements.hasNext()) {
                 element = elements.nextChar();
-                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1190,7 +1190,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        N.checkArgPositive(k, "k");
+        checkArgPositive(k, "k");
         assertNotClosed();
 
         try {
@@ -1392,7 +1392,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }

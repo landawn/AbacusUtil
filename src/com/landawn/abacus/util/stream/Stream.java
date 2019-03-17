@@ -8210,7 +8210,7 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);
@@ -8300,7 +8300,7 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> parallelMergge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return mergge(c, nextSelector);

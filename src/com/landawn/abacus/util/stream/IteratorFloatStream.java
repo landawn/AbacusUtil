@@ -234,7 +234,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -261,7 +261,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -288,7 +288,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -315,7 +315,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -342,7 +342,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             //
             //    @Override
             //    public void skip(long n) {
-            //        N.checkArgNotNegative(n, "n");
+            //        checkArgNotNegative(n, "n");
             //
             //        elements.skip(n);
             //    }
@@ -686,7 +686,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> splitToList(final int size) {
-        N.checkArgPositive(size, "size");
+        checkArgPositive(size, "size");
 
         return newStream(new ObjIteratorEx<FloatList>() {
             @Override
@@ -717,7 +717,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
@@ -770,7 +770,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> splitAt(final int where) {
-        N.checkArgNotNegative(where, "where");
+        checkArgNotNegative(where, "where");
 
         return newStream(new ObjIteratorEx<FloatStream>() {
             private int cursor = 0;
@@ -815,7 +815,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -836,7 +836,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<FloatList>() {
             private FloatList prev = null;
@@ -912,7 +912,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -956,7 +956,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(final int n, final Comparator<? super Float> comparator) {
-        N.checkArgPositive(n, "n");
+        checkArgPositive(n, "n");
 
         return newStream(new FloatIteratorEx() {
             private boolean initialized = false;
@@ -997,7 +997,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -1084,7 +1084,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream limit(final long maxSize) {
-        N.checkArgNotNegative(maxSize, "maxSize");
+        checkArgNotNegative(maxSize, "maxSize");
 
         return newStream(new FloatIteratorEx() {
             private long cnt = 0;
@@ -1106,7 +1106,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }
@@ -1115,7 +1115,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream skip(final long n) {
-        N.checkArgNotNegative(n, "n");
+        checkArgNotNegative(n, "n");
 
         return newStream(new FloatIteratorEx() {
             private boolean skipped = false;
@@ -1314,7 +1314,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             while (elements.hasNext()) {
                 element = elements.nextFloat();
-                key = N.checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1501,7 +1501,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        N.checkArgPositive(k, "k");
+        checkArgPositive(k, "k");
         assertNotClosed();
 
         try {
@@ -1663,7 +1663,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 elements.skip(n);
             }

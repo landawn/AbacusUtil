@@ -537,7 +537,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -585,7 +585,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -627,8 +627,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForFirst);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForFirst);
+        checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapFirstOrElse(mapperForFirst, mapperForElse);
@@ -648,8 +648,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
-        N.checkArgNotNull(mapperForLast);
-        N.checkArgNotNull(mapperForElse);
+        checkArgNotNull(mapperForLast);
+        checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
@@ -2542,7 +2542,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
@@ -2591,7 +2591,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgPositive(increment, "increment");
+        checkArgPositive(increment, "increment");
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
@@ -2795,7 +2795,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
-                                key = N.checkArgNotNull(classifier.apply(elements[cursor]), "element cannot be mapped to a null key");
+                                key = checkArgNotNull(classifier.apply(elements[cursor]), "element cannot be mapped to a null key");
 
                                 value = map.get(key);
 
@@ -2840,7 +2840,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                                     }
                                 }
 
-                                key = N.checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
+                                key = checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
                                 value = map.get(key);
 
                                 if (value == null) {
@@ -4088,7 +4088,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     //    @Override
     //    public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
     //            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
-    //        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+    //        checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
     //                batchInterval);
     //
     //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {

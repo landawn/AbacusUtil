@@ -1,3 +1,10 @@
+### 1.5.8
+ 
+* Close Streams when `IllegalArgumentException` happens.
+
+* Improvements and bug fix.
+
+
 ### 1.5.7
  
 * Add `Stream.split/splitAt/splitBy/sliding(..., Collector<? super T, A, R> collector)`.

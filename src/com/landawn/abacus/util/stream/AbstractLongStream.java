@@ -132,7 +132,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream removeIf(final LongPredicate predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new LongPredicate() {
             @Override
@@ -144,8 +144,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream removeIf(final LongPredicate predicate, final LongConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new LongPredicate() {
             @Override
@@ -162,8 +162,8 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream dropWhile(final LongPredicate predicate, final LongConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new LongPredicate() {
             @Override
@@ -180,7 +180,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -228,7 +228,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongStream> splitBy(final LongPredicate where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final LongIteratorEx iter = iteratorEx();
 
@@ -310,7 +310,7 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -536,7 +536,7 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -619,7 +619,7 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -723,7 +723,7 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -804,7 +804,7 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();

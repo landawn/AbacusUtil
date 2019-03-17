@@ -1337,7 +1337,7 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream parallelMerge(final Collection<? extends FloatStream> c, final FloatBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        checkMaxThreadNum(maxThreadNum);
+        N.checkArgument(maxThreadNum > 0, "'maxThreadNum' must not less than 1");
 
         if (maxThreadNum <= 1) {
             return merge(c, nextSelector);

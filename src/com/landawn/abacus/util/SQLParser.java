@@ -113,6 +113,8 @@ public final class SQLParser {
         seperators.add("~*");
         seperators.add("!~");
         seperators.add("!~*");
+        seperators.add("^-=");
+        seperators.add("|*=");
     }
 
     private static final Map<String, String[]> compositeWords = new ObjectPool<String, String[]>(64);

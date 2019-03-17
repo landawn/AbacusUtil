@@ -134,7 +134,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream removeIf(final DoublePredicate predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new DoublePredicate() {
             @Override
@@ -146,8 +146,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream removeIf(final DoublePredicate predicate, final DoubleConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new DoublePredicate() {
             @Override
@@ -164,8 +164,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new DoublePredicate() {
             @Override
@@ -182,7 +182,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -230,7 +230,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleStream> splitBy(final DoublePredicate where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final DoubleIteratorEx iter = iteratorEx();
 
@@ -312,7 +312,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -544,7 +544,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -627,7 +627,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -731,7 +731,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -812,7 +812,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();

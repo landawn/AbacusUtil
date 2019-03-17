@@ -133,7 +133,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream removeIf(final CharPredicate predicate) {
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new CharPredicate() {
             @Override
@@ -145,8 +145,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream removeIf(final CharPredicate predicate, final CharConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
+        checkArgNotNull(predicate);
 
         return filter(new CharPredicate() {
             @Override
@@ -163,8 +163,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream dropWhile(final CharPredicate predicate, final CharConsumer action) {
-        N.checkArgNotNull(predicate);
-        N.checkArgNotNull(action);
+        checkArgNotNull(predicate);
+        checkArgNotNull(action);
 
         return dropWhile(new CharPredicate() {
             @Override
@@ -181,7 +181,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream step(final long step) {
-        N.checkArgPositive(step, "step");
+        checkArgPositive(step, "step");
 
         if (step == 1) {
             return this;
@@ -229,7 +229,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<CharStream> splitBy(final CharPredicate where) {
-        N.checkArgNotNull(where);
+        checkArgNotNull(where);
 
         final CharIteratorEx iter = iteratorEx();
 
@@ -311,7 +311,7 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (n == 0) {
                     return;
@@ -532,7 +532,7 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -615,7 +615,7 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -719,7 +719,7 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
@@ -800,7 +800,7 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                N.checkArgNotNegative(n, "n");
+                checkArgNotNegative(n, "n");
 
                 if (initialized == false) {
                     init();
