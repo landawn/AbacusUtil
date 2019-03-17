@@ -6,7 +6,7 @@
 
 * Add `ByteStream/IntStream/.../DoubleStream.flatMappToObj(ByteFunction<T[]> mapper)`.
 
-* Add `JdbcUtil.batchUpdate/batchInsert(PreparedQuery...)`.
+* Add `PreparedQuery.batchUpdate/batchInsert`.
 
 * Improvements and bug fix.
 

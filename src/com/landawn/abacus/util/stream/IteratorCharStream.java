@@ -640,7 +640,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<CharList>() {
             private CharList prev = null;

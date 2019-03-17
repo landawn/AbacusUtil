@@ -263,6 +263,17 @@ public final class Array {
         return a;
     }
 
+    /**
+     * Returns the input array
+     *
+     * @param a
+     * @return
+     */
+    @SafeVarargs
+    public static <T> T[] oF(final T... a) {
+        return a;
+    }
+
     //    /**
     //     * Returns the input array
     //     *

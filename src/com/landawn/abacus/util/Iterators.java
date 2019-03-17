@@ -451,7 +451,7 @@ public final class Iterators {
             throws E {
         N.checkArgNotNull(action);
         final int windowSize = 2;
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         if (iter == null) {
             return;
@@ -492,7 +492,7 @@ public final class Iterators {
             final int increment) throws E {
         N.checkArgNotNull(action);
         final int windowSize = 3;
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         if (iter == null) {
             return;

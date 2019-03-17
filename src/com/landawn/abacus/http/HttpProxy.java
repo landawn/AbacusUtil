@@ -21,10 +21,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -409,7 +411,7 @@ public final class HttpProxy {
 
                 try {
                     if (requestParameter != null && (operationConfig.httpMethod == HttpMethod.POST || operationConfig.httpMethod == HttpMethod.PUT)) {
-                        os = httpClient.getOutputStream(connection, _contentFormat);
+                        os = HTTP.getOutputStream(connection, _contentFormat);
 
                         switch (_contentFormat) {
                             case JSON:
@@ -451,6 +453,7 @@ public final class HttpProxy {
                         HTTP.flush(os);
                     } else {
                         String contentType = HTTP.getContentType(_contentFormat);
+                        // TODO
 
                         if (N.notNullOrEmpty(contentType)) {
                             connection.setRequestProperty(HttpHeaders.Names.CONTENT_TYPE, contentType);
@@ -463,11 +466,13 @@ public final class HttpProxy {
                         }
                     }
 
-                    final ContentFormat responseContentFormat = httpClient.getContentFormat(connection);
+                    final ContentFormat responseContentFormat = HTTP.getContentFormat(connection);
+                    final Map<String, List<String>> respHeaders = connection.getHeaderFields();
+                    final Charset charset = HTTP.getCharset(respHeaders);
                     final Parser<SerializationConfig<?>, DeserializationConfig<?>> responseParser = responseContentFormat == _contentFormat ? _config.parser
                             : HTTP.getParser(responseContentFormat);
 
-                    is = httpClient.getInputStream(connection, responseContentFormat);
+                    is = HTTP.getInputStream(connection, responseContentFormat);
 
                     if (void.class.equals(returnType)) {
                         return null;
@@ -484,9 +489,9 @@ public final class HttpProxy {
                                 type = N.typeOf(returnType);
 
                                 if (type.isSerializable()) {
-                                    result = type.valueOf(IOUtil.readString(is));
+                                    result = type.valueOf(IOUtil.readString(is, charset));
                                 } else {
-                                    result = responseParser.deserialize(returnType, is, _config.dc);
+                                    result = responseParser.deserialize(returnType, IOUtil.newBufferedReader(is, charset), _config.dc);
                                 }
 
                                 break;
@@ -495,7 +500,7 @@ public final class HttpProxy {
                             case XML_LZ4:
                             case XML_SNAPPY:
                             case XML_GZIP:
-                                result = responseParser.deserialize(returnType, is, _config.dc);
+                                result = responseParser.deserialize(returnType, IOUtil.newBufferedReader(is, charset), _config.dc);
                                 break;
 
                             case KRYO:

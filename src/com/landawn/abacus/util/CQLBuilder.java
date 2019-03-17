@@ -726,7 +726,7 @@ public abstract class CQLBuilder {
 
             if (!StringUtil.isAsciiAlpha(word.charAt(0))) {
                 sb.append(word);
-            } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
+            } else if (SQLParser.isFunctionName(words, len, i)) {
                 sb.append(word);
             } else {
                 sb.append(formalizeColumnName(propColumnNameMap, word));
@@ -845,7 +845,7 @@ public abstract class CQLBuilder {
         sb.append(_SPACE_SET_SPACE);
 
         if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(WD.EQUAL)) {
-            sb.append(columnNames[0]);
+            appendStringExpr(columnNames[0]);
         } else {
             final Map<String, String> propColumnNameMap = getPropColumnNameMap();
 
@@ -1139,7 +1139,7 @@ public abstract class CQLBuilder {
         return this;
     }
 
-    public CQLBuilder iff(final String expr) {
+    public CQLBuilder iF(final String expr) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);
@@ -1154,7 +1154,7 @@ public abstract class CQLBuilder {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public CQLBuilder iff(final Condition cond) {
+    public CQLBuilder iF(final Condition cond) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);

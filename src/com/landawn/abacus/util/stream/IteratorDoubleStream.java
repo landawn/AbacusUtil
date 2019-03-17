@@ -840,7 +840,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<DoubleList>() {
             private DoubleList prev = null;
@@ -960,7 +960,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream top(final int n, final Comparator<? super Double> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
+        N.checkArgPositive(n, "n");
 
         return newStream(new DoubleIteratorEx() {
             private boolean initialized = false;

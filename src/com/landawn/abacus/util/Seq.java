@@ -465,7 +465,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         N.checkArgNotNull(action);
         final int windowSize = 2;
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         if (N.isNullOrEmpty(coll)) {
             return;
@@ -482,7 +482,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         N.checkArgNotNull(action);
         final int windowSize = 3;
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         if (N.isNullOrEmpty(coll)) {
             return;
@@ -2058,7 +2058,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public List<List<T>> sliding(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();

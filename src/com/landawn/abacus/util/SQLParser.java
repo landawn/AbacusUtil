@@ -15,9 +15,10 @@
 package com.landawn.abacus.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 
@@ -28,33 +29,90 @@ import java.util.Map;
 public final class SQLParser {
     private static final char TAB = '\t';
     private static final char ENTER = '\n';
-    private static final Map<Object, Object> seperators = new HashMap<>();
+    private static final Set<Object> seperators = new HashSet<>();
 
     static {
-        seperators.put(TAB, TAB);
-        seperators.put(ENTER, ENTER);
-        seperators.put(WD._SPACE, WD._SPACE);
-        seperators.put(WD._COMMA, WD._COMMA);
-        seperators.put(WD._SEMICOLON, WD._SEMICOLON);
-        seperators.put(WD._PARENTHESES_L, WD._PARENTHESES_L);
-        seperators.put(WD._PARENTHESES_R, WD._PARENTHESES_R);
-        seperators.put(WD._EQUAL, WD._EQUAL);
-        seperators.put(WD.NOT_EQUAL, WD.NOT_EQUAL);
-        seperators.put(WD.NOT_EQUAL2, WD.NOT_EQUAL2);
-        seperators.put(WD._GREATER_THAN, WD._GREATER_THAN);
-        seperators.put(WD.GREATER_EQUAL, WD.GREATER_EQUAL);
-        seperators.put(WD._LESS_THAN, WD._LESS_THAN);
-        seperators.put(WD.LESS_EQUAL, WD.LESS_EQUAL);
-        seperators.put(WD._PLUS, WD._PLUS);
-        seperators.put(WD._MINUS, WD._MINUS);
-        seperators.put(WD._PERCENT, WD._PERCENT);
-        seperators.put(WD._SLASH, WD._SLASH);
-        seperators.put(WD._ASTERISK, WD._ASTERISK);
-        seperators.put(WD._AMPERSAND, WD._AMPERSAND);
-        seperators.put(WD._VERTICALBAR, WD._VERTICALBAR);
-        seperators.put(WD._CIRCUMFLEX, WD._CIRCUMFLEX);
-        seperators.put(WD._UNARYBIT, WD._UNARYBIT);
-        seperators.put(WD._EXCLAMATION, WD._EXCLAMATION);
+        seperators.add(TAB);
+        seperators.add(ENTER);
+        seperators.add(' ');
+        seperators.add('?');
+        seperators.add(',');
+        seperators.add('~');
+        seperators.add('!');
+        seperators.add('@');
+        seperators.add('^');
+        seperators.add('#');
+        seperators.add("!!");
+        seperators.add(';');
+        seperators.add('(');
+        seperators.add(')');
+        seperators.add('=');
+        seperators.add("==");
+        seperators.add(":=");
+        seperators.add("^=");
+        seperators.add("~=");
+        seperators.add("+=");
+        seperators.add("-=");
+        seperators.add("*=");
+        seperators.add("/=");
+        seperators.add("%=");
+        seperators.add("&=");
+        seperators.add("|=");
+        seperators.add("!=");
+        seperators.add("!<");
+        seperators.add("!>");
+        seperators.add('>');
+        seperators.add(">>");
+        seperators.add(">=");
+        seperators.add("@>");
+        seperators.add("&>");
+        seperators.add(">^");
+        seperators.add('<');
+        seperators.add("<<");
+        seperators.add("<=");
+        seperators.add("<@");
+        seperators.add("&<");
+        seperators.add("<^");
+        seperators.add('+');
+        seperators.add('-');
+        seperators.add('%');
+        seperators.add('/');
+        seperators.add('*');
+        seperators.add('&');
+        seperators.add("&&");
+        seperators.add('|');
+        seperators.add("||");
+        seperators.add("|/");
+        seperators.add("||/");
+        seperators.add('^');
+        seperators.add('~');
+        seperators.add('!');
+        seperators.add("->");
+        seperators.add('#');
+        seperators.add("##");
+        seperators.add("@@");
+        seperators.add("@-@");
+        seperators.add("@@@");
+        seperators.add("->>");
+        seperators.add("<->");
+        seperators.add("<=>");
+        seperators.add(">>=");
+        seperators.add("<<=");
+        seperators.add("<<|");
+        seperators.add("|>>");
+        seperators.add("&<|");
+        seperators.add("|&>");
+        seperators.add("|>>");
+        seperators.add("(+)");
+        seperators.add("?#");
+        seperators.add("?-");
+        seperators.add("?-");
+        seperators.add("?|");
+        seperators.add("?-|");
+        seperators.add("?||");
+        seperators.add("~*");
+        seperators.add("!~");
+        seperators.add("!~*");
     }
 
     private static final Map<String, String[]> compositeWords = new ObjectPool<String, String[]>(64);
@@ -81,6 +139,8 @@ public final class SQLParser {
         compositeWords.put(WD.IS_NOT_EMPTY, new String[] { "IS", "NOT", "EMPTY" });
         compositeWords.put(WD.IS_BLANK, new String[] { "IS", "BLANK" });
         compositeWords.put(WD.IS_NOT_BLANK, new String[] { "IS", "NOT", "BLANK" });
+        compositeWords.put(WD.NOT_IN, new String[] { "NOT", "IN" });
+        compositeWords.put(WD.NOT_EXISTS, new String[] { "NOT", "EXISTS" });
 
         List<String> list = new ArrayList<>(compositeWords.keySet());
 
@@ -107,6 +167,7 @@ public final class SQLParser {
         final StringBuilder sb = Objectory.createStringBuilder();
         final List<String> words = new ArrayList<>();
 
+        String temp = "";
         char quoteChar = 0;
 
         for (int index = 0; index < sqlLength; index++) {
@@ -114,13 +175,6 @@ public final class SQLParser {
             // change to char array?
             // char c = sqlCharArray[charIndex];
             char c = sql.charAt(index);
-
-            if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
-                sb.append(c);
-                sb.charAt(++index);
-
-                continue;
-            }
 
             // is it in a quoted identifier?
             if (quoteChar != 0) {
@@ -133,36 +187,116 @@ public final class SQLParser {
 
                     quoteChar = 0;
                 }
+            } else if (isSeperator(sql, sqlLength, index, c)) {
+                if (sb.length() > 0) {
+                    words.add(sb.toString());
+                    sb.setLength(0);
+                }
+
+                if ((index < (sqlLength - 2)) && seperators.contains(temp = sql.substring(index, index + 3))) {
+                    words.add(temp);
+                    index += 2;
+                } else if ((index < (sqlLength - 1)) && seperators.contains(temp = sql.substring(index, index + 2))) {
+                    words.add(temp);
+                    index += 1;
+                } else if (c == WD._SPACE || c == TAB || c == ENTER) {
+                    if ((words.size() > 0) && !words.get(words.size() - 1).equals(WD.SPACE)) {
+                        words.add(WD.SPACE);
+                    }
+                } else {
+                    words.add(String.valueOf(c));
+                }
             } else {
-                if (seperators.containsKey(c)) {
-                    if (sb.length() > 0) {
-                        words.add(sb.toString());
+                sb.append(c);
+
+                if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
+                    quoteChar = c;
+                }
+            }
+        }
+
+        if (sb.length() > 0) {
+            words.add(sb.toString());
+            sb.setLength(0);
+        }
+
+        Objectory.recycle(sb);
+
+        return words;
+    }
+
+    public static int indexWord(String sql, String word, int fromIndex, boolean caseSensitive) {
+        String[] subWords = compositeWords.get(word);
+
+        if (subWords == null) {
+            subWords = Splitter.with(WD.SPACE).trim(true).splitToArray(word);
+            compositeWords.put(word, subWords);
+        }
+
+        if ((subWords == null) || (subWords.length <= 1)) {
+            int result = N.INDEX_NOT_FOUND;
+
+            final StringBuilder sb = Objectory.createStringBuilder();
+            final int sqlLength = sql.length();
+            String temp = "";
+            char quoteChar = 0;
+
+            for (int index = fromIndex; index < sqlLength; index++) {
+                char c = sql.charAt(index);
+
+                // is it in a quoted identifier?
+                if (quoteChar != 0) {
+                    sb.append(c);
+
+                    // end in quote.
+                    if (c == quoteChar) {
+                        temp = sb.toString();
+
+                        if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
+                            result = index - word.length() + 1;
+
+                            break;
+                        }
+
                         sb.setLength(0);
+                        quoteChar = 0;
+                    }
+                } else if (isSeperator(sql, sqlLength, index, c)) {
+                    if (sb.length() > 0) {
+                        temp = sb.toString();
+
+                        if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
+                            result = index - word.length();
+
+                            break;
+                        }
+
+                        sb.setLength(0);
+                    } else if (c == WD._SPACE || c == TAB || c == ENTER) {
+                        // skip white char
+                        continue;
                     }
 
-                    if ((index < (sqlLength - 1))) {
-                        String temp = sql.substring(index, index + 2);
+                    if ((index < (sqlLength - 2)) && seperators.contains(temp = sql.substring(index, index + 3))) {
+                        if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
+                            result = index;
 
-                        if (seperators.containsKey(temp)) {
-                            words.add(temp);
-                            index++;
-                        } else {
-                            if ((c == WD._SPACE) || (c == TAB) || (c == ENTER)) {
-                                if ((words.size() > 0) && !words.get(words.size() - 1).equals(WD.SPACE)) {
-                                    words.add(WD.SPACE);
-                                }
-                            } else {
-                                words.add(String.valueOf(c));
-                            }
+                            break;
                         }
-                    } else {
-                        if ((c == WD._SPACE) || (c == TAB) || (c == ENTER)) {
-                            if ((words.size() > 0) && !words.get(words.size() - 1).equals(WD.SPACE)) {
-                                words.add(WD.SPACE);
-                            }
-                        } else {
-                            words.add(String.valueOf(c));
+
+                        index += 2;
+                    } else if ((index < (sqlLength - 1)) && seperators.contains(temp = sql.substring(index, index + 2))) {
+                        if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
+                            result = index;
+
+                            break;
                         }
+
+                        index += 1;
+                    } else if (word.equals(String.valueOf(c)) || (!caseSensitive && word.equalsIgnoreCase(String.valueOf(c)))) {
+                        result = index;
+
+                        break;
                     }
                 } else {
                     sb.append(c);
@@ -173,109 +307,19 @@ public final class SQLParser {
                 }
             }
 
-            if ((index == (sqlLength - 1)) && (sb.length() > 0)) {
-                words.add(sb.toString());
-            }
-        }
+            if (result < 0 && sb.length() > 0) {
+                temp = sb.toString();
 
-        Objectory.recycle(sb);
-
-        return words;
-    }
-
-    public static int indexWord(String sql, String word, int fromIndex, boolean caseSensitive) {
-        int result = -1;
-
-        String[] subWords = compositeWords.get(word);
-
-        if (subWords == null) {
-            subWords = Splitter.with(WD.SPACE).trim(true).splitToArray(word);
-            compositeWords.put(word, subWords);
-        }
-
-        if ((subWords == null) || (subWords.length <= 1)) {
-            final StringBuilder sb = Objectory.createStringBuilder();
-            final int sqlLength = sql.length();
-            char quoteChar = 0;
-
-            for (int index = fromIndex; index < sqlLength; index++) {
-                char c = sql.charAt(index);
-
-                if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
-                    sb.append(c);
-                    sb.charAt(++index);
-
-                    continue;
-                }
-
-                // is it in a quoted identifier?
-                if (quoteChar != 0) {
-                    sb.append(c);
-
-                    // end in quote.
-                    if (c == quoteChar) {
-                        String temp = sb.toString();
-
-                        if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
-                            result = index - word.length();
-
-                            break;
-                        }
-
-                        sb.setLength(0);
-                        quoteChar = 0;
-                    }
-                } else {
-                    if (seperators.containsKey(c)) {
-                        if ((sb.length() == 0) && (c != WD._SPACE) && (c != TAB) && (c != ENTER)) {
-                            if ((index < (sqlLength - 1))) {
-                                String temp = sql.substring(index, index + 2);
-
-                                if (seperators.containsKey(temp)) {
-                                    sb.append(temp);
-                                    index++;
-                                } else {
-                                    sb.append(c);
-                                }
-                            } else {
-                                sb.append(c);
-                            }
-                        }
-
-                        if (sb.length() > 0) {
-                            String temp = sb.toString();
-
-                            if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
-                                result = index - word.length();
-
-                                break;
-                            }
-
-                            sb.setLength(0);
-                        }
-                    } else {
-                        sb.append(c);
-
-                        if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
-                            quoteChar = c;
-                        }
-                    }
-                }
-
-                if ((index == (sqlLength - 1)) && (sb.length() > 0)) {
-                    String temp = sb.toString();
-
-                    if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
-                        result = sqlLength - word.length();
-
-                        break;
-                    }
+                if (word.equals(temp) || (!caseSensitive && word.equalsIgnoreCase(temp))) {
+                    result = sqlLength - word.length();
                 }
             }
 
             Objectory.recycle(sb);
+
+            return result;
         } else {
-            result = indexWord(sql, subWords[0], fromIndex, caseSensitive);
+            int result = indexWord(sql, subWords[0], fromIndex, caseSensitive);
 
             if (result >= 0) {
                 int tmpIndex = result + subWords[0].length();
@@ -284,7 +328,7 @@ public final class SQLParser {
                 for (int i = 1; i < subWords.length; i++) {
                     nextWord = nextWord(sql, tmpIndex);
 
-                    if ((nextWord != null) && (nextWord.equals(subWords[i]) || (!caseSensitive && nextWord.equalsIgnoreCase(subWords[i])))) {
+                    if (N.notNullOrEmpty(nextWord) && (nextWord.equals(subWords[i]) || (!caseSensitive && nextWord.equalsIgnoreCase(subWords[i])))) {
                         tmpIndex += (subWords[i].length() + 1);
                     } else {
                         result = -1;
@@ -293,26 +337,20 @@ public final class SQLParser {
                     }
                 }
             }
-        }
 
-        return result;
+            return result;
+        }
     }
 
     public static String nextWord(String sql, int fromIndex) {
         final int sqlLength = sql.length();
         final StringBuilder sb = Objectory.createStringBuilder();
 
+        String temp = "";
         char quoteChar = 0;
 
         for (int index = fromIndex; index < sqlLength; index++) {
             char c = sql.charAt(index);
-
-            if ((WD._BACKSLASH == c) && (index < (sqlLength - 1))) {
-                sb.append(c);
-                sb.charAt(++index);
-
-                continue;
-            }
 
             // is it in a quoted identifier?
             if (quoteChar != 0) {
@@ -322,38 +360,66 @@ public final class SQLParser {
                 if (c == quoteChar) {
                     break;
                 }
-            } else {
-                if (seperators.containsKey(c)) {
-                    if ((sb.length() == 0) && (c != WD._SPACE) && (c != TAB) && (c != ENTER)) {
-                        if ((index < (sqlLength - 1))) {
-                            String temp = sql.substring(index, index + 2);
+            } else if (isSeperator(sql, sqlLength, index, c)) {
+                if (sb.length() > 0) {
+                    break;
+                } else if (c == WD._SPACE || c == TAB || c == ENTER) {
+                    // skip white char
+                    continue;
+                }
 
-                            if (seperators.containsKey(temp)) {
-                                sb.append(temp);
-                            } else {
-                                sb.append(c);
-                            }
-                        } else {
-                            sb.append(c);
-                        }
-                    }
-
-                    if (sb.length() > 0) {
-                        break;
-                    }
+                if (((index < (sqlLength - 2)) && seperators.contains(temp = sql.substring(index, index + 3)))
+                        || ((index < (sqlLength - 1)) && seperators.contains(temp = sql.substring(index, index + 2)))) {
+                    sb.append(temp);
                 } else {
                     sb.append(c);
+                }
 
-                    if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
-                        quoteChar = c;
-                    }
+                break;
+            } else {
+                sb.append(c);
+
+                if ((c == WD._QUOTATION_S) || (c == WD._QUOTATION_D)) {
+                    quoteChar = c;
                 }
             }
         }
 
-        String st = (sb.length() == 0) ? null : sb.toString();
+        String st = (sb.length() == 0) ? "" : sb.toString();
         Objectory.recycle(sb);
 
         return st;
+    }
+
+    public static void registerSeperator(char seperator) {
+        N.checkArgPositive(seperator, "seperator");
+
+        seperators.add(seperator);
+    }
+
+    public static void registerSeperator(String seperator) {
+        N.checkArgNotNull(seperator, "seperator");
+
+        seperators.add(seperator);
+
+        if (seperator.length() == 1) {
+            seperators.add(seperator.charAt(0));
+        }
+    }
+
+    public static boolean isSeperator(String str, int len, int index, char ch) {
+        // for Ibatis/Mybatis
+        if (ch == '#' && index < len - 1 && str.charAt(index + 1) == '{') {
+            return false;
+        }
+
+        return seperators.contains(ch);
+    }
+
+    public static boolean isFunctionName(final List<String> words, int len, int index) {
+        //    return (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L)
+        //            || (i < len - 2 && WD.SPACE.equals(words.get(i + 1)) && words.get(i + 2).charAt(0) == WD._PARENTHESES_L);
+
+        return (index < len - 1 && words.get(index + 1).charAt(0) == WD._PARENTHESES_L);
     }
 }

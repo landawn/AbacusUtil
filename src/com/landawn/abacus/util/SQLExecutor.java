@@ -4049,7 +4049,7 @@ public class SQLExecutor implements Closeable {
          * @return 
          */
         public List<T> batchGet(final Connection conn, final List<?> ids, final Collection<String> selectPropNames, final int batchSize) {
-            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+            N.checkArgPositive(batchSize, "batchSize");
 
             if (N.isNullOrEmpty(ids)) {
                 return new ArrayList<>();
@@ -5271,7 +5271,7 @@ public class SQLExecutor implements Closeable {
 
         private <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize,
                 final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+            N.checkArgPositive(batchSize, "batchSize");
 
             if (N.isNullOrEmpty(entities)) {
                 return new ArrayList<>();
@@ -5685,7 +5685,7 @@ public class SQLExecutor implements Closeable {
 
         private int batchUpdate(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames, final int batchSize,
                 final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+            N.checkArgPositive(batchSize, "batchSize");
 
             if (N.isNullOrEmpty(entities)) {
                 return 0;
@@ -5924,7 +5924,7 @@ public class SQLExecutor implements Closeable {
         }
 
         private int batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
-            N.checkArgument(batchSize > 0, "The specified batch size must be greater than 0");
+            N.checkArgPositive(batchSize, "batchSize");
 
             if (N.isNullOrEmpty(idsOrEntities)) {
                 return 0;

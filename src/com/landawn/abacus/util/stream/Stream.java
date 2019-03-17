@@ -824,9 +824,6 @@ public abstract class Stream<T>
     public abstract <E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(Try.Predicate<? super T, E> predicateForFirst,
             Try.Predicate<? super T, E2> predicateForLast) throws E, E2;
 
-    @ParallelSupported
-    public abstract <E extends Exception> Optional<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
-
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -852,6 +849,9 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final Function<? super T, U> preFunc,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
+
+    @ParallelSupported
+    public abstract <E extends Exception> Optional<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     @SequentialOnly
     public abstract boolean containsAll(T... a);
@@ -3083,7 +3083,7 @@ public abstract class Stream<T>
     }
 
     public static <T> Stream<T> observe(final BlockingQueue<T> queue, final Predicate<? super T> isLast, final long maxWaitIntervalInMillis) {
-        N.checkArgument(maxWaitIntervalInMillis > 0, "'maxWaitIntervalInMillis' can't be %s. It must be positive");
+        N.checkArgPositive(maxWaitIntervalInMillis, "maxWaitIntervalInMillis");
 
         final Iterator<T> iter = new ObjIterator<T>() {
             private T next = null;
@@ -3100,7 +3100,7 @@ public abstract class Stream<T>
                         }
 
                         isDone = isLast.test(next);
-                    } while (next != null && isDone == false);
+                    } while (next == null && isDone == false);
                 }
 
                 return next != null;

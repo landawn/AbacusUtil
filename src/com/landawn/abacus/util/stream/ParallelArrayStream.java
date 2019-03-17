@@ -537,7 +537,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -585,7 +585,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableInt curIndex = MutableInt.of(fromIndex);
@@ -2542,7 +2542,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);
@@ -2591,7 +2591,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(threadNum);

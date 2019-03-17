@@ -19,7 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -183,17 +185,19 @@ public final class OKHttpClient extends AbstractHttpClient {
         execute(null, null, output, httpMethod, request, settings);
     }
 
+    @SuppressWarnings("resource")
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
             final Object request, final HttpSettings settings) {
-
-        final ContentFormat requestContentFormat = getContentFormat(settings);
-        final String contentType = getContentType(settings);
-        final String contentEncoding = getContentEncoding(settings);
 
         if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
             _activeConnectionCounter.decrementAndGet();
             throw new AbacusException("Can not get connection, exceeded max connection number: " + _maxConnection);
         }
+
+        final ContentFormat requestContentFormat = getContentFormat(settings);
+        final String contentType = getContentType(settings);
+        final String contentEncoding = getContentEncoding(settings);
+        final Charset requestCharset = HTTP.getCharset(settings == null || settings.headers().isEmpty() ? _settings.headers() : settings.headers());
 
         okhttp3.Request httpRequest = null;
         okhttp3.Response httpResponse = null;
@@ -230,7 +234,7 @@ public final class OKHttpClient extends AbstractHttpClient {
                     if (type.isInputStream()) {
                         IOUtil.write(os, (InputStream) request);
                     } else if (type.isReader()) {
-                        final BufferedWriter bw = Objectory.createBufferedWriter(os);
+                        final BufferedWriter bw = Objectory.createBufferedWriter(new OutputStreamWriter(os, requestCharset));
 
                         try {
                             IOUtil.write(bw, (Reader) request);
@@ -241,9 +245,9 @@ public final class OKHttpClient extends AbstractHttpClient {
                         }
                     } else {
                         if (type.isSerializable()) {
-                            IOUtil.write(os, type.stringOf(request).getBytes());
+                            IOUtil.write(os, type.stringOf(request).getBytes(requestCharset));
                         } else {
-                            IOUtil.write(os, HTTP.getParser(requestContentFormat).serialize(request).getBytes());
+                            HTTP.getParser(requestContentFormat).serialize(new OutputStreamWriter(os, requestCharset), request);
                         }
                     }
 
@@ -269,9 +273,17 @@ public final class OKHttpClient extends AbstractHttpClient {
             httpRequest = requestBuilder.build();
             httpResponse = client.newCall(httpRequest).execute();
 
+            final Map<String, List<String>> respHeaders = httpResponse.headers().toMultimap();
+            final Charset charset = HTTP.getCharset(respHeaders);
+            final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
+                    httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
+
+            final InputStream is = httpResponse.isSuccessful() ? HTTP.wrapInputStream(httpResponse.body().byteStream(), responseContentFormat)
+                    : httpResponse.body().byteStream();
+
             if (httpResponse.isSuccessful() == false
                     && (resultClass == null || !(resultClass.equals(HttpResponse.class) || resultClass.equals(okhttp3.Response.class)))) {
-                throw new UncheckedIOException(new IOException(httpResponse.code() + ": " + httpResponse.message()));
+                throw new UncheckedIOException(new IOException(httpResponse.code() + ": " + httpResponse.message() + ". " + IOUtil.readString(is, charset)));
             }
 
             if (isOneWayRequest(settings)) {
@@ -281,17 +293,12 @@ public final class OKHttpClient extends AbstractHttpClient {
 
                 return (T) httpResponse;
             } else {
-                final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
-                        httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
-
-                final InputStream is = HTTP.wrapInputStream(httpResponse.body().byteStream(), responseContentFormat);
-
                 if (outputStream != null) {
                     IOUtil.write(outputStream, is, true);
 
                     return null;
                 } else if (outputWriter != null) {
-                    final BufferedReader br = Objectory.createBufferedReader(is);
+                    final BufferedReader br = Objectory.createBufferedReader(new InputStreamReader(is, charset));
 
                     try {
                         IOUtil.write(outputWriter, br, true);
@@ -301,14 +308,11 @@ public final class OKHttpClient extends AbstractHttpClient {
 
                     return null;
                 } else {
-                    Map<String, List<String>> respHeaders = httpResponse.headers().toMultimap();
-
                     if (resultClass != null && resultClass.equals(HttpResponse.class)) {
                         return (T) new HttpResponse(httpResponse.sentRequestAtMillis(), httpResponse.receivedResponseAtMillis(), httpResponse.code(),
                                 httpResponse.message(), respHeaders, IOUtil.readBytes(is), responseContentFormat);
                     } else {
                         final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
-                        final Charset charset = HTTP.getCharset(respHeaders);
 
                         if (type == null) {
                             return (T) IOUtil.readString(is, charset);

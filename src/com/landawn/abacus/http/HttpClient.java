@@ -19,7 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
@@ -161,20 +163,21 @@ public final class HttpClient extends AbstractHttpClient {
             final Object request, final HttpSettings settings) {
         final ContentFormat requestContentFormat = getContentFormat(settings);
         final HttpURLConnection connection = openConnection(httpMethod, request, request != null, settings);
+        final Charset requestCharset = HTTP.getCharset(settings == null || settings.headers().isEmpty() ? _settings.headers() : settings.headers());
         final long sentRequestAtMillis = System.currentTimeMillis();
         InputStream is = null;
         OutputStream os = null;
 
         try {
             if (request != null && (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT))) {
-                os = getOutputStream(connection, requestContentFormat, settings);
+                os = HTTP.getOutputStream(connection, requestContentFormat, getContentType(settings), getContentEncoding(settings));
 
                 Type<Object> type = N.typeOf(request.getClass());
 
                 if (type.isInputStream()) {
                     IOUtil.write(os, (InputStream) request);
                 } else if (type.isReader()) {
-                    final BufferedWriter bw = Objectory.createBufferedWriter(os);
+                    final BufferedWriter bw = Objectory.createBufferedWriter(new OutputStreamWriter(os, requestCharset));
 
                     try {
                         IOUtil.write(bw, (Reader) request);
@@ -185,23 +188,24 @@ public final class HttpClient extends AbstractHttpClient {
                     }
                 } else {
                     if (type.isSerializable()) {
-                        os.write(type.stringOf(request).getBytes());
+                        os.write(type.stringOf(request).getBytes(requestCharset));
                     } else {
-                        HTTP.getParser(requestContentFormat).serialize(os, request);
+                        HTTP.getParser(requestContentFormat).serialize(new OutputStreamWriter(os, requestCharset), request);
                     }
                 }
 
-                flush(os);
+                HTTP.flush(os);
             }
 
+            final ContentFormat responseContentFormat = HTTP.getContentFormat(connection);
             final int code = connection.getResponseCode();
+            final Map<String, List<String>> respHeaders = connection.getHeaderFields();
+            final Charset respCharset = HTTP.getCharset(respHeaders);
+            is = HTTP.getInputOrErrorStream(connection, responseContentFormat);
 
             if ((code < 200 || code >= 300) && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
-                throw new UncheckedIOException(new IOException(code + ": " + connection.getResponseMessage()));
+                throw new UncheckedIOException(new IOException(code + ": " + connection.getResponseMessage() + ". " + IOUtil.readString(is, respCharset)));
             }
-
-            final ContentFormat responseContentFormat = getContentFormat(connection);
-            is = getInputStream(connection, responseContentFormat);
 
             if (isOneWayRequest(settings)) {
                 return null;
@@ -211,7 +215,7 @@ public final class HttpClient extends AbstractHttpClient {
 
                     return null;
                 } else if (outputWriter != null) {
-                    final BufferedReader br = Objectory.createBufferedReader(is);
+                    final BufferedReader br = Objectory.createBufferedReader(new InputStreamReader(is, respCharset));
 
                     try {
                         IOUtil.write(outputWriter, br, true);
@@ -221,8 +225,6 @@ public final class HttpClient extends AbstractHttpClient {
 
                     return null;
                 } else {
-                    final Map<String, List<String>> respHeaders = connection.getHeaderFields();
-
                     if (resultClass != null && resultClass.equals(HttpResponse.class)) {
                         final byte[] respBody = IOUtil.readBytes(is);
 
@@ -230,16 +232,15 @@ public final class HttpClient extends AbstractHttpClient {
                                 respBody, responseContentFormat);
                     } else {
                         final Type<Object> type = resultClass == null ? null : N.typeOf(resultClass);
-                        final Charset charset = HTTP.getCharset(respHeaders);
 
                         if (type == null) {
-                            return (T) IOUtil.readString(is, charset);
+                            return (T) IOUtil.readString(is, respCharset);
                         } else if (byte[].class.equals(resultClass)) {
                             return (T) IOUtil.readBytes(is);
                         } else if (type.isSerializable()) {
-                            return (T) type.valueOf(IOUtil.readString(is, charset));
+                            return (T) type.valueOf(IOUtil.readString(is, respCharset));
                         } else {
-                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, IOUtil.newBufferedReader(is, charset));
+                            return HTTP.getParser(responseContentFormat).deserialize(resultClass, IOUtil.newBufferedReader(is, respCharset));
                         }
                     }
                 }
@@ -251,68 +252,23 @@ public final class HttpClient extends AbstractHttpClient {
         }
     }
 
-    public OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat) throws IOException {
-        return getOutputStream(connection, contentFormat, null);
-    }
-
-    public OutputStream getOutputStream(final HttpURLConnection connection, final HttpSettings settings) throws IOException {
-        return getOutputStream(connection, null, settings);
-    }
-
-    private OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat, final HttpSettings settings)
-            throws IOException {
-        String contentType = getContentType(settings);
-
-        if (N.isNullOrEmpty(contentType) && contentFormat != null) {
-            contentType = HTTP.getContentType(contentFormat);
-        }
-
-        if (N.notNullOrEmpty(contentType)) {
-            connection.setRequestProperty(HttpHeaders.Names.CONTENT_TYPE, contentType);
-        }
-
-        String contentEncoding = getContentEncoding(settings);
-
-        if (N.isNullOrEmpty(contentEncoding) && contentFormat != null) {
-            contentEncoding = HTTP.getContentEncoding(contentFormat);
-        }
-
-        if (N.notNullOrEmpty(contentEncoding)) {
-            connection.setRequestProperty(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
-        }
-
-        return HTTP.wrapOutputStream(connection.getOutputStream(), contentFormat == null ? getContentFormat(settings) : contentFormat);
-    }
-
-    public InputStream getInputStream(final HttpURLConnection connection) throws IOException {
-        return getInputStream(connection, getContentFormat(connection));
-    }
-
-    public InputStream getInputStream(final HttpURLConnection connection, ContentFormat contentFormat) throws IOException {
-        return HTTP.wrapInputStream(connection.getInputStream(), contentFormat);
-    }
-
-    ContentFormat getContentFormat(final HttpURLConnection connection) {
-        return HTTP.getContentFormat(connection.getHeaderField(HttpHeaders.Names.CONTENT_TYPE), connection.getHeaderField(HttpHeaders.Names.CONTENT_ENCODING));
-    }
-
-    public HttpURLConnection openConnection(HttpMethod httpMethod) {
+    HttpURLConnection openConnection(HttpMethod httpMethod) {
         return openConnection(httpMethod, HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod));
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput) {
         return openConnection(httpMethod, doOutput, _settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, HttpSettings settings) {
         return openConnection(httpMethod, HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod), settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, HttpSettings settings) {
         return openConnection(httpMethod, null, doOutput, settings);
     }
 
-    public HttpURLConnection openConnection(HttpMethod httpMethod, final Object queryParameters, boolean doOutput, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, final Object queryParameters, boolean doOutput, HttpSettings settings) {
         HttpURLConnection connection = null;
 
         if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
@@ -379,22 +335,7 @@ public final class HttpClient extends AbstractHttpClient {
         }
     }
 
-    void close(OutputStream os, InputStream is, HttpURLConnection connection) {
-        try {
-            IOUtil.closeQuietly(os);
-            IOUtil.closeQuietly(is);
-        } finally {
-            _activeConnectionCounter.decrementAndGet();
-        }
-
-        // connection.disconnect();
-    }
-
-    protected void flush(OutputStream os) throws IOException {
-        HTTP.flush(os);
-    }
-
-    private void setHttpProperties(HttpURLConnection connection, HttpSettings settings) {
+    void setHttpProperties(HttpURLConnection connection, HttpSettings settings) {
         final HttpHeaders headers = settings.headers();
 
         if (headers != null) {
@@ -418,5 +359,16 @@ public final class HttpClient extends AbstractHttpClient {
                 }
             }
         }
+    }
+
+    void close(OutputStream os, InputStream is, HttpURLConnection connection) {
+        try {
+            IOUtil.closeQuietly(os);
+            IOUtil.closeQuietly(is);
+        } finally {
+            _activeConnectionCounter.decrementAndGet();
+        }
+
+        // connection.disconnect();
     }
 }

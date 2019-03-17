@@ -1105,7 +1105,7 @@ public abstract class SQLBuilder {
 
             if (!StringUtil.isAsciiAlpha(word.charAt(0))) {
                 sb.append(word);
-            } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
+            } else if (SQLParser.isFunctionName(words, len, i)) {
                 sb.append(word);
             } else {
                 sb.append(formalizeColumnName(propColumnNameMap, word));
@@ -1624,8 +1624,8 @@ public abstract class SQLBuilder {
     public final SQLBuilder set(final String... columnNames) {
         init(false);
 
-        if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(WD.EQUAL)) {
-            sb.append(columnNames[0]);
+        if (columnNames.length == 1 && columnNames[0].contains(WD.EQUAL)) {
+            appendStringExpr(columnNames[0]);
         } else {
             final Map<String, String> propColumnNameMap = getPropColumnNameMap();
 

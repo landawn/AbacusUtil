@@ -2079,7 +2079,7 @@ public final class SQLiteExecutor {
 
                 if (!StringUtil.isAsciiAlpha(word.charAt(0))) {
                     sb.append(word);
-                } else if (i < len - 1 && words.get(i + 1).charAt(0) == WD._PARENTHESES_L) {
+                } else if (SQLParser.isFunctionName(words, len, i)) {
                     sb.append(word);
                 } else {
                     sb.append(formatName(word));

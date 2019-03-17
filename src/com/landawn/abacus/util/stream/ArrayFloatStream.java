@@ -969,7 +969,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<FloatStream>() {
             private int cursor = fromIndex;
@@ -1020,7 +1020,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<FloatList>() {
             private int cursor = fromIndex;
@@ -1070,7 +1070,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(final int n, final Comparator<? super Float> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
+        N.checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
             return this;

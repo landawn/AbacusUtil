@@ -365,7 +365,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 2;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -417,7 +417,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 3;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         return newStream(new ObjIteratorEx<R>() {
             @SuppressWarnings("unchecked")
@@ -1709,7 +1709,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private List<T> prev = null;
@@ -1816,7 +1816,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<C>() {
             private Deque<T> queue = null;
@@ -1944,7 +1944,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
         N.checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
@@ -2077,7 +2077,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
+        N.checkArgPositive(n, "n");
 
         return newStream(new ObjIteratorEx<T>() {
             private boolean initialized = false;
@@ -2304,7 +2304,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {
@@ -2339,7 +2339,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
         assertNotClosed();
 
         try {

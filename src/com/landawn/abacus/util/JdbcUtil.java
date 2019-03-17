@@ -183,6 +183,12 @@ public final class JdbcUtil {
                     dbVersion = DBVersion.MYSQL_6;
                 } else if (dbProudctVersion.startsWith("7")) {
                     dbVersion = DBVersion.MYSQL_7;
+                } else if (dbProudctVersion.startsWith("8")) {
+                    dbVersion = DBVersion.MYSQL_8;
+                } else if (dbProudctVersion.startsWith("9")) {
+                    dbVersion = DBVersion.MYSQL_9;
+                } else if (dbProudctVersion.startsWith("10")) {
+                    dbVersion = DBVersion.MYSQL_10;
                 } else {
                     dbVersion = DBVersion.MYSQL_OTHERS;
                 }
@@ -197,6 +203,10 @@ public final class JdbcUtil {
                     dbVersion = DBVersion.POSTGRESQL_9_5;
                 } else if (dbProudctVersion.startsWith("10")) {
                     dbVersion = DBVersion.POSTGRESQL_10;
+                } else if (dbProudctVersion.startsWith("11")) {
+                    dbVersion = DBVersion.POSTGRESQL_11;
+                } else if (dbProudctVersion.startsWith("12")) {
+                    dbVersion = DBVersion.POSTGRESQL_12;
                 } else {
                     dbVersion = DBVersion.POSTGRESQL_OTHERS;
                 }
@@ -1249,7 +1259,7 @@ public final class JdbcUtil {
      * @throws SQLException
      */
     public static PreparedQuery prepareQuery(final Connection conn, final String sql) throws SQLException {
-        return new PreparedQuery(prepareStatement(conn, sql));
+        return new PreparedQuery(conn.prepareStatement(sql));
     }
 
     /** 
@@ -1317,17 +1327,6 @@ public final class JdbcUtil {
         return new PreparedQuery(stmtCreator.apply(conn));
     }
 
-    //    /**
-    //     * 
-    //     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-    //     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-    //     * @return
-    //     * @throws SQLException
-    //     */
-    //    public static PreparedQuery prepareQuery(final Try.Supplier<PreparedStatement, SQLException> stmtCreator) throws SQLException {
-    //        return new PreparedQuery(stmtCreator.get());
-    //    }
-
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
         PreparedCallableQuery result = null;
         Connection conn = null;
@@ -1358,7 +1357,7 @@ public final class JdbcUtil {
      * @throws SQLException
      */
     public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final String sql) throws SQLException {
-        return new PreparedCallableQuery(prepareCall(conn, sql));
+        return new PreparedCallableQuery(conn.prepareCall(sql));
     }
 
     /**
@@ -1405,148 +1404,6 @@ public final class JdbcUtil {
     public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final Try.Function<Connection, CallableStatement, SQLException> stmtCreator)
             throws SQLException {
         return new PreparedCallableQuery(stmtCreator.apply(conn));
-    }
-
-    //    /**
-    //     * 
-    //     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-    //     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-    //     * @return
-    //     * @throws SQLException
-    //     */
-    //    public static PreparedCallableQuery prepareCallableQuery(final Try.Supplier<CallableStatement, SQLException> stmtCreator) throws SQLException {
-    //        return new PreparedCallableQuery(stmtCreator.get());
-    //    }
-
-    /**
-     * Generally, this method should be executed in transaction.
-     * 
-     * @param query
-     * @param batchSize
-     * @param batchParameters
-     * @param paramSetter
-     * @return
-     * @throws SQLException
-     * @throws E
-     */
-    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, E extends Exception> int batchUpdate(final Q query,
-            final int batchSize, final Collection<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
-            throws SQLException, E {
-        return batchUpdate(query, batchSize, batchParameters.iterator(), paramSetter);
-    }
-
-    /**
-     * Generally, this method should be executed in transaction.
-     * 
-     * @param query
-     * @param batchSize
-     * @param batchParameters
-     * @param paramSetter
-     * @return
-     * @throws SQLException
-     * @throws E
-     */
-    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, E extends Exception> int batchUpdate(final Q query,
-            final int batchSize, final Iterator<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
-            throws SQLException, E {
-        N.checkArgNotNull(query);
-        N.checkArgPositive(batchSize, "batchSize");
-        N.checkArgNotNull(batchParameters);
-        N.checkArgNotNull(paramSetter);
-
-        long result = 0;
-        final boolean closeAfterExecution = query.closeAfterExecution();
-        query.closeAfterExecution(false);
-        long cnt = 0;
-
-        try {
-            while (batchParameters.hasNext()) {
-                query.settParameters(batchParameters.next(), paramSetter);
-                query.addBatch();
-
-                if (++cnt % batchSize == 0) {
-                    result += N.sum(query.batchUpdate());
-                }
-            }
-
-            if (cnt % batchSize != 0) {
-                result += N.sum(query.batchUpdate());
-            }
-
-        } finally {
-            query.closeAfterExecution(closeAfterExecution);
-
-            if (closeAfterExecution) {
-                query.close();
-            }
-        }
-
-        return result >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
-    }
-
-    /**
-     * Generally, this method should be executed in transaction.
-     * 
-     * @param query
-     * @param batchSize
-     * @param batchParameters
-     * @param paramSetter
-     * @return
-     * @throws SQLException
-     * @throws E
-     */
-    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, ID, E extends Exception> List<ID> batchInsert(final Q query,
-            final int batchSize, final Collection<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
-            throws SQLException, E {
-        return batchInsert(query, batchSize, batchParameters.iterator(), paramSetter);
-    }
-
-    /**
-     * Generally, this method should be executed in transaction.
-     * 
-     * @param query
-     * @param batchSize
-     * @param batchParameters
-     * @param paramSetter
-     * @return
-     * @throws SQLException
-     * @throws E
-     */
-    public static <S extends PreparedStatement, Q extends AbstractPreparedQuery<S, Q>, T, ID, E extends Exception> List<ID> batchInsert(final Q query,
-            final int batchSize, final Iterator<T> batchParameters, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
-            throws SQLException, E {
-        N.checkArgNotNull(query);
-        N.checkArgPositive(batchSize, "batchSize");
-        N.checkArgNotNull(batchParameters);
-        N.checkArgNotNull(paramSetter);
-
-        final List<ID> result = new ArrayList<>();
-        final boolean closeAfterExecution = query.closeAfterExecution();
-        query.closeAfterExecution(false);
-        long cnt = 0;
-
-        try {
-            while (batchParameters.hasNext()) {
-                query.settParameters(batchParameters.next(), paramSetter);
-                query.addBatch();
-
-                if (++cnt % batchSize == 0) {
-                    result.addAll(query.<ID> batchInsert());
-                }
-            }
-
-            if (cnt % batchSize != 0) {
-                result.addAll(query.<ID> batchInsert());
-            }
-        } finally {
-            query.closeAfterExecution(closeAfterExecution);
-
-            if (closeAfterExecution) {
-                query.close();
-            }
-        }
-
-        return result;
     }
 
     @SafeVarargs
@@ -1661,7 +1518,7 @@ public final class JdbcUtil {
     public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize) throws SQLException {
         N.checkArgNotNull(conn);
         N.checkArgNotNull(sql);
-        N.checkArgument(batchSize > 0, "'batchSize' can't be 0 or negative");
+        N.checkArgPositive(batchSize, "batchSize");
 
         if (N.isNullOrEmpty(parametersListList)) {
             return 0;
@@ -5428,25 +5285,29 @@ public final class JdbcUtil {
             assertNotClosed();
 
             try {
-                stmt.executeBatch();
-
-                try (ResultSet rs = stmt.getGeneratedKeys()) {
-                    final List<T> result = new ArrayList<>();
-
-                    while (rs.next()) {
-                        result.add((T) JdbcUtil.getColumnValue(rs, 1));
-                    }
-
-                    return result;
-                } finally {
-                    stmt.clearBatch();
-                }
+                return executeBatchInsert();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public int upate() throws SQLException {
+        private <T> List<T> executeBatchInsert() throws SQLException {
+            stmt.executeBatch();
+
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                final List<T> result = new ArrayList<>();
+
+                while (rs.next()) {
+                    result.add((T) JdbcUtil.getColumnValue(rs, 1));
+                }
+
+                return result;
+            } finally {
+                stmt.clearBatch();
+            }
+        }
+
+        public int update() throws SQLException {
             assertNotClosed();
 
             try {
@@ -5460,11 +5321,17 @@ public final class JdbcUtil {
             assertNotClosed();
 
             try {
-                final int[] result = stmt.executeBatch();
-                stmt.clearBatch();
-                return result;
+                return executeBatchUpdate();
             } finally {
                 closeAfterExecutionIfAllowed();
+            }
+        }
+
+        private int[] executeBatchUpdate() throws SQLException {
+            try {
+                return stmt.executeBatch();
+            } finally {
+                stmt.clearBatch();
             }
         }
 
@@ -5488,6 +5355,117 @@ public final class JdbcUtil {
             } finally {
                 closeAfterExecutionIfAllowed();
             }
+        }
+
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> int batchUpdate(final int batchSize, final Collection<T> batchParameters,
+                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+            return batchUpdate(batchSize, batchParameters == null ? N.<T> emptyIterator() : batchParameters.iterator(), paramSetter);
+        }
+
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, E extends Exception> int batchUpdate(final int batchSize, final Iterator<T> batchParameters,
+                final Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
+            long result = 0;
+
+            try {
+                long cnt = 0;
+
+                while (iter.hasNext()) {
+                    paramSetter.accept((Q) this, iter.next());
+                    addBatch();
+
+                    if (++cnt % batchSize == 0) {
+                        result += N.sum(executeBatchUpdate());
+                    }
+                }
+
+                if (cnt % batchSize != 0) {
+                    result += N.sum(executeBatchUpdate());
+                }
+
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return result >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
+        }
+
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Collection<T> batchParameters,
+                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+            return batchInsert(batchSize, batchParameters.iterator(), paramSetter);
+        }
+
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Iterator<T> batchParameters,
+                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
+            final List<ID> result = new ArrayList<>();
+
+            try {
+                long cnt = 0;
+
+                while (iter.hasNext()) {
+                    paramSetter.accept((Q) this, iter.next());
+                    addBatch();
+
+                    if (++cnt % batchSize == 0) {
+                        result.addAll(this.<ID> executeBatchInsert());
+                    }
+                }
+
+                if (cnt % batchSize != 0) {
+                    result.addAll(this.<ID> executeBatchInsert());
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return result;
         }
 
         public boolean execute() throws SQLException {
@@ -5706,320 +5684,251 @@ public final class JdbcUtil {
         }
     }
 
-    /**
-     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...). 
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * Generally, don't cache or reuse the instance of this class, 
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
-     * 
-     * <br />
-     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
-     * 
-     * @author haiyangl
-     * 
-     * @see {@link com.landawn.abacus.annotation.ReadOnly}
-     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
-     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
-     * @see {@link com.landawn.abacus.annotation.Transient}
-     * @see {@link com.landawn.abacus.annotation.Table}
-     * @see {@link com.landawn.abacus.annotation.Column} 
-     * 
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
-     */
-    public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
+    static class AbstractPreparedCallableQuery<S extends CallableStatement, Q extends AbstractPreparedCallableQuery<S, Q>> extends AbstractPreparedQuery<S, Q> {
+        final S stmt;
 
-        PreparedQuery(PreparedStatement stmt) {
-            super(stmt);
-        }
-
-        PreparedQuery(PreparedStatement stmt, AsyncExecutor asyncExecutor) {
-            super(stmt, asyncExecutor);
-        }
-    }
-
-    /**
-     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * Generally, don't cache or reuse the instance of this class, 
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
-     * 
-     * <br />
-     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
-     * 
-     * @author haiyangl
-     * 
-     * @see {@link com.landawn.abacus.annotation.ReadOnly}
-     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
-     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
-     * @see {@link com.landawn.abacus.annotation.Transient}
-     * @see {@link com.landawn.abacus.annotation.Table}
-     * @see {@link com.landawn.abacus.annotation.Column} 
-     * 
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
-     */
-    public static class PreparedCallableQuery extends AbstractPreparedQuery<CallableStatement, PreparedCallableQuery> {
-        private final CallableStatement stmt;
-
-        PreparedCallableQuery(CallableStatement stmt) {
+        AbstractPreparedCallableQuery(S stmt) {
             super(stmt);
             this.stmt = stmt;
         }
 
-        PreparedCallableQuery(CallableStatement stmt, AsyncExecutor asyncExecutor) {
+        AbstractPreparedCallableQuery(S stmt, AsyncExecutor asyncExecutor) {
             super(stmt, asyncExecutor);
             this.stmt = stmt;
         }
 
-        public PreparedCallableQuery setNull(String parameterName, int sqlType) throws SQLException {
+        public Q setNull(String parameterName, int sqlType) throws SQLException {
             stmt.setNull(parameterName, sqlType);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNull(String parameterName, int sqlType, String typeName) throws SQLException {
+        public Q setNull(String parameterName, int sqlType, String typeName) throws SQLException {
             stmt.setNull(parameterName, sqlType, typeName);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBoolean(String parameterName, boolean x) throws SQLException {
+        public Q setBoolean(String parameterName, boolean x) throws SQLException {
             stmt.setBoolean(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBoolean(String parameterName, Boolean x) throws SQLException {
+        public Q setBoolean(String parameterName, Boolean x) throws SQLException {
             stmt.setBoolean(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setByte(String parameterName, byte x) throws SQLException {
+        public Q setByte(String parameterName, byte x) throws SQLException {
             stmt.setByte(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setByte(String parameterName, Byte x) throws SQLException {
+        public Q setByte(String parameterName, Byte x) throws SQLException {
             stmt.setByte(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setShort(String parameterName, short x) throws SQLException {
+        public Q setShort(String parameterName, short x) throws SQLException {
             stmt.setShort(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setShort(String parameterName, Short x) throws SQLException {
+        public Q setShort(String parameterName, Short x) throws SQLException {
             stmt.setShort(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setInt(String parameterName, int x) throws SQLException {
+        public Q setInt(String parameterName, int x) throws SQLException {
             stmt.setInt(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setInt(String parameterName, Integer x) throws SQLException {
+        public Q setInt(String parameterName, Integer x) throws SQLException {
             stmt.setInt(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setLong(String parameterName, long x) throws SQLException {
+        public Q setLong(String parameterName, long x) throws SQLException {
             stmt.setLong(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setLong(String parameterName, Long x) throws SQLException {
+        public Q setLong(String parameterName, Long x) throws SQLException {
             stmt.setLong(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setFloat(String parameterName, float x) throws SQLException {
+        public Q setFloat(String parameterName, float x) throws SQLException {
             stmt.setFloat(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setFloat(String parameterName, Float x) throws SQLException {
+        public Q setFloat(String parameterName, Float x) throws SQLException {
             stmt.setFloat(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setDouble(String parameterName, double x) throws SQLException {
+        public Q setDouble(String parameterName, double x) throws SQLException {
             stmt.setDouble(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setDouble(String parameterName, Double x) throws SQLException {
+        public Q setDouble(String parameterName, Double x) throws SQLException {
             stmt.setDouble(parameterName, Primitives.unboxOrDefault(x));
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
+        public Q setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
             stmt.setBigDecimal(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setString(String parameterName, String x) throws SQLException {
+        public Q setString(String parameterName, String x) throws SQLException {
             stmt.setString(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setTime(String parameterName, java.sql.Time x) throws SQLException {
+        public Q setTime(String parameterName, java.sql.Time x) throws SQLException {
             stmt.setTime(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setDate(String parameterName, java.sql.Date x) throws SQLException {
+        public Q setDate(String parameterName, java.sql.Date x) throws SQLException {
             stmt.setDate(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+        public Q setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
             stmt.setTimestamp(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBytes(String parameterName, byte[] x) throws SQLException {
+        public Q setBytes(String parameterName, byte[] x) throws SQLException {
             stmt.setBytes(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream) throws SQLException {
+        public Q setAsciiStream(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setAsciiStream(parameterName, inputStream);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public Q setAsciiStream(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setAsciiStream(parameterName, inputStream, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
+        public Q setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setBinaryStream(parameterName, inputStream);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public Q setBinaryStream(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setBinaryStream(parameterName, inputStream, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader) throws SQLException {
+        public Q setCharacterStream(String parameterName, Reader reader) throws SQLException {
             stmt.setCharacterStream(parameterName, reader);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+        public Q setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setCharacterStream(parameterName, reader, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader) throws SQLException {
+        public Q setNCharacterStream(String parameterName, Reader reader) throws SQLException {
             stmt.setNCharacterStream(parameterName, reader);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+        public Q setNCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setNCharacterStream(parameterName, reader, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
+        public Q setBlob(String parameterName, java.sql.Blob x) throws SQLException {
             stmt.setBlob(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream) throws SQLException {
+        public Q setBlob(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setBlob(parameterName, inputStream);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public Q setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setBlob(parameterName, inputStream, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setClob(String parameterName, java.sql.Clob x) throws SQLException {
+        public Q setClob(String parameterName, java.sql.Clob x) throws SQLException {
             stmt.setClob(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setClob(String parameterName, Reader reader) throws SQLException {
+        public Q setClob(String parameterName, Reader reader) throws SQLException {
             stmt.setClob(parameterName, reader);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setClob(String parameterName, Reader reader, long length) throws SQLException {
+        public Q setClob(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setClob(parameterName, reader, length);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNClob(String parameterName, java.sql.NClob x) throws SQLException {
+        public Q setNClob(String parameterName, java.sql.NClob x) throws SQLException {
             stmt.setNClob(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNClob(String parameterName, Reader reader) throws SQLException {
+        public Q setNClob(String parameterName, Reader reader) throws SQLException {
             stmt.setNClob(parameterName, reader);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setNClob(String parameterName, Reader reader, long length) throws SQLException {
+        public Q setNClob(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setNClob(parameterName, reader, length);
 
-            return this;
+            return (Q) this;
         }
 
         /** 
@@ -6029,10 +5938,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery setURL(String parameterName, URL x) throws SQLException {
+        public Q setURL(String parameterName, URL x) throws SQLException {
             stmt.setURL(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
         /** 
@@ -6042,10 +5951,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
+        public Q setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
             stmt.setSQLXML(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
         /** 
@@ -6055,54 +5964,42 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery setRowId(String parameterName, java.sql.RowId x) throws SQLException {
+        public Q setRowId(String parameterName, java.sql.RowId x) throws SQLException {
             stmt.setRowId(parameterName, x);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setObject(String parameterName, Object x) throws SQLException {
+        public Q setObject(String parameterName, Object x) throws SQLException {
             if (x == null) {
                 stmt.setObject(parameterName, x);
             } else {
                 N.typeOf(x.getClass()).set(stmt, parameterName, x);
             }
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType) throws SQLException {
+        public Q setObject(String parameterName, Object x, int sqlType) throws SQLException {
             stmt.setObject(parameterName, x, sqlType);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
+        public Q setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
             stmt.setObject(parameterName, x, sqlType, scaleOrLength);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery setObject(String parameterName, Object x, SQLType sqlType) throws SQLException {
-            stmt.setObject(parameterName, x, sqlType);
-
-            return this;
-        }
-
-        public PreparedCallableQuery setObject(String parameterName, Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
-            stmt.setObject(parameterName, x, sqlType, scaleOrLength);
-
-            return this;
-        }
-
-        public PreparedCallableQuery setParameters(Map<String, Object> parameters) throws SQLException {
+        public Q setParameters(Map<String, Object> parameters) throws SQLException {
             checkArgNotNull(parameters, "parameters");
 
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
                 setObject(entry.getKey(), entry.getValue());
             }
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6116,7 +6013,7 @@ public final class JdbcUtil {
          * @see {@link ClassUtil#getPropNameListExclusively(Class, Collection)} 
          * @see {@link JdbcUtil#getNamedParameters(String)}
          */
-        public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
+        public Q setParameters(List<String> parameterNames, Object entity) throws SQLException {
             checkArgNotNull(parameterNames, "parameterNames");
             checkArgNotNull(entity, "entity");
 
@@ -6124,7 +6021,7 @@ public final class JdbcUtil {
                 setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
             }
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6134,10 +6031,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6148,10 +6045,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6162,10 +6059,28 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
-            return this;
+            return (Q) this;
+        }
+
+        public Q registerOutParameter(String parameterName, int sqlType) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType);
+
+            return (Q) this;
+        }
+
+        public Q registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, scale);
+
+            return (Q) this;
+        }
+
+        public Q registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
+            stmt.registerOutParameter(parameterName, sqlType, typeName);
+
+            return (Q) this;
         }
 
         /**
@@ -6175,10 +6090,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6189,10 +6104,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
-            return this;
+            return (Q) this;
         }
 
         /**
@@ -6203,49 +6118,31 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
+        public Q registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType) throws SQLException {
+        public Q registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
+        public Q registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, scale);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
+        public Q registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, typeName);
 
-            return this;
+            return (Q) this;
         }
 
-        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
-            stmt.registerOutParameter(parameterName, sqlType);
-
-            return this;
-        }
-
-        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
-            stmt.registerOutParameter(parameterName, sqlType, scale);
-
-            return this;
-        }
-
-        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
-            stmt.registerOutParameter(parameterName, sqlType, typeName);
-
-            return this;
-        }
-
-        public <E extends Exception> PreparedCallableQuery registerOutParameters(final Try.EE.Consumer<? super CallableStatement, SQLException, E> register)
+        public <E extends Exception> Q registerOutParameters(final Try.EE.Consumer<? super CallableStatement, SQLException, E> register)
                 throws SQLException, E {
             checkArgNotNull(register, "register");
 
@@ -6261,7 +6158,7 @@ public final class JdbcUtil {
                 }
             }
 
-            return this;
+            return (Q) this;
         }
 
         public <R1, E1 extends Exception> Optional<R1> call(final ResultExtractor<R1, E1> resultExtrator1) throws SQLException, E1 {
@@ -6464,6 +6361,113 @@ public final class JdbcUtil {
             return Tuple.of(result1, result2, result3, result4, result5);
         }
     }
+
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...). 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
+     * @author haiyangl
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
+     */
+    public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
+
+        PreparedQuery(PreparedStatement stmt) {
+            super(stmt);
+        }
+
+        PreparedQuery(PreparedStatement stmt, AsyncExecutor asyncExecutor) {
+            super(stmt, asyncExecutor);
+        }
+    }
+
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
+     * @author haiyangl
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
+     */
+    public static class PreparedCallableQuery extends AbstractPreparedCallableQuery<CallableStatement, PreparedCallableQuery> {
+        PreparedCallableQuery(CallableStatement stmt) {
+            super(stmt);
+        }
+
+        PreparedCallableQuery(CallableStatement stmt, AsyncExecutor asyncExecutor) {
+            super(stmt, asyncExecutor);
+        }
+    }
+
+    //    public static class PreparedCallableQueryII extends AbstractPreparedCallableQuery<CallableStatement, PreparedCallableQueryII> {
+    //        private final NamedSQL namedSQL;
+    //
+    //        PreparedCallableQueryII(String sql, CallableStatement stmt) {
+    //            super(stmt);
+    //            this.namedSQL = NamedSQL.parse(sql);
+    //        }
+    //
+    //        PreparedCallableQueryII(String sql, CallableStatement stmt, AsyncExecutor asyncExecutor) {
+    //            super(stmt, asyncExecutor);
+    //            this.namedSQL = NamedSQL.parse(sql);
+    //        }
+    //
+    //        /**
+    //         * 
+    //         * @param entity
+    //         * @return
+    //         * @throws SQLException
+    //         */
+    //        public PreparedCallableQueryII setParameters(final Object entity) throws SQLException {
+    //            checkArgNotNull(entity, "entity");
+    //
+    //            SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(entity));
+    //
+    //            return this;
+    //        }
+    //    }
 
     public static class SimpleTransaction {
         static final Map<String, SimpleTransaction> threadTransacionMap = new ConcurrentHashMap<>();

@@ -24,7 +24,7 @@ public class Timed<T> {
     private final long timeInMillis;
     private final T value;
 
-    private Timed(T value, long timeInMillis) {
+    Timed(T value, long timeInMillis) {
         this.value = value;
         this.timeInMillis = timeInMillis;
     }
@@ -37,7 +37,7 @@ public class Timed<T> {
      * 
      * @return time in milliseconds.
      */
-    public long time() {
+    public long timestamp() {
         return timeInMillis;
     }
 

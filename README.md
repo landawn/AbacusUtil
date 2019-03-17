@@ -182,33 +182,33 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [RemoteExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RemoteExecutor_view.html).
 
 * More: 
-[Charsets](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Charsets.html),
-[Ascii](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Ascii.html),
-[CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/CalendarUnit.html),
-[NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/NamingPolicy.html), 
-[Properties](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Properties.html),
-[PropertiesUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/PropertiesUtil.html),
-[Wrapper](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Wrapper.html),
-[ArrayHashSet](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/ArrayHashSet.html),
-[ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/ArrayHashMap.html),
-[ClassUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/ClassUtil.html),
-[EscapeUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/EscapeUtil.html),
-[RegExUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/RegExUtil.html),
-[FilenameUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/FilenameUtil.html),
-[AWSJSONUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/AWSJSONUtil.html),
-[AddrUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/AddrUtil.html),
-[WSSecurityUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/WSSecurityUtil.html),
-[EmailUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/EmailUtil.html),
-[IEEE754rUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/IEEE754rUtil.html),
-[Index](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Index.html),
-[Median](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Median.html),
-[f](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/f.html),
-[Iterables](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Iterables.html),
-[Matth](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Matth.html), 
-[SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/SafeInitializer.html),
-[Stopwatch](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Stopwatch.html),
-[RateLimiter](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/RateLimiter.html),
-[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.5.6/com/landawn/abacus/util/Traverser.html)(from Apache commons, Google Guava...) ...
+[Charsets](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Charsets.html),
+[Ascii](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Ascii.html),
+[CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/CalendarUnit.html),
+[NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/NamingPolicy.html), 
+[Properties](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Properties.html),
+[PropertiesUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/PropertiesUtil.html),
+[Wrapper](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Wrapper.html),
+[ArrayHashSet](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/ArrayHashSet.html),
+[ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/ArrayHashMap.html),
+[ClassUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/ClassUtil.html),
+[EscapeUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/EscapeUtil.html),
+[RegExUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/RegExUtil.html),
+[FilenameUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/FilenameUtil.html),
+[AWSJSONUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/AWSJSONUtil.html),
+[AddrUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/AddrUtil.html),
+[WSSecurityUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/WSSecurityUtil.html),
+[EmailUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/EmailUtil.html),
+[IEEE754rUtil](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/IEEE754rUtil.html),
+[Index](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Index.html),
+[Median](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Median.html),
+[f](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/f.html),
+[Iterables](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Iterables.html),
+[Matth](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Matth.html), 
+[SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/SafeInitializer.html),
+[Stopwatch](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Stopwatch.html),
+[RateLimiter](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/RateLimiter.html),
+[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.5.7/com/landawn/abacus/util/Traverser.html)(from Apache commons, Google Guava...) ...
 
 
 ## Download/Installation & [Changes](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md):
@@ -218,22 +218,22 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 * Gradle:
 ```gradle
 // JDK 1.8 or above:
-compile 'com.landawn:abacus-util:1.5.6'
+compile 'com.landawn:abacus-util:1.5.7'
 
 // JDK 1.7:
-compile 'com.landawn:abacus-util-jdk7:1.5.6'
+compile 'com.landawn:abacus-util-jdk7:1.5.7'
 
 // Android (Java 1.7):
-compile 'abacus-android-jdk7:1.5.6'
+compile 'abacus-android-jdk7:1.5.7'
 
 // Android-SE (Java 1.7) - small edition without Stream/Matrix/Sheet/...:
-compile 'abacus-android-se-jdk7:1.5.6'
+compile 'abacus-android-se-jdk7:1.5.7'
 
 // Android (Java 1.8 or above):
-compile 'com.landawn:abacus-android:1.5.6'
+compile 'com.landawn:abacus-android:1.5.7'
 
 // Android-SE (Java 1.8 or above) - small edition without Stream/Matrix/Sheet/...:
-compile 'com.landawn:abacus-android-se:1.5.6'
+compile 'com.landawn:abacus-android-se:1.5.7'
 ```
 ### Functional Programming:
 (It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with the APIs provided in AbacusUtil)

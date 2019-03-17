@@ -1312,7 +1312,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Stream<IntStream> sliding(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<IntStream>() {
             private int cursor = fromIndex;
@@ -1362,7 +1362,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Stream<IntList> slidingToList(final int windowSize, final int increment) {
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+        N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
 
         return newStream(new ObjIteratorEx<IntList>() {
             private int cursor = fromIndex;
@@ -1413,7 +1413,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntStream top(final int n, final Comparator<? super Integer> comparator) {
-        N.checkArgument(n > 0, "'n' must be bigger than 0");
+        N.checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
             return this;

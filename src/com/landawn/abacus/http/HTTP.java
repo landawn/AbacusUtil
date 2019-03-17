@@ -17,6 +17,7 @@ package com.landawn.abacus.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -245,6 +246,56 @@ public final class HTTP {
         }
     }
 
+    public static ContentFormat getContentFormat(final HttpURLConnection connection) {
+        return getContentFormat(connection.getHeaderField(HttpHeaders.Names.CONTENT_TYPE), connection.getHeaderField(HttpHeaders.Names.CONTENT_ENCODING));
+    }
+
+    public static OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat) throws IOException {
+        return getOutputStream(connection, contentFormat, HTTP.getContentType(contentFormat), HTTP.getContentEncoding(contentFormat));
+    }
+
+    public static OutputStream getOutputStream(final HttpURLConnection connection, final ContentFormat contentFormat, String contentType,
+            String contentEncoding) throws IOException {
+
+        if (N.isNullOrEmpty(contentType) && contentFormat != null) {
+            contentType = getContentType(contentFormat);
+        }
+
+        if (N.notNullOrEmpty(contentType)) {
+            connection.setRequestProperty(HttpHeaders.Names.CONTENT_TYPE, contentType);
+        }
+
+        if (N.isNullOrEmpty(contentEncoding) && contentFormat != null) {
+            contentEncoding = getContentEncoding(contentFormat);
+        }
+
+        if (N.notNullOrEmpty(contentEncoding)) {
+            connection.setRequestProperty(HttpHeaders.Names.CONTENT_ENCODING, contentEncoding);
+        }
+
+        return wrapOutputStream(connection.getOutputStream(), contentFormat);
+    }
+
+    public static InputStream getInputStream(final HttpURLConnection connection) throws IOException {
+        return getInputStream(connection, getContentFormat(connection));
+    }
+
+    public static InputStream getInputStream(final HttpURLConnection connection, ContentFormat contentFormat) throws IOException {
+        return wrapInputStream(connection.getInputStream(), contentFormat);
+    }
+
+    public static InputStream getInputOrErrorStream(final HttpURLConnection connection) throws IOException {
+        return getInputOrErrorStream(connection, getContentFormat(connection));
+    }
+
+    public static InputStream getInputOrErrorStream(final HttpURLConnection connection, ContentFormat contentFormat) throws IOException {
+        try {
+            return wrapInputStream(connection.getInputStream(), contentFormat);
+        } catch (IOException e) {
+            return wrapInputStream(connection.getErrorStream(), contentFormat);
+        }
+    }
+
     public static void flush(OutputStream os) throws IOException {
         if (os instanceof LZ4BlockOutputStream) {
             ((LZ4BlockOutputStream) os).finish();
@@ -255,18 +306,38 @@ public final class HTTP {
         os.flush();
     }
 
-    static Charset getCharset(Map<String, List<String>> headers) {
+    public static Charset getCharset(HttpHeaders headers) {
+        Charset charset = Charsets.UTF_8;
+
+        if (headers != null && headers.headerNameSet().contains(HttpHeaders.Names.CONTENT_TYPE)) {
+            String value = N.stringOf(headers.get(HttpHeaders.Names.CONTENT_TYPE));
+            if (value.indexOf("charset=") >= 0) {
+                charset = getCharset(value);
+            }
+        }
+
+        return charset;
+    }
+
+    public static Charset getCharset(Map<String, List<String>> headers) {
         Charset charset = Charsets.UTF_8;
 
         if (headers != null && headers.containsKey(HttpHeaders.Names.CONTENT_TYPE)) {
             for (String value : headers.get(HttpHeaders.Names.CONTENT_TYPE)) {
                 if (value.indexOf("charset=") >= 0) {
-                    charset = Charsets.get(value.substring(value.indexOf("charset=") + "charset=".length()));
+                    charset = getCharset(value);
                     break;
                 }
             }
         }
 
         return charset;
+    }
+
+    private static Charset getCharset(String value) {
+        int fromIndex = value.indexOf("charset=");
+        int toIndex = value.indexOf(';', fromIndex);
+
+        return Charsets.get(value.substring(fromIndex + "charset=".length(), toIndex > 0 ? toIndex : value.length()));
     }
 }

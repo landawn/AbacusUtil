@@ -85,7 +85,7 @@ public final class Indexed<T> extends AbstractIndexed {
             return true;
         }
 
-        if (obj instanceof Timed) {
+        if (obj instanceof Indexed) {
             final Indexed<?> other = (Indexed<?>) obj;
 
             return this.index == other.index && N.equals(this.value, other.value);

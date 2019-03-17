@@ -405,7 +405,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableBoolean isFirst = MutableBoolean.of(true);
@@ -479,7 +479,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
         final MutableBoolean isFirst = MutableBoolean.of(true);
@@ -1700,7 +1700,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 2;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1771,7 +1771,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
         final int windowSize = 3;
 
-        N.checkArgument(increment > 0, "'increment'=%s must not be less than 1", increment);
+        N.checkArgPositive(increment, "increment");
 
         final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();

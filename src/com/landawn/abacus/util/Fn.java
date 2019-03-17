@@ -39,6 +39,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -134,6 +136,8 @@ import com.landawn.abacus.util.stream.SequentialOnly;
 public final class Fn extends Comparators {
 
     private static final Object NONE = new Object();
+
+    private static final Timer timer = new Timer();
 
     @SuppressWarnings("rawtypes")
     public static final IntFunction<Map<String, Object>> FACTORY_OF_MAP = (IntFunction) Factory.MAP_FACTORY;
@@ -1694,14 +1698,29 @@ public final class Fn extends Comparators {
     public static <T> Predicate<T> timeLimit(final long timeInMillis) {
         N.checkArgNotNegative(timeInMillis, "timeInMillis");
 
-        return new Predicate<T>() {
-            private final long now = System.currentTimeMillis();
+        final MutableBoolean ongoing = MutableBoolean.of(true);
 
+        final TimerTask task = new TimerTask() {
             @Override
-            public boolean test(T t) {
-                return System.currentTimeMillis() - now < timeInMillis;
+            public void run() {
+                ongoing.setFalse();
             }
         };
+
+        timer.schedule(task, timeInMillis);
+
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return ongoing.value();
+            }
+        };
+    }
+
+    public static <T> Predicate<T> timeLimit(final Duration duration) {
+        N.checkArgNotNull(duration, "duration");
+
+        return timeLimit(duration.toMillis());
     }
 
     /**
