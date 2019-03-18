@@ -48,7 +48,6 @@ import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.Fn.Predicates;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
@@ -81,6 +80,7 @@ import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
@@ -768,6 +768,13 @@ abstract class AbstractStream<T> extends Stream<T> {
         return sliding(windowSize, 1, collector);
     }
 
+    private static final LongSupplier sysTimeGetter = new LongSupplier() {
+        @Override
+        public long getAsLong() {
+            return System.currentTimeMillis();
+        }
+    };
+
     @Override
     public Stream<Stream<T>> window(final Duration duration) {
         return windowToList(duration).map(listToStreamMapper());
@@ -785,38 +792,26 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> window(final Duration duration, final Supplier<C> collectionSupplier) {
+        return window(duration, sysTimeGetter, collectionSupplier);
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final LongSupplier startTime, final Supplier<C> collectionSupplier) {
         checkArgNotNull(duration, "duration");
-        checkArgPositive(duration.toMillis(), "duration");
-        checkArgNotNull(collectionSupplier, "collectionSupplier");
 
-        final long durationInMillis = duration.toMillis();
-
-        final MutableBoolean cancellationFlag = MutableBoolean.of(false);
-
-        return split(Predicates.invertedByDuration(durationInMillis, cancellationFlag), collectionSupplier).onClose(new Runnable() {
-            @Override
-            public void run() {
-                cancellationFlag.setTrue();
-            }
-        });
+        return window(duration, duration.toMillis(), startTime, collectionSupplier);
     }
 
     @Override
     public <A, R> Stream<R> window(Duration duration, Collector<? super T, A, R> collector) {
+        return window(duration, sysTimeGetter, collector);
+    }
+
+    @Override
+    public <A, R> Stream<R> window(Duration duration, final LongSupplier startTime, Collector<? super T, A, R> collector) {
         checkArgNotNull(duration, "duration");
-        checkArgPositive(duration.toMillis(), "duration");
-        checkArgNotNull(collector, "collector");
 
-        final long durationInMillis = duration.toMillis();
-
-        final MutableBoolean cancellationFlag = MutableBoolean.of(false);
-
-        return split(Predicates.invertedByDuration(durationInMillis, cancellationFlag), collector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                cancellationFlag.setTrue();
-            }
-        });
+        return window(duration, duration.toMillis(), startTime, collector);
     }
 
     @Override
@@ -834,170 +829,312 @@ abstract class AbstractStream<T> extends Stream<T> {
         return window(duration, incrementInMillis, Suppliers.<T> ofSet());
     }
 
-    /**
-     * @see #sliding(int, int, IntFunction)
-     */
     @Override
     public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final Supplier<C> collectionSupplier) {
+        return window(duration, incrementInMillis, sysTimeGetter, collectionSupplier);
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime,
+            final Supplier<C> collectionSupplier) {
         checkArgNotNull(duration, "duration");
         checkArgPositive(duration.toMillis(), "duration");
         checkArgPositive(incrementInMillis, "incrementInMillis");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
-        final long durationInMillis = duration.toMillis();
+        return newStream(new ObjIteratorEx<C>() {
+            private final long durationInMillis = duration.toMillis();
+            private final boolean useQueue = incrementInMillis < durationInMillis;
 
-        if (incrementInMillis == durationInMillis) {
-            return window(duration, collectionSupplier);
-        } else if (incrementInMillis > durationInMillis) {
-            final Predicate<T> filter = new Predicate<T>() {
-                private final long start = System.currentTimeMillis();
+            private final Deque<Timed<T>> queue = new ArrayDeque<>();
+            private Iterator<Timed<T>> queueIter;
 
-                @Override
-                public boolean test(T value) {
-                    return (System.currentTimeMillis() - start) % incrementInMillis <= durationInMillis;
-                }
-            };
+            private ObjIteratorEx<T> iter;
+            private Timed<T> timedNext = null;
+            private T next = null;
 
-            return filter(filter).window(Duration.ofMillis(incrementInMillis), collectionSupplier);
-        } else {
-            return newStream(new ObjIteratorEx<C>() {
-                private final ObjIteratorEx<T> iter = iteratorEx();
-                private final Deque<Timed<T>> queue = new ArrayDeque<>();
-                private Iterator<Timed<T>> queueIter;
-                private Timed<T> next = null;
+            private long fromTime;
+            private long endTime;
+            private long now;
 
-                private long fromTime = System.currentTimeMillis() - incrementInMillis;
-                private long endTime = fromTime + durationInMillis;
+            private boolean initialized = false;
 
-                @Override
-                public boolean hasNext() {
-                    return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || iter.hasNext();
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
                 }
 
-                @Override
-                public C next() {
-                    if (hasNext() == false) {
-                        throw new NoSuchElementException();
+                if (useQueue) {
+                    if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                        return true;
+                    } else {
+                        while (iter.hasNext()) {
+                            next = iter.next();
+                            now = System.currentTimeMillis();
+
+                            if (now >= endTime) {
+                                queue.add(Timed.of(iter.next(), now));
+                                return true;
+                            } else if (timedNext != null) {
+                                timedNext = null;
+                            }
+                        }
+
+                        return false;
+                    }
+                } else {
+                    while ((timedNext == null || timedNext.timestamp() - fromTime < incrementInMillis) && iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
+                        if (now - fromTime >= incrementInMillis) {
+                            timedNext = Timed.of(next, now);
+                            break;
+                        } else if (timedNext != null) {
+                            timedNext = null;
+                        }
                     }
 
-                    fromTime += incrementInMillis;
-                    endTime = fromTime + durationInMillis;
+                    return timedNext != null && timedNext.timestamp() - fromTime >= incrementInMillis;
+                }
+            }
+
+            @Override
+            public C next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                fromTime += incrementInMillis;
+                endTime = fromTime + durationInMillis;
+
+                final C result = collectionSupplier.get();
+
+                if (useQueue) {
                     queueIter = queue.iterator();
 
-                    final C result = collectionSupplier.get();
-
                     while (queueIter.hasNext()) {
-                        next = queueIter.next();
+                        timedNext = queueIter.next();
 
-                        if (next.timestamp() < fromTime) {
+                        if (timedNext.timestamp() < fromTime) {
                             queueIter.remove();
-                        } else if (next.timestamp() < endTime) {
-                            result.add(next.value());
+                        } else if (timedNext.timestamp() < endTime) {
+                            result.add(timedNext.value());
                         } else {
                             return result;
                         }
                     }
 
                     while (iter.hasNext()) {
-                        next = Timed.of(iter.next(), System.currentTimeMillis());
-                        queue.add(next);
+                        timedNext = Timed.of(iter.next(), System.currentTimeMillis());
+                        queue.add(timedNext);
 
-                        if (next.timestamp() < endTime) {
-                            result.add(next.value());
+                        if (timedNext.timestamp() < endTime) {
+                            result.add(timedNext.value());
                         } else {
                             break;
                         }
                     }
+                } else {
+                    if (timedNext != null) {
+                        if (timedNext.timestamp() < fromTime) {
+                            timedNext = null;
+                        } else if (timedNext.timestamp() < endTime) {
+                            result.add(timedNext.value());
+                            timedNext = null;
+                        } else {
+                            return result;
+                        }
+                    }
 
-                    return result;
+                    while (iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
+                        if (now < fromTime) {
+                            continue;
+                        } else if (now < endTime) {
+                            result.add(next);
+                        } else {
+                            timedNext = Timed.of(next, now);
+                            break;
+                        }
+                    }
                 }
-            }, false, null);
-        }
+
+                return result;
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+
+                    iter = iteratorEx();
+
+                    fromTime = startTime.getAsLong() - incrementInMillis;
+                    endTime = fromTime + durationInMillis;
+                }
+            }
+        }, false, null);
     }
 
-    /**
-     * @see #sliding(int, int, IntFunction)
-     */
     @Override
     public <A, R> Stream<R> window(final Duration duration, final long incrementInMillis, final Collector<? super T, A, R> collector) {
+        return window(duration, incrementInMillis, sysTimeGetter, collector);
+    }
+
+    @Override
+    public <A, R> Stream<R> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime,
+            final Collector<? super T, A, R> collector) {
         checkArgNotNull(duration, "duration");
         checkArgPositive(duration.toMillis(), "duration");
         checkArgPositive(incrementInMillis, "incrementInMillis");
         checkArgNotNull(collector, "collector");
 
-        final long durationInMillis = duration.toMillis();
+        return newStream(new ObjIteratorEx<R>() {
+            private final long durationInMillis = duration.toMillis();
+            private final boolean useQueue = incrementInMillis < durationInMillis;
 
-        if (incrementInMillis == durationInMillis) {
-            return window(duration, collector);
-        } else if (incrementInMillis > durationInMillis) {
-            final Predicate<T> filter = new Predicate<T>() {
-                private final long start = System.currentTimeMillis();
+            private final Deque<Timed<T>> queue = new ArrayDeque<>();
+            private Iterator<Timed<T>> queueIter;
 
-                @Override
-                public boolean test(T value) {
-                    return (System.currentTimeMillis() - start) % incrementInMillis <= durationInMillis;
-                }
-            };
+            private Supplier<A> supplier;
+            private BiConsumer<A, ? super T> accumulator;
+            private Function<A, R> finisher;
 
-            return filter(filter).window(Duration.ofMillis(incrementInMillis), collector);
-        } else {
-            return newStream(new ObjIteratorEx<R>() {
-                private final Supplier<A> supplier = collector.supplier();
-                private final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-                private final Function<A, R> finisher = collector.finisher();
+            private ObjIteratorEx<T> iter;
+            private Timed<T> timedNext = null;
+            private T next = null;
 
-                private final ObjIteratorEx<T> iter = iteratorEx();
-                private final Deque<Timed<T>> queue = new ArrayDeque<>();
-                private Iterator<Timed<T>> queueIter;
-                private Timed<T> next = null;
+            private long fromTime;
+            private long endTime;
+            private long now;
 
-                private long fromTime = System.currentTimeMillis() - incrementInMillis;
-                private long endTime = fromTime + durationInMillis;
+            private boolean initialized = false;
 
-                @Override
-                public boolean hasNext() {
-                    return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || iter.hasNext();
+            @Override
+            public boolean hasNext() {
+                if (initialized == false) {
+                    init();
                 }
 
-                @Override
-                public R next() {
-                    if (hasNext() == false) {
-                        throw new NoSuchElementException();
+                if (useQueue) {
+                    if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                        return true;
+                    } else {
+                        while (iter.hasNext()) {
+                            next = iter.next();
+                            now = System.currentTimeMillis();
+
+                            if (now >= endTime) {
+                                queue.add(Timed.of(iter.next(), now));
+                                return true;
+                            } else if (timedNext != null) {
+                                timedNext = null;
+                            }
+                        }
+
+                        return false;
+                    }
+                } else {
+                    while ((timedNext == null || timedNext.timestamp() - fromTime < incrementInMillis) && iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
+                        if (now - fromTime >= incrementInMillis) {
+                            timedNext = Timed.of(next, now);
+                            break;
+                        } else if (timedNext != null) {
+                            timedNext = null;
+                        }
                     }
 
-                    fromTime += incrementInMillis;
-                    endTime = fromTime + durationInMillis;
+                    return timedNext != null && timedNext.timestamp() - fromTime >= incrementInMillis;
+                }
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                fromTime += incrementInMillis;
+                endTime = fromTime + durationInMillis;
+
+                final A container = supplier.get();
+
+                if (useQueue) {
                     queueIter = queue.iterator();
 
-                    final A container = supplier.get();
-
                     while (queueIter.hasNext()) {
-                        next = queueIter.next();
+                        timedNext = queueIter.next();
 
-                        if (next.timestamp() < fromTime) {
+                        if (timedNext.timestamp() < fromTime) {
                             queueIter.remove();
-                        } else if (next.timestamp() < endTime) {
-                            accumulator.accept(container, next.value());
+                        } else if (timedNext.timestamp() < endTime) {
+                            accumulator.accept(container, timedNext.value());
                         } else {
                             return finisher.apply(container);
                         }
                     }
 
                     while (iter.hasNext()) {
-                        next = Timed.of(iter.next(), System.currentTimeMillis());
-                        queue.add(next);
+                        timedNext = Timed.of(iter.next(), System.currentTimeMillis());
+                        queue.add(timedNext);
 
-                        if (next.timestamp() < endTime) {
-                            accumulator.accept(container, next.value());
+                        if (timedNext.timestamp() < endTime) {
+                            accumulator.accept(container, timedNext.value());
                         } else {
                             break;
                         }
                     }
+                } else {
+                    if (timedNext != null) {
+                        if (timedNext.timestamp() < fromTime) {
+                            timedNext = null;
+                        } else if (timedNext.timestamp() < endTime) {
+                            accumulator.accept(container, timedNext.value());
+                            timedNext = null;
+                        } else {
+                            return finisher.apply(container);
+                        }
+                    }
 
-                    return finisher.apply(container);
+                    while (iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
+                        if (now < fromTime) {
+                            continue;
+                        } else if (now < endTime) {
+                            accumulator.accept(container, next);
+                        } else {
+                            timedNext = Timed.of(next, now);
+                            break;
+                        }
+                    }
                 }
-            }, false, null);
-        }
+
+                return finisher.apply(container);
+            }
+
+            private void init() {
+                if (initialized == false) {
+                    initialized = true;
+
+                    supplier = collector.supplier();
+                    accumulator = collector.accumulator();
+                    finisher = collector.finisher();
+
+                    iter = iteratorEx();
+
+                    fromTime = startTime.getAsLong() - incrementInMillis;
+                    endTime = fromTime + durationInMillis;
+                }
+            }
+        }, false, null);
     }
 
     Function<List<T>, Stream<T>> listToStreamMapper() {

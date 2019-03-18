@@ -2807,14 +2807,18 @@ public final class Fn extends Comparators {
             @Override
             public Stream<C> apply(final Stream<Timed<T>> s) {
                 final ObjIterator<C> iter = new ObjIteratorEx<C>() {
+                    private long durationInMillis;
+                    private boolean useQueue;
+
                     private final Deque<Timed<T>> queue = new ArrayDeque<>();
                     private Iterator<Timed<T>> queueIter;
+
+                    private ObjIterator<Timed<T>> iter;
                     private Timed<T> next = null;
 
-                    private ObjIterator<Timed<T>> elements;
-                    private long durationInMillis;
                     private long fromTime;
                     private long endTime;
+
                     private boolean initialized = false;
 
                     @Override
@@ -2823,7 +2827,32 @@ public final class Fn extends Comparators {
                             init();
                         }
 
-                        return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || elements.hasNext();
+                        if (useQueue) {
+                            if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                                return true;
+                            } else {
+                                while (iter.hasNext()) {
+                                    next = iter.next();
+
+                                    if (next.timestamp() >= endTime) {
+                                        queue.add(next);
+                                        return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                        } else {
+                            while ((next == null || next.timestamp() - fromTime < incrementInMillis) && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() - fromTime >= incrementInMillis) {
+                                    break;
+                                }
+                            }
+
+                            return next != null && next.timestamp() - fromTime >= incrementInMillis;
+                        }
                     }
 
                     @Override
@@ -2834,30 +2863,55 @@ public final class Fn extends Comparators {
 
                         fromTime += incrementInMillis;
                         endTime = fromTime + durationInMillis;
-                        queueIter = queue.iterator();
 
                         final C result = collectionSupplier.get();
 
-                        while (queueIter.hasNext()) {
-                            next = queueIter.next();
+                        if (useQueue) {
+                            queueIter = queue.iterator();
 
-                            if (next.timestamp() < fromTime) {
-                                queueIter.remove();
-                            } else if (next.timestamp() < endTime) {
-                                result.add(next);
-                            } else {
-                                return result;
+                            while (queueIter.hasNext()) {
+                                next = queueIter.next();
+
+                                if (next.timestamp() < fromTime) {
+                                    queueIter.remove();
+                                } else if (next.timestamp() < endTime) {
+                                    result.add(next);
+                                } else {
+                                    return result;
+                                }
                             }
-                        }
 
-                        while (elements.hasNext()) {
-                            next = elements.next();
-                            queue.add(next);
+                            while (iter.hasNext()) {
+                                queue.add(next);
 
-                            if (next.timestamp() < endTime) {
-                                result.add(next);
-                            } else {
-                                break;
+                                if (next.timestamp() < endTime) {
+                                    result.add(next);
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            if (next != null) {
+                                if (next.timestamp() < fromTime) {
+                                    next = null;
+                                } else if (next.timestamp() < endTime) {
+                                    result.add(next);
+                                    next = null;
+                                } else {
+                                    return result;
+                                }
+                            }
+
+                            while (iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() < fromTime) {
+                                    continue;
+                                } else if (next.timestamp() < endTime) {
+                                    result.add(next);
+                                } else {
+                                    break;
+                                }
                             }
                         }
 
@@ -2873,11 +2927,13 @@ public final class Fn extends Comparators {
                             N.checkArgPositive(incrementInMillis, "incrementInMillis");
                             N.checkArgNotNull(collectionSupplier, "collectionSupplier");
 
+                            iter = s.iterator();
+
                             durationInMillis = duration.toMillis();
+                            useQueue = incrementInMillis < durationInMillis;
+
                             fromTime = startTime.getAsLong() - incrementInMillis;
                             endTime = fromTime + durationInMillis;
-
-                            elements = s.iterator();
                         }
                     }
                 };
@@ -2898,17 +2954,22 @@ public final class Fn extends Comparators {
             @Override
             public Stream<R> apply(final Stream<Timed<T>> s) {
                 final ObjIterator<R> iter = new ObjIteratorEx<R>() {
+                    private long durationInMillis;
+                    private boolean useQueue;
+
                     private final Deque<Timed<T>> queue = new ArrayDeque<>();
                     private Iterator<Timed<T>> queueIter;
+
+                    private Supplier<A> supplier;
+                    private BiConsumer<A, ? super Timed<T>> accumulator;
+                    private Function<A, R> finisher;
+
+                    private ObjIterator<Timed<T>> iter;
                     private Timed<T> next = null;
 
-                    private Supplier<A> supplier;;
-                    private BiConsumer<A, ? super Timed<T>> accumulator;;
-                    private Function<A, R> finisher;;
-                    private ObjIterator<Timed<T>> elements;
-                    private long durationInMillis;
                     private long fromTime;
                     private long endTime;
+
                     private boolean initialized = false;
 
                     @Override
@@ -2917,7 +2978,32 @@ public final class Fn extends Comparators {
                             init();
                         }
 
-                        return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || elements.hasNext();
+                        if (useQueue) {
+                            if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                                return true;
+                            } else {
+                                while (iter.hasNext()) {
+                                    next = iter.next();
+
+                                    if (next.timestamp() >= endTime) {
+                                        queue.add(next);
+                                        return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                        } else {
+                            while ((next == null || next.timestamp() - fromTime < incrementInMillis) && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() - fromTime >= incrementInMillis) {
+                                    break;
+                                }
+                            }
+
+                            return next != null && next.timestamp() - fromTime >= incrementInMillis;
+                        }
                     }
 
                     @Override
@@ -2928,30 +3014,55 @@ public final class Fn extends Comparators {
 
                         fromTime += incrementInMillis;
                         endTime = fromTime + durationInMillis;
-                        queueIter = queue.iterator();
 
                         final A container = supplier.get();
 
-                        while (queueIter.hasNext()) {
-                            next = queueIter.next();
+                        if (useQueue) {
+                            queueIter = queue.iterator();
 
-                            if (next.timestamp() < fromTime) {
-                                queueIter.remove();
-                            } else if (next.timestamp() < endTime) {
-                                accumulator.accept(container, next);
-                            } else {
-                                return finisher.apply(container);
+                            while (queueIter.hasNext()) {
+                                next = queueIter.next();
+
+                                if (next.timestamp() < fromTime) {
+                                    queueIter.remove();
+                                } else if (next.timestamp() < endTime) {
+                                    accumulator.accept(container, next);
+                                } else {
+                                    return finisher.apply(container);
+                                }
                             }
-                        }
 
-                        while (elements.hasNext()) {
-                            next = elements.next();
-                            queue.add(next);
+                            while (iter.hasNext()) {
+                                queue.add(next);
 
-                            if (next.timestamp() < endTime) {
-                                accumulator.accept(container, next);
-                            } else {
-                                break;
+                                if (next.timestamp() < endTime) {
+                                    accumulator.accept(container, next);
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            if (next != null) {
+                                if (next.timestamp() < fromTime) {
+                                    next = null;
+                                } else if (next.timestamp() < endTime) {
+                                    accumulator.accept(container, next);
+                                    next = null;
+                                } else {
+                                    return finisher.apply(container);
+                                }
+                            }
+
+                            while (iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() < fromTime) {
+                                    continue;
+                                } else if (next.timestamp() < endTime) {
+                                    accumulator.accept(container, next);
+                                } else {
+                                    break;
+                                }
                             }
                         }
 
@@ -2968,14 +3079,16 @@ public final class Fn extends Comparators {
                             N.checkArgNotNull(collector, "collector");
 
                             durationInMillis = duration.toMillis();
-                            fromTime = startTime.getAsLong() - incrementInMillis;
-                            endTime = fromTime + durationInMillis;
+                            useQueue = incrementInMillis < durationInMillis;
 
                             supplier = collector.supplier();
                             accumulator = collector.accumulator();
                             finisher = collector.finisher();
 
-                            elements = s.iterator();
+                            iter = s.iterator();
+
+                            fromTime = startTime.getAsLong() - incrementInMillis;
+                            endTime = fromTime + durationInMillis;
                         }
                     }
                 };

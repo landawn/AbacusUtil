@@ -103,6 +103,7 @@ import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongNFunction;
+import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
@@ -708,7 +709,13 @@ public abstract class Stream<T>
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, Supplier<C> collectionSupplier);
 
     @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(Duration duration, LongSupplier startTime, Supplier<C> collectionSupplier);
+
+    @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(Duration duration, LongSupplier startTime, Collector<? super T, A, R> collector);
 
     @SequentialOnly
     public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis);
@@ -734,12 +741,37 @@ public abstract class Stream<T>
      * 
      * @param duration
      * @param incrementInMillis
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, LongSupplier startTime,
+            Supplier<C> collectionSupplier);
+
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
      * @param collector
      * @return
      * @see #sliding(int, int, Collector)
      */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, Collector<? super T, A, R> collector);
+
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, LongSupplier startTime, Collector<? super T, A, R> collector);
 
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>
