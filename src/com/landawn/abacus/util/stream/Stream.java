@@ -36,6 +36,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -510,6 +511,12 @@ public abstract class Stream<T>
         return groupByToEntry(classifier, Collectors.countingInt());
     }
 
+    @SequentialOnly
+    public abstract Stream<Stream<T>> collapse(final BiPredicate<? super T, ? super T> collapsible);
+
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, Supplier<C> supplier);
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
@@ -687,6 +694,52 @@ public abstract class Stream<T>
 
     @SequentialOnly
     public abstract <A, R> Stream<R> sliding(int windowSize, int increment, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract Stream<Stream<T>> window(Duration duration);
+
+    @SequentialOnly
+    public abstract Stream<List<T>> windowToList(Duration duration);
+
+    @SequentialOnly
+    public abstract Stream<Set<T>> windowToSet(Duration duration);
+
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(Duration duration, Supplier<C> collectionSupplier);
+
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(Duration duration, Collector<? super T, A, R> collector);
+
+    @SequentialOnly
+    public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis);
+
+    @SequentialOnly
+    public abstract Stream<List<T>> windowToList(Duration duration, long incrementInMillis);
+
+    @SequentialOnly
+    public abstract Stream<Set<T>> windowToSet(Duration duration, long incrementInMillis);
+
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param collectionSupplier
+     * @return
+     * @see #sliding(int, int, IntFunction)
+     */
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, Supplier<C> collectionSupplier);
+
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param collector
+     * @return
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, Collector<? super T, A, R> collector);
 
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>
@@ -1529,6 +1582,9 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract Stream<T> append(Collection<? extends T> c);
 
+    @SequentialOnly
+    public abstract Stream<T> appendAll(Collection<? extends Collection<? extends T>> cs);
+
     @SafeVarargs
     @SequentialOnly
     public final Stream<T> prepend(T... a) {
@@ -1541,6 +1597,9 @@ public abstract class Stream<T>
 
     @SequentialOnly
     public abstract Stream<T> prepend(Collection<? extends T> c);
+
+    @SequentialOnly
+    public abstract Stream<T> prependAll(Collection<? extends Collection<? extends T>> cs);
 
     //    /**
     //     * Returns a reusable stream which can be repeatedly used.
@@ -1621,6 +1680,64 @@ public abstract class Stream<T>
     }
 
     abstract ObjIteratorEx<T> iteratorEx();
+
+    /** 
+     * 
+     * @param action a terminal operation should be called.
+     * @return
+     */
+    public <E extends Exception> ContinuableFuture<Void> asyncRun(final Try.Consumer<? super Stream<T>, E> action) {
+        return ContinuableFuture.run(new Try.Runnable<E>() {
+            @Override
+            public void run() throws E {
+                action.accept(Stream.this);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @param executor
+     * @return
+     */
+    public <E extends Exception> ContinuableFuture<Void> asyncRun(final Try.Consumer<? super Stream<T>, E> action, final Executor executor) {
+        return ContinuableFuture.run(new Try.Runnable<E>() {
+            @Override
+            public void run() throws E {
+                action.accept(Stream.this);
+            }
+        }, executor);
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @return
+     */
+    public <R, E extends Exception> ContinuableFuture<R> asyncCall(final Try.Function<? super Stream<T>, R, E> action) {
+        return ContinuableFuture.call(new Try.Callable<R, E>() {
+            @Override
+            public R call() throws E {
+                return action.apply(Stream.this);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @param executor
+     * @return
+     */
+    public <R, E extends Exception> ContinuableFuture<R> asyncCall(final Try.Function<? super Stream<T>, R, E> action, final Executor executor) {
+        return ContinuableFuture.call(new Try.Callable<R, E>() {
+            @Override
+            public R call() throws E {
+                return action.apply(Stream.this);
+            }
+        }, executor);
+    }
 
     @SequentialOnly
     @Override

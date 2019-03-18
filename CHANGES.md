@@ -2,6 +2,10 @@
  
 * Close Streams when `IllegalArgumentException` happens.
 
+* Add `Stream.window/Fn.window`.
+
+* Add `Stream.asyncRun/asyncCall`
+
 * Improvements and bug fix.
 
 

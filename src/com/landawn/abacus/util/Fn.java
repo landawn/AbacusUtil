@@ -26,6 +26,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -89,6 +91,7 @@ import com.landawn.abacus.util.function.LongBiPredicate;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
+import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadFunction;
 import com.landawn.abacus.util.function.ShortConsumer;
@@ -106,7 +109,10 @@ import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.function.UnaryOperator;
+import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.SequentialOnly;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Factory utility class for functional interfaces.
@@ -602,6 +608,58 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * Only for temporary use in sequential stream/single thread, not for parallel stream/multiple threads.
+     * The returned Collection will clean up before it's returned every time when {@code get} is called. 
+     * Don't save the returned Collection object or use it to save objects.
+     * 
+     * @param supplier
+     * @return
+     * @see {@code Stream.split/sliding};
+     */
+    public static <T, C extends Collection<T>> Supplier<C> reuse(final Supplier<C> supplier) {
+        return new Supplier<C>() {
+            private C c;
+
+            @Override
+            public C get() {
+                if (c == null) {
+                    c = supplier.get();
+                } else if (c.size() > 0) {
+                    c.clear();
+                }
+
+                return c;
+            }
+        };
+    }
+
+    /**
+     * Only for temporary use in sequential stream/single thread, not for parallel stream/multiple threads.
+     * The returned Collection will clean up before it's returned every time when {@code get} is called. 
+     * Don't save the returned Collection object or use it to save objects.
+     * 
+     * @param supplier
+     * @return
+     * @see {@code Stream.split/sliding};
+     */
+    public static <T, C extends Collection<T>> IntFunction<C> reuse(final IntFunction<C> supplier) {
+        return new IntFunction<C>() {
+            private C c;
+
+            @Override
+            public C apply(int size) {
+                if (c == null) {
+                    c = supplier.apply(size);
+                } else if (c.size() > 0) {
+                    c.clear();
+                }
+
+                return c;
+            }
+        };
+    }
+
     public static com.landawn.abacus.util.function.Runnable close(final AutoCloseable closeable) {
         return new com.landawn.abacus.util.function.Runnable() {
             private volatile boolean isClosed = false;
@@ -706,6 +764,24 @@ public final class Fn extends Comparators {
 
     public static <T> Consumer<T> doNothing() {
         return DO_NOTHING;
+    }
+
+    public static <T> Consumer<T> sleep(final long millis) {
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                N.sleep(millis);
+            }
+        };
+    }
+
+    public static <T> Consumer<T> sleepUninterruptibly(final long millis) {
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                N.sleepUninterruptibly(millis);
+            }
+        };
     }
 
     public static <T extends AutoCloseable> Consumer<T> close() {
@@ -2676,6 +2752,244 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static <T> Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>> window(final Duration duration, final LongSupplier startTime) {
+        return window(duration, duration.toMillis(), startTime);
+    }
+
+    public static <T> Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> windowToList(final Duration duration, final LongSupplier startTime) {
+        return window(duration, startTime, Suppliers.<Timed<T>> ofList());
+    }
+
+    public static <T> Function<Stream<Timed<T>>, Stream<Set<Timed<T>>>> windowToSet(final Duration duration, final LongSupplier startTime) {
+        return window(duration, startTime, Suppliers.<Timed<T>> ofSet());
+    }
+
+    public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final LongSupplier startTime,
+            final Supplier<C> collectionSupplier) {
+        return window(duration, duration.toMillis(), startTime, collectionSupplier);
+    }
+
+    public static <T, A, R> Function<Stream<Timed<T>>, Stream<R>> window(final Duration duration, final LongSupplier startTime,
+            final Collector<? super Timed<T>, A, R> collector) {
+        return window(duration, duration.toMillis(), startTime, collector);
+    }
+
+    public static <T> Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>> window(final Duration duration, final long incrementInMillis,
+            final LongSupplier startTime) {
+        final Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> mapper = windowToList(duration, incrementInMillis, startTime);
+
+        return new Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>>() {
+            @Override
+            public Stream<Stream<Timed<T>>> apply(Stream<Timed<T>> t) {
+                return mapper.apply(t).map(new Function<List<Timed<T>>, Stream<Timed<T>>>() {
+                    @Override
+                    public Stream<Timed<T>> apply(List<Timed<T>> t) {
+                        return Stream.of(t);
+                    }
+                });
+            }
+        };
+    }
+
+    public static <T> Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> windowToList(final Duration duration, final long incrementInMillis,
+            final LongSupplier startTime) {
+        return window(duration, incrementInMillis, startTime, Suppliers.<Timed<T>> ofList());
+    }
+
+    public static <T> Function<Stream<Timed<T>>, Stream<Set<Timed<T>>>> windowToSet(final Duration duration, final long incrementInMillis,
+            final LongSupplier startTime) {
+        return window(duration, incrementInMillis, startTime, Suppliers.<Timed<T>> ofSet());
+    }
+
+    public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final long incrementInMillis,
+            final LongSupplier startTime, final Supplier<C> collectionSupplier) {
+        return new Function<Stream<Timed<T>>, Stream<C>>() {
+            @Override
+            public Stream<C> apply(final Stream<Timed<T>> s) {
+                final ObjIterator<C> iter = new ObjIteratorEx<C>() {
+                    private final Deque<Timed<T>> queue = new ArrayDeque<>();
+                    private Iterator<Timed<T>> queueIter;
+                    private Timed<T> next = null;
+
+                    private ObjIterator<Timed<T>> elements;
+                    private long durationInMillis;
+                    private long fromTime;
+                    private long endTime;
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (initialized == false) {
+                            init();
+                        }
+
+                        return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || elements.hasNext();
+                    }
+
+                    @Override
+                    public C next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        fromTime += incrementInMillis;
+                        endTime = fromTime + durationInMillis;
+                        queueIter = queue.iterator();
+
+                        final C result = collectionSupplier.get();
+
+                        while (queueIter.hasNext()) {
+                            next = queueIter.next();
+
+                            if (next.timestamp() < fromTime) {
+                                queueIter.remove();
+                            } else if (next.timestamp() < endTime) {
+                                result.add(next);
+                            } else {
+                                return result;
+                            }
+                        }
+
+                        while (elements.hasNext()) {
+                            next = elements.next();
+                            queue.add(next);
+
+                            if (next.timestamp() < endTime) {
+                                result.add(next);
+                            } else {
+                                break;
+                            }
+                        }
+
+                        return result;
+                    }
+
+                    private void init() {
+                        if (initialized == false) {
+                            initialized = true;
+
+                            N.checkArgNotNull(duration, "duration");
+                            N.checkArgPositive(duration.toMillis(), "duration");
+                            N.checkArgPositive(incrementInMillis, "incrementInMillis");
+                            N.checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+                            durationInMillis = duration.toMillis();
+                            fromTime = startTime.getAsLong() - incrementInMillis;
+                            endTime = fromTime + durationInMillis;
+
+                            elements = s.iterator();
+                        }
+                    }
+                };
+
+                return Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        s.close();
+                    }
+                });
+            }
+        };
+    }
+
+    public static <T, A, R> Function<Stream<Timed<T>>, Stream<R>> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime,
+            final Collector<? super Timed<T>, A, R> collector) {
+        return new Function<Stream<Timed<T>>, Stream<R>>() {
+            @Override
+            public Stream<R> apply(final Stream<Timed<T>> s) {
+                final ObjIterator<R> iter = new ObjIteratorEx<R>() {
+                    private final Deque<Timed<T>> queue = new ArrayDeque<>();
+                    private Iterator<Timed<T>> queueIter;
+                    private Timed<T> next = null;
+
+                    private Supplier<A> supplier;;
+                    private BiConsumer<A, ? super Timed<T>> accumulator;;
+                    private Function<A, R> finisher;;
+                    private ObjIterator<Timed<T>> elements;
+                    private long durationInMillis;
+                    private long fromTime;
+                    private long endTime;
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (initialized == false) {
+                            init();
+                        }
+
+                        return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || elements.hasNext();
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        fromTime += incrementInMillis;
+                        endTime = fromTime + durationInMillis;
+                        queueIter = queue.iterator();
+
+                        final A container = supplier.get();
+
+                        while (queueIter.hasNext()) {
+                            next = queueIter.next();
+
+                            if (next.timestamp() < fromTime) {
+                                queueIter.remove();
+                            } else if (next.timestamp() < endTime) {
+                                accumulator.accept(container, next);
+                            } else {
+                                return finisher.apply(container);
+                            }
+                        }
+
+                        while (elements.hasNext()) {
+                            next = elements.next();
+                            queue.add(next);
+
+                            if (next.timestamp() < endTime) {
+                                accumulator.accept(container, next);
+                            } else {
+                                break;
+                            }
+                        }
+
+                        return finisher.apply(container);
+                    }
+
+                    private void init() {
+                        if (initialized == false) {
+                            initialized = true;
+
+                            N.checkArgNotNull(duration, "duration");
+                            N.checkArgPositive(duration.toMillis(), "duration");
+                            N.checkArgPositive(incrementInMillis, "incrementInMillis");
+                            N.checkArgNotNull(collector, "collector");
+
+                            durationInMillis = duration.toMillis();
+                            fromTime = startTime.getAsLong() - incrementInMillis;
+                            endTime = fromTime + durationInMillis;
+
+                            supplier = collector.supplier();
+                            accumulator = collector.accumulator();
+                            finisher = collector.finisher();
+
+                            elements = s.iterator();
+                        }
+                    }
+                };
+
+                return Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        s.close();
+                    }
+                });
+            }
+        };
+    }
+
     public static <R> com.landawn.abacus.util.function.Callable<R> callable(final com.landawn.abacus.util.function.Callable<R> callable) {
         N.checkArgNotNull(callable);
 
@@ -3995,6 +4309,137 @@ public final class Fn extends Comparators {
                     boolean res = pre == NONE || N.equals(value, pre) == false;
                     pre = value;
                     return res;
+                }
+            };
+        }
+
+        /**
+         * {@code true/false} are repeatedly returned after each specified duration.
+         * 
+         * @param periodInMillis
+         * @param cancellationFlag the underline scheduled {@code Task} will be cancelled if {@code cancellationFlag} is set to true.
+         * @return
+         */
+        public static <T> Predicate<T> invertedByDuration(final long periodInMillis, final MutableBoolean cancellationFlag) {
+            final MutableBoolean switcher = MutableBoolean.of(true);
+
+            final TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (cancellationFlag.isTrue()) {
+                        this.cancel();
+                    }
+
+                    switcher.invert();
+                }
+            };
+
+            timer.schedule(task, periodInMillis, periodInMillis);
+
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return switcher.value();
+                }
+            };
+        }
+
+        /**
+         * {@code true/false} are repeatedly returned after each specified duration.
+         * 
+         * @param periodInMillis
+         * @param cancellationFlag the underline scheduled {@code Task} will be cancelled if {@code cancellationFlag} is set to true.
+         * @param update called at the beginning of each duration.
+         * @return
+         */
+        public static <T> Predicate<T> invertedByDuration(final long periodInMillis, final MutableBoolean cancellationFlag, final Runnable update) {
+            final MutableBoolean switcher = MutableBoolean.of(true);
+
+            final TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (cancellationFlag.isTrue()) {
+                        this.cancel();
+                    }
+
+                    switcher.invert();
+                    update.run();
+                }
+            };
+
+            timer.schedule(task, periodInMillis, periodInMillis);
+
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return switcher.value();
+                }
+            };
+        }
+
+        /**
+         * {@code true/false} are repeatedly returned after each specified duration.
+         * 
+         * @param delayInMillis
+         * @param periodInMillis
+         * @param cancellationFlag the underline scheduled {@code Task} will be cancelled if {@code cancellationFlag} is set to true.
+         * @return
+         */
+        public static <T> Predicate<T> invertedByDuration(final long delayInMillis, final long periodInMillis, final MutableBoolean cancellationFlag) {
+            final MutableBoolean switcher = MutableBoolean.of(true);
+
+            final TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (cancellationFlag.isTrue()) {
+                        this.cancel();
+                    }
+
+                    switcher.invert();
+                }
+            };
+
+            timer.schedule(task, delayInMillis, periodInMillis);
+
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return switcher.value();
+                }
+            };
+        }
+
+        /**
+         * {@code true/false} are repeatedly returned after each specified duration.
+         * 
+         * @param delayInMillis
+         * @param periodInMillis
+         * @param cancellationFlag the underline scheduled {@code Task} will be cancelled if {@code cancellationFlag} is set to true.
+         * @param update called at the beginning of each duration.
+         * @return
+         */
+        public static <T> Predicate<T> invertedByDuration(final long delayInMillis, final long periodInMillis, final MutableBoolean cancellationFlag,
+                final Runnable update) {
+            final MutableBoolean switcher = MutableBoolean.of(true);
+
+            final TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (cancellationFlag.isTrue()) {
+                        this.cancel();
+                    }
+
+                    switcher.invert();
+                    update.run();
+                }
+            };
+
+            timer.schedule(task, delayInMillis, periodInMillis);
+
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return switcher.value();
                 }
             };
         }

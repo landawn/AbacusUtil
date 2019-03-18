@@ -23,9 +23,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -44,7 +46,9 @@ import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.Comparators;
+import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Predicates;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
@@ -67,6 +71,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.StringUtil.Strings;
+import com.landawn.abacus.util.Timed;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -514,12 +519,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        return splitToList(size).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(Stream.toArray(t), 0, t.size(), sorted, cmp, null);
-            }
-        });
+        return splitToList(size).map(listToStreamMapper());
     }
 
     @Override
@@ -534,12 +534,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
-        return splitToList(predicate).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(Stream.toArray(t), 0, t.size(), sorted, cmp, null);
-            }
-        });
+        return splitToList(predicate).map(listToStreamMapper());
     }
 
     @Override
@@ -755,12 +750,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return slidingToList(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
-            }
-        });
+        return slidingToList(windowSize, increment).map(listToStreamMapper());
     }
 
     @Override
@@ -776,6 +766,286 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <A, R> Stream<R> sliding(int windowSize, Collector<? super T, A, R> collector) {
         return sliding(windowSize, 1, collector);
+    }
+
+    @Override
+    public Stream<Stream<T>> window(final Duration duration) {
+        return windowToList(duration).map(listToStreamMapper());
+    }
+
+    @Override
+    public Stream<List<T>> windowToList(final Duration duration) {
+        return window(duration, Suppliers.<T> ofList());
+    }
+
+    @Override
+    public Stream<Set<T>> windowToSet(final Duration duration) {
+        return window(duration, Suppliers.<T> ofSet());
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final Supplier<C> collectionSupplier) {
+        checkArgNotNull(duration, "duration");
+        checkArgPositive(duration.toMillis(), "duration");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+        final long durationInMillis = duration.toMillis();
+
+        final MutableBoolean cancellationFlag = MutableBoolean.of(false);
+
+        return split(Predicates.invertedByDuration(durationInMillis, cancellationFlag), collectionSupplier).onClose(new Runnable() {
+            @Override
+            public void run() {
+                cancellationFlag.setTrue();
+            }
+        });
+    }
+
+    @Override
+    public <A, R> Stream<R> window(Duration duration, Collector<? super T, A, R> collector) {
+        checkArgNotNull(duration, "duration");
+        checkArgPositive(duration.toMillis(), "duration");
+        checkArgNotNull(collector, "collector");
+
+        final long durationInMillis = duration.toMillis();
+
+        final MutableBoolean cancellationFlag = MutableBoolean.of(false);
+
+        return split(Predicates.invertedByDuration(durationInMillis, cancellationFlag), collector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                cancellationFlag.setTrue();
+            }
+        });
+    }
+
+    @Override
+    public Stream<Stream<T>> window(final Duration duration, final long incrementInMillis) {
+        return windowToList(duration, incrementInMillis).map(listToStreamMapper());
+    }
+
+    @Override
+    public Stream<List<T>> windowToList(final Duration duration, final long incrementInMillis) {
+        return window(duration, incrementInMillis, Suppliers.<T> ofList());
+    }
+
+    @Override
+    public Stream<Set<T>> windowToSet(final Duration duration, final long incrementInMillis) {
+        return window(duration, incrementInMillis, Suppliers.<T> ofSet());
+    }
+
+    /**
+     * @see #sliding(int, int, IntFunction)
+     */
+    @Override
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final Supplier<C> collectionSupplier) {
+        checkArgNotNull(duration, "duration");
+        checkArgPositive(duration.toMillis(), "duration");
+        checkArgPositive(incrementInMillis, "incrementInMillis");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+        final long durationInMillis = duration.toMillis();
+
+        if (incrementInMillis == durationInMillis) {
+            return window(duration, collectionSupplier);
+        } else if (incrementInMillis > durationInMillis) {
+            final Predicate<T> filter = new Predicate<T>() {
+                private final long start = System.currentTimeMillis();
+
+                @Override
+                public boolean test(T value) {
+                    return (System.currentTimeMillis() - start) % incrementInMillis <= durationInMillis;
+                }
+            };
+
+            return filter(filter).window(Duration.ofMillis(incrementInMillis), collectionSupplier);
+        } else {
+            return newStream(new ObjIteratorEx<C>() {
+                private final ObjIteratorEx<T> iter = iteratorEx();
+                private final Deque<Timed<T>> queue = new ArrayDeque<>();
+                private Iterator<Timed<T>> queueIter;
+                private Timed<T> next = null;
+
+                private long fromTime = System.currentTimeMillis() - incrementInMillis;
+                private long endTime = fromTime + durationInMillis;
+
+                @Override
+                public boolean hasNext() {
+                    return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || iter.hasNext();
+                }
+
+                @Override
+                public C next() {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    fromTime += incrementInMillis;
+                    endTime = fromTime + durationInMillis;
+                    queueIter = queue.iterator();
+
+                    final C result = collectionSupplier.get();
+
+                    while (queueIter.hasNext()) {
+                        next = queueIter.next();
+
+                        if (next.timestamp() < fromTime) {
+                            queueIter.remove();
+                        } else if (next.timestamp() < endTime) {
+                            result.add(next.value());
+                        } else {
+                            return result;
+                        }
+                    }
+
+                    while (iter.hasNext()) {
+                        next = Timed.of(iter.next(), System.currentTimeMillis());
+                        queue.add(next);
+
+                        if (next.timestamp() < endTime) {
+                            result.add(next.value());
+                        } else {
+                            break;
+                        }
+                    }
+
+                    return result;
+                }
+            }, false, null);
+        }
+    }
+
+    /**
+     * @see #sliding(int, int, IntFunction)
+     */
+    @Override
+    public <A, R> Stream<R> window(final Duration duration, final long incrementInMillis, final Collector<? super T, A, R> collector) {
+        checkArgNotNull(duration, "duration");
+        checkArgPositive(duration.toMillis(), "duration");
+        checkArgPositive(incrementInMillis, "incrementInMillis");
+        checkArgNotNull(collector, "collector");
+
+        final long durationInMillis = duration.toMillis();
+
+        if (incrementInMillis == durationInMillis) {
+            return window(duration, collector);
+        } else if (incrementInMillis > durationInMillis) {
+            final Predicate<T> filter = new Predicate<T>() {
+                private final long start = System.currentTimeMillis();
+
+                @Override
+                public boolean test(T value) {
+                    return (System.currentTimeMillis() - start) % incrementInMillis <= durationInMillis;
+                }
+            };
+
+            return filter(filter).window(Duration.ofMillis(incrementInMillis), collector);
+        } else {
+            return newStream(new ObjIteratorEx<R>() {
+                private final Supplier<A> supplier = collector.supplier();
+                private final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+                private final Function<A, R> finisher = collector.finisher();
+
+                private final ObjIteratorEx<T> iter = iteratorEx();
+                private final Deque<Timed<T>> queue = new ArrayDeque<>();
+                private Iterator<Timed<T>> queueIter;
+                private Timed<T> next = null;
+
+                private long fromTime = System.currentTimeMillis() - incrementInMillis;
+                private long endTime = fromTime + durationInMillis;
+
+                @Override
+                public boolean hasNext() {
+                    return (queue.size() > 0 && queue.getLast().timestamp() >= endTime) || iter.hasNext();
+                }
+
+                @Override
+                public R next() {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    fromTime += incrementInMillis;
+                    endTime = fromTime + durationInMillis;
+                    queueIter = queue.iterator();
+
+                    final A container = supplier.get();
+
+                    while (queueIter.hasNext()) {
+                        next = queueIter.next();
+
+                        if (next.timestamp() < fromTime) {
+                            queueIter.remove();
+                        } else if (next.timestamp() < endTime) {
+                            accumulator.accept(container, next.value());
+                        } else {
+                            return finisher.apply(container);
+                        }
+                    }
+
+                    while (iter.hasNext()) {
+                        next = Timed.of(iter.next(), System.currentTimeMillis());
+                        queue.add(next);
+
+                        if (next.timestamp() < endTime) {
+                            accumulator.accept(container, next.value());
+                        } else {
+                            break;
+                        }
+                    }
+
+                    return finisher.apply(container);
+                }
+            }, false, null);
+        }
+    }
+
+    Function<List<T>, Stream<T>> listToStreamMapper() {
+        return new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return new ArrayStream<>(Stream.toArray(t), 0, t.size(), sorted, cmp, null);
+            }
+        };
+    }
+
+    @Override
+    public Stream<Stream<T>> collapse(final BiPredicate<? super T, ? super T> collapsible) {
+        return collapse(collapsible, Suppliers.<T> ofList()).map(listToStreamMapper());
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<C> supplier) {
+        return newStream(new ObjIteratorEx<C>() {
+            private final ObjIteratorEx<T> iter = iteratorEx();
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public C next() {
+                if (hasNext == false) {
+                    next = iter.next();
+                }
+
+                final C c = supplier.get();
+                c.add(next);
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        c.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return c;
+            }
+        }, false, null);
     }
 
     @Override
@@ -2604,11 +2874,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> append(Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
         return append(Stream.of(c));
+    }
+
+    @Override
+    public Stream<T> appendAll(Collection<? extends Collection<? extends T>> cs) {
+        return append(Stream.of(cs).flattMap(Fn.<Collection<? extends T>> identity()));
     }
 
     @Override
@@ -2618,11 +2889,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> prepend(Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
         return prepend(Stream.of(c));
+    }
+
+    @Override
+    public Stream<T> prependAll(Collection<? extends Collection<? extends T>> cs) {
+        return prepend(Stream.of(cs).flattMap(Fn.<Collection<? extends T>> identity()));
     }
 
     @Override
