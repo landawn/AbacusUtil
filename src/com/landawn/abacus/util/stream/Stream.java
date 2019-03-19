@@ -700,6 +700,9 @@ public abstract class Stream<T>
     public abstract Stream<Stream<T>> window(Duration duration);
 
     @SequentialOnly
+    public abstract Stream<Stream<T>> window(Duration duration, LongSupplier startTime);
+
+    @SequentialOnly
     public abstract Stream<List<T>> windowToList(Duration duration);
 
     @SequentialOnly
@@ -721,6 +724,9 @@ public abstract class Stream<T>
     public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis);
 
     @SequentialOnly
+    public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis, LongSupplier startTime);
+
+    @SequentialOnly
     public abstract Stream<List<T>> windowToList(Duration duration, long incrementInMillis);
 
     @SequentialOnly
@@ -733,6 +739,7 @@ public abstract class Stream<T>
      * @param collectionSupplier
      * @return
      * @see #sliding(int, int, IntFunction)
+     * @see Fn#window(Duration, long, LongSupplier, Supplier)
      */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, Supplier<C> collectionSupplier);
@@ -745,6 +752,7 @@ public abstract class Stream<T>
      * @param collectionSupplier
      * @return
      * @see #sliding(int, int, Collector)
+     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, LongSupplier startTime,
@@ -757,6 +765,7 @@ public abstract class Stream<T>
      * @param collector
      * @return
      * @see #sliding(int, int, Collector)
+     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, Collector<? super T, A, R> collector);
@@ -769,6 +778,7 @@ public abstract class Stream<T>
      * @param collector
      * @return
      * @see #sliding(int, int, Collector)
+     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, LongSupplier startTime, Collector<? super T, A, R> collector);

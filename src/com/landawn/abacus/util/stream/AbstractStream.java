@@ -781,6 +781,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> window(final Duration duration, final LongSupplier startTime) {
+        return window(duration, startTime, Suppliers.<T> ofList()).map(listToStreamMapper());
+    }
+
+    @Override
     public Stream<List<T>> windowToList(final Duration duration) {
         return window(duration, Suppliers.<T> ofList());
     }
@@ -820,6 +825,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime) {
+        return window(duration, incrementInMillis, startTime, Suppliers.<T> ofList()).map(listToStreamMapper());
+    }
+
+    @Override
     public Stream<List<T>> windowToList(final Duration duration, final long incrementInMillis) {
         return window(duration, incrementInMillis, Suppliers.<T> ofList());
     }
@@ -846,7 +856,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             private final long durationInMillis = duration.toMillis();
             private final boolean useQueue = incrementInMillis < durationInMillis;
 
-            private final Deque<Timed<T>> queue = new ArrayDeque<>();
+            private final Deque<Timed<T>> queue = useQueue ? new ArrayDeque<Timed<T>>() : null;
             private Iterator<Timed<T>> queueIter;
 
             private ObjIteratorEx<T> iter;
@@ -866,15 +876,17 @@ abstract class AbstractStream<T> extends Stream<T> {
                 }
 
                 if (useQueue) {
-                    if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                    if ((queue.size() > 0 && queue.getLast().timestamp() >= endTime)
+                            || (timedNext != null && timedNext.timestamp() - fromTime >= incrementInMillis)) {
                         return true;
                     } else {
                         while (iter.hasNext()) {
                             next = iter.next();
                             now = System.currentTimeMillis();
 
-                            if (now >= endTime) {
-                                queue.add(Timed.of(iter.next(), now));
+                            if (now - fromTime >= incrementInMillis) {
+                                timedNext = Timed.of(next, now);
+                                queue.add(timedNext);
                                 return true;
                             } else if (timedNext != null) {
                                 timedNext = null;
@@ -921,27 +933,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                             queueIter.remove();
                         } else if (timedNext.timestamp() < endTime) {
                             result.add(timedNext.value());
-                        } else {
-                            return result;
-                        }
-                    }
-
-                    while (iter.hasNext()) {
-                        timedNext = Timed.of(iter.next(), System.currentTimeMillis());
-                        queue.add(timedNext);
-
-                        if (timedNext.timestamp() < endTime) {
-                            result.add(timedNext.value());
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    if (timedNext != null) {
-                        if (timedNext.timestamp() < fromTime) {
-                            timedNext = null;
-                        } else if (timedNext.timestamp() < endTime) {
-                            result.add(timedNext.value());
                             timedNext = null;
                         } else {
                             return result;
@@ -952,8 +943,35 @@ abstract class AbstractStream<T> extends Stream<T> {
                         next = iter.next();
                         now = System.currentTimeMillis();
 
+                        if (now >= fromTime) {
+                            timedNext = Timed.of(next, now);
+                            queue.add(timedNext);
+
+                            if (timedNext.timestamp() < endTime) {
+                                result.add(timedNext.value());
+                                timedNext = null;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    if (timedNext != null) {
+                        if (timedNext.timestamp() < fromTime) {
+                            // ignore
+                        } else if (timedNext.timestamp() < endTime) {
+                            result.add(timedNext.value());
+                        } else {
+                            return result;
+                        }
+                    }
+
+                    while (iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
                         if (now < fromTime) {
-                            continue;
+                            // ignore
                         } else if (now < endTime) {
                             result.add(next);
                         } else {
@@ -996,7 +1014,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             private final long durationInMillis = duration.toMillis();
             private final boolean useQueue = incrementInMillis < durationInMillis;
 
-            private final Deque<Timed<T>> queue = new ArrayDeque<>();
+            private final Deque<Timed<T>> queue = useQueue ? new ArrayDeque<Timed<T>>() : null;
             private Iterator<Timed<T>> queueIter;
 
             private Supplier<A> supplier;
@@ -1020,15 +1038,17 @@ abstract class AbstractStream<T> extends Stream<T> {
                 }
 
                 if (useQueue) {
-                    if (queue.size() > 0 && queue.getLast().timestamp() >= endTime) {
+                    if ((queue.size() > 0 && queue.getLast().timestamp() >= endTime)
+                            || (timedNext != null && timedNext.timestamp() - fromTime >= incrementInMillis)) {
                         return true;
                     } else {
                         while (iter.hasNext()) {
                             next = iter.next();
                             now = System.currentTimeMillis();
 
-                            if (now >= endTime) {
-                                queue.add(Timed.of(iter.next(), now));
+                            if (now - fromTime >= incrementInMillis) {
+                                timedNext = Timed.of(next, now);
+                                queue.add(timedNext);
                                 return true;
                             } else if (timedNext != null) {
                                 timedNext = null;
@@ -1075,27 +1095,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                             queueIter.remove();
                         } else if (timedNext.timestamp() < endTime) {
                             accumulator.accept(container, timedNext.value());
-                        } else {
-                            return finisher.apply(container);
-                        }
-                    }
-
-                    while (iter.hasNext()) {
-                        timedNext = Timed.of(iter.next(), System.currentTimeMillis());
-                        queue.add(timedNext);
-
-                        if (timedNext.timestamp() < endTime) {
-                            accumulator.accept(container, timedNext.value());
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    if (timedNext != null) {
-                        if (timedNext.timestamp() < fromTime) {
-                            timedNext = null;
-                        } else if (timedNext.timestamp() < endTime) {
-                            accumulator.accept(container, timedNext.value());
                             timedNext = null;
                         } else {
                             return finisher.apply(container);
@@ -1106,8 +1105,35 @@ abstract class AbstractStream<T> extends Stream<T> {
                         next = iter.next();
                         now = System.currentTimeMillis();
 
+                        if (now >= fromTime) {
+                            timedNext = Timed.of(next, now);
+                            queue.add(timedNext);
+
+                            if (timedNext.timestamp() < endTime) {
+                                accumulator.accept(container, timedNext.value());
+                                timedNext = null;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    if (timedNext != null) {
+                        if (timedNext.timestamp() < fromTime) {
+                            // ignore
+                        } else if (timedNext.timestamp() < endTime) {
+                            accumulator.accept(container, timedNext.value());
+                        } else {
+                            return finisher.apply(container);
+                        }
+                    }
+
+                    while (iter.hasNext()) {
+                        next = iter.next();
+                        now = System.currentTimeMillis();
+
                         if (now < fromTime) {
-                            continue;
+                            // ignore
                         } else if (now < endTime) {
                             accumulator.accept(container, next);
                         } else {

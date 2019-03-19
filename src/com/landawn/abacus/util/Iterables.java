@@ -16,14 +16,22 @@
 
 package com.landawn.abacus.util;
 
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 import java.util.Set;
 
@@ -360,6 +368,650 @@ public final class Iterables {
             }
 
             return OptionalInt.empty();
+        }
+    }
+
+    public static <T> List<List<T>> rollup(Collection<? extends T> c) {
+        final List<List<T>> res = new ArrayList<>();
+        res.add(new ArrayList<T>());
+
+        if (N.notNullOrEmpty(c)) {
+            for (T e : c) {
+                final List<T> prev = res.get(res.size() - 1);
+                List<T> cur = new ArrayList<>(prev.size() + 1);
+                cur.addAll(prev);
+                cur.add(e);
+                res.add(cur);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns the set of all possible subsets of {@code set}. For example,
+     * {@code powerSet(ImmutableSet.of(1, 2))} returns the set {@code {{},
+     * {1}, {2}, {1, 2}}}.
+     *
+     * <p>Elements appear in these subsets in the same iteration order as they
+     * appeared in the input set. The order in which these subsets appear in the
+     * outer set is undefined. Note that the power set of the empty set is not the
+     * empty set, but a one-element set containing the empty set.
+     *
+     * <p>The returned set and its constituent sets use {@code equals} to decide
+     * whether two elements are identical, even if the input set uses a different
+     * concept of equivalence.
+     *
+     * <p><i>Performance notes:</i> while the power set of a set with size {@code
+     * n} is of size {@code 2^n}, its memory usage is only {@code O(n)}. When the
+     * power set is constructed, the input set is merely copied. Only as the
+     * power set is iterated are the individual subsets created, and these subsets
+     * themselves occupy only a small constant amount of memory.
+     *
+     * @param set the set of elements to construct a power set from
+     * @return the power set, as an immutable set of immutable sets
+     * @throws IllegalArgumentException if {@code set} has more than 30 unique
+     *     elements (causing the power set size to exceed the {@code int} range)
+     * @throws NullPointerException if {@code set} is or contains {@code null}
+     * @see <a href="http://en.wikipedia.org/wiki/Power_set">Power set article at
+     *      Wikipedia</a>
+     */
+    public static <E> Set<Set<E>> powerSet(Set<E> set) {
+        return new PowerSet<>(set);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Collection}.
+     *
+     * <p><i>Notes:</i> This is an implementation of the Plain Changes algorithm
+     * for permutations generation, described in Knuth's "The Art of Computer
+     * Programming", Volume 4, Chapter 7, Section 7.2.1.2.
+     *
+     * <p>If the input list contains equal elements, some of the generated
+     * permutations will be equal.
+     *
+     * <p>An empty collection has only one permutation, which is an empty list.
+     *
+     * @param elements the original collection whose elements have to be permuted.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original collection.
+     * @throws NullPointerException if the specified collection is null or has any
+     *     null elements.
+     */
+    public static <E> Collection<List<E>> permutations(Collection<E> elements) {
+        return new PermutationCollection<E>(elements);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Iterable}.
+     *
+     * <p><i>Notes:</i> This is an implementation of the algorithm for
+     * Lexicographical Permutations Generation, described in Knuth's "The Art of
+     * Computer Programming", Volume 4, Chapter 7, Section 7.2.1.2. The
+     * iteration order follows the lexicographical order. This means that
+     * the first permutation will be in ascending order, and the last will be in
+     * descending order.
+     *
+     * <p>Duplicate elements are considered equal. For example, the list [1, 1]
+     * will have only one permutation, instead of two. This is why the elements
+     * have to implement {@link Comparable}.
+     *
+     * <p>An empty iterable has only one permutation, which is an empty list.
+     *
+     * <p>This method is equivalent to
+     * {@code Collections2.orderedPermutations(list, Ordering.natural())}.
+     *
+     * @param elements the original iterable whose elements have to be permuted.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original iterable.
+     * @throws NullPointerException if the specified iterable is null or has any
+     *     null elements.
+     */
+    public static <E extends Comparable<? super E>> Collection<List<E>> orderedPermutations(Collection<E> elements) {
+        return orderedPermutations(elements, Comparators.naturalOrder());
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns a {@link Collection} of all the permutations of the specified
+     * {@link Iterable} using the specified {@link Comparator} for establishing
+     * the lexicographical ordering.
+     *
+     * <p>Examples: <pre>   {@code
+     *
+     *   for (List<String> perm : orderedPermutations(asList("b", "c", "a"))) {
+     *     println(perm);
+     *   }
+     *   // -> ["a", "b", "c"]
+     *   // -> ["a", "c", "b"]
+     *   // -> ["b", "a", "c"]
+     *   // -> ["b", "c", "a"]
+     *   // -> ["c", "a", "b"]
+     *   // -> ["c", "b", "a"]
+     *
+     *   for (List<Integer> perm : orderedPermutations(asList(1, 2, 2, 1))) {
+     *     println(perm);
+     *   }
+     *   // -> [1, 1, 2, 2]
+     *   // -> [1, 2, 1, 2]
+     *   // -> [1, 2, 2, 1]
+     *   // -> [2, 1, 1, 2]
+     *   // -> [2, 1, 2, 1]
+     *   // -> [2, 2, 1, 1]}</pre>
+     *
+     * <p><i>Notes:</i> This is an implementation of the algorithm for
+     * Lexicographical Permutations Generation, described in Knuth's "The Art of
+     * Computer Programming", Volume 4, Chapter 7, Section 7.2.1.2. The
+     * iteration order follows the lexicographical order. This means that
+     * the first permutation will be in ascending order, and the last will be in
+     * descending order.
+     *
+     * <p>Elements that compare equal are considered equal and no new permutations
+     * are created by swapping them.
+     *
+     * <p>An empty iterable has only one permutation, which is an empty list.
+     *
+     * @param elements the original iterable whose elements have to be permuted.
+     * @param comparator a comparator for the iterable's elements.
+     * @return an immutable {@link Collection} containing all the different
+     *     permutations of the original iterable.
+     * @throws NullPointerException If the specified iterable is null, has any
+     *     null elements, or if the specified comparator is null.
+     */
+    public static <E> Collection<List<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
+        return new OrderedPermutationCollection<E>(elements, comparator);
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns every possible list that can be formed by choosing one element
+     * from each of the given lists in order; the "n-ary
+     * <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian
+     * product</a>" of the lists. For example: <pre>   {@code
+     *
+     *   Lists.cartesianProduct(ImmutableList.of(
+     *       ImmutableList.of(1, 2),
+     *       ImmutableList.of("A", "B", "C")))}</pre>
+     *
+     * <p>returns a list containing six lists in the following order:
+     *
+     * <ul>
+     * <li>{@code ImmutableList.of(1, "A")}
+     * <li>{@code ImmutableList.of(1, "B")}
+     * <li>{@code ImmutableList.of(1, "C")}
+     * <li>{@code ImmutableList.of(2, "A")}
+     * <li>{@code ImmutableList.of(2, "B")}
+     * <li>{@code ImmutableList.of(2, "C")}
+     * </ul>
+     *
+     * <p>The result is guaranteed to be in the "traditional", lexicographical
+     * order for Cartesian products that you would get from nesting for loops:
+     * <pre>   {@code
+     *
+     *   for (B b0 : lists.get(0)) {
+     *     for (B b1 : lists.get(1)) {
+     *       ...
+     *       ImmutableList<B> tuple = ImmutableList.of(b0, b1, ...);
+     *       // operate on tuple
+     *     }
+     *   }}</pre>
+     *
+     * <p>Note that if any input list is empty, the Cartesian product will also be
+     * empty. If no lists at all are provided (an empty list), the resulting
+     * Cartesian product has one element, an empty list (counter-intuitive, but
+     * mathematically consistent).
+     *
+     * <p><i>Performance notes:</i> while the cartesian product of lists of size
+     * {@code m, n, p} is a list of size {@code m x n x p}, its actual memory
+     * consumption is much smaller. When the cartesian product is constructed, the
+     * input lists are merely copied. Only as the resulting list is iterated are
+     * the individual lists created, and these are not retained after iteration.
+     *
+     * @param cs the lists to choose elements from, in the order that
+     *     the elements chosen from those lists should appear in the resulting
+     *     lists
+     * @param <E> any common base class shared by all axes (often just {@link
+     *     Object})
+     * @return the Cartesian product, as an immutable list containing immutable
+     *     lists
+     * @throws IllegalArgumentException if the size of the cartesian product would
+     *     be greater than {@link Integer#MAX_VALUE}
+     * @throws NullPointerException if {@code lists}, any one of the
+     *     {@code lists}, or any element of a provided list is null
+     */
+    @SafeVarargs
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
+        return cartesianProduct(Arrays.asList(cs));
+    }
+
+    /**
+     * Note: copy from Google Guava under Apache License v2.
+     * <br />
+     * 
+     * Returns every possible list that can be formed by choosing one element
+     * from each of the given lists in order; the "n-ary
+     * <a href="http://en.wikipedia.org/wiki/Cartesian_product">Cartesian
+     * product</a>" of the lists. For example: <pre>   {@code
+     *
+     *   Lists.cartesianProduct(ImmutableList.of(
+     *       ImmutableList.of(1, 2),
+     *       ImmutableList.of("A", "B", "C")))}</pre>
+     *
+     * <p>returns a list containing six lists in the following order:
+     *
+     * <ul>
+     * <li>{@code ImmutableList.of(1, "A")}
+     * <li>{@code ImmutableList.of(1, "B")}
+     * <li>{@code ImmutableList.of(1, "C")}
+     * <li>{@code ImmutableList.of(2, "A")}
+     * <li>{@code ImmutableList.of(2, "B")}
+     * <li>{@code ImmutableList.of(2, "C")}
+     * </ul>
+     *
+     * <p>The result is guaranteed to be in the "traditional", lexicographical
+     * order for Cartesian products that you would get from nesting for loops:
+     * <pre>   {@code
+     *
+     *   for (B b0 : lists.get(0)) {
+     *     for (B b1 : lists.get(1)) {
+     *       ...
+     *       ImmutableList<B> tuple = ImmutableList.of(b0, b1, ...);
+     *       // operate on tuple
+     *     }
+     *   }}</pre>
+     *
+     * <p>Note that if any input list is empty, the Cartesian product will also be
+     * empty. If no lists at all are provided (an empty list), the resulting
+     * Cartesian product has one element, an empty list (counter-intuitive, but
+     * mathematically consistent).
+     *
+     * <p><i>Performance notes:</i> while the cartesian product of lists of size
+     * {@code m, n, p} is a list of size {@code m x n x p}, its actual memory
+     * consumption is much smaller. When the cartesian product is constructed, the
+     * input lists are merely copied. Only as the resulting list is iterated are
+     * the individual lists created, and these are not retained after iteration.
+     *
+     * @param cs the lists to choose elements from, in the order that
+     *     the elements chosen from those lists should appear in the resulting
+     *     lists
+     * @param <E> any common base class shared by all axes (often just {@link
+     *     Object})
+     * @return the Cartesian product, as an immutable list containing immutable
+     *     lists
+     * @throws IllegalArgumentException if the size of the cartesian product would
+     *     be greater than {@link Integer#MAX_VALUE}
+     * @throws NullPointerException if {@code lists}, any one of the {@code lists},
+     *     or any element of a provided list is null
+     */
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
+        return new CartesianList<>(cs);
+    }
+
+    /**
+     * Returns {@code true} if the second list is a permutation of the first.
+     */
+    private static boolean isPermutations(Collection<?> a, Collection<?> b) {
+        if (a.size() != b.size()) {
+            return false;
+        }
+
+        return N.difference(a, b).size() == 0;
+    }
+
+    private static final class PowerSet<E> extends AbstractSet<Set<E>> {
+        final ImmutableMap<E, Integer> inputSet;
+
+        PowerSet(Set<E> input) {
+            this.inputSet = indexMap(input);
+            N.checkArgument(inputSet.size() <= 30, "Too many elements to create power set: %s > 30", inputSet.size());
+        }
+
+        @Override
+        public int size() {
+            return 1 << inputSet.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<Set<E>> iterator() {
+            return new Iterator<Set<E>>() {
+                private final int size = size();
+                private int position;
+
+                @Override
+                public boolean hasNext() {
+                    return position < size;
+                }
+
+                @Override
+                public Set<E> next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+
+                    return new SubSet<>(inputSet, position++);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Set) {
+                Set<?> set = (Set<?>) obj;
+                return inputSet.keySet().containsAll(set);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PowerSet) {
+                PowerSet<?> that = (PowerSet<?>) obj;
+                return inputSet.equals(that.inputSet);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            /*
+             * The sum of the sums of the hash codes in each subset is just the sum of
+             * each input element's hash code times the number of sets that element
+             * appears in. Each element appears in exactly half of the 2^n sets, so:
+             */
+            return inputSet.keySet().hashCode() << (inputSet.size() - 1);
+        }
+
+        @Override
+        public String toString() {
+            return "powerSet(" + inputSet + ")";
+        }
+
+        /**
+         * Returns a map from the ith element of list to i.
+         */
+        private static <E> ImmutableMap<E, Integer> indexMap(Collection<E> c) {
+            final Map<E, Integer> map = new LinkedHashMap<>();
+
+            int i = 0;
+
+            for (E e : c) {
+                map.put(e, i++);
+            }
+
+            return ImmutableMap.of(map);
+        }
+    }
+
+    private static final class SubSet<E> extends AbstractSet<E> {
+        private final ImmutableMap<E, Integer> inputSet;
+        private final ImmutableList<E> elements;
+        private final int mask;
+
+        SubSet(ImmutableMap<E, Integer> inputSet, int mask) {
+            this.inputSet = inputSet;
+            this.elements = ImmutableList.of((E[]) inputSet.keySet().toArray());
+            this.mask = mask;
+        }
+
+        @Override
+        public Iterator<E> iterator() {
+            return new Iterator<E>() {
+                int remainingSetBits = mask;
+
+                @Override
+                public boolean hasNext() {
+                    return remainingSetBits != 0;
+                }
+
+                @Override
+                public E next() {
+                    int index = Integer.numberOfTrailingZeros(remainingSetBits);
+                    if (index == 32) {
+                        throw new NoSuchElementException();
+                    }
+                    remainingSetBits &= ~(1 << index);
+                    return elements.get(index);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        @Override
+        public int size() {
+            return Integer.bitCount(mask);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            Integer index = inputSet.get(o);
+            return index != null && (mask & (1 << index)) != 0;
+        }
+    }
+
+    private static final class PermutationCollection<E> extends AbstractCollection<List<E>> {
+        final List<E> inputList;
+
+        PermutationCollection(Collection<E> input) {
+            this.inputList = new ArrayList<>(input);
+        }
+
+        @Override
+        public int size() {
+            return Matth.factorial(inputList.size());
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<List<E>> iterator() {
+            return PermutationIterator.of(inputList);
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Collection) {
+                return isPermutations(inputList, (Collection<?>) obj);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "permutations(" + inputList + ")";
+        }
+    }
+
+    private static final class OrderedPermutationCollection<E> extends AbstractCollection<List<E>> {
+        final List<E> inputList;
+        final Comparator<? super E> comparator;
+        final int size;
+
+        OrderedPermutationCollection(Collection<E> input, Comparator<? super E> comparator) {
+            this.inputList = new ArrayList<E>(input);
+            N.sort(inputList, comparator);
+            this.comparator = comparator;
+            this.size = calculateSize(inputList, comparator);
+        }
+
+        @Override
+        public int size() {
+            return size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<List<E>> iterator() {
+            return PermutationIterator.ordered(inputList, comparator);
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Collection) {
+                return isPermutations(inputList, (Collection<?>) obj);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "orderedPermutationCollection(" + inputList + ")";
+        }
+
+        /**
+         * The number of permutations with repeated elements is calculated as
+         * follows:
+         * <ul>
+         * <li>For an empty list, it is 1 (base case).</li>
+         * <li>When r numbers are added to a list of n-r elements, the number of
+         * permutations is increased by a factor of (n choose r).</li>
+         * </ul>
+         */
+        private static <E> int calculateSize(List<E> sortedInputList, Comparator<? super E> comparator) {
+            long permutations = 1;
+            int n = 1;
+            int r = 1;
+            while (n < sortedInputList.size()) {
+                int comparison = comparator.compare(sortedInputList.get(n - 1), sortedInputList.get(n));
+
+                if (comparison < 0) {
+                    // We move to the next non-repeated element.
+                    permutations *= Matth.binomial(n, r);
+                    r = 0;
+                    if (!isPositiveInt(permutations)) {
+                        return Integer.MAX_VALUE;
+                    }
+                }
+
+                n++;
+                r++;
+            }
+
+            permutations *= Matth.binomial(n, r);
+
+            if (!isPositiveInt(permutations)) {
+                return Integer.MAX_VALUE;
+            }
+
+            return (int) permutations;
+        }
+
+        private static boolean isPositiveInt(long n) {
+            return n >= 0 && n <= Integer.MAX_VALUE;
+        }
+    }
+
+    private static final class CartesianList<E> extends AbstractList<List<E>> implements RandomAccess {
+        private final transient Object[][] axes;
+        private final transient int[] axesSizeProduct;
+
+        CartesianList(final Collection<? extends Collection<? extends E>> cs) {
+            final Iterator<? extends Collection<? extends E>> iter = cs.iterator();
+            this.axes = new Object[cs.size()][];
+
+            for (int i = 0, len = this.axes.length; i < len; i++) {
+                this.axes[i] = iter.next().toArray();
+            }
+
+            this.axesSizeProduct = new int[axes.length + 1];
+            axesSizeProduct[axes.length] = 1;
+
+            try {
+                for (int i = axes.length - 1; i >= 0; i--) {
+                    axesSizeProduct[i] = Matth.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
+                }
+            } catch (ArithmeticException e) {
+                throw new IllegalArgumentException("Cartesian product too large; must have size at most Integer.MAX_VALUE");
+            }
+        }
+
+        @Override
+        public List<E> get(final int index) {
+            N.checkArgument(index < size(), "Invalid index %s. It must be less than the size %s", index, size());
+
+            final List<E> result = new ArrayList<>(axes.length);
+
+            for (int k = 0, len = axes.length; k < len; k++) {
+                result.add((E) axes[k][getAxisIndexForProductIndex(index, k)]);
+            }
+
+            return result;
+        }
+
+        @Override
+        public int size() {
+            return axesSizeProduct[0];
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (!(obj instanceof Collection)) {
+                return false;
+            }
+
+            final Collection<?> c = (Collection<?>) obj;
+
+            if (c.size() != axes.length) {
+                return false;
+            }
+
+            int idx = 0;
+            for (Object e : c) {
+                boolean found = false;
+
+                for (Object p : axes[idx++]) {
+                    if (N.equals(e, p)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found == false) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int getAxisIndexForProductIndex(int index, int axis) {
+            return (index / axesSizeProduct[axis + 1]) % axes[axis].length;
         }
     }
 }

@@ -185,7 +185,6 @@ public final class OKHttpClient extends AbstractHttpClient {
         execute(null, null, output, httpMethod, request, settings);
     }
 
-    @SuppressWarnings("resource")
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
             final Object request, final HttpSettings settings) {
 
@@ -277,9 +276,7 @@ public final class OKHttpClient extends AbstractHttpClient {
             final Charset charset = HTTP.getCharset(respHeaders);
             final ContentFormat responseContentFormat = HTTP.getContentFormat(httpResponse.header(HttpHeaders.Names.CONTENT_TYPE),
                     httpResponse.header(HttpHeaders.Names.CONTENT_ENCODING));
-
-            final InputStream is = httpResponse.isSuccessful() ? HTTP.wrapInputStream(httpResponse.body().byteStream(), responseContentFormat)
-                    : httpResponse.body().byteStream();
+            final InputStream is = N.defaultIfNull(HTTP.wrapInputStream(httpResponse.body().byteStream(), responseContentFormat), N.emptyInputStream());
 
             if (httpResponse.isSuccessful() == false
                     && (resultClass == null || !(resultClass.equals(HttpResponse.class) || resultClass.equals(okhttp3.Response.class)))) {

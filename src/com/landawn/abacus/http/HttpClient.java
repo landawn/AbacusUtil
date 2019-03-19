@@ -201,7 +201,7 @@ public final class HttpClient extends AbstractHttpClient {
             final int code = connection.getResponseCode();
             final Map<String, List<String>> respHeaders = connection.getHeaderFields();
             final Charset respCharset = HTTP.getCharset(respHeaders);
-            is = HTTP.getInputOrErrorStream(connection, responseContentFormat);
+            is = N.defaultIfNull(HTTP.getInputOrErrorStream(connection, responseContentFormat), N.emptyInputStream());
 
             if ((code < 200 || code >= 300) && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
                 throw new UncheckedIOException(new IOException(code + ": " + connection.getResponseMessage() + ". " + IOUtil.readString(is, respCharset)));
