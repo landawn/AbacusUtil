@@ -4360,7 +4360,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public Stream<DataSet> rollup(final Collection<String> columnNames) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames);
@@ -4370,7 +4370,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4386,7 +4386,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T> Stream<DataSet> rollup(final Collection<String> columnNames, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnName, collector);
@@ -4397,7 +4397,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public Stream<DataSet> rollup(final Collection<String> columnNames, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnNames, collector);
@@ -4408,7 +4408,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
             final String aggregateResultColumnName, final String aggregateOnColumnName, final Collector<T, ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4424,7 +4424,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
             final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames, final Collector<? super Object[], ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4440,7 +4440,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final String aggregateResultColumnName,
             final String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4456,7 +4456,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final String aggregateResultColumnName,
             final Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4473,7 +4473,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames,
             final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Try.Function<Stream<T>, ?, E2> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4490,7 +4490,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames,
             final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4505,7 +4505,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames, fromRowIndex, toRowIndex);
@@ -4516,7 +4516,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final Try.Function<? super Object[], ?, E> keyExtractor) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4532,7 +4532,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final String aggregateResultColumnName, final String aggregateOnColumnName, final Collector<T, ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames, fromRowIndex, toRowIndex, aggregateResultColumnName, aggregateOnColumnName, collector);
@@ -4543,7 +4543,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex, final String aggregateResultColumnName,
             final Collection<String> aggregateOnColumnNames, final Collector<? super Object[], ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return groupBy(columnNames, fromRowIndex, toRowIndex, aggregateResultColumnName, aggregateOnColumnNames, collector);
@@ -4555,7 +4555,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4572,7 +4572,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4588,7 +4588,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final String aggregateResultColumnName, final String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4604,7 +4604,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
             final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4621,7 +4621,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex,
             final int toRowIndex, final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName,
             final String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
@@ -4638,7 +4638,7 @@ public class RowDataSet implements DataSet, Cloneable {
     public <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex,
             final int toRowIndex, final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName,
             final Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E2> func) {
-        return Stream.of(N.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
+        return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {

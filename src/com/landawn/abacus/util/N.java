@@ -74,12 +74,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
@@ -91,8 +88,6 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.UncheckedException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
-import com.landawn.abacus.logging.Logger;
-import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.DeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig.JDC;
@@ -109,7 +104,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -213,8 +207,6 @@ import com.landawn.abacus.util.stream.Stream;
  * @version $Revision: 0.8 $ 07/03/10
  */
 public final class N {
-    private static final Logger logger = LoggerFactory.getLogger(N.class);
-
     private static final AsyncExecutor asyncExecutor = new AsyncExecutor(32, 256, 300L, TimeUnit.SECONDS);
 
     // ... it has to be big enough to make it's safety to add element to
@@ -27829,184 +27821,6 @@ public final class N {
         });
     }
 
-    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iter, elementParser, Fn.emptyAction());
-    }
-
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, final Try.Consumer<? super T, E> elementParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
-        parse(iter, 0, Long.MAX_VALUE, elementParser, onComplete);
-    }
-
-    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, final long offset, final long count,
-            final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iter, offset, count, elementParser, Fn.emptyAction());
-    }
-
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, final long offset, final long count,
-            final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
-        parse(iter, offset, count, 0, 0, elementParser, onComplete);
-    }
-
-    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum,
-            final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iter, offset, count, processThreadNum, queueSize, elementParser, Fn.emptyAction());
-    }
-
-    /**
-     * Parse the elements in the specified iterators one by one.
-     * 
-     * @param iter
-     * @param offset
-     * @param count
-     * @param processThreadNum new threads started to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser.
-     * @param onComplete
-     * @param onError
-     */
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, long offset, long count,
-            final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
-        parse(N.asList(iter), offset, count, 0, processThreadNum, queueSize, elementParser, onComplete);
-    }
-
-    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
-            final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iterators, elementParser, Fn.emptyAction());
-    }
-
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
-            final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
-        parse(iterators, 0, Long.MAX_VALUE, elementParser, onComplete);
-    }
-
-    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
-            final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iterators, offset, count, elementParser, Fn.emptyAction());
-    }
-
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset,
-            final long count, final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
-        parse(iterators, offset, count, 0, 0, 0, elementParser, onComplete);
-    }
-
-    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iterators, readThreadNum, processThreadNum, queueSize, elementParser, Fn.emptyAction());
-    }
-
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
-            final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser,
-            final Try.Runnable<E2> onComplete) throws E {
-        parse(iterators, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, elementParser);
-    }
-
-    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
-            final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
-        parse(iterators, offset, count, readThreadNum, processThreadNum, queueSize, elementParser, Fn.emptyAction());
-    }
-
-    /**
-     * Parse the elements in the specified iterators one by one.
-     * 
-     * @param iterators
-     * @param offset
-     * @param count
-     * @param readThreadNum new threads started to parse/process the lines/records
-     * @param processThreadNum new threads started to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser.
-     * @param onComplete
-     */
-    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset,
-            final long count, final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser,
-            final Try.Runnable<E2> onComplete) throws E, E2 {
-        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can not be negative", offset, count);
-
-        if (N.isNullOrEmpty(iterators)) {
-            return;
-        }
-
-        if (logger.isInfoEnabled()) {
-            logger.info("### Start to parse");
-        }
-
-        try (final Stream<T> stream = ((readThreadNum > 0 || queueSize > 0)
-                ? Stream.parallelConcatt(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
-                : Stream.concatt(iterators))) {
-
-            final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
-
-            if (processThreadNum == 0) {
-                while (iteratorII.hasNext()) {
-                    elementParser.accept(iteratorII.next());
-                }
-
-                if (onComplete != null) {
-                    onComplete.run();
-                }
-            } else {
-                final AtomicInteger activeThreadNum = new AtomicInteger();
-                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNum);
-                final Holder<Throwable> errorHolder = new Holder<>();
-
-                for (int i = 0; i < processThreadNum; i++) {
-                    activeThreadNum.incrementAndGet();
-
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            T element = null;
-                            try {
-                                while (errorHolder.value() == null) {
-                                    synchronized (iteratorII) {
-                                        if (iteratorII.hasNext()) {
-                                            element = iteratorII.next();
-                                        } else {
-                                            break;
-                                        }
-                                    }
-
-                                    elementParser.accept(element);
-                                }
-                            } catch (Exception e) {
-                                synchronized (errorHolder) {
-                                    if (errorHolder.value() == null) {
-                                        errorHolder.setValue(e);
-                                    } else {
-                                        errorHolder.value().addSuppressed(e);
-                                    }
-                                }
-                            } finally {
-                                activeThreadNum.decrementAndGet();
-                            }
-                        }
-                    });
-                }
-
-                while (activeThreadNum.get() > 0) {
-                    N.sleep(1);
-                }
-
-                if (errorHolder.value() == null && onComplete != null) {
-                    try {
-                        onComplete.run();
-                    } catch (Exception e) {
-                        errorHolder.setValue(e);
-                    }
-                }
-
-                if (errorHolder.value() != null) {
-                    throw N.toRuntimeException(errorHolder.value());
-                }
-            }
-        } finally {
-            if (logger.isInfoEnabled()) {
-                logger.info("### ### End to parse");
-            }
-        }
-    }
-
     public static RuntimeException toRuntimeException(Throwable e) {
         if (e instanceof RuntimeException) {
             return (RuntimeException) e;
@@ -28991,10 +28805,6 @@ public final class N {
         }
 
         return Triple.of(l, m, r);
-    }
-
-    public static <T> List<List<T>> rollup(Collection<? extends T> c) {
-        return Iterables.rollup(c);
     }
 
     static <T> T createMask(final Class<T> interfaceClass) {

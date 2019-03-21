@@ -3039,7 +3039,7 @@ public final class JdbcUtil {
             }
         };
 
-        N.parse(iter, offset, count, processThreadNum, queueSize, rowParser, onComplete);
+        Iterables.parse(iter, offset, count, processThreadNum, queueSize, rowParser, onComplete);
     }
 
     public static long copy(final Connection sourceConn, final String selectSql, final Connection targetConn, final String insertSql)

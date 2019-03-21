@@ -6,7 +6,7 @@
 
 * Add `Stream.asyncRun/asyncCall`.
 
-* Move `N.rollup/powerSet/permutations/orderedPermutations/cartesianProduct` to `Iterables`.
+* Move `N.rollup/powerSet/permutations/orderedPermutations/cartesianProduct/parse` to `Iterables`.
 
 * Improvements and bug fix.
 
