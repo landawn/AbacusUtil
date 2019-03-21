@@ -1464,7 +1464,7 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

@@ -696,39 +696,146 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <A, R> Stream<R> sliding(int windowSize, int increment, Collector<? super T, A, R> collector);
 
+    /**
+     * Split this stream by the specified duration.
+     * 
+     * @param duration
+     * @return
+     * @see Fn#window(Duration, LongSupplier)
+     */
     @SequentialOnly
     public abstract Stream<Stream<T>> window(Duration duration);
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<Stream<T>> window(Duration duration, LongSupplier startTime);
 
+    /**
+     * 
+     * @param duration
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<List<T>> windowToList(Duration duration);
 
+    /**
+     * 
+     * @param duration
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<Set<T>> windowToSet(Duration duration);
 
+    /**
+     * 
+     * @param duration
+     * @param collectionSupplier
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, Supplier<C> collectionSupplier);
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, LongSupplier startTime, Supplier<C> collectionSupplier);
 
+    /**
+     * 
+     * @param duration
+     * @param collector
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, Collector<? super T, A, R> collector);
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, LongSupplier startTime, Collector<? super T, A, R> collector);
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis);
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<Stream<T>> window(Duration duration, long incrementInMillis, LongSupplier startTime);
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<List<T>> windowToList(Duration duration, long incrementInMillis);
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
+     */
     @SequentialOnly
     public abstract Stream<Set<T>> windowToSet(Duration duration, long incrementInMillis);
 
@@ -738,8 +845,9 @@ public abstract class Stream<T>
      * @param incrementInMillis
      * @param collectionSupplier
      * @return
-     * @see #sliding(int, int, IntFunction)
-     * @see Fn#window(Duration, long, LongSupplier, Supplier)
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
+     * @see #sliding(int, int, Collector)
      */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, Supplier<C> collectionSupplier);
@@ -751,8 +859,9 @@ public abstract class Stream<T>
      * @param startTime
      * @param collectionSupplier
      * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
      * @see #sliding(int, int, Collector)
-     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <C extends Collection<T>> Stream<C> window(Duration duration, long incrementInMillis, LongSupplier startTime,
@@ -764,8 +873,9 @@ public abstract class Stream<T>
      * @param incrementInMillis
      * @param collector
      * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
      * @see #sliding(int, int, Collector)
-     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, Collector<? super T, A, R> collector);
@@ -777,8 +887,9 @@ public abstract class Stream<T>
      * @param startTime
      * @param collector
      * @return
+     * @see #window(Duration)
+     * @see Fn#window(Duration, LongSupplier)
      * @see #sliding(int, int, Collector)
-     * @see Fn#window(Duration, long, LongSupplier, Collector)
      */
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, LongSupplier startTime, Collector<? super T, A, R> collector);

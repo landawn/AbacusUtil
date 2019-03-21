@@ -15,6 +15,7 @@
 package com.landawn.abacus.http;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -230,7 +231,11 @@ public final class OKHttpClient extends AbstractHttpClient {
                 try {
                     final OutputStream os = HTTP.wrapOutputStream(bos, requestContentFormat);
 
-                    if (type.isInputStream()) {
+                    if (request instanceof File) {
+                        try (InputStream fileInputStream = new FileInputStream((File) request)) {
+                            IOUtil.write(os, fileInputStream);
+                        }
+                    } else if (type.isInputStream()) {
                         IOUtil.write(os, (InputStream) request);
                     } else if (type.isReader()) {
                         final BufferedWriter bw = Objectory.createBufferedWriter(new OutputStreamWriter(os, requestCharset));

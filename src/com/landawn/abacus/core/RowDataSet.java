@@ -57,6 +57,7 @@ import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.Iterables;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -4958,7 +4959,7 @@ public class RowDataSet implements DataSet, Cloneable {
     };
 
     private Stream<Set<String>> cubeSet(final Collection<String> columnNames) {
-        return Stream.of(N.powerSet(N.newLinkedHashSet(columnNames)))
+        return Stream.of(Iterables.powerSet(N.newLinkedHashSet(columnNames)))
                 .groupByToEntry(TO_SIZE_FUNC)
                 .values()
                 .carry(REVERSE_ACTION)

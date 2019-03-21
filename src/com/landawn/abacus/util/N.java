@@ -41,7 +41,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -106,7 +105,6 @@ import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Fn.Factory;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
@@ -28997,51 +28995,6 @@ public final class N {
 
     public static <T> List<List<T>> rollup(Collection<? extends T> c) {
         return Iterables.rollup(c);
-    }
-
-    public static <E> Set<Set<E>> powerSet(Set<E> set) {
-        return Iterables.powerSet(set);
-    }
-
-    public static <E> Collection<List<E>> permutations(Collection<E> elements) {
-        return Iterables.permutations(elements);
-    }
-
-    public static <E> Collection<List<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
-        return Iterables.orderedPermutations(elements, comparator);
-    }
-
-    public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
-        return Iterables.cartesianProduct(cs);
-    }
-
-    public static <E> List<List<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
-        return Iterables.cartesianProduct(cs);
-    }
-
-    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
-        N.checkArgNotNull(function);
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            K k;
-            V v;
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            // ise thrown from function is not a cme.
-            v = function.apply(k, v);
-
-            try {
-                entry.setValue(v);
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-        }
     }
 
     static <T> T createMask(final Class<T> interfaceClass) {

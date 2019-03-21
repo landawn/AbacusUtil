@@ -1492,7 +1492,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

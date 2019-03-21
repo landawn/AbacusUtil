@@ -4,7 +4,9 @@
 
 * Add `Stream.window/Fn.window`.
 
-* Add `Stream.asyncRun/asyncCall`
+* Add `Stream.asyncRun/asyncCall`.
+
+* Move `N.rollup/powerSet/permutations/orderedPermutations/cartesianProduct` to `Iterables`.
 
 * Improvements and bug fix.
 

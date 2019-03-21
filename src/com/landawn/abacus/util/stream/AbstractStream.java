@@ -51,6 +51,7 @@ import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.Iterables;
 import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.Joiner;
@@ -2792,7 +2793,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                 private void init() {
                     if (list == null) {
-                        list = N.cartesianProduct(N.repeat(AbstractStream.this.toList(), len));
+                        list = Iterables.cartesianProduct(N.repeat(AbstractStream.this.toList(), len));
                         size = list.size();
                     }
                 }
@@ -2857,7 +2858,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             private void init() {
                 if (list == null) {
-                    list = N.cartesianProduct(cList);
+                    list = Iterables.cartesianProduct(cList);
                     size = list.size();
                 }
             }

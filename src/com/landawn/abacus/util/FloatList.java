@@ -1467,7 +1467,7 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

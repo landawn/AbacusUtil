@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.util.Fn.Suppliers;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -1962,6 +1963,31 @@ public final class Maps {
                     }
                 }
             };
+        }
+    }
+
+    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
+        N.checkArgNotNull(function);
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            K k;
+            V v;
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            // ise thrown from function is not a cme.
+            v = function.apply(k, v);
+
+            try {
+                entry.setValue(v);
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
         }
     }
 }

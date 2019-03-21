@@ -1456,7 +1456,7 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

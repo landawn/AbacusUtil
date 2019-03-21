@@ -19,9 +19,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -120,13 +120,13 @@ public final class HTTP {
                 contentTypeEncoding2Format.put(entry.getValue(), contentEncoding2Format);
             }
 
-            if (entry.getKey() == ContentFormat.XML_GZIP || entry.getKey() == ContentFormat.JSON_GZIP || entry.getKey() == ContentFormat.GZIP) {
+            if (entry.getKey().name().contains("GZIP")) {
                 contentEncoding2Format.put(GZIP, entry.getKey());
-            } else if (entry.getKey() == ContentFormat.XML_SNAPPY || entry.getKey() == ContentFormat.JSON_SNAPPY || entry.getKey() == ContentFormat.SNAPPY) {
+            } else if (entry.getKey().name().contains("SNAPPY")) {
                 contentEncoding2Format.put(SNAPPY, entry.getKey());
-            } else if (entry.getKey() == ContentFormat.XML_LZ4 || entry.getKey() == ContentFormat.JSON_LZ4 || entry.getKey() == ContentFormat.LZ4) {
+            } else if (entry.getKey().name().contains("LZ4")) {
                 contentEncoding2Format.put(LZ4, entry.getKey());
-            } else if (entry.getKey() == ContentFormat.KRYO) {
+            } else if (entry.getKey().name().contains("KRYO")) {
                 contentEncoding2Format.put(KRYO, entry.getKey());
             } else {
                 contentEncoding2Format.put(N.EMPTY_STRING, entry.getKey());
@@ -173,8 +173,17 @@ public final class HTTP {
         }
 
         Map<String, ContentFormat> contentEncoding2Format = contentTypeEncoding2Format.get(contentType);
+
         if (contentEncoding2Format == null) {
-            contentEncoding2Format = contentTypeEncoding2Format.get(N.EMPTY_STRING);
+            if (contentType.contains("json")) {
+                contentEncoding2Format = contentTypeEncoding2Format.get(HttpHeaders.Values.APPLICATION_JSON);
+            } else if (contentType.contains("xml")) {
+                contentEncoding2Format = contentTypeEncoding2Format.get(HttpHeaders.Values.APPLICATION_XML);
+            } else if (contentType.contains("kryo")) {
+                contentEncoding2Format = contentTypeEncoding2Format.get(HttpHeaders.Values.APPLICATION_KRYO);
+            } else {
+                contentEncoding2Format = contentTypeEncoding2Format.get(N.EMPTY_STRING);
+            }
         }
 
         return contentEncoding2Format.get(contentEncoding);
@@ -199,24 +208,14 @@ public final class HTTP {
             return is;
         }
 
-        switch (contentFormat) {
-            case JSON_LZ4:
-            case XML_LZ4:
-            case LZ4:
-                return IOUtil.newLZ4BlockInputStream(is);
-
-            case JSON_SNAPPY:
-            case XML_SNAPPY:
-            case SNAPPY:
-                return IOUtil.newSnappyInputStream(is);
-
-            case JSON_GZIP:
-            case XML_GZIP:
-            case GZIP:
-                return IOUtil.newGZIPInputStream(is);
-
-            default:
-                return is;
+        if (contentFormat.name().contains("GZIP")) {
+            return IOUtil.newGZIPInputStream(is);
+        } else if (contentFormat.name().contains("SNAPPY")) {
+            return IOUtil.newSnappyInputStream(is);
+        } else if (contentFormat.name().contains("LZ4")) {
+            return IOUtil.newLZ4BlockInputStream(is);
+        } else {
+            return is;
         }
     }
 
@@ -225,24 +224,14 @@ public final class HTTP {
             return os;
         }
 
-        switch (contentFormat) {
-            case JSON_LZ4:
-            case XML_LZ4:
-            case LZ4:
-                return IOUtil.newLZ4BlockOutputStream(os);
-
-            case JSON_SNAPPY:
-            case XML_SNAPPY:
-            case SNAPPY:
-                return IOUtil.newSnappyOutputStream(os);
-
-            case JSON_GZIP:
-            case XML_GZIP:
-            case GZIP:
-                return IOUtil.newGZIPOutputStream(os);
-
-            default:
-                return os;
+        if (contentFormat.name().contains("GZIP")) {
+            return IOUtil.newGZIPOutputStream(os);
+        } else if (contentFormat.name().contains("SNAPPY")) {
+            return IOUtil.newSnappyOutputStream(os);
+        } else if (contentFormat.name().contains("LZ4")) {
+            return IOUtil.newLZ4BlockOutputStream(os);
+        } else {
+            return os;
         }
     }
 
@@ -290,9 +279,9 @@ public final class HTTP {
 
     public static InputStream getInputOrErrorStream(final HttpURLConnection connection, ContentFormat contentFormat) throws IOException {
         try {
-            return wrapInputStream(connection.getInputStream(), contentFormat);
+            return N.defaultIfNull(wrapInputStream(connection.getInputStream(), contentFormat), N.emptyInputStream());
         } catch (IOException e) {
-            return wrapInputStream(connection.getErrorStream(), contentFormat);
+            return N.defaultIfNull(wrapInputStream(connection.getErrorStream(), contentFormat), N.emptyInputStream());
         }
     }
 
@@ -319,14 +308,24 @@ public final class HTTP {
         return charset;
     }
 
-    public static Charset getCharset(Map<String, List<String>> headers) {
+    public static Charset getCharset(Map<String, ?> headers) {
         Charset charset = Charsets.UTF_8;
 
         if (headers != null && headers.containsKey(HttpHeaders.Names.CONTENT_TYPE)) {
-            for (String value : headers.get(HttpHeaders.Names.CONTENT_TYPE)) {
-                if (value.indexOf("charset=") >= 0) {
-                    charset = getCharset(value);
-                    break;
+            final Object val = headers.get(HttpHeaders.Names.CONTENT_TYPE);
+
+            if (val instanceof Collection) {
+                for (String e : ((Collection<String>) val)) {
+                    if (N.notNullOrEmpty(e) && e.indexOf("charset=") >= 0) {
+                        charset = getCharset(e);
+                        break;
+                    }
+                }
+            } else {
+                final String str = N.stringOf(val);
+
+                if (N.notNullOrEmpty(str) && str.indexOf("charset=") >= 0) {
+                    charset = getCharset(str);
                 }
             }
         }

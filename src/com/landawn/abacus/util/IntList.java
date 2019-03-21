@@ -1570,7 +1570,7 @@ public final class IntList extends PrimitiveList<Integer, int[], IntList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

@@ -1494,7 +1494,7 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

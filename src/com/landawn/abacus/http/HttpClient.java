@@ -15,6 +15,7 @@
 package com.landawn.abacus.http;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -174,7 +175,11 @@ public final class HttpClient extends AbstractHttpClient {
 
                 Type<Object> type = N.typeOf(request.getClass());
 
-                if (type.isInputStream()) {
+                if (request instanceof File) {
+                    try (InputStream fileInputStream = new FileInputStream((File) request)) {
+                        IOUtil.write(os, fileInputStream);
+                    }
+                } else if (type.isInputStream()) {
                     IOUtil.write(os, (InputStream) request);
                 } else if (type.isReader()) {
                     final BufferedWriter bw = Objectory.createBufferedWriter(new OutputStreamWriter(os, requestCharset));
@@ -201,7 +206,7 @@ public final class HttpClient extends AbstractHttpClient {
             final int code = connection.getResponseCode();
             final Map<String, List<String>> respHeaders = connection.getHeaderFields();
             final Charset respCharset = HTTP.getCharset(respHeaders);
-            is = N.defaultIfNull(HTTP.getInputOrErrorStream(connection, responseContentFormat), N.emptyInputStream());
+            is = HTTP.getInputOrErrorStream(connection, responseContentFormat);
 
             if ((code < 200 || code >= 300) && (resultClass == null || !resultClass.equals(HttpResponse.class))) {
                 throw new UncheckedIOException(new IOException(code + ": " + connection.getResponseMessage() + ". " + IOUtil.readString(is, respCharset)));

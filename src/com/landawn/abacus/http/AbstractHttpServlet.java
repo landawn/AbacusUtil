@@ -69,7 +69,7 @@ public abstract class AbstractHttpServlet extends HttpServlet {
     protected InputStream getInputStream(HttpServletRequest request, final ContentFormat contentFormat) throws IOException {
         final InputStream is = new UncloseableInputStream(request.getInputStream());
 
-        return HTTP.wrapInputStream(is, contentFormat);
+        return N.defaultIfNull(HTTP.wrapInputStream(is, contentFormat), N.emptyInputStream());
     }
 
     protected OutputStream getOutputStream(HttpServletResponse response, ContentFormat contentFormat) throws IOException {

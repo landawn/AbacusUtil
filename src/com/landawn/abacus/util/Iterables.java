@@ -371,6 +371,98 @@ public final class Iterables {
         }
     }
 
+    public static <T, E extends Exception> Nullable<T> findFirst(final Collection<T> c, Try.Predicate<? super T, E> predicate) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return Nullable.empty();
+        }
+
+        for (T e : c) {
+            if (predicate.test(e)) {
+                return Nullable.of(e);
+            }
+        }
+
+        return Nullable.empty();
+    }
+
+    public static <T, E extends Exception> Nullable<T> findLast(final Collection<T> c, Try.Predicate<? super T, E> predicate) throws E {
+        return findLast(c, predicate, false);
+    }
+
+    public static <T, E extends Exception> Optional<T> findFirstNonNull(final Collection<T> c, Try.Predicate<? super T, E> predicate) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return Optional.empty();
+        }
+
+        for (T e : c) {
+            if (e != null && predicate.test(e)) {
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T, E extends Exception> Optional<T> findLastNonNull(final Collection<T> c, Try.Predicate<? super T, E> predicate) throws E {
+        return findLast(c, predicate, true);
+    }
+
+    private static <T, R, E extends Exception> R findLast(final Collection<T> c, Try.Predicate<? super T, E> predicate, boolean isForNonNull) throws E {
+        if (N.isNullOrEmpty(c)) {
+            return (R) (isForNonNull ? Optional.empty() : Nullable.empty());
+        }
+
+        T e = null;
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                for (int i = c.size() - 1; i >= 0; i--) {
+                    e = list.get(i);
+
+                    if ((!isForNonNull || e != null) && predicate.test(e)) {
+                        return (R) (isForNonNull ? Optional.of(e) : Nullable.of(e));
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+
+                while (iter.hasPrevious()) {
+                    e = iter.previous();
+
+                    if ((!isForNonNull || e != null) && predicate.test(e)) {
+                        return (R) (isForNonNull ? Optional.of(e) : Nullable.of(e));
+                    }
+                }
+            }
+
+            return (R) (isForNonNull ? Optional.empty() : Nullable.empty());
+        } else if (c instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) c).descendingIterator();
+
+            while (iter.hasNext()) {
+                e = iter.next();
+
+                if ((!isForNonNull || e != null) && predicate.test(e)) {
+                    return (R) (isForNonNull ? Optional.of(e) : Nullable.of(e));
+                }
+            }
+
+            return (R) (isForNonNull ? Optional.empty() : Nullable.empty());
+        } else {
+            final T[] a = (T[]) c.toArray();
+
+            for (int i = a.length - 1; i >= 0; i--) {
+                if ((!isForNonNull || a[i] != null) && predicate.test(a[i])) {
+                    return (R) (isForNonNull ? Optional.of(a[i]) : Nullable.of(a[i]));
+                }
+            }
+
+            return (R) (isForNonNull ? Optional.empty() : Nullable.empty());
+        }
+    }
+
     public static <T> List<List<T>> rollup(Collection<? extends T> c) {
         final List<List<T>> res = new ArrayList<>();
         res.add(new ArrayList<T>());

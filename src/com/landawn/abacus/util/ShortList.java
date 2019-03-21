@@ -1482,7 +1482,7 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

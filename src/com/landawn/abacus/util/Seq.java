@@ -21,15 +21,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.RandomAccess;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
@@ -549,67 +546,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <E extends Exception> Nullable<T> findFirst(Try.Predicate<? super T, E> predicate) throws E {
-        if (size() == 0) {
-            return Nullable.empty();
-        }
-
-        for (T e : coll) {
-            if (predicate.test(e)) {
-                return Nullable.of(e);
-            }
-        }
-
-        return Nullable.empty();
+        return Iterables.findFirst(coll, predicate);
     }
 
     public <E extends Exception> Nullable<T> findLast(Try.Predicate<? super T, E> predicate) throws E {
-        if (size() == 0) {
-            return Nullable.empty();
-        }
-
-        if (coll instanceof List) {
-            final List<T> list = (List<T>) coll;
-
-            if (coll instanceof RandomAccess) {
-                for (int i = size() - 1; i >= 0; i--) {
-                    if (predicate.test(list.get(i))) {
-                        return Nullable.of(list.get(i));
-                    }
-                }
-            } else {
-                final ListIterator<T> iter = list.listIterator(list.size());
-                T pre = null;
-
-                while (iter.hasPrevious()) {
-                    if (predicate.test((pre = iter.previous()))) {
-                        return Nullable.of(pre);
-                    }
-                }
-            }
-
-            return Nullable.empty();
-        } else if (coll instanceof Deque) {
-            final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
-            T next = null;
-
-            while (iter.hasNext()) {
-                if (predicate.test((next = iter.next()))) {
-                    return Nullable.of(next);
-                }
-            }
-
-            return Nullable.empty();
-        } else {
-            final T[] a = (T[]) coll.toArray();
-
-            for (int i = a.length - 1; i >= 0; i--) {
-                if (predicate.test(a[i])) {
-                    return Nullable.of(a[i]);
-                }
-            }
-
-            return Nullable.empty();
-        }
+        return Iterables.findLast(coll, predicate);
     }
 
     public <E extends Exception> OptionalInt findFirstIndex(Try.Predicate<? super T, E> predicate) throws E {
@@ -2278,7 +2219,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }
@@ -2321,7 +2262,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

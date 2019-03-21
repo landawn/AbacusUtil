@@ -17,6 +17,9 @@ package com.landawn.abacus.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -25,6 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.logging.Logger;
+import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Objectory;
@@ -37,6 +43,8 @@ import com.landawn.abacus.util.Objectory;
  */
 public class EchoServlet extends AbstractHttpServlet {
     private static final long serialVersionUID = -8506987801604338536L;
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
 
     public static final String IS_GET_FIRST = "isGetFirst";
     private boolean isGetFirst;
@@ -76,10 +84,29 @@ public class EchoServlet extends AbstractHttpServlet {
     protected void execute(HttpServletRequest request, HttpServletResponse response) {
         final ContentFormat contentFormat = getContentFormat(request);
         Map<String, String[]> paramMap = null;
+        Charset charset = Charsets.UTF_8;
         InputStream is = null;
         OutputStream os = null;
 
         try {
+            final Enumeration<String> headerNames = request.getHeaderNames();
+            if (headerNames != null) {
+                final Map<String, Object> headers = new LinkedHashMap<>();
+                String headerName = null;
+
+                while (headerNames.hasMoreElements()) {
+                    headerName = headerNames.nextElement();
+                    response.setHeader(headerName, request.getHeader(headerName));
+                    headers.put(headerName, request.getHeader(headerName));
+                }
+
+                charset = HTTP.getCharset(headers);
+
+                logger.info("Request Headers: " + N.toJSON(headers));
+            }
+
+            byte[] bytes = N.EMPTY_BYTE_ARRAY;
+
             if (isGetFirst) {
                 paramMap = request.getParameterMap();
 
@@ -95,7 +122,11 @@ public class EchoServlet extends AbstractHttpServlet {
             }
 
             if (N.isNullOrEmpty(paramMap)) {
-                IOUtil.write(os, is);
+                bytes = IOUtil.readBytes(is);
+
+                logger.info("Request body: " + new String(bytes, charset));
+
+                IOUtil.write(os, bytes);
             } else {
                 final StringBuilder sb = Objectory.createStringBuilder();
 
@@ -115,7 +146,13 @@ public class EchoServlet extends AbstractHttpServlet {
                                 : (parameterValues.length == 1 ? N.toString(parameterValues[0]) : N.toString(parameterValues)));
                     }
 
-                    IOUtil.write(os, sb.toString());
+                    final String queryParts = sb.toString();
+
+                    if (N.isNullOrEmpty(queryParts)) {
+                        logger.info("Request query: " + N.toJSON(queryParts));
+                    }
+
+                    IOUtil.write(os, queryParts);
                 } finally {
                     Objectory.recycle(sb);
                 }

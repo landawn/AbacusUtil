@@ -1365,7 +1365,7 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
             }
         };
 
-        N.replaceAll(intermediate, function);
+        Maps.replaceAll(intermediate, function);
 
         return result;
     }

@@ -2752,28 +2752,78 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * Split this stream by the specified duration.
+     * 
+     * <pre>
+     * <code>
+     * Stream<Timed<MyObject>> s = ...;
+     * s.__(Fn.window(Duration.ofMinutes(3), () - System.currentTimeMillis()))...// Do your stuffs with Stream<Stream<Timed<T>>>;
+     * </code>
+     * </pre>
+     * 
+     * @param duration
+     * @param startTime
+     * @return
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>> window(final Duration duration, final LongSupplier startTime) {
         return window(duration, duration.toMillis(), startTime);
     }
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> windowToList(final Duration duration, final LongSupplier startTime) {
         return window(duration, startTime, Suppliers.<Timed<T>> ofList());
     }
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @return
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<Set<Timed<T>>>> windowToSet(final Duration duration, final LongSupplier startTime) {
         return window(duration, startTime, Suppliers.<Timed<T>> ofSet());
     }
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     */
     public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final LongSupplier startTime,
             final Supplier<C> collectionSupplier) {
         return window(duration, duration.toMillis(), startTime, collectionSupplier);
     }
 
+    /**
+     * 
+     * @param duration
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T, A, R> Function<Stream<Timed<T>>, Stream<R>> window(final Duration duration, final LongSupplier startTime,
             final Collector<? super Timed<T>, A, R> collector) {
         return window(duration, duration.toMillis(), startTime, collector);
     }
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>> window(final Duration duration, final long incrementInMillis,
             final LongSupplier startTime) {
         final Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> mapper = windowToList(duration, incrementInMillis, startTime);
@@ -2791,16 +2841,41 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> windowToList(final Duration duration, final long incrementInMillis,
             final LongSupplier startTime) {
         return window(duration, incrementInMillis, startTime, Suppliers.<Timed<T>> ofList());
     }
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T> Function<Stream<Timed<T>>, Stream<Set<Timed<T>>>> windowToSet(final Duration duration, final long incrementInMillis,
             final LongSupplier startTime) {
         return window(duration, incrementInMillis, startTime, Suppliers.<Timed<T>> ofSet());
     }
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final long incrementInMillis,
             final LongSupplier startTime, final Supplier<C> collectionSupplier) {
         return new Function<Stream<Timed<T>>, Stream<C>>() {
@@ -2958,6 +3033,15 @@ public final class Fn extends Comparators {
         };
     }
 
+    /**
+     * 
+     * @param duration
+     * @param incrementInMillis
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #window(Duration, LongSupplier)
+     */
     public static <T, A, R> Function<Stream<Timed<T>>, Stream<R>> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime,
             final Collector<? super Timed<T>, A, R> collector) {
         return new Function<Stream<Timed<T>>, Stream<R>>() {
