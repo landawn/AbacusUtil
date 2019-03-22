@@ -8,6 +8,9 @@
 
 * Move `N.rollup/powerSet/permutations/orderedPermutations/cartesianProduct/parse` to `Iterables`.
 
+* Move `Optional/OptionalInt/.../Nullable/Holder/...` to `u.Optional/OptionalInt/.../Nullable/Holder/...` avoid to the potential conflict with java `Optional/OptionalInt...`. To Migrate to this new version by searching and replacing `abacus.util.Optional/Nullable/...` with `abacus.util.u.Optional/Nullable...`.
+
+
 * Improvements and bug fix.
 
 

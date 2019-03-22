@@ -18,6 +18,8 @@ package com.landawn.abacus.util;
 
 import java.util.List;
 
+import com.landawn.abacus.util.u.OptionalInt;
+
 public final class Index {
     public static final OptionalInt NOT_FOUND = OptionalInt.empty();
 

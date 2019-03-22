@@ -104,13 +104,13 @@ public final class IEEE754rUtil {
         if (N.isNullOrEmpty(array)) {
             throw new IllegalArgumentException("Array cannot be null or empty.");
         }
-    
+
         // Finds and returns min
         float min = array[0];
         for (int i = 1; i < array.length; i++) {
             min = min(array[i], min);
         }
-    
+
         return min;
     }
 

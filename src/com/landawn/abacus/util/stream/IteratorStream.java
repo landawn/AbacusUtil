@@ -44,7 +44,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1817,6 +1817,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
         checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
             private Deque<T> queue = null;

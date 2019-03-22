@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.u.OptionalBoolean;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;

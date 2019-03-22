@@ -37,9 +37,14 @@ import java.util.Set;
 
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
+import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.StringUtil.Strings;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalInt;
+import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
@@ -277,7 +282,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return of(stream);
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final Try.BooleanSupplier<? extends E> hasNext, final Supplier<? extends T> next) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final Try.BooleanSupplier<? extends E> hasNext,
+            final Try.Supplier<? extends T, E> next) {
         N.checkArgNotNull(hasNext, "hasNext");
         N.checkArgNotNull(next, "next");
 
@@ -518,7 +524,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
+    static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
         return rows(Object[].class, resultSet, closeResultSet);
     }
 
@@ -554,7 +560,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
+    static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet, final boolean closeResultSet) {
         N.checkArgNotNull(targetClass, "targetClass");
         N.checkArgNotNull(resultSet, "resultSet");
 
@@ -744,7 +750,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
+    static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex, final boolean closeResultSet) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNegative(columnIndex, "columnIndex");
 
@@ -783,7 +789,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
+    static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(columnName, "columnName");
 
@@ -1328,7 +1334,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, false, null, closeHandlers);
     }
 
-    public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Supplier<R> supplier,
+    public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Try.Supplier<R, E> supplier,
             final Try.BiConsumer<R, ? super T, ? extends E> accumulator) {
         checkArgNotNull(collapsible, "collapsible");
         checkArgNotNull(supplier, "supplier");
@@ -1347,18 +1353,56 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public R next() throws E {
-                final R res = supplier.get();
-                accumulator.accept(res, hasNext ? next : (next = iter.next()));
+                final R container = supplier.get();
+                accumulator.accept(container, hasNext ? next : (next = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(next, (next = iter.next()))) {
-                        accumulator.accept(res, next);
+                        accumulator.accept(container, next);
                     } else {
                         break;
                     }
                 }
 
-                return res;
+                return container;
+            }
+        }, false, null, closeHandlers);
+    }
+
+    public <R, A> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
+            final Collector<? super T, A, R> collector) {
+        checkArgNotNull(collapsible, "collapsible");
+        checkArgNotNull(collector, "collector");
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                final A container = supplier.get();
+                accumulator.accept(container, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(container, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return finisher.apply(container);
             }
         }, false, null, closeHandlers);
     }
@@ -1399,21 +1443,30 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<List<T>, E> splitToList(final int size) {
-        checkArgPositive(size, "size");
+        return split(size, Factory.<T> ofList());
+    }
 
-        return newStream(new ExceptionalIterator<List<T>, E>() {
+    public ExceptionalStream<Set<T>, E> splitToSet(final int size) {
+        return split(size, Factory.<T> ofSet());
+    }
+
+    public <C extends Collection<T>> ExceptionalStream<C, E> split(final int size, final IntFunction<C> collectionSupplier) {
+        checkArgPositive(size, "size");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+        return newStream(new ExceptionalIterator<C, E>() {
             @Override
             public boolean hasNext() throws E {
                 return elements.hasNext();
             }
 
             @Override
-            public List<T> next() throws E {
+            public C next() throws E {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>(size);
+                final C result = collectionSupplier.apply(size);
                 int cnt = 0;
 
                 while (cnt++ < size && elements.hasNext()) {
@@ -1448,10 +1501,19 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public ExceptionalStream<List<T>, E> slidingToList(final int windowSize, final int increment) {
-        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        return sliding(windowSize, increment, Factory.<T> ofList());
+    }
 
-        return newStream(new ExceptionalIterator<List<T>, E>() {
-            private List<T> prev = null;
+    public ExceptionalStream<Set<T>, E> slidingToSet(final int windowSize, final int increment) {
+        return sliding(windowSize, increment, Factory.<T> ofSet());
+    }
+
+    public <C extends Collection<T>> ExceptionalStream<C, E> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+        return newStream(new ExceptionalIterator<C, E>() {
+            private Deque<T> queue = null;
             private boolean toSkip = false;
 
             @Override
@@ -1470,38 +1532,53 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
-            public List<T> next() throws E {
+            public C next() throws E {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = new ArrayList<>(windowSize);
+                if (queue == null) {
+                    queue = new ArrayDeque<>(N.max(0, windowSize - increment));
+                }
+
+                final C result = collectionSupplier.apply(windowSize);
                 int cnt = 0;
 
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
+                if (queue.size() > 0 && increment < windowSize) {
+                    cnt = queue.size();
 
-                    if (cnt <= 8) {
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
+                    for (T e : queue) {
+                        result.add(e);
+                    }
+
+                    if (queue.size() <= increment) {
+                        queue.clear();
                     } else {
-                        result.addAll(prev.subList(windowSize - cnt, windowSize));
+                        for (int i = 0; i < increment; i++) {
+                            queue.removeFirst();
+                        }
                     }
                 }
 
+                T next = null;
+
                 while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
+                    next = elements.next();
+                    result.add(next);
+
+                    if (cnt > increment) {
+                        queue.add(next);
+                    }
                 }
 
                 toSkip = increment > windowSize;
 
-                return prev = result;
+                return result;
             }
 
             @Override
             public long count() throws E {
-                final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
                 final long len = prevSize + elements.count();
 
                 if (len == prevSize) {
@@ -1525,29 +1602,35 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 if (increment >= windowSize) {
                     elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
                 } else {
-                    final List<T> tmp = new ArrayList<>(windowSize);
-
-                    if (N.isNullOrEmpty(prev)) {
+                    if (N.isNullOrEmpty(queue)) {
                         final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
                         elements.skip(m);
                     } else {
                         final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
-                        final int prevSize = increment >= windowSize ? 0 : (prev == null ? 0 : prev.size());
+                        final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
 
                         if (m < prevSize) {
-                            tmp.addAll(prev.subList((int) m, prevSize));
+                            for (int i = 0; i < m; i++) {
+                                queue.removeFirst();
+                            }
                         } else {
+                            if (queue != null) {
+                                queue.clear();
+                            }
+
                             elements.skip(m - prevSize);
                         }
                     }
 
-                    int cnt = tmp.size();
-
-                    while (cnt++ < windowSize && elements.hasNext()) {
-                        tmp.add(elements.next());
+                    if (queue == null) {
+                        queue = new ArrayDeque<>(windowSize);
                     }
 
-                    prev = tmp;
+                    int cnt = queue.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        queue.add(elements.next());
+                    }
                 }
             }
         }, false, null, closeHandlers);
@@ -2447,7 +2530,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
-    public <R> R collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
+    public <R> R collect(Try.Supplier<R, E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator) throws E {
         checkArgNotNull(supplier, "supplier");
         checkArgNotNull(accumulator, "accumulator");
         assertNotClosed();
@@ -2465,7 +2548,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
-    public <R, RR> RR collect(Supplier<R> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
+    public <R, RR> RR collect(Try.Supplier<R, E> supplier, final Try.BiConsumer<R, ? super T, ? extends E> accumulator,
             final Try.Function<? super R, ? extends RR, E> finisher) throws E {
         checkArgNotNull(supplier, "supplier");
         checkArgNotNull(accumulator, "accumulator");

@@ -36,7 +36,7 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;

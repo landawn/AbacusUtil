@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.DoubleIteratorEx;
 import com.landawn.abacus.util.stream.DoubleStream;

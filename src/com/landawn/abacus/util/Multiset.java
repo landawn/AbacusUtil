@@ -32,6 +32,8 @@ import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.Fn.Suppliers;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;

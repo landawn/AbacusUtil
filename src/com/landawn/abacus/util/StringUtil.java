@@ -40,6 +40,11 @@ import java.util.regex.Pattern;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalFloat;
+import com.landawn.abacus.util.u.OptionalInt;
+import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 
 /**

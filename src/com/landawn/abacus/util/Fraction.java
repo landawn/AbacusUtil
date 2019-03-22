@@ -1033,7 +1033,11 @@ public final class Fraction extends Number implements Comparable<Fraction> {
                 if (properNumerator == 0) {
                     toProperString = Integer.toString(getProperWhole());
                 } else {
-                    toProperString = new StringBuilder(32).append(getProperWhole()).append(' ').append(properNumerator).append('/').append(getDenominator())
+                    toProperString = new StringBuilder(32).append(getProperWhole())
+                            .append(' ')
+                            .append(properNumerator)
+                            .append('/')
+                            .append(getDenominator())
                             .toString();
                 }
             } else {
