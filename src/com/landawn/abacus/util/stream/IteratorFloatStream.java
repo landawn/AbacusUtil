@@ -37,10 +37,10 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.Primitives;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1395,48 +1395,6 @@ class IteratorFloatStream extends AbstractFloatStream {
         }
     }
 
-    //    @Override
-    //    public OptionalFloat head() {
-    //        if (head == null) {
-    //            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return head;
-    //    }
-    //
-    //    @Override
-    //    public FloatStream tail() {
-    //        if (tail == null) {
-    //            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return tail;
-    //    }
-
-    //    @Override
-    //    public FloatStream headd() {
-    //        if (head2 == null) {
-    //            final float[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-    //        }
-    //
-    //        return head2;
-    //    }
-    //
-    //    @Override
-    //    public OptionalFloat taill() {
-    //        if (tail2 == null) {
-    //            final float[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
-    //        }
-    //
-    //        return tail2;
-    //    }
-
     @Override
     public OptionalFloat min() {
         assertNotClosed();
@@ -1682,12 +1640,12 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelIteratorFloatStream(elements, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public FloatStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelIteratorFloatStream(elements, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

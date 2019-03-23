@@ -65,14 +65,14 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Objectory;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Timed;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -101,10 +101,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> skip(final long n, final Consumer<? super T> action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final Predicate<T> filter = isParallel() ? new Predicate<T>() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -201,10 +197,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<T> step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final ObjIteratorEx<T> iter = iteratorEx();
@@ -1773,9 +1765,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
-
-                return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
+                return Stream.of(rightKeyMap.get(leftKeyMapper.apply(t))).map(new Function<U, Pair<T, U>>() {
                     @Override
                     public Pair<T, U> apply(U u) {
                         return Pair.of(t, u);
@@ -1814,9 +1804,9 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
+                final List<U> values = rightKeyMap.get(leftKeyMapper.apply(t));
 
-                return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
+                return N.isNullOrEmpty(values) ? Stream.of(Pair.of(t, (U) null)) : Stream.of(values).map(new Function<U, Pair<T, U>>() {
                     @Override
                     public Pair<T, U> apply(U u) {
                         if (isParallelStream) {
@@ -1907,9 +1897,9 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
+                final List<U> values = rightKeyMap.get(leftKeyMapper.apply(t));
 
-                return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
+                return N.isNullOrEmpty(values) ? Stream.of(Pair.of(t, (U) null)) : Stream.of(values).map(new Function<U, Pair<T, U>>() {
                     @Override
                     public Pair<T, U> apply(U u) {
                         return Pair.of(t, u);
@@ -1963,9 +1953,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
-                final Stream<U> s = Stream.of(rightKeyMap.get(leftKeyMapper.apply(t)));
-
-                return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
+                return Stream.of(rightKeyMap.get(leftKeyMapper.apply(t))).map(new Function<U, Pair<T, U>>() {
                     @Override
                     public Pair<T, U> apply(U u) {
                         if (isParallelStream) {
@@ -2488,7 +2476,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Comparator<? super T> cmp = comparator == null ? NATURAL_COMPARATOR : comparator;
 
         if (sorted && cmp == this.cmp) {
-            return this;
+            return newStream(iterator(), sorted, cmp);
         }
 
         return lazyLoad(new Function<Object[], Object[]>() {
@@ -2684,7 +2672,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<List<T>> combinations() {
         if (this instanceof ArrayStream) {
-            return newStream(IntStream.rangeClosed(0, (int) count()).flatMapToObj(new IntFunction<Stream<List<T>>>() {
+            @SuppressWarnings("resource")
+            final ArrayStream<T> s = ((ArrayStream<T>) this);
+            final int count = s.toIndex - s.fromIndex;
+
+            return newStream(IntStream.rangeClosed(0, count).flatMapToObj(new IntFunction<Stream<List<T>>>() {
                 @Override
                 public Stream<List<T>> apply(int value) {
                     return combinations(value);
@@ -2698,7 +2690,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<List<T>> combinations(final int len) {
         if (this instanceof ArrayStream) {
-            checkFromIndexSize(0, len, (int) count());
+            @SuppressWarnings("resource")
+            final ArrayStream<T> s = ((ArrayStream<T>) this);
+            final int count = s.toIndex - s.fromIndex;
+            checkFromIndexSize(0, len, count);
 
             if (len == 0) {
                 return newStream(N.asArray(N.<T> emptyList()), false, null);
@@ -2709,12 +2704,12 @@ abstract class AbstractStream<T> extends Stream<T> {
                         return N.asList(t);
                     }
                 });
-            } else if (len == count()) {
+            } else if (len == count) {
                 return newStream(N.asArray(toList()), false, null);
             } else {
-                final T[] a = ((ArrayStream<T>) this).elements;
-                final int fromIndex = ((ArrayStream<T>) this).fromIndex;
-                final int toIndex = ((ArrayStream<T>) this).toIndex;
+                final T[] a = s.elements;
+                final int fromIndex = s.fromIndex;
+                final int toIndex = s.toIndex;
 
                 return newStream(new ObjIteratorEx<List<T>>() {
                     private final int[] indices = Array.range(fromIndex, fromIndex + len);
@@ -3002,17 +2997,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <R> R toSetAndThen(final Function<? super Set<T>, R> func) {
         return func.apply(toSet());
     }
-
-    //    @Override
-    //    public Pair<Optional<T>, Stream<T>> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<Stream<T>, Optional<T>> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
 
     @Override
     public Stream<Indexed<T>> indexed() {

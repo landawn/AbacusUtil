@@ -35,12 +35,12 @@ import com.landawn.abacus.util.MutableChar;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
@@ -108,10 +108,6 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream skip(final long n, final CharConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final CharPredicate filter = isParallel() ? new CharPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -182,10 +178,6 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final CharIteratorEx iter = this.iteratorEx();
@@ -662,7 +654,7 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<char[], char[]>() {
@@ -833,17 +825,6 @@ abstract class AbstractCharStream extends CharStream {
             }
         }, sorted);
     }
-
-    //    @Override
-    //    public Pair<OptionalChar, CharStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<CharStream, OptionalChar> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
 
     @Override
     public Stream<IndexedChar> indexed() {
@@ -1078,16 +1059,4 @@ abstract class AbstractCharStream extends CharStream {
 
         return collect(supplier, accumulator, combiner);
     }
-
-    //    @Override
-    //    public Pair<OptionalChar, CharStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<CharStream, OptionalChar> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
 }

@@ -36,9 +36,9 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -202,7 +202,7 @@ class ArrayFloatStream extends AbstractFloatStream {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new FloatIteratorEx() {
@@ -1073,7 +1073,7 @@ class ArrayFloatStream extends AbstractFloatStream {
         checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return newStream(elements, toIndex - n, toIndex, sorted);
         }
@@ -1516,34 +1516,6 @@ class ArrayFloatStream extends AbstractFloatStream {
         }
     }
 
-    //    @Override
-    //    public OptionalFloat head() {
-    //        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public FloatStream tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    //    }
-
-    //    @Override
-    //    public FloatStream headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    //    }
-    //
-    //    @Override
-    //    public OptionalFloat taill() {
-    //        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public OptionalFloat min() {
         assertNotClosed();
@@ -1653,7 +1625,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new FloatIteratorEx() {
@@ -1874,12 +1846,12 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public FloatStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

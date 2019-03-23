@@ -36,12 +36,12 @@ import com.landawn.abacus.util.MutableDouble;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.DoubleBiFunction;
@@ -109,10 +109,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream skip(final long n, final DoubleConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final DoublePredicate filter = isParallel() ? new DoublePredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -183,10 +179,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final DoubleIteratorEx iter = this.iteratorEx();
@@ -452,17 +444,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
         }, false);
     }
 
-    //    @Override
-    //    public Pair<OptionalDouble, DoubleStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
     @Override
     public DoubleStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
@@ -674,7 +655,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<double[], double[]>() {
@@ -1122,16 +1103,4 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
         return collect(supplier, accumulator, combiner);
     }
-
-    //    @Override
-    //    public Pair<OptionalDouble, DoubleStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
 }

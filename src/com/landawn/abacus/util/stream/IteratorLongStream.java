@@ -41,11 +41,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Primitives;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.u.OptionalLong;
-import com.landawn.abacus.util.Primitives;
-import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1400,48 +1400,6 @@ class IteratorLongStream extends AbstractLongStream {
         }
     }
 
-    //    @Override
-    //    public OptionalLong head() {
-    //        if (head == null) {
-    //            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return head;
-    //    }
-    //
-    //    @Override
-    //    public LongStream tail() {
-    //        if (tail == null) {
-    //            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return tail;
-    //    }
-
-    //    @Override
-    //    public LongStream headd() {
-    //        if (head2 == null) {
-    //            final long[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-    //        }
-    //
-    //        return head2;
-    //    }
-    //
-    //    @Override
-    //    public OptionalLong taill() {
-    //        if (tail2 == null) {
-    //            final long[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
-    //        }
-    //
-    //        return tail2;
-    //    }
-
     @Override
     public OptionalLong min() {
         assertNotClosed();
@@ -1777,12 +1735,12 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelIteratorLongStream(elements, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public LongStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelIteratorLongStream(elements, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

@@ -38,10 +38,10 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -210,7 +210,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         }
 
         return newStream(new ObjIteratorEx<T>() {
@@ -513,7 +513,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         checkArgNotNull(mapperForFirst);
 
         if (fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         } else if (toIndex - fromIndex == 1) {
             return map(mapperForFirst);
         } else {
@@ -657,7 +657,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         checkArgNotNull(mapperForLast);
 
         if (fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         } else if (toIndex - fromIndex == 1) {
             return map(mapperForLast);
         } else {
@@ -1698,6 +1698,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
         checkArgPositive(size, "size");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
@@ -1788,6 +1789,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+        checkArgNotNull(predicate, "predicate");
+
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1824,6 +1827,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
+        checkArgNotNull(predicate, "predicate");
+
         return newStream(new ObjIteratorEx<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1860,6 +1865,9 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
+        checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
         return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1900,6 +1908,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <A, R> Stream<R> split(final Predicate<? super T> predicate, final Collector<? super T, A, R> collector) {
+        checkArgNotNull(predicate, "predicate");
         checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
@@ -2109,7 +2118,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
         checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
-        checkArgNotNull(collectionSupplier);
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
             private int cursor = fromIndex;
@@ -2227,7 +2236,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return newStream(elements, toIndex - n, toIndex, sorted, cmp);
         }
@@ -2762,41 +2771,13 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
     }
 
-    //    @Override
-    //    public Optional<T> head() {
-    //        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public Stream<T> tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted, cmp);
-    //    }
-
-    //    @Override
-    //    public Stream<T> headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted, cmp);
-    //    }
-    //
-    //    @Override
-    //    public Optional<T> taill() {
-    //        return fromIndex == toIndex ? Optional.<T> empty() : Optional.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public Stream<T> last(final int n) {
         checkArgNotNegative(n, "n");
 
         try {
             if (toIndex - fromIndex <= n) {
-                return this;
+                return newStream(elements, fromIndex, toIndex, sorted, cmp);
             }
 
             return newStream(elements, toIndex - n, toIndex, sorted, cmp);
@@ -2808,7 +2789,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> skipLast(int n) {
         if (n <= 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         }
 
         return newStream(elements, fromIndex, N.max(fromIndex, toIndex - n), sorted, cmp);
@@ -2924,7 +2905,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted, cmp);
         }
 
         return newStream(new ObjIteratorEx<T>() {
@@ -3091,12 +3072,12 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public Stream<T> parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

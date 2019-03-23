@@ -44,9 +44,9 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1388,6 +1388,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
         checkArgPositive(size, "size");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
             @Override
@@ -1476,6 +1477,9 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
+        checkArgNotNull(predicate, "predicate");
+        checkArgNotNull(collectionSupplier, "collectionSupplier");
+
         return newStream(new ObjIteratorEx<C>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -2668,48 +2672,6 @@ class IteratorStream<T> extends AbstractStream<T> {
         }
     }
 
-    //    @Override
-    //    public Optional<T> head() {
-    //        if (head == null) {
-    //            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
-    //            tail = newStream(elements, sorted, cmp);
-    //        }
-    //
-    //        return head;
-    //    }
-    //
-    //    @Override
-    //    public Stream<T> tail() {
-    //        if (tail == null) {
-    //            head = elements.hasNext() ? Optional.of(elements.next()) : Optional.<T> empty();
-    //            tail = newStream(elements, sorted, cmp);
-    //        }
-    //
-    //        return tail;
-    //    }
-
-    //    @Override
-    //    public Stream<T> headd() {
-    //        if (head2 == null) {
-    //            final Object[] a = this.toArray();
-    //            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
-    //            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
-    //        }
-    //
-    //        return head2;
-    //    }
-    //
-    //    @Override
-    //    public Optional<T> taill() {
-    //        if (tail2 == null) {
-    //            final Object[] a = this.toArray();
-    //            head2 = newStream((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp);
-    //            tail2 = a.length == 0 ? Optional.<T> empty() : Optional.of((T) a[a.length - 1]);
-    //        }
-    //
-    //        return tail2;
-    //    }
-
     @Override
     public Stream<T> last(final int n) {
         checkArgNotNegative(n, "n");
@@ -2767,7 +2729,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> skipLast(final int n) {
         if (n <= 0) {
-            return this;
+            return newStream(elements, sorted, cmp);
         }
 
         return newStream(new ObjIteratorEx<T>() {
@@ -3028,9 +2990,9 @@ class IteratorStream<T> extends AbstractStream<T> {
         final Iterator<T> iter = iterator();
 
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
-            return this;
+            return newStream(elements, sorted, cmp);
         } else {
-            return newStream(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize).iterator(), sorted, cmp);
+            return newStream(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize), sorted, cmp);
         }
     }
 
@@ -3041,12 +3003,12 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelIteratorStream<>(elements, sorted, cmp, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public Stream<T> parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelIteratorStream<>(elements, sorted, cmp, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

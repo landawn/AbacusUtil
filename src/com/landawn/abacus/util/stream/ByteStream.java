@@ -28,18 +28,18 @@ import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalByte;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalByte;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -65,8 +65,6 @@ import com.landawn.abacus.util.function.ToByteFunction;
  * @see Stream 
  */
 public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteIterator, ByteStream> {
-
-    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY, true, null);
 
     ByteStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -284,52 +282,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E;
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead. 
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract OptionalByte head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract ByteStream tail();
-    //
-    //    public abstract Pair<OptionalByte, ByteStream> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract ByteStream headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract OptionalByte taill();
-    //
-    //    /**
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract Pair<ByteStream, OptionalByte> headAndTaill();
-
     /**
      * 
      * @return
@@ -401,7 +353,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream empty() {
-        return EMPTY;
+        return new ArrayByteStream(N.EMPTY_BYTE_ARRAY, true, null);
     }
 
     @SafeVarargs
@@ -1137,25 +1089,31 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public static ByteStream concat(final Collection<? extends ByteStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ByteIteratorEx() {
-            private final Iterator<? extends ByteStream> iter = c.iterator();
-            private ByteIterator cur;
+            private final Iterator<? extends ByteStream> iterators = c.iterator();
+            private ByteStream cur;
+            private ByteIterator iter;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().iteratorEx();
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.iterator();
                 }
 
-                return cur != null && cur.hasNext();
+                return iter != null && iter.hasNext();
             }
 
             @Override
             public byte nextByte() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.nextByte();
+                return iter.nextByte();
             }
         }).onClose(newCloseHandler(c));
     }

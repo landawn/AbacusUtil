@@ -41,10 +41,10 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Primitives;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1399,48 +1399,6 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         }
     }
 
-    //    @Override
-    //    public OptionalDouble head() {
-    //        if (head == null) {
-    //            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return head;
-    //    }
-    //
-    //    @Override
-    //    public DoubleStream tail() {
-    //        if (tail == null) {
-    //            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return tail;
-    //    }
-
-    //    @Override
-    //    public DoubleStream headd() {
-    //        if (head2 == null) {
-    //            final double[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-    //        }
-    //
-    //        return head2;
-    //    }
-    //
-    //    @Override
-    //    public OptionalDouble taill() {
-    //        if (tail2 == null) {
-    //            final double[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
-    //        }
-    //
-    //        return tail2;
-    //    }
-
     @Override
     public OptionalDouble min() {
         assertNotClosed();
@@ -1684,12 +1642,12 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelIteratorDoubleStream(elements, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public DoubleStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelIteratorDoubleStream(elements, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

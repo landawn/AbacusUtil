@@ -41,9 +41,9 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -70,9 +70,6 @@ public final class EntryStream<K, V> implements AutoCloseable {
             return Stream.of(t);
         }
     };
-
-    @SuppressWarnings("rawtypes")
-    private static final EntryStream EMPTY = new EntryStream(Stream.<Map.Entry> empty());
 
     private final Map<K, V> m;
     private final Stream<Map.Entry<K, V>> s;
@@ -821,7 +818,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @SequentialOnly
     public EntryStream<K, V> append(Map<? extends K, ? extends V> map) {
         if (N.isNullOrEmpty(map)) {
-            return this;
+            return of(s);
         }
 
         final Set<Map.Entry<K, V>> set = (Set) map.entrySet();
@@ -833,7 +830,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @SequentialOnly
     public EntryStream<K, V> prepend(Map<? extends K, ? extends V> map) {
         if (N.isNullOrEmpty(map)) {
-            return this;
+            return of(s);
         }
 
         final Set<Map.Entry<K, V>> set = (Set) map.entrySet();
@@ -1697,7 +1694,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     public static <K, V> EntryStream<K, V> empty() {
-        return EMPTY;
+        return new EntryStream<>(Stream.<Map.Entry<K, V>> empty());
     }
 
     public static <K, V> EntryStream<K, V> of(K k1, V v1) {

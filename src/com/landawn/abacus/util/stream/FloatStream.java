@@ -29,18 +29,18 @@ import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn.Fnn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -69,8 +69,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 public abstract class FloatStream
         extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatIterator, FloatStream> {
-
-    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, true, null);
 
     FloatStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -289,52 +287,6 @@ public abstract class FloatStream
 
     public abstract <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E;
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract OptionalFloat head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract FloatStream tail();
-    //
-    //    public abstract Pair<OptionalFloat, FloatStream> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract FloatStream headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called. 
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract OptionalFloat taill();
-    //
-    //    /**
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
-
     public abstract OptionalFloat min();
 
     public abstract OptionalFloat max();
@@ -394,7 +346,7 @@ public abstract class FloatStream
     }
 
     public static FloatStream empty() {
-        return EMPTY;
+        return new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, true, null);
     }
 
     @SafeVarargs
@@ -910,25 +862,31 @@ public abstract class FloatStream
 
     public static FloatStream concat(final Collection<? extends FloatStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorFloatStream(new FloatIteratorEx() {
-            private final Iterator<? extends FloatStream> iter = c.iterator();
-            private FloatIterator cur;
+            private final Iterator<? extends FloatStream> iterators = c.iterator();
+            private FloatStream cur;
+            private FloatIterator iter;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().iteratorEx();
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.iterator();
                 }
 
-                return cur != null && cur.hasNext();
+                return iter != null && iter.hasNext();
             }
 
             @Override
             public float nextFloat() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.nextFloat();
+                return iter.nextFloat();
             }
         }).onClose(newCloseHandler(c));
     }

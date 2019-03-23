@@ -48,7 +48,6 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableSet;
@@ -74,6 +73,7 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Wrapper;
+import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 
@@ -96,7 +96,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     static final int DEFAULT_READING_THREAD_NUM = Math.max(8, IOUtil.CPU_CORES * 2);
 
     static final int MAX_QUEUE_SIZE = 8192;
-    static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 32;
+    static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 64;
     static final Splitor DEFAULT_SPLITOR = Splitor.ITERATOR;
     static final Random RAND = new SecureRandom();
 
@@ -747,9 +747,19 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
     @Override
     public synchronized void close() {
-        if (isClosed || N.isNullOrEmpty(closeHandlers)) {
+        if (isClosed) {
             return;
         }
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            isClosed = true;
+            return;
+        }
+
+        //    // Only mark the stream closed if closeHandlers are not empty.
+        //    if (isClosed || N.isNullOrEmpty(closeHandlers)) {
+        //        return;
+        //    }
 
         isClosed = true;
         close(closeHandlers);
@@ -1287,6 +1297,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             return new ParallelIteratorStream<>(iter, sorted, comparator, this.maxThreadNum(), this.splitor(), this.asyncExecutor(), closeHandlers);
         } else {
             return new IteratorStream<>(iter, sorted, comparator, closeHandlers);
+        }
+    }
+
+    protected <E> Stream<E> newStream(final Stream<E> s, final boolean sorted, final Comparator<? super E> comparator) {
+        if (this.isParallel()) {
+            return new ParallelIteratorStream<>(s, sorted, comparator, this.maxThreadNum(), this.splitor(), this.asyncExecutor(), closeHandlers);
+        } else {
+            return new IteratorStream<>(s, sorted, comparator, closeHandlers);
         }
     }
 

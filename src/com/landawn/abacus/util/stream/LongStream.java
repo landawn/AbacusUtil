@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.Fn.Fnn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
@@ -39,12 +38,13 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -72,8 +72,6 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @see Stream 
  */
 public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongIterator, LongStream> {
-
-    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY, true, null);
 
     LongStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -297,52 +295,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E;
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract OptionalLong head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract LongStream tail();
-    //
-    //    public abstract Pair<OptionalLong, LongStream> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called. 
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract LongStream headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract OptionalLong taill();
-    //
-    //    /**
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract Pair<LongStream, OptionalLong> headAndTaill();
-
     public abstract OptionalLong min();
 
     public abstract OptionalLong max();
@@ -406,7 +358,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream empty() {
-        return EMPTY;
+        return new ArrayLongStream(N.EMPTY_LONG_ARRAY, true, null);
     }
 
     @SafeVarargs
@@ -1276,25 +1228,31 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public static LongStream concat(final Collection<? extends LongStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new LongIteratorEx() {
-            private final Iterator<? extends LongStream> iter = c.iterator();
-            private LongIterator cur;
+            private final Iterator<? extends LongStream> iterators = c.iterator();
+            private LongStream cur;
+            private LongIterator iter;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().iteratorEx();
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.iterator();
                 }
 
-                return cur != null && cur.hasNext();
+                return iter != null && iter.hasNext();
             }
 
             @Override
             public long nextLong() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.nextLong();
+                return iter.nextLong();
             }
         }).onClose(newCloseHandler(c));
     }

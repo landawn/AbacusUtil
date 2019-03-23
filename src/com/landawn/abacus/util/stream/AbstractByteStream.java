@@ -35,12 +35,12 @@ import com.landawn.abacus.util.MutableByte;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalByte;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalByte;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
@@ -108,10 +108,6 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream skip(final long n, final ByteConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final BytePredicate filter = isParallel() ? new BytePredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -182,10 +178,6 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final ByteIteratorEx iter = this.iteratorEx();
@@ -662,7 +654,7 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<byte[], byte[]>() {
@@ -834,17 +826,6 @@ abstract class AbstractByteStream extends ByteStream {
         }, sorted);
     }
 
-    //    @Override
-    //    public Pair<OptionalByte, ByteStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
     @Override
     public Stream<IndexedByte> indexed() {
         final MutableLong idx = MutableLong.of(0);
@@ -891,22 +872,6 @@ abstract class AbstractByteStream extends ByteStream {
     public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
         return ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
-
-    //    @Override
-    //    public Pair<OptionalByte, ByteStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
-    //    @Override
-    //    public ByteStream cached() {
-    //        return newStream(toArray(), sorted);
-    //    }
 
     @Override
     public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper) {
@@ -1089,16 +1054,4 @@ abstract class AbstractByteStream extends ByteStream {
 
         return collect(supplier, accumulator, combiner);
     }
-
-    //    @Override
-    //    public Pair<OptionalByte, ByteStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<ByteStream, OptionalByte> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
-
 }

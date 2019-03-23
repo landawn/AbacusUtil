@@ -31,8 +31,6 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.MutableShort;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
@@ -41,6 +39,8 @@ import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -108,10 +108,6 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream skip(final long n, final ShortConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final ShortPredicate filter = isParallel() ? new ShortPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -182,10 +178,6 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final ShortIteratorEx iter = this.iteratorEx();
@@ -667,7 +659,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<short[], short[]>() {
@@ -838,17 +830,6 @@ abstract class AbstractShortStream extends ShortStream {
             }
         }, sorted);
     }
-
-    //    @Override
-    //    public Pair<OptionalShort, ShortStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<ShortStream, OptionalShort> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
 
     @Override
     public Stream<IndexedShort> indexed() {

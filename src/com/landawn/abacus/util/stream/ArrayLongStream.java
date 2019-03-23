@@ -36,10 +36,10 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -203,7 +203,7 @@ class ArrayLongStream extends AbstractLongStream {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new LongIteratorEx() {
@@ -1074,7 +1074,7 @@ class ArrayLongStream extends AbstractLongStream {
         checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return newStream(elements, toIndex - n, toIndex, sorted);
         }
@@ -1517,34 +1517,6 @@ class ArrayLongStream extends AbstractLongStream {
         }
     }
 
-    //    @Override
-    //    public OptionalLong head() {
-    //        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public LongStream tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    //    }
-
-    //    @Override
-    //    public LongStream headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    //    }
-    //
-    //    @Override
-    //    public OptionalLong taill() {
-    //        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public OptionalLong min() {
         assertNotClosed();
@@ -1680,7 +1652,7 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public LongStream rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new LongIteratorEx() {
@@ -1968,12 +1940,12 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public LongStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

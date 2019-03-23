@@ -353,6 +353,10 @@ public abstract class CQLBuilder {
         return m;
     }
 
+    public static String repeatQM(int n) {
+        return SQLBuilder.repeatQM(n);
+    }
+
     public CQLBuilder into(final String tableName) {
         if (op != OperationType.ADD) {
             throw new AbacusException("Invalid operation: " + op);

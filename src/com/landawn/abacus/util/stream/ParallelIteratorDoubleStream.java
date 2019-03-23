@@ -25,14 +25,14 @@ import java.util.concurrent.ExecutionException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
@@ -439,7 +439,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                     result = op.applyAsDouble(result, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) { 
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         } finally {
             close();
@@ -513,7 +513,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                     result = accumulator.applyAsDouble(result, tmp);
                 }
             }
-        } catch (InterruptedException | ExecutionException e) { 
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         } finally {
             close();
@@ -574,7 +574,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException e) { 
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         } finally {
             close();
@@ -951,9 +951,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum) && this.splitor == checkSplitor(splitor)) {
-            return this;
-        }
+        checkMaxThreadNum(maxThreadNum);
+        checkSplitor(splitor);
 
         return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }

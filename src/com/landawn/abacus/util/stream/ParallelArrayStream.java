@@ -32,7 +32,6 @@ import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.Multimap;
@@ -41,10 +40,11 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -4213,9 +4213,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> parallel(int maxThreadNum, Splitor splitor) {
-        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum) && this.splitor == checkSplitor(splitor)) {
-            return this;
-        }
+        checkMaxThreadNum(maxThreadNum);
+        checkSplitor(splitor);
 
         return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }

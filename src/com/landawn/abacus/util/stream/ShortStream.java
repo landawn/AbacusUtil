@@ -24,15 +24,11 @@ import java.util.Queue;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
@@ -40,6 +36,10 @@ import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -66,8 +66,6 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public abstract class ShortStream
         extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortIterator, ShortStream> {
-
-    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY, true, null);
 
     ShortStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -272,52 +270,6 @@ public abstract class ShortStream
 
     public abstract <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E;
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract OptionalShort head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract ShortStream tail();
-    //
-    //    public abstract Pair<OptionalShort, ShortStream> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called. 
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract ShortStream headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called. 
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract OptionalShort taill();
-    //
-    //    /**
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract Pair<ShortStream, OptionalShort> headAndTaill();
-
     public abstract OptionalShort min();
 
     public abstract OptionalShort max();
@@ -377,7 +329,7 @@ public abstract class ShortStream
     }
 
     public static ShortStream empty() {
-        return EMPTY;
+        return new ArrayShortStream(N.EMPTY_SHORT_ARRAY, true, null);
     }
 
     @SafeVarargs
@@ -1113,25 +1065,31 @@ public abstract class ShortStream
 
     public static ShortStream concat(final Collection<? extends ShortStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorShortStream(new ShortIteratorEx() {
-            private final Iterator<? extends ShortStream> iter = c.iterator();
-            private ShortIterator cur;
+            private final Iterator<? extends ShortStream> iterators = c.iterator();
+            private ShortStream cur;
+            private ShortIterator iter;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().iteratorEx();
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.iterator();
                 }
 
-                return cur != null && cur.hasNext();
+                return iter != null && iter.hasNext();
             }
 
             @Override
             public short nextShort() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.nextShort();
+                return iter.nextShort();
             }
         }).onClose(newCloseHandler(c));
     }

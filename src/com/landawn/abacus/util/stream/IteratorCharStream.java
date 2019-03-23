@@ -31,10 +31,10 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalChar;
 import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1084,48 +1084,6 @@ class IteratorCharStream extends AbstractCharStream {
         }
     }
 
-    //    @Override
-    //    public OptionalChar head() {
-    //        if (head == null) {
-    //            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return head;
-    //    }
-    //
-    //    @Override
-    //    public CharStream tail() {
-    //        if (tail == null) {
-    //            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-    //            tail = newStream(elements, sorted);
-    //        }
-    //
-    //        return tail;
-    //    }
-
-    //    @Override
-    //    public CharStream headd() {
-    //        if (head2 == null) {
-    //            final char[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-    //        }
-    //
-    //        return head2;
-    //    }
-    //
-    //    @Override
-    //    public OptionalChar taill() {
-    //        if (tail2 == null) {
-    //            final char[] a = elements.toArray();
-    //            head2 = newStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted);
-    //            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
-    //        }
-    //
-    //        return tail2;
-    //    }
-
     @Override
     public OptionalChar min() {
         assertNotClosed();
@@ -1411,12 +1369,12 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream parallel(int maxThreadNum, Splitor splitor) {
-        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelIteratorCharStream(elements, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public CharStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelIteratorCharStream(elements, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

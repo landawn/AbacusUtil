@@ -53,7 +53,6 @@ import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.Indexed;
@@ -70,13 +69,14 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -134,9 +134,6 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  */
 public abstract class Stream<T>
         extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Optional<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
-
-    @SuppressWarnings("rawtypes")
-    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);
 
     Stream(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
         super(sorted, cmp, closeHandlers);
@@ -1338,67 +1335,6 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <R> R toSetAndThen(Function<? super Set<T>, R> func);
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() or tail() is called. 
-    //     * 
-    //     * @return
-    //     */
-    //    @SequentialOnly
-    //    public abstract Optional<T> head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() or tail() is called. 
-    //     * 
-    //     * @return
-    //     */
-    //    @SequentialOnly
-    //    public abstract Stream<T> tail();
-    //
-    //    @SequentialOnly
-    //    public abstract Pair<Optional<T>, Stream<T>> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() or taill() is called.
-    //     * 
-    //     * <br />
-    //     * All elements will be loaded to memory.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    @SequentialOnly
-    //    public abstract Stream<T> headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() or taill() is called. 
-    //     * 
-    //     * <br />
-    //     * All elements will be loaded to memory.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    @SequentialOnly
-    //    public abstract Optional<T> taill();
-    //
-    //    /**
-    //     * 
-    //     * <br />
-    //     * All elements will be loaded to memory.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    @SequentialOnly
-    //    public abstract Pair<Stream<T>, Optional<T>> headAndTaill();
-
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
      * It may cause <code>out of memory error</code> if <code>n</code> is big enough.
@@ -1725,10 +1661,6 @@ public abstract class Stream<T>
     @SafeVarargs
     @SequentialOnly
     public final Stream<T> append(T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
         return append(Arrays.asList(a));
     }
 
@@ -1741,10 +1673,6 @@ public abstract class Stream<T>
     @SafeVarargs
     @SequentialOnly
     public final Stream<T> prepend(T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
         return prepend(Arrays.asList(a));
     }
 
@@ -1766,13 +1694,19 @@ public abstract class Stream<T>
     //    @SequentialOnly
     //    public abstract Stream<T> cached(IntFunction<T[]> generator);
 
+    /**
+     * Returns a new Stream with elements from a temporary queue which is filled by reading the elements from this Stream asynchronously.
+     * Default queue size is 64.
+     * 
+     * @return
+     */
     @SequentialOnly
     public abstract Stream<T> queued();
 
     /**
-     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+     * Returns a new Stream with elements from a temporary queue which is filled by reading the elements from this Stream asynchronously.
      * 
-     * @param queueSize Default value is 8
+     * @param queueSize
      * @return
      */
     @SequentialOnly
@@ -1840,6 +1774,8 @@ public abstract class Stream<T>
      * @return
      */
     public <E extends Exception> ContinuableFuture<Void> asyncRun(final Try.Consumer<? super Stream<T>, E> action) {
+        checkArgNotNull(action, "action");
+
         return ContinuableFuture.run(new Try.Runnable<E>() {
             @Override
             public void run() throws E {
@@ -1855,6 +1791,9 @@ public abstract class Stream<T>
      * @return
      */
     public <E extends Exception> ContinuableFuture<Void> asyncRun(final Try.Consumer<? super Stream<T>, E> action, final Executor executor) {
+        checkArgNotNull(action, "action");
+        checkArgNotNull(executor, "executor");
+
         return ContinuableFuture.run(new Try.Runnable<E>() {
             @Override
             public void run() throws E {
@@ -1869,6 +1808,8 @@ public abstract class Stream<T>
      * @return
      */
     public <R, E extends Exception> ContinuableFuture<R> asyncCall(final Try.Function<? super Stream<T>, R, E> action) {
+        checkArgNotNull(action, "action");
+
         return ContinuableFuture.call(new Try.Callable<R, E>() {
             @Override
             public R call() throws E {
@@ -1884,6 +1825,9 @@ public abstract class Stream<T>
      * @return
      */
     public <R, E extends Exception> ContinuableFuture<R> asyncCall(final Try.Function<? super Stream<T>, R, E> action, final Executor executor) {
+        checkArgNotNull(action, "action");
+        checkArgNotNull(executor, "executor");
+
         return ContinuableFuture.call(new Try.Callable<R, E>() {
             @Override
             public R call() throws E {
@@ -1937,7 +1881,7 @@ public abstract class Stream<T>
     //    public abstract <V> EntryStream<T, V> flatMapToEntryER(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
 
     public static <T> Stream<T> empty() {
-        return EMPTY;
+        return new ArrayStream<>((T[]) N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);
     }
 
     public static <T> Stream<T> just(final T a) {
@@ -4107,17 +4051,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<CharIterator> iterList = new ArrayList<>(len);
+        final CharIterator[] iters = new CharIterator[len];
+        int i = 0;
 
-        for (CharStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (CharStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (CharIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -4128,10 +4073,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final char[] args = new char[len];
-                int idx = 0;
 
-                for (CharIterator e : iterList) {
-                    args[idx++] = e.nextChar();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextChar();
                 }
 
                 return zipFunction.apply(args);
@@ -4291,18 +4235,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<CharIterator> iterList = new ArrayList<>(len);
+        final CharStream[] ss = c.toArray(new CharStream[len]);
+        final CharIterator[] iters = new CharIterator[len];
 
-        for (CharStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (CharIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -4312,16 +4262,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final char[] args = new char[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (CharIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextChar();
+                        args[i] = iters[i].nextChar();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -4441,17 +4389,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<ByteIterator> iterList = new ArrayList<>(len);
+        final ByteIterator[] iters = new ByteIterator[len];
+        int i = 0;
 
-        for (ByteStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (ByteStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (ByteIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -4462,10 +4411,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final byte[] args = new byte[len];
-                int idx = 0;
 
-                for (ByteIterator e : iterList) {
-                    args[idx++] = e.nextByte();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextByte();
                 }
 
                 return zipFunction.apply(args);
@@ -4625,18 +4573,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<ByteIterator> iterList = new ArrayList<>(len);
+        final ByteStream[] ss = c.toArray(new ByteStream[len]);
+        final ByteIterator[] iters = new ByteIterator[len];
 
-        for (ByteStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (ByteIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -4646,16 +4600,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final byte[] args = new byte[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (ByteIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextByte();
+                        args[i] = iters[i].nextByte();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -4775,17 +4727,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<ShortIterator> iterList = new ArrayList<>(len);
+        final ShortIterator[] iters = new ShortIterator[len];
+        int i = 0;
 
-        for (ShortStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (ShortStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (ShortIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -4796,10 +4749,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final short[] args = new short[len];
-                int idx = 0;
 
-                for (ShortIterator e : iterList) {
-                    args[idx++] = e.nextShort();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextShort();
                 }
 
                 return zipFunction.apply(args);
@@ -4960,18 +4912,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<ShortIterator> iterList = new ArrayList<>(len);
+        final ShortStream[] ss = c.toArray(new ShortStream[len]);
+        final ShortIterator[] iters = new ShortIterator[len];
 
-        for (ShortStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (ShortIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -4981,16 +4939,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final short[] args = new short[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (ShortIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextShort();
+                        args[i] = iters[i].nextShort();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -5110,17 +5066,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<IntIterator> iterList = new ArrayList<>(len);
+        final IntIterator[] iters = new IntIterator[len];
+        int i = 0;
 
-        for (IntStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (IntStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (IntIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -5131,10 +5088,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final int[] args = new int[len];
-                int idx = 0;
 
-                for (IntIterator e : iterList) {
-                    args[idx++] = e.nextInt();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextInt();
                 }
 
                 return zipFunction.apply(args);
@@ -5294,18 +5250,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<IntIterator> iterList = new ArrayList<>(len);
+        final IntStream[] ss = c.toArray(new IntStream[len]);
+        final IntIterator[] iters = new IntIterator[len];
 
-        for (IntStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (IntIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -5315,16 +5277,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final int[] args = new int[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (IntIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextInt();
+                        args[i] = iters[i].nextInt();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -5444,17 +5404,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<LongIterator> iterList = new ArrayList<>(len);
+        final LongIterator[] iters = new LongIterator[len];
+        int i = 0;
 
-        for (LongStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (LongStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (LongIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -5465,10 +5426,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final long[] args = new long[len];
-                int idx = 0;
 
-                for (LongIterator e : iterList) {
-                    args[idx++] = e.nextLong();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextLong();
                 }
 
                 return zipFunction.apply(args);
@@ -5628,18 +5588,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<LongIterator> iterList = new ArrayList<>(len);
+        final LongStream[] ss = c.toArray(new LongStream[len]);
+        final LongIterator[] iters = new LongIterator[len];
 
-        for (LongStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (LongIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -5649,16 +5615,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final long[] args = new long[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (LongIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextLong();
+                        args[i] = iters[i].nextLong();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -5778,17 +5742,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<FloatIterator> iterList = new ArrayList<>(len);
+        final FloatIterator[] iters = new FloatIterator[len];
+        int i = 0;
 
-        for (FloatStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (FloatStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (FloatIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -5799,10 +5764,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final float[] args = new float[len];
-                int idx = 0;
 
-                for (FloatIterator e : iterList) {
-                    args[idx++] = e.nextFloat();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextFloat();
                 }
 
                 return zipFunction.apply(args);
@@ -5963,18 +5927,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<FloatIterator> iterList = new ArrayList<>(len);
+        final FloatStream[] ss = c.toArray(new FloatStream[len]);
+        final FloatIterator[] iters = new FloatIterator[len];
 
-        for (FloatStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (FloatIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -5984,16 +5954,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final float[] args = new float[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (FloatIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextFloat();
+                        args[i] = iters[i].nextFloat();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -6113,17 +6081,18 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
-        final List<DoubleIterator> iterList = new ArrayList<>(len);
+        final DoubleIterator[] iters = new DoubleIterator[len];
+        int i = 0;
 
-        for (DoubleStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (DoubleStream s : c) {
+            iters[i++] = s.iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (DoubleIterator e : iterList) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -6134,10 +6103,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final double[] args = new double[len];
-                int idx = 0;
 
-                for (DoubleIterator e : iterList) {
-                    args[idx++] = e.nextDouble();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].nextDouble();
                 }
 
                 return zipFunction.apply(args);
@@ -6298,18 +6266,24 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<DoubleIterator> iterList = new ArrayList<>(len);
+        final DoubleStream[] ss = c.toArray(new DoubleStream[len]);
+        final DoubleIterator[] iters = new DoubleIterator[len];
 
-        for (DoubleStream e : c) {
-            iterList.add(e.iteratorEx());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (DoubleIterator e : iterList) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
                     }
                 }
 
@@ -6319,16 +6293,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final double[] args = new double[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (DoubleIterator e : iterList) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.nextDouble();
+                        args[i] = iters[i].nextDouble();
                     } else {
-                        args[idx] = valuesForNone[idx];
-                        idx++;
+                        args[i] = valuesForNone[i];
                     }
                 }
 
@@ -6505,12 +6477,13 @@ public abstract class Stream<T>
         }
 
         final int len = c.size();
+        final Iterator<? extends T>[] iters = c.toArray(new Iterator[len]);
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (Iterator<? extends T> e : c) {
-                    if (e.hasNext() == false) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i].hasNext() == false) {
                         return false;
                     }
                 }
@@ -6521,10 +6494,9 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final Object[] args = new Object[len];
-                int idx = 0;
 
-                for (Iterator<? extends T> e : c) {
-                    args[idx++] = e.next();
+                for (int i = 0; i < len; i++) {
+                    args[i] = iters[i].next();
                 }
 
                 return zipFunction.apply(Arrays.asList((T[]) args));
@@ -6729,7 +6701,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final List<? extends T> valuesForNone,
-            Function<? super List<? extends T>, R> zipFunction) {
+            final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6740,13 +6712,51 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+        final Stream<? extends T>[] ss = c.toArray(new Stream[len]);
+        final ObjIterator<? extends T>[] iters = new ObjIterator[len];
 
-        for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+        for (int i = 0; i < len; i++) {
+            iters[i] = ss[i].iteratorEx();
         }
 
-        return zipp(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
+            @Override
+            public boolean hasNext() {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                            ss[i].close();
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public R next() {
+                final Object[] args = new Object[len];
+                boolean hasNext = false;
+
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
+                        hasNext = true;
+                        args[i] = iters[i].next();
+                    } else {
+                        args[i] = valuesForNone.get(i);
+                    }
+                }
+
+                if (hasNext == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.apply(Arrays.asList((T[]) args));
+            }
+        });
     }
 
     /**
@@ -6768,12 +6778,18 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
+        final Iterator<? extends T>[] iters = c.toArray(new Iterator[len]);
+
         return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
-                for (Iterator<? extends T> e : c) {
-                    if (e.hasNext()) {
-                        return true;
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null) {
+                        if (iters[i].hasNext()) {
+                            return true;
+                        } else if (iters[i] != null) {
+                            iters[i] = null;
+                        }
                     }
                 }
 
@@ -6783,16 +6799,14 @@ public abstract class Stream<T>
             @Override
             public R next() {
                 final Object[] args = new Object[len];
-                int idx = 0;
                 boolean hasNext = false;
 
-                for (Iterator<? extends T> e : c) {
-                    if (e.hasNext()) {
+                for (int i = 0; i < len; i++) {
+                    if (iters[i] != null && iters[i].hasNext()) {
                         hasNext = true;
-                        args[idx++] = e.next();
+                        args[i] = iters[i].next();
                     } else {
-                        args[idx] = valuesForNone.get(idx);
-                        idx++;
+                        args[i] = valuesForNone.get(i);
                     }
                 }
 

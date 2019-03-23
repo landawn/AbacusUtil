@@ -36,9 +36,9 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -202,7 +202,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new DoubleIteratorEx() {
@@ -1073,7 +1073,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
         checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return newStream(elements, toIndex - n, toIndex, sorted);
         }
@@ -1516,34 +1516,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
         }
     }
 
-    //    @Override
-    //    public OptionalDouble head() {
-    //        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public DoubleStream tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    //    }
-
-    //    @Override
-    //    public DoubleStream headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    //    }
-    //
-    //    @Override
-    //    public OptionalDouble taill() {
-    //        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public OptionalDouble min() {
         assertNotClosed();
@@ -1653,7 +1625,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new DoubleIteratorEx() {
@@ -1853,12 +1825,12 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public DoubleStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

@@ -33,10 +33,10 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.OptionalChar;
-import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.OptionalChar;
+import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -198,7 +198,7 @@ class ArrayCharStream extends AbstractCharStream {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new CharIteratorEx() {
@@ -1202,34 +1202,6 @@ class ArrayCharStream extends AbstractCharStream {
         }
     }
 
-    //    @Override
-    //    public OptionalChar head() {
-    //        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public CharStream tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    //    }
-
-    //    @Override
-    //    public CharStream headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    //    }
-    //
-    //    @Override
-    //    public OptionalChar taill() {
-    //        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public OptionalChar min() {
         assertNotClosed();
@@ -1365,7 +1337,7 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public CharStream rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new CharIteratorEx() {
@@ -1586,12 +1558,12 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public CharStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public CharStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

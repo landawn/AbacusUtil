@@ -31,13 +31,13 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -199,7 +199,7 @@ class ArrayShortStream extends AbstractShortStream {
         checkArgPositive(step, "step");
 
         if (step == 1 || fromIndex == toIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new ShortIteratorEx() {
@@ -846,7 +846,7 @@ class ArrayShortStream extends AbstractShortStream {
         checkArgPositive(n, "n");
 
         if (n >= toIndex - fromIndex) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         } else if (sorted && isSameComparator(comparator, cmp)) {
             return newStream(elements, toIndex - n, toIndex, sorted);
         }
@@ -1289,34 +1289,6 @@ class ArrayShortStream extends AbstractShortStream {
         }
     }
 
-    //    @Override
-    //    public OptionalShort head() {
-    //        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-    //
-    //    @Override
-    //    public ShortStream tail() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex + 1, toIndex, sorted);
-    //    }
-
-    //    @Override
-    //    public ShortStream headd() {
-    //        if (fromIndex == toIndex) {
-    //            return this;
-    //        }
-    //
-    //        return newStream(elements, fromIndex, toIndex - 1, sorted);
-    //    }
-    //
-    //    @Override
-    //    public OptionalShort taill() {
-    //        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(elements[toIndex - 1]);
-    //    }
-
     @Override
     public OptionalShort min() {
         assertNotClosed();
@@ -1452,7 +1424,7 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public ShortStream rotated(final int distance) {
         if (distance == 0 || toIndex - fromIndex <= 1 || distance % (toIndex - fromIndex) == 0) {
-            return this;
+            return newStream(elements, fromIndex, toIndex, sorted);
         }
 
         return newStream(new ShortIteratorEx() {
@@ -1673,12 +1645,12 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
     }
 
     @Override
     public ShortStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
     }
 
     @Override

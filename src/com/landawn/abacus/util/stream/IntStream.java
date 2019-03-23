@@ -26,7 +26,6 @@ import java.util.Queue;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
-import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
@@ -36,12 +35,13 @@ import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Holder;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
@@ -72,8 +72,6 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @see Stream 
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntIterator, IntStream> {
-
-    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY, true, null);
 
     IntStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -312,52 +310,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E;
 
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract OptionalInt head();
-    //
-    //    /**
-    //     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-    //     * Don't call any other methods with this stream after head() and tail() are called. 
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract IntStream tail();
-    //
-    //    public abstract Pair<OptionalInt, IntStream> headAndTail();
-
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract IntStream headd();
-    //
-    //    /**
-    //     * Headd and taill should be used by pair. 
-    //     * Don't call any other methods with this stream after headd() and taill() are called.
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract OptionalInt taill();
-    //
-    //    /**
-    //     * 
-    //     * @return
-    //     * @deprecated
-    //     */
-    //    @Deprecated
-    //    public abstract Pair<IntStream, OptionalInt> headAndTaill();
-
     public abstract OptionalInt min();
 
     public abstract OptionalInt max();
@@ -422,7 +374,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream empty() {
-        return EMPTY;
+        return new ArrayIntStream(N.EMPTY_INT_ARRAY, true, null);
     }
 
     @SafeVarargs
@@ -1431,25 +1383,31 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public static IntStream concat(final Collection<? extends IntStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new IntIteratorEx() {
-            private final Iterator<? extends IntStream> iter = c.iterator();
-            private IntIterator cur;
+            private final Iterator<? extends IntStream> iterators = c.iterator();
+            private IntStream cur;
+            private IntIterator iter;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().iteratorEx();
+                while ((iter == null || iter.hasNext() == false) && iterators.hasNext()) {
+                    if (cur != null) {
+                        cur.close();
+                    }
+
+                    cur = iterators.next();
+                    iter = cur.iterator();
                 }
 
-                return cur != null && cur.hasNext();
+                return iter != null && iter.hasNext();
             }
 
             @Override
             public int nextInt() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                if ((iter == null || iter.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.nextInt();
+                return iter.nextInt();
             }
         }).onClose(newCloseHandler(c));
     }

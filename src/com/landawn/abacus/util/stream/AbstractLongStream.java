@@ -34,12 +34,12 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -107,10 +107,6 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream skip(final long n, final LongConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final LongPredicate filter = isParallel() ? new LongPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -181,10 +177,6 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final LongIteratorEx iter = this.iteratorEx();
@@ -666,7 +658,7 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<long[], long[]>() {
@@ -837,17 +829,6 @@ abstract class AbstractLongStream extends LongStream {
             }
         }, sorted);
     }
-
-    //    @Override
-    //    public Pair<OptionalLong, LongStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<LongStream, OptionalLong> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
 
     @Override
     public Stream<IndexedLong> indexed() {

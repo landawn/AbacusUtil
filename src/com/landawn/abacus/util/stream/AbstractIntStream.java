@@ -35,12 +35,12 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -108,10 +108,6 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream skip(final long n, final IntConsumer action) {
-        if (n <= 0) {
-            return this;
-        }
-
         final IntPredicate filter = isParallel() ? new IntPredicate() {
             final AtomicLong cnt = new AtomicLong(n);
 
@@ -182,10 +178,6 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream step(final long step) {
         checkArgPositive(step, "step");
-
-        if (step == 1) {
-            return this;
-        }
 
         final long skip = step - 1;
         final IntIteratorEx iter = this.iteratorEx();
@@ -667,7 +659,7 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream sorted() {
         if (sorted) {
-            return this;
+            return newStream(iterator(), sorted);
         }
 
         return lazyLoad(new Function<int[], int[]>() {
@@ -838,17 +830,6 @@ abstract class AbstractIntStream extends IntStream {
             }
         }, sorted);
     }
-
-    //    @Override
-    //    public Pair<OptionalInt, IntStream> headAndTail() {
-    //        return Pair.of(head(), tail());
-    //    }
-
-    //    @SuppressWarnings("deprecation")
-    //    @Override
-    //    public Pair<IntStream, OptionalInt> headAndTaill() {
-    //        return Pair.of(headd(), taill());
-    //    }
 
     @Override
     public Stream<IndexedInt> indexed() {

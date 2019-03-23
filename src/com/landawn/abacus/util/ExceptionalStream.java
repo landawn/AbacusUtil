@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -62,19 +63,6 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public class ExceptionalStream<T, E extends Exception> implements AutoCloseable {
-    @SuppressWarnings("rawtypes")
-    private static final ExceptionalStream EMPTY = new ExceptionalStream(new ExceptionalIterator() {
-        @Override
-        public boolean hasNext() throws Exception {
-            return false;
-        }
-
-        @Override
-        public Object next() throws Exception {
-            throw new NoSuchElementException();
-        }
-    }, null);
-
     private final ExceptionalIterator<T, E> elements;
     private final boolean sorted;
     private final Comparator<? super T> comparator;
@@ -94,7 +82,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> empty() {
-        return EMPTY;
+        return new ExceptionalStream<>(ExceptionalIterator.EMPTY, null);
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> just(final T e) {
@@ -2848,6 +2836,74 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return transfer.apply(this);
     }
 
+    /** 
+     * 
+     * @param action a terminal operation should be called.
+     * @return
+     */
+    public ContinuableFuture<Void> asyncRun(final Try.Consumer<? super ExceptionalStream<T, E>, E> action) {
+        checkArgNotNull(action, "action");
+
+        return ContinuableFuture.run(new Try.Runnable<E>() {
+            @Override
+            public void run() throws E {
+                action.accept(ExceptionalStream.this);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @param executor
+     * @return
+     */
+    public ContinuableFuture<Void> asyncRun(final Try.Consumer<? super ExceptionalStream<T, E>, E> action, final Executor executor) {
+        checkArgNotNull(action, "action");
+        checkArgNotNull(executor, "executor");
+
+        return ContinuableFuture.run(new Try.Runnable<E>() {
+            @Override
+            public void run() throws E {
+                action.accept(ExceptionalStream.this);
+            }
+        }, executor);
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @return
+     */
+    public <R> ContinuableFuture<R> asyncCall(final Try.Function<? super ExceptionalStream<T, E>, R, E> action) {
+        checkArgNotNull(action, "action");
+
+        return ContinuableFuture.call(new Try.Callable<R, E>() {
+            @Override
+            public R call() throws E {
+                return action.apply(ExceptionalStream.this);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param action a terminal operation should be called.
+     * @param executor
+     * @return
+     */
+    public <R> ContinuableFuture<R> asyncCall(final Try.Function<? super ExceptionalStream<T, E>, R, E> action, final Executor executor) {
+        checkArgNotNull(action, "action");
+        checkArgNotNull(executor, "executor");
+
+        return ContinuableFuture.call(new Try.Callable<R, E>() {
+            @Override
+            public R call() throws E {
+                return action.apply(ExceptionalStream.this);
+            }
+        }, executor);
+    }
+
     public ExceptionalStream<T, E> onClose(final Try.Runnable<? extends E> closeHandler) {
         checkArgNotNull(closeHandler, "closeHandler");
 
@@ -2876,9 +2932,19 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     @Override
     public synchronized void close() throws E {
-        if (isClosed || N.isNullOrEmpty(closeHandlers)) {
+        if (isClosed) {
             return;
         }
+
+        if (N.isNullOrEmpty(closeHandlers)) {
+            isClosed = true;
+            return;
+        }
+
+        //    // Only mark the stream closed if closeHandlers are not empty.
+        //    if (isClosed || N.isNullOrEmpty(closeHandlers)) {
+        //        return;
+        //    }
 
         isClosed = true;
 
@@ -3007,6 +3073,19 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     static abstract class ExceptionalIterator<T, E extends Exception> {
+
+        @SuppressWarnings("rawtypes")
+        private static final ExceptionalIterator EMPTY = new ExceptionalIterator() {
+            @Override
+            public boolean hasNext() throws Exception {
+                return false;
+            }
+
+            @Override
+            public Object next() throws Exception {
+                throw new NoSuchElementException();
+            }
+        };
 
         /**
          * Lazy evaluation.
