@@ -1267,6 +1267,80 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, false, null, closeHandlers);
     }
 
+    public ExceptionalStream<Stream<T>, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible) {
+        checkArgNotNull(collapsible, "collapsible");
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<Stream<T>, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() throws E {
+                if (hasNext == false) {
+                    next = iter.next();
+                }
+
+                final List<T> c = new ArrayList<>();
+                c.add(next);
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        c.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return Stream.of(c);
+            }
+        }, false, null, closeHandlers);
+    }
+
+    public <C extends Collection<T>> ExceptionalStream<C, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
+            final Supplier<C> supplier) {
+        checkArgNotNull(collapsible, "collapsible");
+        checkArgNotNull(supplier, "supplier");
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<C, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public C next() throws E {
+                if (hasNext == false) {
+                    next = iter.next();
+                }
+
+                final C c = supplier.get();
+                c.add(next);
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        c.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return c;
+            }
+        }, false, null, closeHandlers);
+    }
+
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.

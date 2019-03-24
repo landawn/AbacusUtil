@@ -1,3 +1,8 @@
+### 1.5.9
+ 
+* Improvements and bug fix.
+
+
 ### 1.5.8
  
 * Close Streams when `IllegalArgumentException` happens.

@@ -906,7 +906,7 @@ class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;
@@ -941,7 +941,7 @@ class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;

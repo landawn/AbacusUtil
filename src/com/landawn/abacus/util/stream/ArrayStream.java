@@ -1810,7 +1810,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;
@@ -1848,7 +1848,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;
@@ -1886,7 +1886,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                 final C result = collectionSupplier.get();
                 boolean isFirst = true;
 
-                while (isFirst) {
+                while (cursor < toIndex) {
                     if (isFirst) {
                         preCondition = predicate.test(elements[cursor]);
                         result.add(elements[cursor]);
@@ -3072,12 +3072,14 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(),
+                closeHandlers);
     }
 
     @Override
     public Stream<T> parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

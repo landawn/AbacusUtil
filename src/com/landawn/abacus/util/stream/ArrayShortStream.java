@@ -678,7 +678,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;
@@ -713,7 +713,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.test(elements[from]);
+                        preCondition = predicate.test(elements[cursor]);
                         cursor++;
                     } else if (predicate.test(elements[cursor]) == preCondition) {
                         cursor++;

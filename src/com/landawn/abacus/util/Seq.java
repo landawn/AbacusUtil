@@ -1847,15 +1847,41 @@ public final class Seq<T> extends ImmutableCollection<T> {
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
         }
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
 
-        final Try.BiPredicate<T, Object, E> predicate2 = new Try.BiPredicate<T, Object, E>() {
-            @Override
-            public boolean test(T t, Object u) throws E {
-                return predicate.test(t);
+        final List<C> res = new ArrayList<>();
+        final Iterator<T> elements = iterator();
+        final T NONE = (T) N.NULL_MASK;
+        T next = NONE;
+        boolean preCondition = false;
+
+        while (next != NONE || elements.hasNext()) {
+            final C piece = supplier.get();
+
+            if (next == NONE) {
+                next = elements.next();
             }
-        };
 
-        return split(null, predicate2, Fn.doNothing(), supplier);
+            while (next != NONE) {
+                if (piece.size() == 0) {
+                    piece.add(next);
+                    preCondition = predicate.test(next);
+                    next = elements.hasNext() ? elements.next() : NONE;
+                } else if (predicate.test(next) == preCondition) {
+                    piece.add(next);
+                    next = elements.hasNext() ? elements.next() : NONE;
+                } else {
+
+                    break;
+                }
+            }
+
+            res.add(piece);
+        }
+
+        return res;
     }
 
     /**
@@ -1905,24 +1931,25 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         final List<C> res = new ArrayList<>();
         final Iterator<T> elements = iterator();
-        T next = (T) N.NULL_MASK;
+        final T NONE = (T) N.NULL_MASK;
+        T next = NONE;
         boolean preCondition = false;
 
-        while (next != N.NULL_MASK || elements.hasNext()) {
+        while (next != NONE || elements.hasNext()) {
             final C piece = supplier.get();
 
-            if (next == N.NULL_MASK) {
+            if (next == NONE) {
                 next = elements.next();
             }
 
-            while (next != N.NULL_MASK) {
+            while (next != NONE) {
                 if (piece.size() == 0) {
                     piece.add(next);
                     preCondition = predicate.test(next, flag);
-                    next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
+                    next = elements.hasNext() ? elements.next() : NONE;
                 } else if (predicate.test(next, flag) == preCondition) {
                     piece.add(next);
-                    next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
+                    next = elements.hasNext() ? elements.next() : NONE;
                 } else {
                     if (flagUpdate != null) {
                         flagUpdate.accept(flag);
