@@ -89,6 +89,9 @@ import com.landawn.abacus.logging.LoggerFactory;
 public abstract class CQLBuilder {
     private static final Logger logger = LoggerFactory.getLogger(CQLBuilder.class);
 
+    private static final Splitter commaSplitter = Splitter.with(WD._COMMA).trim(true);
+    private static final Splitter spaceSplitter = Splitter.with(WD._COMMA).trim(true);
+
     public static final String DISTINCT = WD.DISTINCT;
     public static final String COUNT_ALL = "count(*)";
 
@@ -509,10 +512,10 @@ public abstract class CQLBuilder {
 
     public CQLBuilder from(String expr) {
         expr = expr.trim();
-        String tableName = expr.indexOf(WD._COMMA) > 0 ? StringUtil.split(expr, WD._COMMA, true)[0] : expr;
+        String tableName = expr.indexOf(WD._COMMA) > 0 ? commaSplitter.split(expr).get(0) : expr;
 
         if (tableName.indexOf(WD.SPACE) > 0) {
-            tableName = StringUtil.split(tableName, WD._SPACE, true)[0];
+            tableName = spaceSplitter.split(tableName).get(0);
         }
 
         return from(tableName, expr);
@@ -526,7 +529,7 @@ public abstract class CQLBuilder {
             String tableName = tableNames[0].trim();
 
             if (tableName.indexOf(WD.SPACE) > 0) {
-                tableName = StringUtil.split(tableName, WD._SPACE, true)[0];
+                tableName = spaceSplitter.split(tableName).get(0);
             }
 
             return from(tableName, StringUtil.join(tableNames, WD.COMMA_SPACE));
@@ -537,7 +540,7 @@ public abstract class CQLBuilder {
         String tableName = tableNames.iterator().next().trim();
 
         if (tableName.indexOf(WD.SPACE) > 0) {
-            tableName = StringUtil.split(tableName, WD._SPACE, true)[0];
+            tableName = spaceSplitter.split(tableName).get(0);
         }
 
         return from(tableName, StringUtil.join(tableNames, WD.SPACE));
@@ -547,7 +550,7 @@ public abstract class CQLBuilder {
         String tableName = tableAliases.keySet().iterator().next().trim();
 
         if (tableName.indexOf(WD.SPACE) > 0) {
-            tableName = StringUtil.split(tableName, WD._SPACE, true)[0];
+            tableName = spaceSplitter.split(tableName).get(0);
         }
 
         String expr = "";

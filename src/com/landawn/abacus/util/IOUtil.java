@@ -71,6 +71,8 @@ import com.landawn.abacus.util.function.BiPredicate;
 public final class IOUtil {
     private static final Logger logger = LoggerFactory.getLogger(IOUtil.class);
 
+    private static final Splitter pathSplitter = Splitter.with('/').trim(true);
+
     static final int DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER = 1024;
 
     // ...
@@ -2419,7 +2421,7 @@ public final class IOUtil {
         pathname = pathname.replace('\\', '/');
 
         // split the path apart
-        String[] components = StringUtil.split(pathname, '/', true);
+        String[] components = pathSplitter.splitToArray(pathname);
         List<String> path = new ArrayList<>();
 
         // resolve ., .., and //

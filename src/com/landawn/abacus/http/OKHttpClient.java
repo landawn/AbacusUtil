@@ -290,7 +290,7 @@ public final class OKHttpClient extends AbstractHttpClient {
 
             if (isOneWayRequest(settings)) {
                 return null;
-            } else if (okhttp3.Response.class.equals(resultClass)) {
+            } else if (resultClass != null && resultClass.equals(okhttp3.Response.class)) {
                 closeOkHttpResponse = false;
 
                 return (T) httpResponse;

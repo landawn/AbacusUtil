@@ -15,14 +15,19 @@
 package com.landawn.abacus.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.EntryStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -31,15 +36,53 @@ import com.landawn.abacus.util.function.Supplier;
  * @author Haiyang Li
  */
 public final class Splitter {
-    private static final Splitter DEFAULT = new Splitter(Joiner.DEFAULT_DELIMITER, null);
-    private final String delimiter;
-    private final String delimiterRegex;
-    private int max = Integer.MAX_VALUE;
-    private boolean trim = false;
+    private static final Pattern WHITE_SPACE_PATTERN = Pattern.compile("\\s+");
 
-    Splitter(String delimiter, String delimiterRegex) {
-        this.delimiter = delimiter;
-        this.delimiterRegex = delimiterRegex;
+    private static final SubStringFunc defaultSubStringFunc = new SubStringFunc() {
+        @Override
+        public String subString(CharSequence source, int start, int end) {
+            return source.subSequence(start, end).toString();
+        }
+    };
+
+    private static final SubStringFunc trimSubStringFunc = new SubStringFunc() {
+        @Override
+        public String subString(CharSequence source, int start, int end) {
+            while (start < end && source.charAt(start) == ' ') {
+                start++;
+            }
+
+            while (end > start && source.charAt(end - 1) == ' ') {
+                end--;
+            }
+
+            return start >= end ? N.EMPTY_STRING : source.subSequence(start, end).toString();
+        }
+    };
+
+    private static final SubStringFunc stripSubStringFunc = new SubStringFunc() {
+        @Override
+        public String subString(CharSequence source, int start, int end) {
+            while (start < end && Character.isWhitespace(source.charAt(start))) {
+                start++;
+            }
+
+            while (end > start && Character.isWhitespace(source.charAt(end - 1))) {
+                end--;
+            }
+
+            return start >= end ? N.EMPTY_STRING : source.subSequence(start, end).toString();
+        }
+    };
+
+    private final Strategy strategy;
+    private boolean omitEmptyStrings = false;
+    private boolean trim = false;
+    private boolean strip = false;
+    private int limit = Integer.MAX_VALUE;
+
+    Splitter(Strategy strategy) {
+        this.strategy = strategy;
     }
 
     /**
@@ -48,29 +91,253 @@ public final class Splitter {
      * @return
      */
     public static Splitter defauLt() {
-        return DEFAULT;
+        return with(Joiner.DEFAULT_DELIMITER);
     }
 
-    public static Splitter with(CharSequence delimiter) {
-        if (N.isNullOrEmpty(delimiter)) {
-            throw new IllegalArgumentException("'delimiter' can't be null or empty");
-        }
+    public static Splitter with(final char delimiter) {
+        return new Splitter(new Strategy() {
+            @Override
+            public ObjIterator<String> split(final CharSequence source, final boolean omitEmptyStrings, final boolean trim, final boolean strip,
+                    final int limit) {
+                if (source == null) {
+                    return ObjIterator.empty();
+                }
 
-        return new Splitter(delimiter.toString(), null);
+                return new ObjIterator<String>() {
+                    private final SubStringFunc subStringFunc = strip ? stripSubStringFunc : (trim ? trimSubStringFunc : defaultSubStringFunc);
+                    private final int sourceLen = source.length();
+                    private String next = null;
+                    private int start = 0;
+                    private int cursor = 0;
+                    private int cnt = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (next == null && (cursor >= 0 && cursor <= sourceLen)) {
+                            if (limit - cnt == 1) {
+                                next = subStringFunc.subString(source, start, sourceLen);
+                                start = (cursor = sourceLen + 1);
+
+                                if (omitEmptyStrings && next.length() == 0) {
+                                    next = null;
+                                }
+                            } else {
+                                while (cursor >= 0 && cursor <= sourceLen) {
+                                    if (cursor == sourceLen || source.charAt(cursor) == delimiter) {
+                                        next = subStringFunc.subString(source, start, cursor);
+                                        start = ++cursor;
+
+                                        if (omitEmptyStrings && next.length() == 0) {
+                                            next = null;
+                                        }
+
+                                        if (next != null) {
+                                            break;
+                                        }
+                                    } else {
+                                        cursor++;
+                                    }
+                                }
+                            }
+                        }
+
+                        return next != null;
+                    }
+
+                    @Override
+                    public String next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        final String result = next;
+                        next = null;
+                        cnt++;
+                        return result;
+                    }
+                };
+            }
+        });
+    }
+
+    public static Splitter with(final CharSequence delimiter) {
+        // N.checkArgNotNullOrEmpty(delimiter, "delimiter");
+
+        if (N.isNullOrEmpty(delimiter)) {
+            return with(WHITE_SPACE_PATTERN);
+        } else if (delimiter.length() == 1) {
+            return with(delimiter.charAt(0));
+        } else {
+            return new Splitter(new Strategy() {
+                @Override
+                public ObjIterator<String> split(final CharSequence source, final boolean omitEmptyStrings, final boolean trim, final boolean strip,
+                        final int limit) {
+                    if (source == null) {
+                        return ObjIterator.empty();
+                    }
+
+                    return new ObjIterator<String>() {
+                        private final SubStringFunc subStringFunc = strip ? stripSubStringFunc : (trim ? trimSubStringFunc : defaultSubStringFunc);
+                        @SuppressWarnings("deprecation")
+                        private final char[] sourceChars = StringUtil.getCharsForReadOnly(source.toString());
+                        @SuppressWarnings("deprecation")
+                        private final char[] delimiterChars = StringUtil.getCharsForReadOnly(delimiter.toString());
+                        private final int sourceLen = sourceChars.length;
+                        private final int delimiterLen = delimiterChars.length;
+                        private String next = null;
+                        private int start = 0;
+                        private int cursor = 0;
+                        private int cnt = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (next == null && (cursor >= 0 && cursor <= sourceLen)) {
+                                if (limit - cnt == 1) {
+                                    next = subStringFunc.subString(source, start, sourceLen);
+                                    start = (cursor = sourceLen + 1);
+
+                                    if (omitEmptyStrings && next.length() == 0) {
+                                        next = null;
+                                    }
+                                } else {
+                                    while (cursor >= 0 && cursor <= sourceLen) {
+                                        if (cursor > sourceLen - delimiterLen || (sourceChars[cursor] == delimiterChars[0] && match(cursor))) {
+                                            if (cursor > sourceLen - delimiterLen) {
+                                                next = subStringFunc.subString(source, start, sourceLen);
+                                                start = (cursor = sourceLen + 1);
+                                            } else {
+                                                next = source.subSequence(start, cursor).toString();
+                                                start = (cursor += delimiter.length());
+                                            }
+
+                                            if (omitEmptyStrings && next.length() == 0) {
+                                                next = null;
+                                            }
+
+                                            if (next != null) {
+                                                break;
+                                            }
+                                        } else {
+                                            cursor++;
+                                        }
+                                    }
+                                }
+                            }
+
+                            return next != null;
+                        }
+
+                        @Override
+                        public String next() {
+                            if (hasNext() == false) {
+                                throw new NoSuchElementException();
+                            }
+
+                            final String result = next;
+                            next = null;
+                            cnt++;
+                            return result;
+                        }
+
+                        private boolean match(int cursor) {
+                            for (int i = 1; i < delimiterLen; i++) {
+                                if (sourceChars[cursor + i] != delimiterChars[i]) {
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        }
+                    };
+                }
+            });
+        }
+    }
+
+    public static Splitter with(final Pattern delimiter) {
+        N.checkArgNotNull(delimiter, "delimiter");
+
+        return new Splitter(new Strategy() {
+            @Override
+            public ObjIterator<String> split(final CharSequence source, final boolean omitEmptyStrings, final boolean trim, final boolean strip,
+                    final int limit) {
+                if (source == null) {
+                    return ObjIterator.empty();
+                }
+
+                return new ObjIterator<String>() {
+                    private final SubStringFunc subStringFunc = strip ? stripSubStringFunc : (trim ? trimSubStringFunc : defaultSubStringFunc);
+                    private final int sourceLen = source.length();
+                    private final Matcher matcher = delimiter.matcher(source);
+                    private String next = null;
+                    private int start = 0;
+                    private int cursor = 0;
+                    private int cnt = 0;
+                    private boolean matches = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (next == null && (cursor >= 0 && cursor <= sourceLen)) {
+                            if (limit - cnt == 1) {
+                                next = subStringFunc.subString(source, start, sourceLen);
+                                start = (cursor = sourceLen + 1);
+
+                                if (omitEmptyStrings && next.length() == 0) {
+                                    next = null;
+                                }
+                            } else {
+                                while (cursor >= 0 && cursor <= sourceLen) {
+                                    if (cursor == sourceLen || (matches = matcher.find(start))) {
+                                        if (matches) {
+                                            next = subStringFunc.subString(source, start, matcher.start());
+                                            start = (cursor = matcher.end());
+                                            matches = false;
+                                        } else {
+                                            next = subStringFunc.subString(source, start, sourceLen);
+                                            start = (cursor = sourceLen + 1);
+                                        }
+
+                                        if (omitEmptyStrings && next.length() == 0) {
+                                            next = null;
+                                        }
+
+                                        if (next != null) {
+                                            break;
+                                        }
+                                    } else {
+                                        cursor++;
+                                    }
+                                }
+                            }
+                        }
+
+                        return next != null;
+                    }
+
+                    @Override
+                    public String next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        final String result = next;
+                        next = null;
+                        cnt++;
+                        return result;
+                    }
+                };
+            }
+        });
     }
 
     public static Splitter pattern(CharSequence delimiterRegex) {
-        if (N.isNullOrEmpty(delimiterRegex)) {
-            throw new IllegalArgumentException("'delimiterRegex' can't be null or empty");
-        }
+        // N.checkArgNotNullOrEmpty(delimiterRegex, "delimiterRegex");
 
-        return new Splitter(null, delimiterRegex.toString());
+        return N.isNullOrEmpty(delimiterRegex) ? with(WHITE_SPACE_PATTERN) : with(Pattern.compile(delimiterRegex.toString()));
     }
 
-    public Splitter limit(int max) {
-        N.checkArgPositive(max, "max");
-
-        this.max = max;
+    public Splitter omitEmptyStrings(boolean omitEmptyStrings) {
+        this.omitEmptyStrings = omitEmptyStrings;
 
         return this;
     }
@@ -81,114 +348,123 @@ public final class Splitter {
         return this;
     }
 
-    public List<String> split(final CharSequence source) {
-        if (N.isNullOrEmpty(source)) {
-            return new ArrayList<>();
-        }
+    /**
+     * Removes the starting and ending white space characters if {@code strip} is true.
+     * 
+     * @param strip
+     * @return
+     * @see Character#isWhitespace(char)
+     */
+    public Splitter strip(boolean strip) {
+        this.strip = strip;
 
-        return N.asList(split(source, delimiter, delimiterRegex, max, trim));
+        return this;
+    }
+
+    public Splitter limit(int limit) {
+        N.checkArgPositive(limit, "limit");
+
+        this.limit = limit;
+
+        return this;
+    }
+
+    public List<String> split(final CharSequence source) {
+        final List<String> result = new ArrayList<>();
+        split(result, source);
+        return result;
     }
 
     public <T> List<T> split(Class<T> targetType, final CharSequence source) {
+        N.checkArgNotNull(targetType, "targetType");
+
         final Type<T> type = N.typeOf(targetType);
 
         return split(type, source);
     }
 
-    public <T> List<T> split(Type<T> type, final CharSequence source) {
-        if (N.isNullOrEmpty(source)) {
-            return new ArrayList<>();
-        }
+    public <T> List<T> split(Type<T> targetType, final CharSequence source) {
+        N.checkArgNotNull(targetType, "targetType");
 
-        final String[] strs = split(source, delimiter, delimiterRegex, max, trim);
-        final List<T> result = new ArrayList<>(strs.length);
-
-        for (String str : strs) {
-            result.add(type.valueOf(str));
-        }
-
+        final List<T> result = new ArrayList<>();
+        split(result, targetType, source);
         return result;
     }
 
     public <C extends Collection<String>> C split(final C output, final CharSequence source) {
-        final C result = output;
+        N.checkArgNotNull(output, "output");
 
-        if (N.isNullOrEmpty(source)) {
-            return result;
+        final ObjIterator<String> iter = iterate(source);
+
+        while (iter.hasNext()) {
+            output.add(iter.next());
         }
 
-        final String[] strs = split(source, delimiter, delimiterRegex, max, trim);
-        result.addAll(Arrays.asList(strs));
-
-        return result;
+        return output;
     }
 
     public <T, C extends Collection<T>> C split(final C output, Class<T> targetType, final CharSequence source) {
+        N.checkArgNotNull(output, "output");
+        N.checkArgNotNull(targetType, "targetType");
+
         final Type<T> type = N.typeOf(targetType);
 
         return split(output, type, source);
     }
 
-    public <T, C extends Collection<T>> C split(final C output, Type<T> type, final CharSequence source) {
-        final C result = output;
+    public <T, C extends Collection<T>> C split(final C output, Type<T> targetType, final CharSequence source) {
+        N.checkArgNotNull(output, "output");
+        N.checkArgNotNull(targetType, "targetType");
 
-        if (N.isNullOrEmpty(source)) {
-            return result;
+        final ObjIterator<String> iter = iterate(source);
+
+        while (iter.hasNext()) {
+            output.add(targetType.valueOf(iter.next()));
         }
 
-        final String[] strs = split(source, delimiter, delimiterRegex, max, trim);
-
-        for (String str : strs) {
-            result.add(type.valueOf(str));
-        }
-
-        return result;
+        return output;
     }
 
     public <C extends Collection<String>> C split(final CharSequence source, final Supplier<C> supplier) {
-        return this.split(supplier.get(), source);
+        return split(supplier.get(), source);
     }
 
     public <T, C extends Collection<T>> C split(Class<T> targetType, final CharSequence source, final Supplier<C> supplier) {
-        return this.split(supplier.get(), targetType, source);
+        return split(supplier.get(), targetType, source);
     }
 
-    public <T, C extends Collection<T>> C split(Type<T> type, final CharSequence source, final Supplier<C> supplier) {
-        return this.split(supplier.get(), type, source);
+    public <T, C extends Collection<T>> C split(Type<T> targetType, final CharSequence source, final Supplier<C> supplier) {
+        return split(supplier.get(), targetType, source);
     }
 
     public String[] splitToArray(final CharSequence source) {
-        if (N.isNullOrEmpty(source)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
+        final List<String> substrs = split(source);
 
-        return Splitter.split(source, delimiter, delimiterRegex, max, trim);
+        return substrs.toArray(new String[substrs.size()]);
     }
 
     public <T> T splitToArray(Class<T> arrayType, final CharSequence source) {
+        N.checkArgNotNull(arrayType, "arrayType");
+
         final Class<?> eleCls = arrayType.getComponentType();
 
-        if (N.isNullOrEmpty(source)) {
-            return N.newArray(eleCls, 0);
-        }
-
-        final String[] strs = Splitter.split(source, delimiter, delimiterRegex, max, trim);
+        final List<String> substrs = split(source);
 
         if (eleCls.equals(String.class) || eleCls.equals(Object.class)) {
-            return (T) strs;
+            return (T) substrs.toArray((Object[]) N.newArray(eleCls, substrs.size()));
         } else {
             final Type<?> eleType = N.typeOf(eleCls);
-            final Object a = N.newArray(eleCls, strs.length);
+            final Object a = N.newArray(eleCls, substrs.size());
 
             if (Primitives.isPrimitiveType(eleCls)) {
-                for (int i = 0, len = strs.length; i < len; i++) {
-                    Array.set(a, i, eleType.valueOf(strs[i]));
+                for (int i = 0, len = substrs.size(); i < len; i++) {
+                    Array.set(a, i, eleType.valueOf(substrs.get(i)));
                 }
             } else {
                 final Object[] objArray = (Object[]) a;
 
-                for (int i = 0, len = strs.length; i < len; i++) {
-                    objArray[i] = eleType.valueOf(strs[i]);
+                for (int i = 0, len = substrs.size(); i < len; i++) {
+                    objArray[i] = eleType.valueOf(substrs.get(i));
                 }
             }
 
@@ -196,60 +472,27 @@ public final class Splitter {
         }
     }
 
-    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, final CharSequence source) {
-    //        return this.split(supplier.get(), source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, final CharSequence source) {
-    //        return this.split(supplier.get(), targetType, source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, final CharSequence source) {
-    //        return this.split(supplier.get(), type, source);
-    //    }
-    //
-    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, final CharSequence source) {
-    //        return this.split(supplier.get(), typeName, source);
-    //    }
-
-    public <T, E extends Exception> T splitAndThen(final CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
-        return converter.apply(this.splitToArray(source));
+    public Stream<String> splitToStream(final CharSequence source) {
+        return Stream.of(iterate(source));
     }
 
-    static String[] split(final CharSequence source, String delimiter, String delimiterRegex, int max, boolean trim) {
-        final String sourceStr = source.toString();
-        String[] strs = null;
+    public <T, E extends Exception> T splitAndThen(final CharSequence source, Try.Function<? super List<String>, T, E> converter) throws E {
+        N.checkArgNotNull(converter, "converter");
 
-        if (N.notNullOrEmpty(delimiter)) {
-            strs = StringUtil.split(sourceStr, delimiter, max, trim);
-        } else {
-            strs = sourceStr.split(delimiterRegex, max);
+        return converter.apply(split(source));
+    }
 
-            if (trim) {
-                for (int i = 0, len = strs.length; i < len; i++) {
-                    strs[i] = strs[i].trim();
-                }
-            }
-        }
-
-        return strs;
+    ObjIterator<String> iterate(final CharSequence source) {
+        return strategy.split(source, omitEmptyStrings, trim, strip, limit);
     }
 
     public static final class MapSplitter {
-        private static final MapSplitter DEFAULT = new MapSplitter(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER, null, null);
+        private final Splitter entrySplitter;
+        private final Splitter keyValueSplitter;
 
-        private final String entryDelimiter;
-        private final String keyValueDelimiter;
-        private final String entryDelimiterRegex;
-        private final String keyValueDelimiterRegex;
-        private int max = Integer.MAX_VALUE;
-        private boolean trim = false;
-
-        MapSplitter(final String entryDelimiter, final String keyValueDelimiter, final String entryDelimiterRegex, final String keyValueDelimiterRegex) {
-            this.entryDelimiter = entryDelimiter;
-            this.keyValueDelimiter = keyValueDelimiter;
-            this.entryDelimiterRegex = entryDelimiterRegex;
-            this.keyValueDelimiterRegex = keyValueDelimiterRegex;
+        MapSplitter(Splitter entrySplitter, Splitter keyValueSplitter) {
+            this.entrySplitter = entrySplitter;
+            this.keyValueSplitter = keyValueSplitter;
         }
 
         /**
@@ -258,79 +501,64 @@ public final class Splitter {
          * @return
          */
         public static MapSplitter defauLt() {
-            return DEFAULT;
+            return with(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER);
         }
 
-        public static MapSplitter with(CharSequence entryDelimiter, CharSequence keyValueDelimiter) {
-            if (N.isNullOrEmpty(entryDelimiter) || N.isNullOrEmpty(keyValueDelimiter)) {
-                throw new IllegalArgumentException("'entryDelimiter' and 'keyValueDelimiter' can't be null or empty");
-            }
+        public static MapSplitter with(final CharSequence entryDelimiter, final CharSequence keyValueDelimiter) {
+            return new MapSplitter(Splitter.with(entryDelimiter), Splitter.with(keyValueDelimiter));
+        }
 
-            return new MapSplitter(entryDelimiter.toString(), keyValueDelimiter.toString(), null, null);
+        public static MapSplitter with(final Pattern entryDelimiter, final Pattern keyValueDelimiter) {
+            return new MapSplitter(Splitter.with(entryDelimiter), Splitter.with(keyValueDelimiter));
         }
 
         public static MapSplitter pattern(CharSequence entryDelimiterRegex, CharSequence keyValueDelimiterRegex) {
-            if (N.isNullOrEmpty(entryDelimiterRegex) || N.isNullOrEmpty(keyValueDelimiterRegex)) {
-                throw new IllegalArgumentException("'entryDelimiterRegex' and 'keyValueDelimiterRegex' can't be null or empty");
-            }
-
-            return new MapSplitter(null, null, entryDelimiterRegex.toString(), keyValueDelimiterRegex.toString());
+            return new MapSplitter(Splitter.pattern(entryDelimiterRegex), Splitter.pattern(keyValueDelimiterRegex));
         }
 
-        public MapSplitter limit(int max) {
-            N.checkArgPositive(max, "max");
-
-            this.max = max;
+        public MapSplitter omitEmptyStrings(boolean omitEmptyStrings) {
+            keyValueSplitter.omitEmptyStrings(omitEmptyStrings);
 
             return this;
         }
 
         public MapSplitter trim(boolean trim) {
-            this.trim = trim;
+            entrySplitter.trim(trim);
+            keyValueSplitter.trim(trim);
+
+            return this;
+        }
+
+        /**
+         * Removes the starting and ending white space characters if {@code strip} is true.
+         * 
+         * @param strip
+         * @return
+         * @see Character#isWhitespace(char)
+         */
+        public MapSplitter strip(boolean strip) {
+            entrySplitter.strip(strip);
+            keyValueSplitter.strip(strip);
+
+            return this;
+        }
+
+        public MapSplitter limit(int limit) {
+            N.checkArgPositive(limit, "limit");
+
+            entrySplitter.limit(limit);
 
             return this;
         }
 
         public Map<String, String> split(final CharSequence source) {
-            if (N.isNullOrEmpty(source)) {
-                return new LinkedHashMap<>();
-            }
-
-            final String[] strs = Splitter.split(source, entryDelimiter, entryDelimiterRegex, max, trim);
-            final Map<String, String> result = new LinkedHashMap<>(N.initHashCapacity(strs.length));
-            String[] strEntry = null;
-
-            if (N.notNullOrEmpty(keyValueDelimiter)) {
-                for (String str : strs) {
-                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
-                    }
-
-                    result.put(strEntry[0], strEntry[1]);
-                }
-            } else {
-                for (String str : strs) {
-                    strEntry = str.split(keyValueDelimiterRegex, 2);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
-                    }
-
-                    if (trim) {
-                        strEntry[0] = strEntry[0].trim();
-                        strEntry[1] = strEntry[1].trim();
-                    }
-
-                    result.put(strEntry[0], strEntry[1]);
-                }
-            }
-
-            return result;
+            return split(new LinkedHashMap<String, String>(), source);
         }
 
         public <K, V> Map<K, V> split(Class<K> keyType, Class<V> valueType, final CharSequence source) {
+            N.checkArgNotNull(keyType, "keyType");
+            N.checkArgNotNull(valueType, "valueType");
+
             final Type<K> typeOfKey = N.typeOf(keyType);
             final Type<V> typeOfValue = N.typeOf(valueType);
 
@@ -338,85 +566,53 @@ public final class Splitter {
         }
 
         public <K, V> Map<K, V> split(Type<K> keyType, Type<V> valueType, final CharSequence source) {
-            if (N.isNullOrEmpty(source)) {
-                return new LinkedHashMap<>();
-            }
+            N.checkArgNotNull(keyType, "keyType");
+            N.checkArgNotNull(valueType, "valueType");
 
-            final String[] strs = Splitter.split(source, entryDelimiter, entryDelimiterRegex, max, trim);
-            final Map<K, V> result = new LinkedHashMap<>(N.initHashCapacity(strs.length));
-            String[] strEntry = null;
-
-            if (N.notNullOrEmpty(keyValueDelimiter)) {
-                for (String str : strs) {
-                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
-                    }
-
-                    result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));
-                }
-            } else {
-                for (String str : strs) {
-                    strEntry = str.split(keyValueDelimiterRegex, 2);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
-                    }
-
-                    if (trim) {
-                        strEntry[0] = strEntry[0].trim();
-                        strEntry[1] = strEntry[1].trim();
-                    }
-
-                    result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));
-                }
-            }
-
-            return result;
+            return split(new LinkedHashMap<K, V>(), keyType, valueType, source);
         }
 
         public <M extends Map<String, String>> M split(final M output, final CharSequence source) {
-            final M result = output;
+            N.checkArgNotNull(output, "output");
 
-            if (N.isNullOrEmpty(source)) {
-                return result;
-            }
+            entrySplitter.omitEmptyStrings(true);
+            keyValueSplitter.limit(2);
 
-            final String[] strs = Splitter.split(source, entryDelimiter, entryDelimiterRegex, max, trim);
-            String[] strEntry = null;
+            final ObjIterator<String> iter = entrySplitter.iterate(source);
+            ObjIterator<String> keyValueIter = null;
+            String entryString = null;
+            String key = null;
+            String value = null;
 
-            if (N.notNullOrEmpty(keyValueDelimiter)) {
-                for (String str : strs) {
-                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
+            while (iter.hasNext()) {
+                entryString = iter.next();
+                keyValueIter = keyValueSplitter.iterate(entryString);
 
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
+                if (keyValueIter.hasNext()) {
+                    key = keyValueIter.next();
+
+                    if (keyValueIter.hasNext()) {
+                        value = keyValueIter.next();
+                    } else {
+                        throw new IllegalArgumentException("Invalid map entry String: " + entryString);
                     }
 
-                    result.put(strEntry[0], strEntry[1]);
-                }
-            } else {
-                for (String str : strs) {
-                    strEntry = str.split(keyValueDelimiterRegex, 2);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
+                    if (keyValueIter.hasNext()) {
+                        throw new IllegalArgumentException("Invalid map entry String: " + entryString);
+                    } else {
+                        output.put(key, value);
                     }
-
-                    if (trim) {
-                        strEntry[0] = strEntry[0].trim();
-                        strEntry[1] = strEntry[1].trim();
-                    }
-
-                    result.put(strEntry[0], strEntry[1]);
                 }
             }
 
-            return result;
+            return output;
         }
 
         public <K, V, M extends Map<K, V>> M split(final M output, Class<K> keyType, Class<V> valueType, final CharSequence source) {
+            N.checkArgNotNull(output, "output");
+            N.checkArgNotNull(keyType, "keyType");
+            N.checkArgNotNull(valueType, "valueType");
+
             final Type<K> typeOfKey = N.typeOf(keyType);
             final Type<V> typeOfValue = N.typeOf(valueType);
 
@@ -424,59 +620,123 @@ public final class Splitter {
         }
 
         public <K, V, M extends Map<K, V>> M split(final M output, Type<K> keyType, Type<V> valueType, final CharSequence source) {
-            final M result = output;
+            N.checkArgNotNull(output, "output");
+            N.checkArgNotNull(keyType, "keyType");
+            N.checkArgNotNull(valueType, "valueType");
 
-            if (N.isNullOrEmpty(source)) {
-                return result;
-            }
+            entrySplitter.omitEmptyStrings(true);
+            keyValueSplitter.limit(2);
 
-            final String[] strs = Splitter.split(source, entryDelimiter, entryDelimiterRegex, max, trim);
-            String[] strEntry = null;
+            final ObjIterator<String> iter = entrySplitter.iterate(source);
+            ObjIterator<String> keyValueIter = null;
+            String entryString = null;
+            String key = null;
+            String value = null;
 
-            if (N.notNullOrEmpty(keyValueDelimiter)) {
-                for (String str : strs) {
-                    strEntry = StringUtil.split(str, keyValueDelimiter, 2, trim);
+            while (iter.hasNext()) {
+                entryString = iter.next();
+                keyValueIter = keyValueSplitter.iterate(entryString);
 
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
+                if (keyValueIter.hasNext()) {
+                    key = keyValueIter.next();
+
+                    if (keyValueIter.hasNext()) {
+                        value = keyValueIter.next();
+                    } else {
+                        throw new IllegalArgumentException("Invalid map entry String: " + entryString);
                     }
 
-                    result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));
-                }
-            } else {
-                for (String str : strs) {
-                    strEntry = str.split(keyValueDelimiterRegex, 2);
-
-                    if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
+                    if (keyValueIter.hasNext()) {
+                        throw new IllegalArgumentException("Invalid map entry String: " + entryString);
+                    } else {
+                        output.put(keyType.valueOf(key), valueType.valueOf(value));
                     }
-
-                    if (trim) {
-                        strEntry[0] = strEntry[0].trim();
-                        strEntry[1] = strEntry[1].trim();
-                    }
-
-                    result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));
                 }
             }
 
-            return result;
+            return output;
         }
 
         public <M extends Map<String, String>> M split(final CharSequence source, final Supplier<M> supplier) {
-            return this.split(supplier.get(), source);
+            return split(supplier.get(), source);
         }
 
         public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source, final Supplier<M> supplier) {
-            return this.split(supplier.get(), keyType, valueType, source);
+            return split(supplier.get(), keyType, valueType, source);
         }
 
         public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source, final Supplier<M> supplier) {
-            return this.split(supplier.get(), keyType, valueType, source);
+            return split(supplier.get(), keyType, valueType, source);
+        }
+
+        public Stream<Map.Entry<String, String>> splitToStream(final CharSequence source) {
+            entrySplitter.omitEmptyStrings(true);
+            keyValueSplitter.limit(2);
+
+            return Stream.of(new ObjIteratorEx<Map.Entry<String, String>>() {
+                private final ObjIterator<String> iter = entrySplitter.iterate(source);
+                private ObjIterator<String> keyValueIter = null;
+                private String entryString = null;
+                private String key = null;
+                private String value = null;
+                private Map.Entry<String, String> next;
+
+                @Override
+                public boolean hasNext() {
+                    if (next == null) {
+                        while (iter.hasNext()) {
+                            entryString = iter.next();
+                            keyValueIter = keyValueSplitter.iterate(entryString);
+
+                            if (keyValueIter.hasNext()) {
+                                key = keyValueIter.next();
+
+                                if (keyValueIter.hasNext()) {
+                                    value = keyValueIter.next();
+                                } else {
+                                    throw new IllegalArgumentException("Invalid map entry String: " + entryString);
+                                }
+
+                                if (keyValueIter.hasNext()) {
+                                    throw new IllegalArgumentException("Invalid map entry String: " + entryString);
+                                } else {
+                                    next = new ImmutableEntry<>(key, value);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    return next != null;
+                }
+
+                @Override
+                public Map.Entry<String, String> next() {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final Map.Entry<String, String> result = next;
+                    next = null;
+                    return result;
+                }
+            });
+        }
+
+        public EntryStream<String, String> splitToEntryStream(final CharSequence source) {
+            return splitToStream(source).mapToEntry(Fn.<Map.Entry<String, String>> identity());
         }
 
         public <T, E extends Exception> T splitAndThen(final CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
-            return converter.apply(this.split(source));
+            return converter.apply(split(source));
         }
+    }
+
+    static interface Strategy {
+        ObjIterator<String> split(CharSequence toSplit, boolean omitEmptyStrings, boolean trim, final boolean strip, int limit);
+    }
+
+    static interface SubStringFunc {
+        String subString(CharSequence source, int start, int end);
     }
 }

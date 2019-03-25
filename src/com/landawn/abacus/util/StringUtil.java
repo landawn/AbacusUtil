@@ -1374,268 +1374,160 @@ public abstract class StringUtil {
         return replacePattern(source, regex, N.EMPTY_STRING);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final char delimiter) {
-        return splitWorker(str, delimiter, false);
+        return Splitter.with(delimiter).omitEmptyStrings(true).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final char delimiter, final boolean trim) {
-        final String[] strs = split(str, delimiter);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
+        return Splitter.with(delimiter).omitEmptyStrings(true).trim(trim).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final String delimiter) {
-        return split(str, delimiter, false);
+        return Splitter.with(delimiter).omitEmptyStrings(true).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final String delimiter, final boolean trim) {
-        return split(str, delimiter, Integer.MAX_VALUE, trim);
+        return Splitter.with(delimiter).omitEmptyStrings(true).trim(trim).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param max
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final String delimiter, final int max) {
-        return splitWorker(str, delimiter, max, false);
+        return Splitter.with(delimiter).omitEmptyStrings(true).limit(max).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param max
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] split(final String str, final String delimiter, final int max, final boolean trim) {
-        final String[] strs = split(str, delimiter, max);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
+        return Splitter.with(delimiter).omitEmptyStrings(true).trim(trim).limit(max).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final char delimiter) {
-        return splitPreserveAllTokens(str, delimiter, false);
+        return Splitter.with(delimiter).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final char delimiter, boolean trim) {
-        final String[] strs = splitWorker(str, delimiter, true);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
+        return Splitter.with(delimiter).trim(trim).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter) {
-        return splitPreserveAllTokens(str, delimiter, false);
+        return Splitter.with(delimiter).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter, boolean trim) {
-        return splitPreserveAllTokens(str, delimiter, Integer.MAX_VALUE, trim);
+        return Splitter.with(delimiter).trim(trim).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param max
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max) {
-        return splitPreserveAllTokens(str, delimiter, max, false);
+        return Splitter.with(delimiter).limit(max).splitToArray(str);
     }
 
+    /**
+     * 
+     * @param str
+     * @param delimiter
+     * @param max
+     * @param trim
+     * @return
+     * @deprecated {@code Splitter} is recommended.
+     */
+    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max, boolean trim) {
-        final String[] strs = splitWorker(str, delimiter, max, true);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
+        return Splitter.with(delimiter).trim(trim).limit(max).splitToArray(str);
     }
 
-    private static String[] splitWorker(final String str, final char delimiter, final boolean preserveAllTokens) {
-        // Performance tuned for 2.0 (JDK1.4)
-
-        //    if (str == null) {
-        //        return null;
-        //    }
-        //
-        //    final int len = str.length();
-        //    if (len == 0) {
-        //        return N.EMPTY_STRING_ARRAY;
-        //    }
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
-
-        final int len = str.length();
-        final char[] chs = getCharsForReadOnly(str);
-        final List<String> list = Objectory.createList();
-
-        try {
-            int i = 0, start = 0;
-            boolean match = false;
-            boolean lastMatch = false;
-            while (i < len) {
-                if (chs[i] == delimiter) {
-                    if (match || preserveAllTokens) {
-                        list.add(str.substring(start, i));
-                        match = false;
-                        lastMatch = true;
-                    }
-
-                    start = ++i;
-                    continue;
-                }
-
-                lastMatch = false;
-                match = true;
-                i++;
-            }
-
-            if (match || preserveAllTokens && lastMatch) {
-                list.add(str.substring(start, i));
-            }
-
-            return list.toArray(new String[list.size()]);
-        } finally {
-            Objectory.recycle(list);
-        }
-    }
-
-    private static String[] splitWorker(final String str, final String delimiter, final int max, final boolean preserveAllTokens) {
-        // Performance tuned for 2.0 (JDK1.4)
-        // Direct code is quicker than StringTokenizer.
-        // Also, StringTokenizer uses isSpace() not isWhitespace()
-
-        //    if (str == null) {
-        //        return null;
-        //    }
-        //
-        //    final int len = str.length();
-        //    if (len == 0) {
-        //        return N.EMPTY_STRING_ARRAY;
-        //    }
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
-
-        final int len = str.length();
-        final List<String> list = Objectory.createList();
-        int cnt = 1;
-        int i = 0, start = 0;
-        boolean match = false;
-        boolean lastMatch = false;
-        try {
-            if (delimiter == null) {
-                // Null delimiter means use whitespace
-                final char[] chs = getCharsForReadOnly(str);
-                while (i < len) {
-                    if (Character.isWhitespace(chs[i])) {
-                        if (match || preserveAllTokens) {
-                            lastMatch = true;
-                            if (cnt++ == max) {
-                                i = len;
-                                lastMatch = false;
-                            }
-
-                            list.add(str.substring(start, i));
-                            match = false;
-                        }
-
-                        start = ++i;
-                        continue;
-                    }
-
-                    lastMatch = false;
-                    match = true;
-                    i++;
-                }
-
-                if (match || preserveAllTokens && lastMatch) {
-                    list.add(str.substring(start, i));
-                }
-            } else if (delimiter.length() == 1) {
-                final char[] chs = getCharsForReadOnly(str);
-                final char sep = delimiter.charAt(0);
-
-                while (i < len) {
-                    if (chs[i] == sep) {
-                        if (match || preserveAllTokens) {
-                            lastMatch = true;
-                            if (cnt++ == max) {
-                                i = len;
-                                lastMatch = false;
-                            }
-
-                            list.add(str.substring(start, i));
-                            match = false;
-                        }
-
-                        start = ++i;
-                        continue;
-                    }
-
-                    lastMatch = false;
-                    match = true;
-                    i++;
-                }
-
-                if (match || preserveAllTokens && lastMatch) {
-                    list.add(str.substring(start, i));
-                }
-            } else {
-                final int delimiterLength = delimiter.length();
-                int beginIndex = 0;
-                int idx = 0;
-                while (idx < len) {
-                    idx = str.indexOf(delimiter, beginIndex);
-
-                    if (idx > -1) {
-                        if (idx > beginIndex) {
-                            if (cnt++ == max) {
-                                idx = len;
-                                list.add(str.substring(beginIndex));
-                            } else {
-                                // The following is OK, because String.substring( beg, end ) excludes
-                                // the character at the position 'end'.
-                                list.add(str.substring(beginIndex, idx));
-
-                                // Set the starting point for the next search.
-                                // The following is equivalent to beg = end + (delimiterLength - 1) + 1,
-                                // which is the right calculation:
-                                beginIndex = idx + delimiterLength;
-                            }
-                        } else {
-                            // We found a consecutive occurrence of the delimiter, so skip it.
-                            if (preserveAllTokens) {
-                                if (cnt++ == max) {
-                                    idx = len;
-                                    list.add(str.substring(beginIndex));
-                                } else {
-                                    list.add(N.EMPTY_STRING);
-                                }
-                            }
-                            beginIndex = idx + delimiterLength;
-                        }
-                    } else {
-                        // String.substring( beg ) goes from 'beg' to the end of the String.
-                        list.add(str.substring(beginIndex));
-                        idx = len;
-                    }
-                }
-            }
-
-            return list.toArray(new String[list.size()]);
-        } finally {
-            Objectory.recycle(list);
-        }
-    }
-
-    // Trim
     // -----------------------------------------------------------------------
     /**
      * <p>
@@ -5732,63 +5624,63 @@ public abstract class StringUtil {
         }
     }
 
-    public static String join(final Map<?, ?> m) {
-        return join(m, N.ELEMENT_SEPARATOR);
+    public static String joinEntries(final Map<?, ?> m) {
+        return joinEntries(m, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final Map<?, ?> m, final char entryDelimiter) {
+    public static String joinEntries(final Map<?, ?> m, final char entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entryDelimiter);
+        return joinEntries(m, 0, m.size(), entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final String entryDelimiter) {
+    public static String joinEntries(final Map<?, ?> m, final String entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entryDelimiter);
+        return joinEntries(m, 0, m.size(), entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, false);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, WD._EQUAL, trim);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, WD._EQUAL, trim);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, false);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
-        return join(m, fromIndex, toIndex, entryDelimiter, WD.EQUAL, trim);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, WD.EQUAL, trim);
     }
 
-    public static String join(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {
+    public static String joinEntries(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
+        return joinEntries(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final String entryDelimiter, final String keyValueDelimiter) {
+    public static String joinEntries(final Map<?, ?> m, final String entryDelimiter, final String keyValueDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
+        return joinEntries(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
             final boolean trim) {
         N.checkFromToIndex(fromIndex, toIndex, N.size(m));
 
@@ -5822,11 +5714,11 @@ public abstract class StringUtil {
         }
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter) {
-        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter) {
+        return joinEntries(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
+    public static String joinEntries(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
             final boolean trim) {
         N.checkFromToIndex(fromIndex, toIndex, N.size(m));
 

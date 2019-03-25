@@ -1913,11 +1913,12 @@ public final class Maps {
 
     public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, String delimiter, Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
+        final Splitter keySplitter = Splitter.with(delimiter);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 if (entry.getKey().indexOf(delimiter) >= 0) {
-                    final String[] keys = StringUtil.splitPreserveAllTokens(entry.getKey(), delimiter);
+                    final String[] keys = keySplitter.splitToArray(entry.getKey());
                     Map<String, Object> lastMap = result;
 
                     for (int i = 0, to = keys.length - 1; i < to; i++) {

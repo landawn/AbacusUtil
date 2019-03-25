@@ -72,7 +72,6 @@ import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
-import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.u.Optional;
@@ -3024,95 +3023,6 @@ public abstract class Stream<T>
         N.checkArgNotNull(s);
 
         return LongStream.interval(delay, interval, unit).mapToObj(s);
-    }
-
-    /**
-     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
-     * 
-     * @param str
-     * @param delimiter
-     * @return
-     */
-    public static Stream<String> split(final String str, final String delimiter) {
-        return split(str, delimiter, false);
-    }
-
-    /**
-     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
-     * 
-     * @param str
-     * @param delimiter
-     * @param trim
-     * @return
-     */
-    public static Stream<String> split(final String str, final String delimiter, final boolean trim) {
-        if (delimiter.length() == 1) {
-            return split(str, delimiter.charAt(0), trim);
-        } else {
-            return of(StringUtil.splitPreserveAllTokens(str, delimiter, trim));
-        }
-    }
-
-    /**
-     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
-     * 
-     * @param str
-     * @param delimiter
-     * @return
-     */
-    public static Stream<String> split(final String str, final char delimiter) {
-        return split(str, delimiter, false);
-    }
-
-    /**
-     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
-     * 
-     * @param str
-     * @param delimiter
-     * @param trim
-     * @return
-     */
-    public static Stream<String> split(final String str, final char delimiter, final boolean trim) {
-        if (str == null || str.length() == 0) {
-            return of("");
-        }
-
-        return of(new ObjIterator<String>() {
-            private final int len = str.length();
-            private boolean isLastDelimiter = str.charAt(len - 1) == delimiter;
-            private int prePos = 0;
-            private int curPos = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (prePos == curPos) {
-                    while (curPos < len && str.charAt(curPos) != delimiter) {
-                        curPos++;
-                    }
-                }
-
-                return prePos < len || isLastDelimiter;
-            }
-
-            @Override
-            public String next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (prePos < len) {
-                    String res = str.subSequence(prePos, curPos).toString();
-                    curPos++;
-                    prePos = curPos;
-
-                    return trim ? res.trim() : res;
-                } else {
-                    isLastDelimiter = false;
-
-                    return N.EMPTY_STRING;
-                }
-            }
-        });
     }
 
     public static Stream<String> lines(final File file) {

@@ -1553,6 +1553,51 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, false, null, closeHandlers);
     }
 
+    public <R, A> ExceptionalStream<R, E> split(final int size, final Collector<? super T, A, R> collector) {
+        checkArgPositive(size, "size");
+        checkArgNotNull(collector, "collector");
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            @Override
+            public boolean hasNext() throws E {
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final A container = supplier.get();
+                int cnt = 0;
+
+                while (cnt++ < size && elements.hasNext()) {
+                    accumulator.accept(container, elements.next());
+                }
+
+                return finisher.apply(container);
+            }
+
+            @Override
+            public long count() throws E {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) throws E {
+                checkArgNotNegative(n, "n");
+
+                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
+        }, false, null, closeHandlers);
+    }
+
     public ExceptionalStream<Stream<T>, E> sliding(final int windowSize, final int increment) {
         return slidingToList(windowSize, increment).map(new Try.Function<List<T>, Stream<T>, E>() {
             @Override
@@ -1636,6 +1681,138 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 toSkip = increment > windowSize;
 
                 return result;
+            }
+
+            @Override
+            public long count() throws E {
+                final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+                final long len = prevSize + elements.count();
+
+                if (len == prevSize) {
+                    return 0;
+                } else if (len <= windowSize) {
+                    return 1;
+                } else {
+                    final long rlen = len - windowSize;
+                    return 1 + (rlen % increment == 0 ? rlen / increment : rlen / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) throws E {
+                checkArgNotNegative(n, "n");
+
+                if (n == 0) {
+                    return;
+                }
+
+                if (increment >= windowSize) {
+                    elements.skip(n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                } else {
+                    if (N.isNullOrEmpty(queue)) {
+                        final long m = ((n - 1) > Long.MAX_VALUE / increment ? Long.MAX_VALUE : (n - 1) * increment);
+                        elements.skip(m);
+                    } else {
+                        final long m = (n > Long.MAX_VALUE / increment ? Long.MAX_VALUE : n * increment);
+                        final int prevSize = increment >= windowSize ? 0 : (queue == null ? 0 : queue.size());
+
+                        if (m < prevSize) {
+                            for (int i = 0; i < m; i++) {
+                                queue.removeFirst();
+                            }
+                        } else {
+                            if (queue != null) {
+                                queue.clear();
+                            }
+
+                            elements.skip(m - prevSize);
+                        }
+                    }
+
+                    if (queue == null) {
+                        queue = new ArrayDeque<>(windowSize);
+                    }
+
+                    int cnt = queue.size();
+
+                    while (cnt++ < windowSize && elements.hasNext()) {
+                        queue.add(elements.next());
+                    }
+                }
+            }
+        }, false, null, closeHandlers);
+    }
+
+    public <A, R> ExceptionalStream<R, E> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
+        checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
+        checkArgNotNull(collector, "collector");
+
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            private Deque<T> queue = null;
+            private boolean toSkip = false;
+
+            @Override
+            public boolean hasNext() throws E {
+                if (toSkip) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    toSkip = false;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (increment < windowSize && queue == null) {
+                    queue = new ArrayDeque<>(windowSize - increment);
+                }
+
+                final A container = supplier.get();
+                int cnt = 0;
+
+                if (increment < windowSize && queue.size() > 0) {
+                    cnt = queue.size();
+
+                    for (T e : queue) {
+                        accumulator.accept(container, e);
+                    }
+
+                    if (queue.size() <= increment) {
+                        queue.clear();
+                    } else {
+                        for (int i = 0; i < increment; i++) {
+                            queue.removeFirst();
+                        }
+                    }
+                }
+
+                T next = null;
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    next = elements.next();
+                    accumulator.accept(container, next);
+
+                    if (cnt > increment) {
+                        queue.add(next);
+                    }
+                }
+
+                toSkip = increment > windowSize;
+
+                return finisher.apply(container);
             }
 
             @Override

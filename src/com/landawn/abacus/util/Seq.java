@@ -1847,9 +1847,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
         }
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
 
         final List<C> res = new ArrayList<>();
         final Iterator<T> elements = iterator();

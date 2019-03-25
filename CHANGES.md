@@ -1,5 +1,11 @@
 ### 1.5.9
  
+* Add `Splitter.splitToStream`.
+
+* Rename `StringUtil.join(Map....)` to `StringUtil.joinEntries(Map....)`.
+
+* Remove `Stream.split(String...)`.
+ 
 * Improvements and bug fix.
 
 
