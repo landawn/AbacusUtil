@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @see N#newSetMultimap()
  * @see N#newSetMultimap(Class, Class)
+ * @see N#newSetMultimap(Supplier, Supplier)
  * 
  * @since 0.9
  * 
@@ -304,11 +305,12 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return new SetMultimap<K, E>((Map<K, Set<E>>) map, valueType);
     }
 
-    public static <K, E> SetMultimap<K, E> wrapp(final Map<K, Set<E>> map, final Supplier<? extends Set<E>> valueSupplier) {
+    @SuppressWarnings("rawtypes")
+    public static <K, E, V extends Set<E>> SetMultimap<K, E> wrapp(final Map<K, V> map, final Supplier<? extends V> valueSupplier) {
         N.checkArgNotNull(map, "map");
         N.checkArgNotNull(valueSupplier, "valueSupplier");
 
-        return new SetMultimap<K, E>(map, valueSupplier);
+        return new SetMultimap<K, E>((Map) map, valueSupplier);
     }
 
     @Deprecated

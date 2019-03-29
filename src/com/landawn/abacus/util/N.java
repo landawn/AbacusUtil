@@ -92,7 +92,6 @@ import com.landawn.abacus.parser.DeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig.JDC;
 import com.landawn.abacus.parser.JSONSerializationConfig;
-import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
 import com.landawn.abacus.parser.XMLDeserializationConfig.XDC;
 import com.landawn.abacus.parser.XMLSerializationConfig;
@@ -114,90 +113,6 @@ import com.landawn.abacus.util.function.Supplier;
  * The methods copied from other libraries/frameworks/projects may be modified in this class.
  * </p>
  * Class <code>N</code> is a general java utility class. It provides the most daily used operations for Object/primitive types/String/Array/Collection/Map/Entity...:
- *
- * <ul>
- * <br>
- * <li> =======================================================================
- * <li>String operations:<br>
- * <b>stringOf/valueOf/join/isNullOrEmpty/notNullOrEmpty/
- * checkNullOrEmpty/indexOfXXX/lastIndexOfXXX
- * /ordinalIndexOf/startsWithXXX/endsWithXXX
- * /containsXXX/commonPrefix/commonSuffix/difference/equals/equalsIgnoreCase/trim
- * /strip/capitalize/uncapitalize/lowerCase/upperCase/swapCase/padStart/padEnd
- * /repeat/reverse/replace/replaceAll/replacePattern/unicodeEscaped/formatQuotation
- * /normalizeSpace/deleteWhitespace/chomp/chop/abbreviate/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Array operations:<br>
- * <b>newArray/asArray/asXXX/array2XXX/isNullOrEmpty
- * /notNullOrEmpty/checkNullOrEmpty/sort/parallelSort/binarySearch
- * /copy/copyOf/copyOfRange/clone
- * /indexOfXXX/lastIndexOfXXX/containsXXX/fill/concat/add
- * /addAll/insert/remove/removeAll/delete/deleteAll/replaceAll
- * /reverse/swap/rotate/shuffle
- * /sum/avg/min/max/median/join/filter/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Collection operations:<br>
- * <b>newXXX/asXXX/sort/parallelSort/binarySearch/isNullOrEmpty
- * /notNullOrEmpty/checkNullOrEmpty/indexOfXXX/containsXXX
- * /xxx2String/string2XXX/fill/reverse/swap/sum/avg/min/max/median/filter/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Map operations:<br>
- * <b>newXXX/asXXX/isNullOrEmpty/notNullOrEmpty/checkNullOrEmpty/entity2Map/
- * deepEntity2Map/entity2FlatMap/map2Entity/filter/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Entity/Properties operations:<br>
- * <b>newXXX/asXXX/copy/clone/erase/eraseAll/getPropValue/setPropValue/
- * setPropValueByGet/entity2Map/deepEntity2Map/entity2FlatMap/map2Entity/formalizePropName/getPropNameByMethod/...</b>
- * <li>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>primitive types operations:<br>
- * <b>arrayOf/listOf/isPrimitive/isPrimitiveWapper/isPrimitiveOrWapper/sum/avg/min/max/median/unwrap/wrap/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Factory(create/new) operations/:<br>
- * <b>newXXX/createXXX/asXXX/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>Reflect Class/Method operations:<br>
- * <b>newXXX/getPackage/getPackageName/forClass/getClassName/getSimpleClassName
- * /getCanonicalClassName /getDeclaredConstructor
- * /getDeclaredMethod/findDeclaredMethodByName
- * /getEnclosingClass/getPropField/getPropGetMethod/getPropGetMethodList
- * /getPropSetMethod/getPropSetMethodList/invokeConstructor/invokeMethod/...</b>
- *
- * <br>
- * <br>
- * <li> =======================================================================
- * <li>General Object operations:<br>
- * <b>stringOf/valueOf/toString/hashCod/equals/deepToString/deepHashCodee
- * /deepEquals/compare/json2XML/xml2JSON
- * /base64XXXEncode/base64XXXDecode/urlEncode
- * /urlDecode/getDefaultValue/uuid/enumListOf/enumSetOf
- * /registerNonEntityClass/registerPropGetSetMethod/registerXMLBindingClassForPropGetSetMethod/getType
- * /asyncExecute/getCharsForReadOnly/sleep/println/...</b>
- *
- * </ul>
- *
- * <p>
  *
  * When to throw exception? It's designed to avoid throwing any unnecessary
  * exception if the contract defined by method is not broken. for example, if
@@ -947,7 +862,7 @@ public final class N {
 
     /**
      * 
-     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initialCapacity
      * @return
      */
     public static <T> HashSet<T> newHashSet(int initialCapacity) {
@@ -964,7 +879,7 @@ public final class N {
 
     /**
      * 
-     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initialCapacity
      * @return
      */
     public static <T> LinkedHashSet<T> newLinkedHashSet(int initialCapacity) {
@@ -1052,7 +967,7 @@ public final class N {
 
     /**
      * 
-     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initialCapacity
      * @return
      */
     public static <K, V> HashMap<K, V> newHashMap(int initialCapacity) {
@@ -1086,7 +1001,7 @@ public final class N {
 
     /**
      * 
-     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initialCapacity
      * @return
      */
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(int initialCapacity) {
@@ -1138,7 +1053,7 @@ public final class N {
 
     /**
      * 
-     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initialCapacity
      * @return
      */
     public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(int initialCapacity) {
@@ -1155,7 +1070,7 @@ public final class N {
 
     /**
      * 
-     * @param initCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @param initCapacity the initial capacity of new HashSet
      * @return
      */
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
@@ -27369,6 +27284,10 @@ public final class N {
         return Utils.jsonParser.serialize(obj, Utils.jsc);
     }
 
+    public static String toJSON(final Object obj, final boolean prettyFormat) {
+        return Utils.jsonParser.serialize(obj, prettyFormat ? Utils.jscPrettyFormat : Utils.jsc);
+    }
+
     public static String toJSON(final Object obj, final JSONSerializationConfig config) {
         return Utils.jsonParser.serialize(obj, config);
     }
@@ -27553,15 +27472,19 @@ public final class N {
     }
 
     public static String formatJSON(final Class<?> type, final String json) {
-        return toJSON(fromJSON(type, json), JSC.create().setPrettyFormat(true));
+        return toJSON(fromJSON(type, json), Utils.jscPrettyFormat);
     }
 
     public static String formatJSON(final Type<?> type, final String json) {
-        return toJSON(fromJSON(type, json), JSC.create().setPrettyFormat(true));
+        return toJSON(fromJSON(type, json), Utils.jscPrettyFormat);
     }
 
     public static String toXML(final Object obj) {
         return Utils.xmlParser.serialize(obj);
+    }
+
+    public static String toXML(final Object obj, final boolean prettyFormat) {
+        return Utils.xmlParser.serialize(obj, prettyFormat ? Utils.xscPrettyFormat : Utils.xsc);
     }
 
     public static String toXML(final Object obj, final XMLSerializationConfig config) {

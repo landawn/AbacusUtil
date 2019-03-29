@@ -69,6 +69,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     private final Deque<Try.Runnable<? extends E>> closeHandlers;
     private boolean isClosed = false;
 
+    ExceptionalStream(final ExceptionalIterator<T, E> iter) {
+        this(iter, false, null, null);
+    }
+
     ExceptionalStream(final ExceptionalIterator<T, E> iter, final Deque<Try.Runnable<? extends E>> closeHandlers) {
         this(iter, false, null, closeHandlers);
     }
@@ -82,7 +86,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> empty() {
-        return new ExceptionalStream<>(ExceptionalIterator.EMPTY, null);
+        return new ExceptionalStream<>(ExceptionalIterator.EMPTY);
     }
 
     public static <T, E extends Exception> ExceptionalStream<T, E> just(final T e) {
@@ -1170,7 +1174,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     iter = ExceptionalStream.this.groupTo(classifier, valueMapper, mapFactory).entrySet().iterator();
                 }
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
 
     }
 
@@ -1218,7 +1222,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     iter = ExceptionalStream.this.toMap(classifier, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
                 }
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <K, A, D> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
@@ -1264,7 +1268,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     iter = ExceptionalStream.this.toMap(keyExtractor, valueMapper, downstream, mapFactory).entrySet().iterator();
                 }
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public ExceptionalStream<Stream<T>, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible) {
@@ -1300,7 +1304,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return Stream.of(c);
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <C extends Collection<T>> ExceptionalStream<C, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
@@ -1338,7 +1342,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return c;
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     /**
@@ -1393,7 +1397,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return res;
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Try.Supplier<R, E> supplier,
@@ -1428,7 +1432,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return container;
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <R, A> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible,
@@ -1466,7 +1470,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 return finisher.apply(container);
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public ExceptionalStream<T, E> append(ExceptionalStream<T, E> s) {
@@ -1550,7 +1554,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <R, A> ExceptionalStream<R, E> split(final int size, final Collector<? super T, A, R> collector) {
@@ -1595,7 +1599,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public ExceptionalStream<Stream<T>, E> sliding(final int windowSize, final int increment) {
@@ -1740,7 +1744,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     }
                 }
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public <A, R> ExceptionalStream<R, E> sliding(final int windowSize, final int increment, final Collector<? super T, A, R> collector) {
@@ -1872,7 +1876,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     }
                 }
             }
-        }, false, null, closeHandlers);
+        }, closeHandlers);
     }
 
     public ExceptionalStream<T, E> skip(final long n) {

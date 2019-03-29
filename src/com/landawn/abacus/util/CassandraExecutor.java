@@ -705,7 +705,7 @@ public final class CassandraExecutor implements Closeable {
     public ResultSet batchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
 
-        final Class<?> targetClass = Seq.of(entities).first().get().getClass();
+        final Class<?> targetClass = N.first(entities).get().getClass();
         final Set<String> keyNameSet = Maps.getOrDefault(entityKeyNamesMap, targetClass, ID_SET);
         return batchUpdate(entities, keyNameSet, type);
     }
@@ -715,7 +715,7 @@ public final class CassandraExecutor implements Closeable {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
         N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty");
 
-        final Class<?> targetClass = Seq.of(entities).first().get().getClass();
+        final Class<?> targetClass = N.first(entities).get().getClass();
         final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));
 
         for (String keyName : primaryKeyNames) {

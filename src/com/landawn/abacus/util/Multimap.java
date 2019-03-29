@@ -43,10 +43,13 @@ import com.landawn.abacus.util.stream.Stream;
  * <li>b -> 3
  * </ul>
  *
+ * @see N#newMultimap(Supplier, Supplier)
  * @see N#newListMultimap()
  * @see N#newListMultimap(Class, Class)
+ * @see N#newListMultimap(Supplier, Supplier)
  * @see N#newSetMultimap()
  * @see N#newSetMultimap(Class, Class)
+ * @see N#newSetMultimap(Supplier, Supplier)
  *
  * @since 0.8
  *

@@ -390,6 +390,13 @@ public class SQLExecutor implements Closeable {
         }
     };
 
+    private static final ResultExtractor<ResultSet> RESULT_SET_EXTRACTOR = new ResultExtractor<ResultSet>() {
+        @Override
+        public ResultSet extractData(ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
+            return rs;
+        }
+    };
+
     private static final int factor = Math.min(Math.max(1, IOUtil.MAX_MEMORY_IN_MB / 1024), 8);
     private static final int CACHED_SQL_LENGTH = 1024 * factor;
     private static final int SQL_CACHE_SIZE = 1000 * factor;
@@ -2748,17 +2755,10 @@ public class SQLExecutor implements Closeable {
             @Override
             public ObjIteratorEx<T> get() {
                 if (internalIter == null) {
-                    final ResultExtractor<ResultSet> resultExtractor = new ResultExtractor<ResultSet>() {
-                        @Override
-                        public ResultSet extractData(ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-                            return rs;
-                        }
-                    };
-
                     final int offset = jdbcSettings == null ? 0 : jdbcSettings.getOffset();
                     final int count = jdbcSettings == null ? Integer.MAX_VALUE : jdbcSettings.getCount();
 
-                    final ResultSet rs = SQLExecutor.this.query(sql, statementSetter, resultExtractor, parameters);
+                    final ResultSet rs = SQLExecutor.this.query(sql, statementSetter, RESULT_SET_EXTRACTOR, parameters);
 
                     internalIter = new ObjIteratorEx<T>() {
                         private boolean skipped = false;

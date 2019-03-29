@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public final class Splitter {
-    private static final Pattern WHITE_SPACE_PATTERN = Pattern.compile("\\s+");
+    public static final Pattern WHITE_SPACE_PATTERN = Pattern.compile("\\s+");
 
     private static final SubStringFunc defaultSubStringFunc = new SubStringFunc() {
         @Override
@@ -160,8 +160,14 @@ public final class Splitter {
         });
     }
 
-    public static Splitter with(final CharSequence delimiter) {
-        // N.checkArgNotNullOrEmpty(delimiter, "delimiter");
+    /**
+     * 
+     * @param delimiter
+     * @return
+     * @throws IllegalArgumentException if the specified {@code delimiter} is null or empty.
+     */
+    public static Splitter with(final CharSequence delimiter) throws IllegalArgumentException {
+        N.checkArgNotNullOrEmpty(delimiter, "delimiter");
 
         if (N.isNullOrEmpty(delimiter)) {
             return with(WHITE_SPACE_PATTERN);
@@ -254,8 +260,15 @@ public final class Splitter {
         }
     }
 
-    public static Splitter with(final Pattern delimiter) {
+    /**
+     * 
+     * @param delimiter
+     * @return
+     * @throws IllegalArgumentException if the specified {@code delimiter} is null, or empty string may be matched by it.
+     */
+    public static Splitter with(final Pattern delimiter) throws IllegalArgumentException {
         N.checkArgNotNull(delimiter, "delimiter");
+        N.checkArgument(!delimiter.matcher("").matches(), "Empty string may be matched by pattern: %s", delimiter);
 
         return new Splitter(new Strategy() {
             @Override
@@ -330,10 +343,16 @@ public final class Splitter {
         });
     }
 
-    public static Splitter pattern(CharSequence delimiterRegex) {
-        // N.checkArgNotNullOrEmpty(delimiterRegex, "delimiterRegex");
+    /**
+     * 
+     * @param delimiterRegex
+     * @return
+     * @throws IllegalArgumentException if the specified {@code delimiter} is null or empty, or empty string may be matched by it.
+     */
+    public static Splitter pattern(CharSequence delimiterRegex) throws IllegalArgumentException {
+        N.checkArgNotNullOrEmpty(delimiterRegex, "delimiterRegex");
 
-        return N.isNullOrEmpty(delimiterRegex) ? with(WHITE_SPACE_PATTERN) : with(Pattern.compile(delimiterRegex.toString()));
+        return with(Pattern.compile(delimiterRegex.toString()));
     }
 
     public Splitter omitEmptyStrings(boolean omitEmptyStrings) {
@@ -504,15 +523,39 @@ public final class Splitter {
             return with(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER);
         }
 
-        public static MapSplitter with(final CharSequence entryDelimiter, final CharSequence keyValueDelimiter) {
+        /**
+         * 
+         * @param entryDelimiter
+         * @param keyValueDelimiter
+         * @return
+         * @throws IllegalArgumentException if the specified {@code entryDelimiter/keyValueDelimiter} is null or empty.
+         * @see Splitter#with(CharSequence)
+         */
+        public static MapSplitter with(final CharSequence entryDelimiter, final CharSequence keyValueDelimiter) throws IllegalArgumentException {
             return new MapSplitter(Splitter.with(entryDelimiter), Splitter.with(keyValueDelimiter));
         }
 
-        public static MapSplitter with(final Pattern entryDelimiter, final Pattern keyValueDelimiter) {
+        /**
+         * 
+         * @param entryDelimiter
+         * @param keyValueDelimiter
+         * @return
+         * @throws IllegalArgumentException if the specified {@code entryDelimiter/keyValueDelimiter} is null, or empty string may be matched by one of them.
+         * @see Splitter#with(Pattern)
+         */
+        public static MapSplitter with(final Pattern entryDelimiter, final Pattern keyValueDelimiter) throws IllegalArgumentException {
             return new MapSplitter(Splitter.with(entryDelimiter), Splitter.with(keyValueDelimiter));
         }
 
-        public static MapSplitter pattern(CharSequence entryDelimiterRegex, CharSequence keyValueDelimiterRegex) {
+        /**
+         * 
+         * @param entryDelimiterRegex
+         * @param keyValueDelimiterRegex
+         * @return
+         * @throws IllegalArgumentException if the specified {@code entryDelimiterRegex/keyValueDelimiterRegex} is null or empty, or empty string may be matched by one of them.
+         * @see Splitter#pattern(CharSequence)
+         */
+        public static MapSplitter pattern(CharSequence entryDelimiterRegex, CharSequence keyValueDelimiterRegex) throws IllegalArgumentException {
             return new MapSplitter(Splitter.pattern(entryDelimiterRegex), Splitter.pattern(keyValueDelimiterRegex));
         }
 

@@ -28,6 +28,7 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @see N#newListMultimap()
  * @see N#newListMultimap(Class, Class)
+ * @see N#newListMultimap(Supplier, Supplier)
  * 
  * @since 0.9
  * 
@@ -305,11 +306,12 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return new ListMultimap<K, E>((Map<K, List<E>>) map, valueType);
     }
 
-    public static <K, E> ListMultimap<K, E> wrapp(final Map<K, List<E>> map, final Supplier<? extends List<E>> valueSupplier) {
+    @SuppressWarnings("rawtypes")
+    public static <K, E, V extends List<E>> ListMultimap<K, E> wrapp(final Map<K, V> map, final Supplier<? extends V> valueSupplier) {
         N.checkArgNotNull(map, "map");
         N.checkArgNotNull(valueSupplier, "valueSupplier");
 
-        return new ListMultimap<K, E>(map, valueSupplier);
+        return new ListMultimap<K, E>((Map) map, valueSupplier);
     }
 
     @Deprecated

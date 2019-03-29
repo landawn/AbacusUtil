@@ -64,11 +64,10 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Objectory;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
-import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.Sheet;
+import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
@@ -80,6 +79,7 @@ import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.WD;
 import com.landawn.abacus.util.Wrapper;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -846,7 +846,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> void removeColumnsIf(Predicate<String, E> filter) throws E {
-        removeColumns(Seq.of(_columnNameList).filter(filter));
+        removeColumns(N.filter(_columnNameList, filter));
     }
 
     @Override
@@ -948,13 +948,13 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E {
-        combineColumns(Seq.of(_columnNameList).filter(columnNameFilter), newColumnName, newColumnClass);
+        combineColumns(N.filter(_columnNameList, columnNameFilter), newColumnName, newColumnClass);
     }
 
     @Override
     public <E extends Exception, E2 extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName,
             Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
-        combineColumns(Seq.of(_columnNameList).filter(columnNameFilter), newColumnName, combineFunc);
+        combineColumns(N.filter(_columnNameList, columnNameFilter), newColumnName, combineFunc);
     }
 
     @Override
@@ -8720,17 +8720,109 @@ public class RowDataSet implements DataSet, Cloneable {
     @Override
     public void println() {
         if (_columnNameList.size() == 0) {
-            N.println("[[]]");
+            N.println("---");
+            N.println("| |");
+            N.println("---");
 
             return;
         }
 
-        final BufferedWriter bw = Objectory.createBufferedWriter(System.out);
+        final int rowLen = size();
+        final int columnLen = _columnList.size();
+        final List<List<String>> strColumnList = new ArrayList<>(columnLen);
+        final int[] maxColumnLens = new int[columnLen];
 
+        for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+            final List<String> strColumn = new ArrayList<>(rowLen);
+            int maxLen = N.len(_columnNameList.get(columnIndex));
+            String str = null;
+
+            for (Object e : _columnList.get(columnIndex)) {
+                str = N.toString(e);
+                maxLen = N.max(maxLen, N.len(str));
+                strColumn.add(str);
+            }
+
+            maxColumnLens[columnIndex] = maxLen;
+            strColumnList.add(strColumn);
+        }
+
+        final BufferedWriter bw = Objectory.createBufferedWriter(System.out);
+        final char hch = '-';
+        final char hchDelta = 3;
         try {
+            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                if (columnIndex == 0) {
+                    bw.write(hch);
+                }
+
+                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+            }
+
             bw.write(IOUtil.LINE_SEPARATOR);
 
-            toCSV(bw, true, false);
+            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                if (columnIndex == 0) {
+                    bw.write("| ");
+                } else {
+                    bw.write(" | ");
+                }
+
+                bw.write(StringUtil.padEnd(_columnNameList.get(columnIndex), maxColumnLens[columnIndex]));
+            }
+
+            bw.write(" |");
+
+            bw.write(IOUtil.LINE_SEPARATOR);
+
+            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                if (columnIndex == 0) {
+                    bw.write(hch);
+                }
+
+                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+            }
+
+            for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
+                bw.write(IOUtil.LINE_SEPARATOR);
+
+                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                    if (columnIndex == 0) {
+                        bw.write("| ");
+                    } else {
+                        bw.write(" | ");
+                    }
+
+                    bw.write(StringUtil.padEnd(strColumnList.get(columnIndex).get(rowIndex), maxColumnLens[columnIndex]));
+                }
+
+                bw.write(" |");
+            }
+
+            if (size() == 0) {
+                bw.write(IOUtil.LINE_SEPARATOR);
+
+                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                    if (columnIndex == 0) {
+                        bw.write("| ");
+                        bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex]));
+                    } else {
+                        bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex] + 3));
+                    }
+                }
+
+                bw.write(" |");
+            }
+
+            bw.write(IOUtil.LINE_SEPARATOR);
+
+            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                if (columnIndex == 0) {
+                    bw.write(hch);
+                }
+
+                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+            }
 
             bw.write(IOUtil.LINE_SEPARATOR);
 
