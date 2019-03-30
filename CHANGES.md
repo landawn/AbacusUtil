@@ -6,6 +6,10 @@
 
 * Add `Fn.notStartsWith/notEndsWith/notContains`.
 
+* Add `IdentityHashSet`.
+
+* Support circular references in JSON/XML serialization.
+
 * Rename `Fn.Ints/Longs/Doubles/...` to `Fn.FnI/FnL/FnD/...`.
 
 * Improvements and bug fix.

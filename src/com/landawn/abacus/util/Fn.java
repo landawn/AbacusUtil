@@ -376,14 +376,14 @@ public final class Fn extends Comparators {
     private static final Function<CharSequence, Integer> LENGTH = new Function<CharSequence, Integer>() {
         @Override
         public Integer apply(CharSequence t) {
-            return N.len(t);
+            return t == null ? 0 : t.length();
         }
     };
 
     private static final Function<Object[], Integer> LEN = new Function<Object[], Integer>() {
         @Override
         public Integer apply(Object[] t) {
-            return N.len(t);
+            return t == null ? 0 : t.length;
         }
     };
 
@@ -391,7 +391,7 @@ public final class Fn extends Comparators {
     private static final Function<Collection, Integer> SIZE = new Function<Collection, Integer>() {
         @Override
         public Integer apply(Collection t) {
-            return N.size(t);
+            return t == null ? 0 : t.size();
         }
     };
 
@@ -399,7 +399,7 @@ public final class Fn extends Comparators {
     private static final Function<Map, Integer> SIZE_M = new Function<Map, Integer>() {
         @Override
         public Integer apply(Map t) {
-            return N.size(t);
+            return t == null ? 0 : t.size();
         }
     };
 
@@ -1181,7 +1181,7 @@ public final class Fn extends Comparators {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return c.contains(value);
+                return c != null && c.size() > 0 && c.contains(value);
             }
         };
     }
@@ -1192,7 +1192,7 @@ public final class Fn extends Comparators {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return !c.contains(value);
+                return c == null || c.size() == 0 || !c.contains(value);
             }
         };
     }
@@ -1203,7 +1203,7 @@ public final class Fn extends Comparators {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return clazz.isInstance(value);
+                return value != null && clazz.isInstance(value);
             }
         };
     }
@@ -1226,7 +1226,7 @@ public final class Fn extends Comparators {
         return new Predicate<String>() {
             @Override
             public boolean test(String value) {
-                return value.startsWith(prefix);
+                return value != null && value.startsWith(prefix);
             }
         };
     }
@@ -1237,7 +1237,7 @@ public final class Fn extends Comparators {
         return new Predicate<String>() {
             @Override
             public boolean test(String value) {
-                return value.endsWith(suffix);
+                return value != null && value.endsWith(suffix);
             }
         };
     }
@@ -1248,7 +1248,7 @@ public final class Fn extends Comparators {
         return new Predicate<String>() {
             @Override
             public boolean test(String value) {
-                return value.contains(str);
+                return value != null && value.contains(str);
             }
         };
     }
@@ -5693,10 +5693,10 @@ public final class Fn extends Comparators {
         private Entries() {
             // singleton.
         }
-    
+
         public static <K, V, T> Function<Map.Entry<K, V>, T> f(final BiFunction<? super K, ? super V, ? extends T> f) {
             N.checkArgNotNull(f, "BiFunction");
-    
+
             return new Function<Map.Entry<K, V>, T>() {
                 @Override
                 public T apply(Entry<K, V> e) {
@@ -5704,22 +5704,22 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V> Predicate<Map.Entry<K, V>> p(final BiPredicate<? super K, ? super V> p) {
             N.checkArgNotNull(p, "BiPredicate");
-    
+
             return new Predicate<Map.Entry<K, V>>() {
                 @Override
                 public boolean test(Entry<K, V> e) {
                     return p.test(e.getKey(), e.getValue());
                 }
-    
+
             };
         }
-    
+
         public static <K, V> Consumer<Map.Entry<K, V>> c(final BiConsumer<? super K, ? super V> c) {
             N.checkArgNotNull(c, "BiConsumer");
-    
+
             return new Consumer<Map.Entry<K, V>>() {
                 @Override
                 public void accept(Entry<K, V> e) {
@@ -5727,10 +5727,10 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V, T, E extends Exception> Try.Function<Map.Entry<K, V>, T, E> ef(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
             N.checkArgNotNull(f, "BiFunction");
-    
+
             return new Try.Function<Map.Entry<K, V>, T, E>() {
                 @Override
                 public T apply(Entry<K, V> e) throws E {
@@ -5738,22 +5738,22 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V, E extends Exception> Try.Predicate<Map.Entry<K, V>, E> ep(final Try.BiPredicate<? super K, ? super V, E> p) {
             N.checkArgNotNull(p, "BiPredicate");
-    
+
             return new Try.Predicate<Map.Entry<K, V>, E>() {
                 @Override
                 public boolean test(Entry<K, V> e) throws E {
                     return p.test(e.getKey(), e.getValue());
                 }
-    
+
             };
         }
-    
+
         public static <K, V, E extends Exception> Try.Consumer<Map.Entry<K, V>, E> ec(final Try.BiConsumer<? super K, ? super V, E> c) {
             N.checkArgNotNull(c, "BiConsumer");
-    
+
             return new Try.Consumer<Map.Entry<K, V>, E>() {
                 @Override
                 public void accept(Entry<K, V> e) throws E {
@@ -5761,10 +5761,10 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V, T, E extends Exception> Function<Map.Entry<K, V>, T> ff(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
             N.checkArgNotNull(f, "BiFunction");
-    
+
             return new Function<Map.Entry<K, V>, T>() {
                 @Override
                 public T apply(Entry<K, V> e) {
@@ -5776,10 +5776,10 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V, E extends Exception> Predicate<Map.Entry<K, V>> pp(final Try.BiPredicate<? super K, ? super V, E> p) {
             N.checkArgNotNull(p, "BiPredicate");
-    
+
             return new Predicate<Map.Entry<K, V>>() {
                 @Override
                 public boolean test(Entry<K, V> e) {
@@ -5791,10 +5791,10 @@ public final class Fn extends Comparators {
                 }
             };
         }
-    
+
         public static <K, V, E extends Exception> Consumer<Map.Entry<K, V>> cc(final Try.BiConsumer<? super K, ? super V, E> c) {
             N.checkArgNotNull(c, "BiConsumer");
-    
+
             return new Consumer<Map.Entry<K, V>>() {
                 @Override
                 public void accept(Entry<K, V> e) {
@@ -5816,7 +5816,7 @@ public final class Fn extends Comparators {
                 return N.asList(t.left, t.right);
             }
         };
-    
+
         @SuppressWarnings("rawtypes")
         private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
             @Override
@@ -5824,25 +5824,25 @@ public final class Fn extends Comparators {
                 return N.asSet(t.left, t.right);
             }
         };
-    
+
         private Pairs() {
             // Utility class.
         }
-    
+
         @SuppressWarnings("rawtypes")
         public static <T> Function<Pair<T, T>, List<T>> toList() {
             return (Function) PAIR_TO_LIST;
         }
-    
+
         @SuppressWarnings("rawtypes")
         public static <T> Function<Pair<T, T>, Set<T>> toSet() {
             return (Function) PAIR_TO_SET;
         }
-    
+
     }
 
     public static final class Triples {
-    
+
         @SuppressWarnings("rawtypes")
         private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
             @Override
@@ -5850,7 +5850,7 @@ public final class Fn extends Comparators {
                 return N.asList(t.left, t.middle, t.right);
             }
         };
-    
+
         @SuppressWarnings("rawtypes")
         private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
             @Override
@@ -5858,16 +5858,16 @@ public final class Fn extends Comparators {
                 return N.asSet(t.left, t.middle, t.right);
             }
         };
-    
+
         private Triples() {
             // Utility class.
         }
-    
+
         @SuppressWarnings("rawtypes")
         public static <T> Function<Triple<T, T, T>, List<T>> toList() {
             return (Function) TRIPLE_TO_LIST;
         }
-    
+
         @SuppressWarnings("rawtypes")
         public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
             return (Function) TRIPLE_TO_SET;
