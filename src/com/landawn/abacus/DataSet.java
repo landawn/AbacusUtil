@@ -24,11 +24,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.ObjIterator;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
@@ -37,6 +37,7 @@ import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
+import com.landawn.abacus.util.u.Optional;
 // import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.Collector;
@@ -4741,8 +4742,7 @@ public interface DataSet {
 
     // DataSetBuilder builder();
 
-    /**
-     * it's same as: N.println(toString());
-     */
-    void println();
+    void println() throws UncheckedIOException;
+
+    void println(Writer outputWriter) throws UncheckedIOException;
 }

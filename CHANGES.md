@@ -1,7 +1,13 @@
 ### 1.5.10
  
 * Improve `DataSet/Sheet.println()`.
- 
+
+* Add `DataSet/Sheet.println(Writer)`.
+
+* Add `Fn.notStartsWith/notEndsWith/notContains`.
+
+* Rename `Fn.Ints/Longs/Doubles/...` to `Fn.FnI/FnL/FnD/...`.
+
 * Improvements and bug fix.
 
 

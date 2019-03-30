@@ -3098,8 +3098,9 @@ abstract class AbstractStream<T> extends Stream<T> {
         assertNotClosed();
 
         try {
+            boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
+            final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
             final Iterator<T> iter = iterator();
-            final BufferedWriter bw = writer instanceof BufferedWriter ? (BufferedWriter) writer : Objectory.createBufferedWriter(writer);
             long cnt = 0;
 
             try {
@@ -3108,9 +3109,11 @@ abstract class AbstractStream<T> extends Stream<T> {
                     bw.write(IOUtil.LINE_SEPARATOR);
                     cnt++;
                 }
+
+                bw.flush();
             } finally {
-                if (bw != writer) {
-                    Objectory.recycle(bw);
+                if (!isBufferedWriter) {
+                    Objectory.recycle((BufferedWriter) bw);
                 }
             }
 

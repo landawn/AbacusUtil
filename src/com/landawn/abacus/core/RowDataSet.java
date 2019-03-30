@@ -8718,72 +8718,55 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
 
     @Override
-    public void println() {
-        if (_columnNameList.size() == 0) {
-            N.println("---");
-            N.println("| |");
-            N.println("---");
+    public void println() throws UncheckedIOException {
+        println(new OutputStreamWriter(System.out));
+    }
 
-            return;
-        }
+    @Override
+    public void println(Writer outputWriter) throws UncheckedIOException {
+        N.checkArgNotNull(outputWriter, "outputWriter");
 
-        final int rowLen = size();
-        final int columnLen = _columnList.size();
-        final List<List<String>> strColumnList = new ArrayList<>(columnLen);
-        final int[] maxColumnLens = new int[columnLen];
+        boolean isBufferedWriter = outputWriter instanceof BufferedWriter || outputWriter instanceof java.io.BufferedWriter;
+        final Writer bw = isBufferedWriter ? outputWriter : Objectory.createBufferedWriter(outputWriter);
 
-        for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-            final List<String> strColumn = new ArrayList<>(rowLen);
-            int maxLen = N.len(_columnNameList.get(columnIndex));
-            String str = null;
-
-            for (Object e : _columnList.get(columnIndex)) {
-                str = N.toString(e);
-                maxLen = N.max(maxLen, N.len(str));
-                strColumn.add(str);
-            }
-
-            maxColumnLens[columnIndex] = maxLen;
-            strColumnList.add(strColumn);
-        }
-
-        final BufferedWriter bw = Objectory.createBufferedWriter(System.out);
-        final char hch = '-';
-        final char hchDelta = 3;
         try {
-            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                if (columnIndex == 0) {
-                    bw.write(hch);
+            if (_columnNameList.size() == 0) {
+                bw.write("---");
+                bw.write(IOUtil.LINE_SEPARATOR);
+                bw.write("| |");
+                bw.write(IOUtil.LINE_SEPARATOR);
+                bw.write("---");
+            } else {
+                final int rowLen = size();
+                final int columnLen = _columnList.size();
+                final List<List<String>> strColumnList = new ArrayList<>(columnLen);
+                final int[] maxColumnLens = new int[columnLen];
+
+                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                    final List<String> strColumn = new ArrayList<>(rowLen);
+                    int maxLen = N.len(_columnNameList.get(columnIndex));
+                    String str = null;
+
+                    for (Object e : _columnList.get(columnIndex)) {
+                        str = N.toString(e);
+                        maxLen = N.max(maxLen, N.len(str));
+                        strColumn.add(str);
+                    }
+
+                    maxColumnLens[columnIndex] = maxLen;
+                    strColumnList.add(strColumn);
                 }
 
-                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
-            }
+                final char hch = '-';
+                final char hchDelta = 3;
+                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                    if (columnIndex == 0) {
+                        bw.write(hch);
+                    }
 
-            bw.write(IOUtil.LINE_SEPARATOR);
-
-            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                if (columnIndex == 0) {
-                    bw.write("| ");
-                } else {
-                    bw.write(" | ");
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
                 }
 
-                bw.write(StringUtil.padEnd(_columnNameList.get(columnIndex), maxColumnLens[columnIndex]));
-            }
-
-            bw.write(" |");
-
-            bw.write(IOUtil.LINE_SEPARATOR);
-
-            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                if (columnIndex == 0) {
-                    bw.write(hch);
-                }
-
-                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
-            }
-
-            for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
                 bw.write(IOUtil.LINE_SEPARATOR);
 
                 for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
@@ -8793,35 +8776,61 @@ public class RowDataSet implements DataSet, Cloneable {
                         bw.write(" | ");
                     }
 
-                    bw.write(StringUtil.padEnd(strColumnList.get(columnIndex).get(rowIndex), maxColumnLens[columnIndex]));
+                    bw.write(StringUtil.padEnd(_columnNameList.get(columnIndex), maxColumnLens[columnIndex]));
                 }
 
                 bw.write(" |");
-            }
 
-            if (size() == 0) {
                 bw.write(IOUtil.LINE_SEPARATOR);
 
                 for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
                     if (columnIndex == 0) {
-                        bw.write("| ");
-                        bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex]));
-                    } else {
-                        bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex] + 3));
+                        bw.write(hch);
                     }
+
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
                 }
 
-                bw.write(" |");
-            }
+                for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
+                    bw.write(IOUtil.LINE_SEPARATOR);
 
-            bw.write(IOUtil.LINE_SEPARATOR);
+                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                        if (columnIndex == 0) {
+                            bw.write("| ");
+                        } else {
+                            bw.write(" | ");
+                        }
 
-            for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                if (columnIndex == 0) {
-                    bw.write(hch);
+                        bw.write(StringUtil.padEnd(strColumnList.get(columnIndex).get(rowIndex), maxColumnLens[columnIndex]));
+                    }
+
+                    bw.write(" |");
                 }
 
-                bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                if (size() == 0) {
+                    bw.write(IOUtil.LINE_SEPARATOR);
+
+                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                        if (columnIndex == 0) {
+                            bw.write("| ");
+                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex]));
+                        } else {
+                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex] + 3));
+                        }
+                    }
+
+                    bw.write(" |");
+                }
+
+                bw.write(IOUtil.LINE_SEPARATOR);
+
+                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                    if (columnIndex == 0) {
+                        bw.write(hch);
+                    }
+
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                }
             }
 
             bw.write(IOUtil.LINE_SEPARATOR);
@@ -8830,7 +8839,9 @@ public class RowDataSet implements DataSet, Cloneable {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
-            Objectory.recycle(bw);
+            if (!isBufferedWriter) {
+                Objectory.recycle((BufferedWriter) bw);
+            }
         }
     }
 

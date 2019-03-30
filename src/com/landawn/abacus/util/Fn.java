@@ -62,9 +62,11 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.ByteBiPredicate;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.CharBiPredicate;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
@@ -73,6 +75,7 @@ import com.landawn.abacus.util.function.DoubleBiPredicate;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.FloatBiPredicate;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
@@ -94,6 +97,7 @@ import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadFunction;
+import com.landawn.abacus.util.function.ShortBiPredicate;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
@@ -1245,6 +1249,39 @@ public final class Fn extends Comparators {
             @Override
             public boolean test(String value) {
                 return value.contains(str);
+            }
+        };
+    }
+
+    public static Predicate<String> notStartsWith(final String prefix) {
+        N.checkArgNotNull(prefix);
+
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value == null || !value.startsWith(prefix);
+            }
+        };
+    }
+
+    public static Predicate<String> notEndsWith(final String suffix) {
+        N.checkArgNotNull(suffix);
+
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value == null || !value.endsWith(suffix);
+            }
+        };
+    }
+
+    public static Predicate<String> notContains(final String str) {
+        N.checkArgNotNull(str);
+
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value == null || !value.contains(str);
             }
         };
     }
@@ -5652,7 +5689,501 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Ints {
+    public static final class Entries {
+        private Entries() {
+            // singleton.
+        }
+    
+        public static <K, V, T> Function<Map.Entry<K, V>, T> f(final BiFunction<? super K, ? super V, ? extends T> f) {
+            N.checkArgNotNull(f, "BiFunction");
+    
+            return new Function<Map.Entry<K, V>, T>() {
+                @Override
+                public T apply(Entry<K, V> e) {
+                    return f.apply(e.getKey(), e.getValue());
+                }
+            };
+        }
+    
+        public static <K, V> Predicate<Map.Entry<K, V>> p(final BiPredicate<? super K, ? super V> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+    
+            return new Predicate<Map.Entry<K, V>>() {
+                @Override
+                public boolean test(Entry<K, V> e) {
+                    return p.test(e.getKey(), e.getValue());
+                }
+    
+            };
+        }
+    
+        public static <K, V> Consumer<Map.Entry<K, V>> c(final BiConsumer<? super K, ? super V> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+    
+            return new Consumer<Map.Entry<K, V>>() {
+                @Override
+                public void accept(Entry<K, V> e) {
+                    c.accept(e.getKey(), e.getValue());
+                }
+            };
+        }
+    
+        public static <K, V, T, E extends Exception> Try.Function<Map.Entry<K, V>, T, E> ef(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
+            N.checkArgNotNull(f, "BiFunction");
+    
+            return new Try.Function<Map.Entry<K, V>, T, E>() {
+                @Override
+                public T apply(Entry<K, V> e) throws E {
+                    return f.apply(e.getKey(), e.getValue());
+                }
+            };
+        }
+    
+        public static <K, V, E extends Exception> Try.Predicate<Map.Entry<K, V>, E> ep(final Try.BiPredicate<? super K, ? super V, E> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+    
+            return new Try.Predicate<Map.Entry<K, V>, E>() {
+                @Override
+                public boolean test(Entry<K, V> e) throws E {
+                    return p.test(e.getKey(), e.getValue());
+                }
+    
+            };
+        }
+    
+        public static <K, V, E extends Exception> Try.Consumer<Map.Entry<K, V>, E> ec(final Try.BiConsumer<? super K, ? super V, E> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+    
+            return new Try.Consumer<Map.Entry<K, V>, E>() {
+                @Override
+                public void accept(Entry<K, V> e) throws E {
+                    c.accept(e.getKey(), e.getValue());
+                }
+            };
+        }
+    
+        public static <K, V, T, E extends Exception> Function<Map.Entry<K, V>, T> ff(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
+            N.checkArgNotNull(f, "BiFunction");
+    
+            return new Function<Map.Entry<K, V>, T>() {
+                @Override
+                public T apply(Entry<K, V> e) {
+                    try {
+                        return f.apply(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
+    
+        public static <K, V, E extends Exception> Predicate<Map.Entry<K, V>> pp(final Try.BiPredicate<? super K, ? super V, E> p) {
+            N.checkArgNotNull(p, "BiPredicate");
+    
+            return new Predicate<Map.Entry<K, V>>() {
+                @Override
+                public boolean test(Entry<K, V> e) {
+                    try {
+                        return p.test(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
+    
+        public static <K, V, E extends Exception> Consumer<Map.Entry<K, V>> cc(final Try.BiConsumer<? super K, ? super V, E> c) {
+            N.checkArgNotNull(c, "BiConsumer");
+    
+            return new Consumer<Map.Entry<K, V>>() {
+                @Override
+                public void accept(Entry<K, V> e) {
+                    try {
+                        c.accept(e.getKey(), e.getValue());
+                    } catch (Exception ex) {
+                        throw N.toRuntimeException(ex);
+                    }
+                }
+            };
+        }
+    }
+
+    public static final class Pairs {
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
+            @Override
+            public List apply(Pair t) {
+                return N.asList(t.left, t.right);
+            }
+        };
+    
+        @SuppressWarnings("rawtypes")
+        private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
+            @Override
+            public Set apply(Pair t) {
+                return N.asSet(t.left, t.right);
+            }
+        };
+    
+        private Pairs() {
+            // Utility class.
+        }
+    
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, List<T>> toList() {
+            return (Function) PAIR_TO_LIST;
+        }
+    
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Pair<T, T>, Set<T>> toSet() {
+            return (Function) PAIR_TO_SET;
+        }
+    
+    }
+
+    public static final class Triples {
+    
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
+            @Override
+            public List apply(Triple t) {
+                return N.asList(t.left, t.middle, t.right);
+            }
+        };
+    
+        @SuppressWarnings("rawtypes")
+        private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
+            @Override
+            public Set apply(Triple t) {
+                return N.asSet(t.left, t.middle, t.right);
+            }
+        };
+    
+        private Triples() {
+            // Utility class.
+        }
+    
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, List<T>> toList() {
+            return (Function) TRIPLE_TO_LIST;
+        }
+    
+        @SuppressWarnings("rawtypes")
+        public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
+            return (Function) TRIPLE_TO_SET;
+        }
+    }
+
+    /**
+     * Utility class for {@code CharPredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnC {
+
+        private static final CharPredicate POSITIVE = new CharPredicate() {
+            @Override
+            public boolean test(char t) {
+                return t > 0;
+            }
+        };
+
+        private static final CharPredicate NOT_NEGATIVE = new CharPredicate() {
+            @Override
+            public boolean test(char t) {
+                return t >= 0;
+            }
+        };
+
+        private static final CharBiPredicate EQUAL = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t == u;
+            }
+        };
+
+        private static final CharBiPredicate NOT_EQUAL = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t != u;
+            }
+        };
+
+        private static final CharBiPredicate GREATER_THAN = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t > u;
+            }
+        };
+
+        private static final CharBiPredicate GREATER_EQUAL = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t >= u;
+            }
+        };
+
+        private static final CharBiPredicate LESS_THAN = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t < u;
+            }
+        };
+
+        private static final CharBiPredicate LESS_EQUAL = new CharBiPredicate() {
+            @Override
+            public boolean test(char t, char u) {
+                return t <= u;
+            }
+        };
+
+        private FnC() {
+            // Utility class.
+        }
+
+        public static CharPredicate positve() {
+            return POSITIVE;
+        }
+
+        public static CharPredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static CharBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static CharBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static CharBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static CharBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static CharBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static CharBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    /**
+     * Utility class for {@code BytePredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnB {
+
+        private static final BytePredicate POSITIVE = new BytePredicate() {
+            @Override
+            public boolean test(byte t) {
+                return t > 0;
+            }
+        };
+
+        private static final BytePredicate NOT_NEGATIVE = new BytePredicate() {
+            @Override
+            public boolean test(byte t) {
+                return t >= 0;
+            }
+        };
+
+        private static final ByteBiPredicate EQUAL = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t == u;
+            }
+        };
+
+        private static final ByteBiPredicate NOT_EQUAL = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t != u;
+            }
+        };
+
+        private static final ByteBiPredicate GREATER_THAN = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t > u;
+            }
+        };
+
+        private static final ByteBiPredicate GREATER_EQUAL = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t >= u;
+            }
+        };
+
+        private static final ByteBiPredicate LESS_THAN = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t < u;
+            }
+        };
+
+        private static final ByteBiPredicate LESS_EQUAL = new ByteBiPredicate() {
+            @Override
+            public boolean test(byte t, byte u) {
+                return t <= u;
+            }
+        };
+
+        private FnB() {
+            // Utility class.
+        }
+
+        public static BytePredicate positve() {
+            return POSITIVE;
+        }
+
+        public static BytePredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static ByteBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static ByteBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static ByteBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static ByteBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static ByteBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static ByteBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    /**
+     * Utility class for {@code ShortPredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnS {
+
+        private static final ShortPredicate POSITIVE = new ShortPredicate() {
+            @Override
+            public boolean test(short t) {
+                return t > 0;
+            }
+        };
+
+        private static final ShortPredicate NOT_NEGATIVE = new ShortPredicate() {
+            @Override
+            public boolean test(short t) {
+                return t >= 0;
+            }
+        };
+
+        private static final ShortBiPredicate EQUAL = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t == u;
+            }
+        };
+
+        private static final ShortBiPredicate NOT_EQUAL = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t != u;
+            }
+        };
+
+        private static final ShortBiPredicate GREATER_THAN = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t > u;
+            }
+        };
+
+        private static final ShortBiPredicate GREATER_EQUAL = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t >= u;
+            }
+        };
+
+        private static final ShortBiPredicate LESS_THAN = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t < u;
+            }
+        };
+
+        private static final ShortBiPredicate LESS_EQUAL = new ShortBiPredicate() {
+            @Override
+            public boolean test(short t, short u) {
+                return t <= u;
+            }
+        };
+
+        private FnS() {
+            // Utility class.
+        }
+
+        public static ShortPredicate positve() {
+            return POSITIVE;
+        }
+
+        public static ShortPredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static ShortBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static ShortBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static ShortBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static ShortBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static ShortBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static ShortBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    /**
+     * Utility class for {@code IntPredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnI {
 
         private static final IntPredicate POSITIVE = new IntPredicate() {
             @Override
@@ -5710,7 +6241,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Ints() {
+        private FnI() {
             // Utility class.
         }
 
@@ -5747,7 +6278,13 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Longs {
+    /**
+     * Utility class for {@code LongPredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnL {
 
         private static final LongPredicate POSITIVE = new LongPredicate() {
             @Override
@@ -5805,7 +6342,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Longs() {
+        private FnL() {
             // Utility class.
         }
 
@@ -5842,7 +6379,114 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Doubles {
+    /**
+     * Utility class for {@code FloatPredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnF {
+
+        private static final FloatPredicate POSITIVE = new FloatPredicate() {
+            @Override
+            public boolean test(float t) {
+                return t > 0;
+            }
+        };
+
+        private static final FloatPredicate NOT_NEGATIVE = new FloatPredicate() {
+            @Override
+            public boolean test(float t) {
+                return t >= 0;
+            }
+        };
+
+        private static final FloatBiPredicate EQUAL = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t == u;
+            }
+        };
+
+        private static final FloatBiPredicate NOT_EQUAL = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t != u;
+            }
+        };
+
+        private static final FloatBiPredicate GREATER_THAN = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t > u;
+            }
+        };
+
+        private static final FloatBiPredicate GREATER_EQUAL = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t >= u;
+            }
+        };
+
+        private static final FloatBiPredicate LESS_THAN = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t < u;
+            }
+        };
+
+        private static final FloatBiPredicate LESS_EQUAL = new FloatBiPredicate() {
+            @Override
+            public boolean test(float t, float u) {
+                return t <= u;
+            }
+        };
+
+        private FnF() {
+            // Utility class.
+        }
+
+        public static FloatPredicate positve() {
+            return POSITIVE;
+        }
+
+        public static FloatPredicate notNegative() {
+            return NOT_NEGATIVE;
+        }
+
+        public static FloatBiPredicate equal() {
+            return EQUAL;
+        }
+
+        public static FloatBiPredicate notEqual() {
+            return NOT_EQUAL;
+        }
+
+        public static FloatBiPredicate greaterThan() {
+            return GREATER_THAN;
+        }
+
+        public static FloatBiPredicate greaterEqual() {
+            return GREATER_EQUAL;
+        }
+
+        public static FloatBiPredicate lessThan() {
+            return LESS_THAN;
+        }
+
+        public static FloatBiPredicate lessEqual() {
+            return LESS_EQUAL;
+        }
+    }
+
+    /**
+     * Utility class for {@code DoublePredicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static final class FnD {
 
         private static final DoublePredicate POSITIVE = new DoublePredicate() {
             @Override
@@ -5900,7 +6544,7 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Doubles() {
+        private FnD() {
             // Utility class.
         }
 
@@ -5937,191 +6581,12 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Entries {
-        private Entries() {
-            // singleton.
-        }
-
-        public static <K, V, T> Function<Map.Entry<K, V>, T> f(final BiFunction<? super K, ? super V, ? extends T> f) {
-            N.checkArgNotNull(f, "BiFunction");
-
-            return new Function<Map.Entry<K, V>, T>() {
-                @Override
-                public T apply(Entry<K, V> e) {
-                    return f.apply(e.getKey(), e.getValue());
-                }
-            };
-        }
-
-        public static <K, V> Predicate<Map.Entry<K, V>> p(final BiPredicate<? super K, ? super V> p) {
-            N.checkArgNotNull(p, "BiPredicate");
-
-            return new Predicate<Map.Entry<K, V>>() {
-                @Override
-                public boolean test(Entry<K, V> e) {
-                    return p.test(e.getKey(), e.getValue());
-                }
-
-            };
-        }
-
-        public static <K, V> Consumer<Map.Entry<K, V>> c(final BiConsumer<? super K, ? super V> c) {
-            N.checkArgNotNull(c, "BiConsumer");
-
-            return new Consumer<Map.Entry<K, V>>() {
-                @Override
-                public void accept(Entry<K, V> e) {
-                    c.accept(e.getKey(), e.getValue());
-                }
-            };
-        }
-
-        public static <K, V, T, E extends Exception> Try.Function<Map.Entry<K, V>, T, E> ef(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
-            N.checkArgNotNull(f, "BiFunction");
-
-            return new Try.Function<Map.Entry<K, V>, T, E>() {
-                @Override
-                public T apply(Entry<K, V> e) throws E {
-                    return f.apply(e.getKey(), e.getValue());
-                }
-            };
-        }
-
-        public static <K, V, E extends Exception> Try.Predicate<Map.Entry<K, V>, E> ep(final Try.BiPredicate<? super K, ? super V, E> p) {
-            N.checkArgNotNull(p, "BiPredicate");
-
-            return new Try.Predicate<Map.Entry<K, V>, E>() {
-                @Override
-                public boolean test(Entry<K, V> e) throws E {
-                    return p.test(e.getKey(), e.getValue());
-                }
-
-            };
-        }
-
-        public static <K, V, E extends Exception> Try.Consumer<Map.Entry<K, V>, E> ec(final Try.BiConsumer<? super K, ? super V, E> c) {
-            N.checkArgNotNull(c, "BiConsumer");
-
-            return new Try.Consumer<Map.Entry<K, V>, E>() {
-                @Override
-                public void accept(Entry<K, V> e) throws E {
-                    c.accept(e.getKey(), e.getValue());
-                }
-            };
-        }
-
-        public static <K, V, T, E extends Exception> Function<Map.Entry<K, V>, T> ff(final Try.BiFunction<? super K, ? super V, ? extends T, E> f) {
-            N.checkArgNotNull(f, "BiFunction");
-
-            return new Function<Map.Entry<K, V>, T>() {
-                @Override
-                public T apply(Entry<K, V> e) {
-                    try {
-                        return f.apply(e.getKey(), e.getValue());
-                    } catch (Exception ex) {
-                        throw N.toRuntimeException(ex);
-                    }
-                }
-            };
-        }
-
-        public static <K, V, E extends Exception> Predicate<Map.Entry<K, V>> pp(final Try.BiPredicate<? super K, ? super V, E> p) {
-            N.checkArgNotNull(p, "BiPredicate");
-
-            return new Predicate<Map.Entry<K, V>>() {
-                @Override
-                public boolean test(Entry<K, V> e) {
-                    try {
-                        return p.test(e.getKey(), e.getValue());
-                    } catch (Exception ex) {
-                        throw N.toRuntimeException(ex);
-                    }
-                }
-            };
-        }
-
-        public static <K, V, E extends Exception> Consumer<Map.Entry<K, V>> cc(final Try.BiConsumer<? super K, ? super V, E> c) {
-            N.checkArgNotNull(c, "BiConsumer");
-
-            return new Consumer<Map.Entry<K, V>>() {
-                @Override
-                public void accept(Entry<K, V> e) {
-                    try {
-                        c.accept(e.getKey(), e.getValue());
-                    } catch (Exception ex) {
-                        throw N.toRuntimeException(ex);
-                    }
-                }
-            };
-        }
-    }
-
-    public static final class Pairs {
-        @SuppressWarnings("rawtypes")
-        private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
-            @Override
-            public List apply(Pair t) {
-                return N.asList(t.left, t.right);
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Pair, Set> PAIR_TO_SET = new Function<Pair, Set>() {
-            @Override
-            public Set apply(Pair t) {
-                return N.asSet(t.left, t.right);
-            }
-        };
-
-        private Pairs() {
-            // Utility class.
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> Function<Pair<T, T>, List<T>> toList() {
-            return (Function) PAIR_TO_LIST;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> Function<Pair<T, T>, Set<T>> toSet() {
-            return (Function) PAIR_TO_SET;
-        }
-
-    }
-
-    public static final class Triples {
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
-            @Override
-            public List apply(Triple t) {
-                return N.asList(t.left, t.middle, t.right);
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Function<Triple, Set> TRIPLE_TO_SET = new Function<Triple, Set>() {
-            @Override
-            public Set apply(Triple t) {
-                return N.asSet(t.left, t.middle, t.right);
-            }
-        };
-
-        private Triples() {
-            // Utility class.
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> Function<Triple<T, T, T>, List<T>> toList() {
-            return (Function) TRIPLE_TO_LIST;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
-            return (Function) TRIPLE_TO_SET;
-        }
-    }
-
+    /**
+     * Utility class for primitive {@code Predicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
     public static final class Fnn {
 
         private Fnn() {
@@ -6283,6 +6748,12 @@ public final class Fn extends Comparators {
         }
     }
 
+    /**
+     * Utility class for exceptional {@code Predicate/Function/Consumer}.
+     * 
+     * @author haiyangl
+     *
+     */
     public static final class FN {
         private FN() {
             // singleton
