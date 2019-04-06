@@ -18,8 +18,8 @@ import java.io.Closeable;
 import java.util.Set;
 
 import com.landawn.abacus.util.ContinuableFuture;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Properties;
+import com.landawn.abacus.util.u.Optional;
 
 /**
  * 
@@ -41,9 +41,23 @@ public interface Cache<K, V> extends Closeable {
     /**
      * 
      * @param k
+     * @return V
+     */
+    V gett(final K k);
+
+    /**
+     * 
+     * @param k
      * @return
      */
     ContinuableFuture<Optional<V>> asyncGet(final K k);
+
+    /**
+     * 
+     * @param k
+     * @return
+     */
+    ContinuableFuture<V> asyncGett(final K k);
 
     /**
      * 

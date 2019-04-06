@@ -1279,7 +1279,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1289,7 +1289,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             while (elements.hasNext()) {
                 element = elements.nextFloat();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -1299,7 +1299,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1314,7 +1314,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
             while (elements.hasNext()) {
                 element = elements.nextFloat();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1636,6 +1636,15 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     FloatIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public FloatStream appendIfEmpty(final Supplier<FloatStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

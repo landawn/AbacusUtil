@@ -1,3 +1,22 @@
+### 1.5.11
+
+* Add `Stream/Fn.window(maxWindowSize, maxDuration, ...)`.
+
+* Add `Collectors.collapsing`.
+
+* Add `Stream/Seq.forEach(action, onComplete)`.
+
+* Add `IntStream/.../DoubleStream/Stream/EntryStream/ExceptionalStream.slice/appendIfEmpty`.
+
+* Rename `Stream.appendAll/prependAll(Collection<? extends Collection<? extends T>>)` to `Stream.appendAlll/prependAlll`.
+
+* Add `StringUtil.anyNullOrEmpty/allNullOrEmpty`.
+
+* Add `Stream/Seq.flatGroupTo/flatGroupBy/nMatch`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.10
  
 * Improve `DataSet/Sheet.println()`.

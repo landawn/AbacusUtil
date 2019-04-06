@@ -1706,7 +1706,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1714,7 +1714,7 @@ class ArrayIntStream extends AbstractIntStream {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -1724,7 +1724,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1737,7 +1737,7 @@ class ArrayIntStream extends AbstractIntStream {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -2325,13 +2325,24 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public IntStream appendIfEmpty(final Supplier<IntStream> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
+    }
+
+    @Override
     public IntStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(),
+                closeHandlers);
     }
 
     @Override
     public IntStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

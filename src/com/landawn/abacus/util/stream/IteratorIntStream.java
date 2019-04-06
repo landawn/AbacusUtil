@@ -1573,7 +1573,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1583,7 +1583,7 @@ class IteratorIntStream extends AbstractIntStream {
 
             while (elements.hasNext()) {
                 element = elements.nextInt();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -1593,7 +1593,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1608,7 +1608,7 @@ class IteratorIntStream extends AbstractIntStream {
 
             while (elements.hasNext()) {
                 element = elements.nextInt();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -2047,6 +2047,15 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     IntIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public IntStream appendIfEmpty(final Supplier<IntStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

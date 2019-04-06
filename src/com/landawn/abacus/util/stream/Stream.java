@@ -357,56 +357,168 @@ public abstract class Stream<T>
     public abstract <K, V> EntryStream<K, V> flatMappToEntry(Function<? super T, ? extends EntryStream<K, V>> mapper);
 
     @ParallelSupported
-    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
+    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> keyMapper);
 
     @ParallelSupported
-    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier,
+    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> keyMapper,
             final Supplier<? extends Map<K, List<T>>> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            Supplier<? extends Map<K, List<U>>> mapFactory);
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
+            Supplier<? extends Map<K, List<V>>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream,
             final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream);
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
 
     @ParallelSupported
-    public abstract <K, U, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
+            BinaryOperator<V> mergeFunction);
 
     @ParallelSupported
-    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory);
+    public abstract <K, V> Stream<Map.Entry<K, V>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K> Stream<Map.Entry<K, List<T>>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper);
+
+    @ParallelSupported
+    public abstract <K> Stream<Map.Entry<K, List<T>>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final Supplier<? extends Map<K, List<T>>> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final Collector<? super T, A, D> downstream);
+
+    @ParallelSupported
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final Collector<? super T, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
+
+    @ParallelSupported
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+            final Supplier<? extends Map<K, D>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, V>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, V>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
+            final Supplier<? extends Map<K, V>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K> Stream<Map.Entry<K, List<T>>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper);
+
+    @ParallelSupported
+    public abstract <K> Stream<Map.Entry<K, List<T>>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final Supplier<? extends Map<K, List<T>>> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final Collector<? super T, A, D> downstream);
+
+    @ParallelSupported
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final Collector<? super T, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
+
+    @ParallelSupported
+    public abstract <K, V, A, D> Stream<Map.Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+            final Supplier<? extends Map<K, D>> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, V>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+
+    @ParallelSupported
+    public abstract <K, V> Stream<Map.Entry<K, V>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
+            final Supplier<? extends Map<K, V>> mapFactory);
 
     /**
      * 
@@ -428,60 +540,60 @@ public abstract class Stream<T>
     public abstract <A, D> Stream<Map.Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
-    public <K> Stream<Map.Entry<K, Integer>> countBy(final Function<? super T, ? extends K> classifier) {
-        return groupBy(classifier, Collectors.countingInt());
+    public <K> Stream<Map.Entry<K, Integer>> countBy(final Function<? super T, ? extends K> keyMapper) {
+        return groupBy(keyMapper, Collectors.countingInt());
     }
 
     @ParallelSupported
-    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
+    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> keyMapper);
 
     @ParallelSupported
-    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier,
+    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> keyMapper,
             final Supplier<? extends Map<K, List<T>>> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, V> EntryStream<K, List<V>> groupByToEntry(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            Supplier<? extends Map<K, List<U>>> mapFactory);
+    public abstract <K, V> EntryStream<K, List<V>> groupByToEntry(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
+            Supplier<? extends Map<K, List<V>>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
+    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
-    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream,
             final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream);
+    public abstract <K, V, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
 
     @ParallelSupported
-    public abstract <K, U, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
+    public abstract <K, V, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory);
 
     @ParallelSupported
-    public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, V> EntryStream<K, V> groupByToEntry(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> groupByToEntry(final Function<? super T, ? extends K> classifier,
+    public abstract <K, V> EntryStream<K, V> groupByToEntry(final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends Map<K, V>> mapFactory);
 
     /**
@@ -504,8 +616,8 @@ public abstract class Stream<T>
     public abstract <A, D> EntryStream<Boolean, D> partitionByToEntry(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
     @ParallelSupported
-    public <K> EntryStream<K, Integer> countByToEntry(final Function<? super T, ? extends K> classifier) {
-        return groupByToEntry(classifier, Collectors.countingInt());
+    public <K> EntryStream<K, Integer> countByToEntry(final Function<? super T, ? extends K> keyMapper) {
+        return groupByToEntry(keyMapper, Collectors.countingInt());
     }
 
     @SequentialOnly
@@ -540,6 +652,9 @@ public abstract class Stream<T>
     public abstract Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction);
 
     @SequentialOnly
+    public abstract <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final R init, final BiFunction<R, ? super T, R> op);
+
+    @SequentialOnly
     public abstract <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
             final BiConsumer<R, ? super T> accumulator);
 
@@ -570,9 +685,9 @@ public abstract class Stream<T>
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -598,9 +713,9 @@ public abstract class Stream<T>
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -618,24 +733,24 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      *
-     * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
+     * @param init the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
      * It will be ignored if this stream is empty and won't be the first element of the returned stream.
      * 
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator);
+    public abstract <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator);
 
     /**
      * 
-     * @param seed
+     * @param init
      * @param accumulator
-     * @param seedIncluded
+     * @param initIncluded
      * @return
      */
     @SequentialOnly
-    public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator, final boolean seedIncluded);
+    public abstract <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator, final boolean initIncluded);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -890,6 +1005,86 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract <A, R> Stream<R> window(Duration duration, long incrementInMillis, LongSupplier startTime, Collector<? super T, A, R> collector);
 
+    /** 
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @return
+     * @see #window(int, Duration, LongSupplier, Supplier)
+     * @see Fn#window(int, Duration, LongSupplier, Supplier)
+     */
+    @SequentialOnly
+    public abstract Stream<Stream<T>> window(int maxWindowSize, Duration maxDuration);
+
+    /**
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @return
+     * @see #window(int, Duration, LongSupplier, Supplier)
+     * @see Fn#window(int, Duration, LongSupplier, Supplier)
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract Stream<Stream<T>> window(int maxWindowSize, Duration maxDuration, LongSupplier startTime);
+
+    /**
+     * 
+     * @param maxWindowSize 
+     * @param maxDuration
+     * @param collectionSupplier
+     * @return
+     * @see #window(int, Duration, LongSupplier, Supplier)
+     * @see Fn#window(int, Duration, LongSupplier, Supplier)
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(int maxWindowSize, Duration maxDuration, Supplier<C> collectionSupplier);
+
+    /**
+     * Split this stream at where {@code maxWindowSize} or {@code maxDuration} reaches first.
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     * @see #window(int, Duration, LongSupplier, Supplier)
+     * @see Fn#window(int, Duration, LongSupplier, Supplier)
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <C extends Collection<T>> Stream<C> window(int maxWindowSize, Duration maxDuration, LongSupplier startTime, Supplier<C> collectionSupplier);
+
+    /**
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param collector
+     * @return
+     * @see #window(int, Duration, LongSupplier, Collector)
+     * @see Fn#window(int, Duration, LongSupplier, Collector)
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(int maxWindowSize, Duration maxDuration, Collector<? super T, A, R> collector);
+
+    /**
+     * Split this stream at where {@code maxWindowSize} or {@code maxDuration} reaches first.
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #window(Duration, long, LongSupplier, Collector)
+     * @see Fn#window(int, Duration, LongSupplier, Collector)
+     * @see #sliding(int, int, Collector)
+     */
+    @SequentialOnly
+    public abstract <A, R> Stream<R> window(int maxWindowSize, Duration maxDuration, LongSupplier startTime, Collector<? super T, A, R> collector);
+
     /**
      * <code>Stream.of(1).intersperse(9) --> [1]</code>
      * <code>Stream.of(1, 2, 3).intersperse(9) --> [1, 9, 2, 9, 3]</code>
@@ -917,26 +1112,26 @@ public abstract class Stream<T>
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code> 
+     * Distinct by the value mapped from <code>keyMapper</code> 
      * 
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     @ParallelSupported
-    public abstract Stream<T> distinctBy(Function<? super T, ?> keyExtractor);
+    public abstract Stream<T> distinctBy(Function<? super T, ?> keyMapper);
 
     /**
      * Distinct and filter by occurrences.
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param occurrencesFilter
      * @return
      */
-    public <K> Stream<T> distinctBy(final Function<? super T, K> keyExtractor, final Predicate<? super Long> occurrencesFilter) {
+    public <K> Stream<T> distinctBy(final Function<? super T, K> keyMapper, final Predicate<? super Long> occurrencesFilter) {
         final Supplier<? extends Map<Keyed<K, T>, Long>> supplier = isParallel() ? Suppliers.<Keyed<K, T>, Long> ofConcurrentHashMap()
                 : Suppliers.<Keyed<K, T>, Long> ofLinkedHashMap();
 
-        return groupBy(Fn.<K, T> keyed(keyExtractor), Collectors.counting(), supplier).filter(Fn.<Keyed<K, T>, Long> testByValue(occurrencesFilter))
+        return groupBy(Fn.<K, T> keyed(keyMapper), Collectors.counting(), supplier).filter(Fn.<Keyed<K, T>, Long> testByValue(occurrencesFilter))
                 .map(Fn.<T, K, Long> kk());
     }
 
@@ -967,19 +1162,22 @@ public abstract class Stream<T>
 
     @SuppressWarnings("rawtypes")
     @ParallelSupported
-    public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyExtractor);
+    public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyMapper);
 
     @ParallelSupported
-    public abstract Stream<T> sortedByInt(ToIntFunction<? super T> keyExtractor);
+    public abstract Stream<T> sortedByInt(ToIntFunction<? super T> keyMapper);
 
     @ParallelSupported
-    public abstract Stream<T> sortedByLong(ToLongFunction<? super T> keyExtractor);
+    public abstract Stream<T> sortedByLong(ToLongFunction<? super T> keyMapper);
 
     @ParallelSupported
-    public abstract Stream<T> sortedByDouble(ToDoubleFunction<? super T> keyExtractor);
+    public abstract Stream<T> sortedByDouble(ToDoubleFunction<? super T> keyMapper);
 
     @ParallelSupported
     public abstract <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E;
+
+    @ParallelSupported
+    public abstract <E extends Exception, E2 extends Exception> void forEach(Try.Consumer<? super T, E> action, Try.Runnable<E2> onComplete) throws E, E2;
 
     @ParallelSupported
     public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E;
@@ -1017,6 +1215,9 @@ public abstract class Stream<T>
     public abstract <E extends Exception> boolean noneMatch(Try.Predicate<? super T, E> predicate) throws E;
 
     @ParallelSupported
+    public abstract <E extends Exception> boolean nMatch(long atLeast, long atMost, Try.Predicate<? super T, E> predicate) throws E;
+
+    @ParallelSupported
     public abstract <E extends Exception> Optional<T> findFirst(Try.Predicate<? super T, E> predicate) throws E;
 
     @ParallelSupported
@@ -1030,13 +1231,13 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param seed
+     * @param init
      * @param predicateForFirst
      * @param predicateForLast
      * @return
      */
     @SequentialOnly
-    public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U seed,
+    public abstract <U, E extends Exception, E2 extends Exception> Optional<T> findFirstOrLast(final U init,
             final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
     /**
@@ -1066,67 +1267,67 @@ public abstract class Stream<T>
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
-        return ImmutableMap.of(toMap(keyExtractor, valueMapper));
+    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
+        return ImmutableMap.of(toMap(keyMapper, valueMapper));
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+    public <K, V> ImmutableMap<K, V> toImmutableMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction) {
-        return ImmutableMap.of(toMap(keyExtractor, valueMapper, mergeFunction));
+        return ImmutableMap.of(toMap(keyMapper, valueMapper, mergeFunction));
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
     @ParallelSupported
-    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
@@ -1134,46 +1335,46 @@ public abstract class Stream<T>
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     @ParallelSupported
-    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
     @ParallelSupported
-    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
+    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @param mapFactory
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     @ParallelSupported
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param downstream
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
     @ParallelSupported
-    public abstract <K, U, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            final Collector<? super U, A, D> downstream);
+    public abstract <K, V, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
+            final Collector<? super V, A, D> downstream);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param downstream
      * @param mapFactory
@@ -1181,42 +1382,260 @@ public abstract class Stream<T>
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory);
+    public abstract <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    @ParallelSupported
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    @ParallelSupported
+    public abstract <K, V> Map<K, V> toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    @ParallelSupported
+    public abstract <K, V, A, D> Map<K, D> toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMapp(Function, Function)
+     */
+    @ParallelSupported
+    public abstract <K, V> Map<K, V> toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMapp(Function, Function, BinaryOperator)
+     */
+    @ParallelSupported
+    public abstract <K, V> Map<K, V> toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMapp(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, V>> M toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMapp(Function, Function, BinaryOperator, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, V>> M toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    @ParallelSupported
+    public abstract <K, V, A, D> Map<K, D> toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, A, D, M extends Map<K, D>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
      * @return
      * @see Collectors#groupingBy(Function)
      */
     @ParallelSupported
-    public abstract <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> classifier);
+    public abstract <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> keyMapper);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param mapFactory
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, M extends Map<K, List<T>>> M groupTo(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory);
+    public abstract <K, M extends Map<K, List<T>>> M groupTo(final Function<? super T, ? extends K> keyMapper, final Supplier<M> mapFactory);
 
     @ParallelSupported
-    public abstract <K, U> Map<K, List<U>> groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, V> Map<K, List<V>> groupTo(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, V, M extends Map<K, List<V>>> M groupTo(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    @ParallelSupported
+    public abstract <K> Map<K, List<T>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, M extends Map<K, List<T>>> M flatGroupTo(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final Supplier<M> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V> Map<K, List<V>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, List<V>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    @ParallelSupported
+    public abstract <K> Map<K, List<T>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, M extends Map<K, List<T>>> M flattGroupTo(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final Supplier<M> mapFactory);
+
+    @ParallelSupported
+    public abstract <K, V> Map<K, List<V>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper);
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    @ParallelSupported
+    public abstract <K, V, M extends Map<K, List<V>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -1239,45 +1658,44 @@ public abstract class Stream<T>
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor);
+    public abstract <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Supplier<M> mapFactory);
+    public abstract <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
     @ParallelSupported
-    public abstract <K, U> ListMultimap<K, U> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, V> ListMultimap<K, V> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @ParallelSupported
-    public abstract <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends V> valueMapper, Supplier<M> mapFactory);
 
     @SequentialOnly
     public abstract Matrix<T> toMatrix(Class<T> type);
@@ -1366,8 +1784,8 @@ public abstract class Stream<T>
 
     @SuppressWarnings("rawtypes")
     @ParallelSupported
-    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
-        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyMapper) {
+        final Comparator<? super T> comparator = Fn.comparingBy(keyMapper);
 
         return min(comparator);
     }
@@ -1377,8 +1795,8 @@ public abstract class Stream<T>
 
     @SuppressWarnings("rawtypes")
     @ParallelSupported
-    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
-        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyMapper) {
+        final Comparator<? super T> comparator = Fn.comparingBy(keyMapper);
 
         return max(comparator);
     }
@@ -1667,7 +2085,7 @@ public abstract class Stream<T>
     public abstract Stream<T> append(Collection<? extends T> c);
 
     @SequentialOnly
-    public abstract Stream<T> appendAll(Collection<? extends Collection<? extends T>> cs);
+    public abstract Stream<T> appendAlll(Collection<? extends Collection<? extends T>> cs);
 
     @SafeVarargs
     @SequentialOnly
@@ -1679,7 +2097,16 @@ public abstract class Stream<T>
     public abstract Stream<T> prepend(Collection<? extends T> c);
 
     @SequentialOnly
-    public abstract Stream<T> prependAll(Collection<? extends Collection<? extends T>> cs);
+    public abstract Stream<T> prependAlll(Collection<? extends Collection<? extends T>> cs);
+
+    @SafeVarargs
+    @SequentialOnly
+    public final Stream<T> appendIfEmpty(T... a) {
+        return appendIfEmpty(Arrays.asList(a));
+    }
+
+    @SequentialOnly
+    public abstract Stream<T> appendIfEmpty(Collection<? extends T> c);
 
     //    /**
     //     * Returns a reusable stream which can be repeatedly used.
@@ -2833,21 +3260,21 @@ public abstract class Stream<T>
 
     /**
      * Returns a sequential ordered {@code Stream} produced by iterative
-     * application of a function {@code f} to an initial element {@code seed},
-     * producing a {@code Stream} consisting of {@code seed}, {@code f(seed)},
-     * {@code f(f(seed))}, etc.
+     * application of a function {@code f} to an initial element {@code init},
+     * producing a {@code Stream} consisting of {@code init}, {@code f(init)},
+     * {@code f(f(init))}, etc.
      *
      * <p>The first element (position {@code 0}) in the {@code Stream} will be
-     * the provided {@code seed}.  For {@code n > 0}, the element at position
+     * the provided {@code init}.  For {@code n > 0}, the element at position
      * {@code n}, will be the result of applying the function {@code f} to the
      * element at position {@code n - 1}.
      * 
-     * @param seed
+     * @param init
      * @param hasNext
      * @param f
      * @return
      */
-    public static <T> Stream<T> iterate(final T seed, final BooleanSupplier hasNext, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T init, final BooleanSupplier hasNext, final UnaryOperator<T> f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -2871,19 +3298,19 @@ public abstract class Stream<T>
                 }
 
                 hasNextVal = false;
-                return t = (t == NONE) ? seed : f.apply(t);
+                return t = (t == NONE) ? init : f.apply(t);
             }
         });
     }
 
     /**
      * 
-     * @param seed
-     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param init
+     * @param hasNext test if has next by hasNext.test(init) for first time and hasNext.test(f.apply(previous)) for remaining.
      * @param f
      * @return
      */
-    public static <T> Stream<T> iterate(final T seed, final Predicate<T> hasNext, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T init, final Predicate<T> hasNext, final UnaryOperator<T> f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -2896,7 +3323,7 @@ public abstract class Stream<T>
             @Override
             public boolean hasNext() {
                 if (hasNextVal == false && hasMore) {
-                    hasNextVal = hasNext.test((cur = (t == NONE ? seed : f.apply(t))));
+                    hasNextVal = hasNext.test((cur = (t == NONE ? init : f.apply(t))));
 
                     if (hasNextVal == false) {
                         hasMore = false;
@@ -2920,7 +3347,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T init, final UnaryOperator<T> f) {
         N.checkArgNotNull(f);
 
         return of(new ObjIteratorEx<T>() {
@@ -2933,7 +3360,7 @@ public abstract class Stream<T>
 
             @Override
             public T next() {
-                return t = t == NONE ? seed : f.apply(t);
+                return t = t == NONE ? init : f.apply(t);
             }
         });
     }

@@ -1430,45 +1430,45 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         return multiset;
     }
 
-    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyExtractor,
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyMapper,
             Try.LongFunction<? extends V, E2> valueMapper) throws E, E2 {
         final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyExtractor,
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyMapper,
             Try.LongFunction<? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
         final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyExtractor,
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyMapper,
             Try.LongFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
         final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyExtractor,
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyMapper,
             Try.LongFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, IntFunction<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.apply(size);
 
         for (int i = 0; i < size; i++) {
-            Fn.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+            Fn.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
         }
 
         return result;
     }
 
-    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.LongFunction<? extends K, E> classifier, Collector<Long, A, D> downstream) throws E {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.LongFunction<? extends K, E> keyMapper, Collector<Long, A, D> downstream) throws E {
         final IntFunction<Map<K, D>> mapFactory = Fn.Factory.ofMap();
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, downstream, mapFactory);
     }
 
-    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.LongFunction<? extends K, E> classifier,
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.LongFunction<? extends K, E> keyMapper,
             final Collector<Long, A, D> downstream, final IntFunction<M> mapFactory) throws E {
         final M result = mapFactory.apply(size);
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1478,7 +1478,7 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         A v = null;
 
         for (int i = 0; i < size; i++) {
-            key = N.checkArgNotNull(classifier.apply(elementData[i]), "element cannot be mapped to a null key");
+            key = N.checkArgNotNull(keyMapper.apply(elementData[i]), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {

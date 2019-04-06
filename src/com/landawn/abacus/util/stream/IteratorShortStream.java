@@ -1089,7 +1089,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1099,7 +1099,7 @@ class IteratorShortStream extends AbstractShortStream {
 
             while (elements.hasNext()) {
                 element = elements.nextShort();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -1109,7 +1109,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> keyMapper, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1124,7 +1124,7 @@ class IteratorShortStream extends AbstractShortStream {
 
             while (elements.hasNext()) {
                 element = elements.nextShort();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1486,6 +1486,15 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     ShortIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public ShortStream appendIfEmpty(final Supplier<ShortStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

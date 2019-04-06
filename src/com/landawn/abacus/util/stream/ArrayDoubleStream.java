@@ -1363,7 +1363,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1371,7 +1371,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -1381,7 +1381,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1394,7 +1394,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1824,13 +1824,24 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public DoubleStream appendIfEmpty(final Supplier<DoubleStream> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
+    }
+
+    @Override
     public DoubleStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(),
+                closeHandlers);
     }
 
     @Override
     public DoubleStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

@@ -396,11 +396,11 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator) {
+    public ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator) {
         final ByteIteratorEx iter = iteratorEx();
 
         return newStream(new ByteIteratorEx() {
-            private byte res = seed;
+            private byte res = init;
 
             @Override
             public boolean hasNext() {
@@ -415,16 +415,16 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator, final boolean seedIncluded) {
-        if (seedIncluded == false) {
-            return scan(seed, accumulator);
+    public ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator, final boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
         }
 
         final ByteIteratorEx iter = iteratorEx();
 
         return newStream(new ByteIteratorEx() {
             private boolean isFirst = true;
-            private byte res = seed;
+            private byte res = init;
 
             @Override
             public boolean hasNext() {
@@ -435,7 +435,7 @@ abstract class AbstractByteStream extends ByteStream {
             public byte nextByte() {
                 if (isFirst) {
                     isFirst = false;
-                    return seed;
+                    return init;
                 }
 
                 return (res = accumulator.apply(res, iter.nextByte()));
@@ -874,31 +874,31 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper) {
+    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
+    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> keyMapper, Collector<Byte, A, D> downstream) {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, downstream, mapFactory);
     }
 
     @Override

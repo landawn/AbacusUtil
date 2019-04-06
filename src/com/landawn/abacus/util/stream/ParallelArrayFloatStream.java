@@ -78,6 +78,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream filter(final FloatPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.filter(predicate);
         }
@@ -94,6 +96,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream takeWhile(final FloatPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.takeWhile(predicate);
         }
@@ -110,6 +114,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream dropWhile(final FloatPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.dropWhile(predicate);
         }
@@ -126,6 +132,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream map(final FloatUnaryOperator mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.map(mapper);
         }
@@ -142,6 +150,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public IntStream mapToInt(final FloatToIntFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToInt(mapper);
         }
@@ -158,6 +168,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public LongStream mapToLong(final FloatToLongFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToLong(mapper);
         }
@@ -174,6 +186,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public DoubleStream mapToDouble(final FloatToDoubleFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToDouble(mapper);
         }
@@ -190,6 +204,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <U> Stream<U> mapToObj(final FloatFunction<? extends U> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.mapToObj(mapper);
         }
@@ -204,6 +220,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream flatMap(final FloatFunction<? extends FloatStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorFloatStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -220,6 +238,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public IntStream flatMapToInt(final FloatFunction<? extends IntStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -236,6 +256,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public LongStream flatMapToLong(final FloatFunction<? extends LongStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -252,6 +274,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public DoubleStream flatMapToDouble(final FloatFunction<? extends DoubleStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -268,6 +292,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final FloatFunction<? extends Stream<T>> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -282,6 +308,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream peek(final FloatConsumer action) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.peek(action);
         }
@@ -298,6 +326,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             super.forEach(action);
             return;
@@ -366,16 +396,18 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(final FloatFunction<? extends K> keyExtractor, final FloatFunction<? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends V> valueMapper,
             final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+            return super.toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
-        final Function<? super Float, ? extends K> keyExtractor2 = new Function<Float, K>() {
+        final Function<? super Float, ? extends K> keyMapper2 = new Function<Float, K>() {
             @Override
             public K apply(Float value) {
-                return keyExtractor.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
@@ -386,28 +418,32 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         };
 
-        return boxed().toMap(keyExtractor2, valueMapper2, mergeFunction, mapFactory);
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return super.toMap(classifier, downstream, mapFactory);
+            return super.toMap(keyMapper, downstream, mapFactory);
         }
 
-        final Function<? super Float, ? extends K> classifier2 = new Function<Float, K>() {
+        final Function<? super Float, ? extends K> keyMapper2 = new Function<Float, K>() {
             @Override
             public K apply(Float value) {
-                return classifier.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
-        return boxed().toMap(classifier2, downstream, mapFactory);
+        return boxed().toMap(keyMapper2, downstream, mapFactory);
     }
 
     @Override
     public float reduce(final float identity, final FloatBinaryOperator op) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(identity, op);
         }
@@ -500,6 +536,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public OptionalFloat reduce(final FloatBinaryOperator accumulator) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.reduce(accumulator);
         }
@@ -609,6 +647,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjFloatConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
@@ -982,6 +1022,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.anyMatch(predicate);
         }
@@ -1059,6 +1101,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.allMatch(predicate);
         }
@@ -1136,6 +1180,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.noneMatch(predicate);
         }
@@ -1213,6 +1259,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findFirst(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findFirst(predicate);
         }
@@ -1305,6 +1353,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findLast(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findLast(predicate);
         }
@@ -1397,6 +1447,8 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
             return super.findAny(predicate);
         }

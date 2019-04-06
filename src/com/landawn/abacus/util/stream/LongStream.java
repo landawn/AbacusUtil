@@ -119,9 +119,9 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -143,15 +143,15 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
      * <p>Example:
      * <pre>
-     * seed:10
+     * init:10
      * accumulator: (a, b) -&gt; a + b
      * stream: [1, 2, 3, 4, 5]
      * result: [11, 13, 16, 20, 25]
@@ -160,24 +160,24 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * <br />
      * This method only run sequentially, even in parallel stream.
      *
-     * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
+     * @param init the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
      * It will be ignored if this stream is empty and won't be the first element of the returned stream.
      * 
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator);
+    public abstract LongStream scan(final long init, final LongBiFunction<Long> accumulator);
 
     /**
      * 
-     * @param seed
+     * @param init
      * @param accumulator
-     * @param seedIncluded
+     * @param initIncluded
      * @return
      */
     @SequentialOnly
-    public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator, final boolean seedIncluded);
+    public abstract LongStream scan(final long init, final LongBiFunction<Long> accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -203,63 +203,63 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, V> Map<K, V> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    public abstract <K, A, D> Map<K, D> toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream);
+    public abstract <K, A, D> Map<K, D> toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @param mapFactory
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory);
 
     public abstract LongMatrix toMatrix();
@@ -986,7 +986,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final long seed, final BooleanSupplier hasNext, final LongUnaryOperator f) {
+    public static LongStream iterate(final long init, final BooleanSupplier hasNext, final LongUnaryOperator f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -1014,7 +1014,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
                 if (isFirst) {
                     isFirst = false;
-                    t = seed;
+                    t = init;
                 } else {
                     t = f.applyAsLong(t);
                 }
@@ -1026,12 +1026,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * 
-     * @param seed
-     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param init
+     * @param hasNext test if has next by hasNext.test(init) for first time and hasNext.test(f.apply(previous)) for remaining.
      * @param f
      * @return
      */
-    public static LongStream iterate(final long seed, final LongPredicate hasNext, final LongUnaryOperator f) {
+    public static LongStream iterate(final long init, final LongPredicate hasNext, final LongUnaryOperator f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -1047,7 +1047,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                 if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
-                        hasNextVal = hasNext.test(cur = seed);
+                        hasNextVal = hasNext.test(cur = init);
                     } else {
                         hasNextVal = hasNext.test(cur = f.applyAsLong(t));
                     }
@@ -1073,7 +1073,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final long seed, final LongUnaryOperator f) {
+    public static LongStream iterate(final long init, final LongUnaryOperator f) {
         N.checkArgNotNull(f);
 
         return new IteratorLongStream(new LongIteratorEx() {
@@ -1089,7 +1089,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             public long nextLong() {
                 if (isFirst) {
                     isFirst = false;
-                    t = seed;
+                    t = init;
                 } else {
                     t = f.applyAsLong(t);
                 }

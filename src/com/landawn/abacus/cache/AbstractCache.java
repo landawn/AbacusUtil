@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ContinuableFuture;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Properties;
+import com.landawn.abacus.util.u.Optional;
 
 /**
  * 
@@ -45,6 +45,11 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     }
 
     @Override
+    public Optional<V> get(K k) {
+        return Optional.ofNullable(gett(k));
+    }
+
+    @Override
     public boolean put(K key, V value) {
         return put(key, value, defaultLiveTime, defaultMaxIdleTime);
     }
@@ -55,6 +60,16 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
             @Override
             public Optional<V> call() throws Exception {
                 return get(k);
+            }
+        });
+    }
+
+    @Override
+    public ContinuableFuture<V> asyncGett(final K k) {
+        return asyncExecutor.execute(new Callable<V>() {
+            @Override
+            public V call() throws Exception {
+                return gett(k);
             }
         });
     }

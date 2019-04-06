@@ -86,6 +86,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream filter(final LongPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.filter(predicate);
         }
@@ -102,6 +104,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream takeWhile(final LongPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.takeWhile(predicate);
         }
@@ -118,6 +122,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream dropWhile(final LongPredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.dropWhile(predicate);
         }
@@ -134,6 +140,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream map(final LongUnaryOperator mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.map(mapper);
         }
@@ -150,6 +158,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public IntStream mapToInt(final LongToIntFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToInt(mapper);
         }
@@ -166,6 +176,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public FloatStream mapToFloat(final LongToFloatFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToFloat(mapper);
         }
@@ -182,6 +194,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public DoubleStream mapToDouble(final LongToDoubleFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToDouble(mapper);
         }
@@ -198,6 +212,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <U> Stream<U> mapToObj(final LongFunction<? extends U> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToObj(mapper);
         }
@@ -212,6 +228,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream flatMap(final LongFunction<? extends LongStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorLongStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -228,6 +246,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public IntStream flatMapToInt(final LongFunction<? extends IntStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -244,6 +264,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public FloatStream flatMapToFloat(final LongFunction<? extends FloatStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorFloatStream(sequential().flatMapToFloat(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -260,6 +282,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public DoubleStream flatMapToDouble(final LongFunction<? extends DoubleStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -276,6 +300,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final LongFunction<? extends Stream<T>> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -290,6 +316,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public LongStream peek(final LongConsumer action) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.peek(action);
         }
@@ -306,6 +334,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.forEach(action);
             return;
@@ -347,16 +377,18 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(final LongFunction<? extends K> keyExtractor, final LongFunction<? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends V> valueMapper,
             final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+            return super.toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
-        final Function<? super Long, ? extends K> keyExtractor2 = new Function<Long, K>() {
+        final Function<? super Long, ? extends K> keyMapper2 = new Function<Long, K>() {
             @Override
             public K apply(Long value) {
-                return keyExtractor.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
@@ -367,28 +399,32 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }
         };
 
-        return boxed().toMap(keyExtractor2, valueMapper2, mergeFunction, mapFactory);
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(classifier, downstream, mapFactory);
+            return super.toMap(keyMapper, downstream, mapFactory);
         }
 
-        final Function<? super Long, ? extends K> classifier2 = new Function<Long, K>() {
+        final Function<? super Long, ? extends K> keyMapper2 = new Function<Long, K>() {
             @Override
             public K apply(Long value) {
-                return classifier.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
-        return boxed().toMap(classifier2, downstream, mapFactory);
+        return boxed().toMap(keyMapper2, downstream, mapFactory);
     }
 
     @Override
     public long reduce(final long identity, final LongBinaryOperator op) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(identity, op);
         }
@@ -450,6 +486,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public OptionalLong reduce(final LongBinaryOperator accumulator) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(accumulator);
         }
@@ -524,6 +562,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjLongConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
@@ -585,6 +625,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.anyMatch(predicate);
         }
@@ -632,6 +674,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.allMatch(predicate);
         }
@@ -679,6 +723,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.noneMatch(predicate);
         }
@@ -726,6 +772,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findFirst(predicate);
         }
@@ -780,6 +828,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findLast(predicate);
         }
@@ -832,6 +882,8 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findAny(predicate);
         }

@@ -303,7 +303,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T seed, final Try.BooleanSupplier<? extends E> hasNext,
+    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T init, final Try.BooleanSupplier<? extends E> hasNext,
             final Try.UnaryOperator<T, ? extends E> f) {
         N.checkArgNotNull(hasNext, "hasNext");
         N.checkArgNotNull(f, "f");
@@ -329,12 +329,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 }
 
                 hasNextVal = false;
-                return t = (t == NONE) ? seed : f.apply(t);
+                return t = (t == NONE) ? init : f.apply(t);
             }
         });
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T seed, final Try.Predicate<T, ? extends E> hasNext,
+    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T init, final Try.Predicate<T, ? extends E> hasNext,
             final Try.UnaryOperator<T, ? extends E> f) {
         N.checkArgNotNull(hasNext, "hasNext");
         N.checkArgNotNull(f, "f");
@@ -349,7 +349,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public boolean hasNext() throws E {
                 if (hasNextVal == false && hasMore) {
-                    hasNextVal = hasNext.test((cur = (t == NONE ? seed : f.apply(t))));
+                    hasNextVal = hasNext.test((cur = (t == NONE ? init : f.apply(t))));
 
                     if (hasNextVal == false) {
                         hasMore = false;
@@ -373,7 +373,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
-    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T seed, final Try.UnaryOperator<T, ? extends E> f) {
+    public static <T, E extends Exception> ExceptionalStream<T, E> iterate(final T init, final Try.UnaryOperator<T, ? extends E> f) {
         N.checkArgNotNull(f, "f");
 
         return newStream(new ExceptionalIterator<T, E>() {
@@ -387,7 +387,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             @Override
             public T next() throws E {
-                return t = t == NONE ? seed : f.apply(t);
+                return t = t == NONE ? init : f.apply(t);
             }
         });
     }
@@ -994,20 +994,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code> 
+     * Distinct by the value mapped from <code>keyMapper</code> 
      * 
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public ExceptionalStream<T, E> distinctBy(final Try.Function<? super T, ?, ? extends E> keyExtractor) {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+    public ExceptionalStream<T, E> distinctBy(final Try.Function<? super T, ?, ? extends E> keyMapper) {
+        checkArgNotNull(keyMapper, "keyMapper");
 
         final Set<Object> set = new HashSet<>();
 
         return filter(new Try.Predicate<T, E>() {
             @Override
             public boolean test(T value) throws E {
-                return set.add(hashKey(keyExtractor.apply(value)));
+                return set.add(hashKey(keyMapper.apply(value)));
             }
         });
     }
@@ -1110,47 +1110,47 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @return
      */
-    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier) {
-        return groupBy(classifier, Suppliers.<K, List<T>> ofMap());
+    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper) {
+        return groupBy(keyMapper, Suppliers.<K, List<T>> ofMap());
     }
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param mapFactory
      * @return
      */
-    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+    public <K> ExceptionalStream<Map.Entry<K, List<T>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Supplier<? extends Map<K, List<T>>> mapFactory) {
-        return groupBy(classifier, Fn.FN.<T, E> identity(), mapFactory);
+        return groupBy(keyMapper, Fn.FN.<T, E> identity(), mapFactory);
     }
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public <K, V> ExceptionalStream<Map.Entry<K, List<V>>, E> groupBy(Try.Function<? super T, ? extends K, ? extends E> classifier,
+    public <K, V> ExceptionalStream<Map.Entry<K, List<V>>, E> groupBy(Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             Try.Function<? super T, ? extends V, E> valueMapper) {
-        return groupBy(classifier, valueMapper, Suppliers.<K, List<V>> ofMap());
+        return groupBy(keyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
     }
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public <K, V> ExceptionalStream<Map.Entry<K, List<V>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+    public <K, V> ExceptionalStream<Map.Entry<K, List<V>>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<? extends Map<K, List<V>>> mapFactory) {
-        checkArgNotNull(classifier, "classifier");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(mapFactory, "mapFactory");
 
@@ -1171,21 +1171,21 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             private void init() throws E {
                 if (iter == null) {
-                    iter = ExceptionalStream.this.groupTo(classifier, valueMapper, mapFactory).entrySet().iterator();
+                    iter = ExceptionalStream.this.groupTo(keyMapper, valueMapper, mapFactory).entrySet().iterator();
                 }
             }
         }, closeHandlers);
 
     }
 
-    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, Try.BinaryOperator<V, ? extends E> mergeFunction) {
-        return groupBy(classifier, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+        return groupBy(keyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
@@ -1194,10 +1194,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see {@link Fn.FN#replacingMerger()}
      * @see {@link Fn.FN#ignoringMerger()}
      */
-    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> classifier,
+    public <K, V> ExceptionalStream<Map.Entry<K, V>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<? extends Map<K, V>> mapFactory) {
-        checkArgNotNull(classifier, "classifier");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(mergeFunction, "mergeFunction");
         checkArgNotNull(mapFactory, "mapFactory");
@@ -1219,31 +1219,31 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             private void init() throws E {
                 if (iter == null) {
-                    iter = ExceptionalStream.this.toMap(classifier, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+                    iter = ExceptionalStream.this.toMap(keyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
                 }
             }
         }, closeHandlers);
     }
 
-    public <K, A, D> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, A, D> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Collector<? super T, A, D> downstream) throws E {
-        return groupBy(keyExtractor, downstream, Suppliers.<K, D> ofMap());
+        return groupBy(keyMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
-    public <K, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) throws E {
-        return groupBy(keyExtractor, Fn.FN.<T, E> identity(), downstream, mapFactory);
+        return groupBy(keyMapper, Fn.FN.<T, E> identity(), downstream, mapFactory);
     }
 
-    public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream) throws E {
-        return groupBy(keyExtractor, valueMapper, downstream, Suppliers.<K, D> ofMap());
+        return groupBy(keyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
-    public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, A, D, M extends Map<K, D>> ExceptionalStream<Map.Entry<K, D>, E> groupBy(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory)
             throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(downstream, "downstream");
         checkArgNotNull(mapFactory, "mapFactory");
@@ -1265,7 +1265,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             private void init() throws E {
                 if (iter == null) {
-                    iter = ExceptionalStream.this.toMap(keyExtractor, valueMapper, downstream, mapFactory).entrySet().iterator();
+                    iter = ExceptionalStream.this.toMap(keyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
                 }
             }
         }, closeHandlers);
@@ -1400,6 +1400,39 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, closeHandlers);
     }
 
+    public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final R init,
+            final Try.BiFunction<R, ? super T, R, ? extends E> op) {
+        checkArgNotNull(collapsible, "collapsible");
+        checkArgNotNull(op, "accumulator");
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() throws E {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                R res = op.apply(init, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        res = op.apply(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, closeHandlers);
+    }
+
     public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final Try.Supplier<R, E> supplier,
             final Try.BiConsumer<R, ? super T, ? extends E> accumulator) {
         checkArgNotNull(collapsible, "collapsible");
@@ -1473,12 +1506,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, closeHandlers);
     }
 
+    public ExceptionalStream<T, E> prepend(ExceptionalStream<T, E> s) {
+        return concat(s, this);
+    }
+
     public ExceptionalStream<T, E> append(ExceptionalStream<T, E> s) {
         return concat(this, s);
     }
 
-    public ExceptionalStream<T, E> prepend(ExceptionalStream<T, E> s) {
-        return concat(s, this);
+    public ExceptionalStream<T, E> appendIfEmpty(Supplier<ExceptionalStream<T, E>> supplier) throws E {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     public ExceptionalStream<T, E> peek(final Try.Consumer<? super T, ? extends E> action) {
@@ -1931,6 +1972,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, sorted, comparator, closeHandlers);
     }
 
+    public ExceptionalStream<T, E> slice(final long from, final long to) {
+        checkArgNotNegative(from, "from");
+        checkArgNotNegative(to, "to");
+        checkArgument(to >= from, "'to' can't be less than `from`");
+
+        return from == 0 ? limit(to) : skip(from).limit(to - from);
+    }
+
     public ExceptionalStream<T, E> sorted() {
         return sorted(Comparators.NATURAL_ORDER);
     }
@@ -1957,11 +2006,11 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     }
 
     @SuppressWarnings("rawtypes")
-    public ExceptionalStream<T, E> sortedBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public ExceptionalStream<T, E> sortedBy(final Function<? super T, ? extends Comparable> keyMapper) {
         final Comparator<? super T> comparator = new Comparator<T>() {
             @Override
             public int compare(T o1, T o2) {
-                return N.compare(keyExtractor.apply(o1), keyExtractor.apply(o2));
+                return N.compare(keyMapper.apply(o1), keyMapper.apply(o2));
             }
         };
 
@@ -2069,12 +2118,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     @SuppressWarnings("rawtypes")
 
-    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyMapper) throws E {
+        checkArgNotNull(keyMapper, "keyMapper");
         assertNotClosed();
 
         try {
-            final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+            final Comparator<? super T> comparator = Fn.comparingBy(keyMapper);
 
             return min(comparator);
         } finally {
@@ -2118,12 +2167,12 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     @SuppressWarnings("rawtypes")
 
-    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyMapper) throws E {
+        checkArgNotNull(keyMapper, "keyMapper");
         assertNotClosed();
 
         try {
-            final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+            final Comparator<? super T> comparator = Fn.comparingBy(keyMapper);
 
             return max(comparator);
         } finally {
@@ -2337,7 +2386,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @throws E
@@ -2346,14 +2395,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see {@link Fn.FN#replacingMerger()}
      * @see {@link Fn.FN#ignoringMerger()}
      */
-    public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper) throws E, IllegalStateException {
-        return toMap(keyExtractor, valueMapper, Suppliers.<K, V> ofMap());
+        return toMap(keyMapper, valueMapper, Suppliers.<K, V> ofMap());
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
@@ -2363,14 +2412,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see {@link Fn.FN#replacingMerger()}
      * @see {@link Fn.FN#ignoringMerger()}
      */
-    public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Supplier<M> mapFactory) throws E, IllegalStateException {
-        return toMap(keyExtractor, valueMapper, Fn.FN.<V, E> throwingMerger(), mapFactory);
+        return toMap(keyMapper, valueMapper, Fn.FN.<V, E> throwingMerger(), mapFactory);
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @return
@@ -2379,14 +2428,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see {@link Fn.FN#replacingMerger()}
      * @see {@link Fn.FN#ignoringMerger()}
      */
-    public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V> Map<K, V> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction) throws E {
-        return toMap(keyExtractor, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+        return toMap(keyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
@@ -2396,10 +2445,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @see {@link Fn.FN#replacingMerger()}
      * @see {@link Fn.FN#ignoringMerger()}
      */
-    public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, M extends Map<K, V>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Try.BinaryOperator<V, ? extends E> mergeFunction,
             final Supplier<M> mapFactory) throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(mergeFunction, "mergeFunction");
         checkArgNotNull(mapFactory, "mapFactory");
@@ -2411,7 +2460,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             while (elements.hasNext()) {
                 next = elements.next();
-                Fn.merge(result, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
+                Fn.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -2422,55 +2471,55 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param downstream
      * @return
      * @throws E 
      */
-    public <K, A, D> Map<K, D> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor, final Collector<? super T, A, D> downstream)
+    public <K, A, D> Map<K, D> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper, final Collector<? super T, A, D> downstream)
             throws E {
-        return toMap(keyExtractor, downstream, Suppliers.<K, D> ofMap());
+        return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param downstream
      * @param mapFactory
      * @return
      * @throws E 
      */
-    public <K, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) throws E {
-        return toMap(keyExtractor, Fn.FN.<T, E> identity(), downstream, mapFactory);
+        return toMap(keyMapper, Fn.FN.<T, E> identity(), downstream, mapFactory);
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param downstream
      * @return
      * @throws E 
      */
-    public <K, V, A, D> Map<K, D> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, A, D> Map<K, D> toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream) throws E {
-        return toMap(keyExtractor, valueMapper, downstream, Suppliers.<K, D> ofMap());
+        return toMap(keyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param downstream
      * @param mapFactory
      * @return
      * @throws E 
      */
-    public <K, V, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, A, D, M extends Map<K, D>> M toMap(final Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             final Try.Function<? super T, ? extends V, ? extends E> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory)
             throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(downstream, "downstream");
         checkArgNotNull(mapFactory, "mapFactory");
@@ -2489,7 +2538,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             while (elements.hasNext()) {
                 next = elements.next();
-                key = keyExtractor.apply(next);
+                key = keyMapper.apply(next);
                 container = tmp.get(key);
 
                 if (container == null) {
@@ -2512,43 +2561,43 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @return
      * @see Collectors#groupingBy(Function)
      */
-    public <K> Map<K, List<T>> groupTo(Try.Function<? super T, ? extends K, ? extends E> classifier) throws E {
-        return groupTo(classifier, Suppliers.<K, List<T>> ofMap());
+    public <K> Map<K, List<T>> groupTo(Try.Function<? super T, ? extends K, ? extends E> keyMapper) throws E {
+        return groupTo(keyMapper, Suppliers.<K, List<T>> ofMap());
     }
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param mapFactory
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
-    public <K, M extends Map<K, List<T>>> M groupTo(final Try.Function<? super T, ? extends K, ? extends E> classifier, final Supplier<M> mapFactory) throws E {
+    public <K, M extends Map<K, List<T>>> M groupTo(final Try.Function<? super T, ? extends K, ? extends E> keyMapper, final Supplier<M> mapFactory) throws E {
         final Try.Function<T, T, E> valueMapper = Fn.FN.identity();
 
-        return groupTo(classifier, valueMapper, mapFactory);
+        return groupTo(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, V> Map<K, List<V>> groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V> Map<K, List<V>> groupTo(Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             Try.Function<? super T, ? extends V, ? extends E> valueMapper) throws E {
-        return groupTo(keyExtractor, valueMapper, Suppliers.<K, List<V>> ofMap());
+        return groupTo(keyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
     }
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public <K, V, M extends Map<K, List<V>>> M groupTo(Try.Function<? super T, ? extends K, ? extends E> keyExtractor,
+    public <K, V, M extends Map<K, List<V>>> M groupTo(Try.Function<? super T, ? extends K, ? extends E> keyMapper,
             Try.Function<? super T, ? extends V, ? extends E> valueMapper, Supplier<M> mapFactory) throws E {
-        checkArgNotNull(keyExtractor, "keyExtractor");
+        checkArgNotNull(keyMapper, "keyMapper");
         checkArgNotNull(valueMapper, "valueMapper");
         checkArgNotNull(mapFactory, "mapFactory");
         assertNotClosed();
@@ -2560,7 +2609,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
             while (elements.hasNext()) {
                 next = elements.next();
-                key = keyExtractor.apply(next);
+                key = keyMapper.apply(next);
 
                 if (result.containsKey(key) == false) {
                     result.put(key, new ArrayList<V>());
@@ -3283,6 +3332,20 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
 
         return obj;
+    }
+
+    private void checkArgument(boolean b, String errorMessage) {
+        if (!b) {
+            try {
+                N.checkArgument(b, errorMessage);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        }
     }
 
     private void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2) {

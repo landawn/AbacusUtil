@@ -1364,7 +1364,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1372,7 +1372,7 @@ class ArrayLongStream extends AbstractLongStream {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -1382,7 +1382,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1395,7 +1395,7 @@ class ArrayLongStream extends AbstractLongStream {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1939,13 +1939,24 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public LongStream appendIfEmpty(final Supplier<LongStream> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
+    }
+
+    @Override
     public LongStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(),
+                closeHandlers);
     }
 
     @Override
     public LongStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

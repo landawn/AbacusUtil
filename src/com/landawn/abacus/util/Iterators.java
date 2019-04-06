@@ -173,8 +173,8 @@ public final class Iterators {
         return c;
     }
 
-    public static <T, K, E extends Exception> Map<K, T> toMap(final Iterator<? extends T> iter, final Try.Function<? super T, K, E> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor);
+    public static <T, K, E extends Exception> Map<K, T> toMap(final Iterator<? extends T> iter, final Try.Function<? super T, K, E> keyMapper) throws E {
+        N.checkArgNotNull(keyMapper);
 
         if (iter == null) {
             return new HashMap<>();
@@ -185,15 +185,15 @@ public final class Iterators {
 
         while (iter.hasNext()) {
             e = iter.next();
-            result.put(keyExtractor.apply(e), e);
+            result.put(keyMapper.apply(e), e);
         }
 
         return result;
     }
 
     public static <T, K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(final Iterator<? extends T> iter,
-            final Try.Function<? super T, K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super T, K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
         if (iter == null) {
@@ -205,16 +205,16 @@ public final class Iterators {
 
         while (iter.hasNext()) {
             e = iter.next();
-            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
+            result.put(keyMapper.apply(e), valueExtractor.apply(e));
         }
 
         return result;
     }
 
     public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(final Iterator<? extends T> iter,
-            final Try.Function<? super T, K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier)
+            final Try.Function<? super T, K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier)
             throws E, E2 {
-        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
         if (iter == null) {
@@ -226,7 +226,7 @@ public final class Iterators {
 
         while (iter.hasNext()) {
             e = iter.next();
-            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
+            result.put(keyMapper.apply(e), valueExtractor.apply(e));
         }
 
         return result;
@@ -1942,24 +1942,24 @@ public final class Iterators {
         return Nullable.of(first);
     }
 
-    public static <T, U> ObjIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> supplier) {
+    public static <T, U> ObjIterator<T> generate(final U init, final Predicate<? super U> hasNext, final Function<? super U, T> supplier) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(supplier);
 
         return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
-                return hasNext.test(seed);
+                return hasNext.test(init);
             }
 
             @Override
             public T next() {
-                return supplier.apply(seed);
+                return supplier.apply(init);
             }
         };
     }
 
-    public static <T, U> ObjIterator<T> generate(final U seed, final BiPredicate<? super U, T> hasNext, final BiFunction<? super U, T, T> supplier) {
+    public static <T, U> ObjIterator<T> generate(final U init, final BiPredicate<? super U, T> hasNext, final BiFunction<? super U, T, T> supplier) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(supplier);
 
@@ -1968,12 +1968,12 @@ public final class Iterators {
 
             @Override
             public boolean hasNext() {
-                return hasNext.test(seed, prev);
+                return hasNext.test(init, prev);
             }
 
             @Override
             public T next() {
-                return (prev = supplier.apply(seed, prev));
+                return (prev = supplier.apply(init, prev));
             }
         };
     }

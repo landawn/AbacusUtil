@@ -555,16 +555,16 @@ public abstract class Observer<T> {
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @return
      */
-    public Observer<T> distinctBy(final Function<? super T, ?> keyExtractor) {
+    public Observer<T> distinctBy(final Function<? super T, ?> keyMapper) {
         dispatcher.append(new Dispatcher<Object>() {
             private Set<Object> set = new HashSet<>();
 
             @Override
             public void onNext(final Object param) {
-                if (downDispatcher != null && set.add(keyExtractor.apply((T) param))) { // onError if keyExtractor.apply throws exception?
+                if (downDispatcher != null && set.add(keyMapper.apply((T) param))) { // onError if keyMapper.apply throws exception?
                     downDispatcher.onNext(param);
                 }
             }

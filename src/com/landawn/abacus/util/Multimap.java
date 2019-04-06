@@ -141,12 +141,12 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>, X extends Exception> M from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyExtractor, final IntFunction<M> multimapSupplier) throws X {
+            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<M> multimapSupplier) throws X {
         final M multimap = multimapSupplier.apply(c == null ? 0 : c.size());
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                multimap.put(keyExtractor.apply(e), e);
+                multimap.put(keyMapper.apply(e), e);
             }
         }
 
@@ -154,13 +154,13 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <T, K, E, V extends Collection<E>, M extends Multimap<K, E, V>, X extends Exception, X2 extends Exception> M from(
-            final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyExtractor,
+            final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyMapper,
             final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<M> multimapSupplier) throws X, X2 {
         final M multimap = multimapSupplier.apply(c == null ? 0 : c.size());
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                multimap.put(keyExtractor.apply(e), valueExtractor.apply(e));
+                multimap.put(keyMapper.apply(e), valueExtractor.apply(e));
             }
         }
 

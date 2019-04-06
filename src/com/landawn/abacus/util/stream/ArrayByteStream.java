@@ -1049,7 +1049,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1057,7 +1057,7 @@ class ArrayByteStream extends AbstractByteStream {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -1067,7 +1067,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> keyMapper, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1080,7 +1080,7 @@ class ArrayByteStream extends AbstractByteStream {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1554,6 +1554,15 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     ByteIteratorEx iteratorEx() {
         return ByteIteratorEx.of(elements, fromIndex, toIndex);
+    }
+
+    @Override
+    public ByteStream appendIfEmpty(final Supplier<ByteStream> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

@@ -1283,7 +1283,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1293,7 +1293,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
             while (elements.hasNext()) {
                 element = elements.nextDouble();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -1303,7 +1303,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1318,7 +1318,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
             while (elements.hasNext()) {
                 element = elements.nextDouble();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1638,6 +1638,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     DoubleIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public DoubleStream appendIfEmpty(final Supplier<DoubleStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

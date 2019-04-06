@@ -18,8 +18,6 @@ import java.util.Set;
 
 import org.ehcache.Cache;
 
-import com.landawn.abacus.util.u.Optional;
-
 /**
  * TODO
  * 
@@ -39,12 +37,10 @@ public class Ehcache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Optional<V> get(K k) {
+    public V gett(K k) {
         assertNotClosed();
 
-        final V result = cacheImpl.get(k);
-
-        return result == null ? Optional.<V> empty() : Optional.of(result);
+        return cacheImpl.get(k);
     }
 
     @Override

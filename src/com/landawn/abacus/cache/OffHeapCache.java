@@ -39,7 +39,6 @@ import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.MoreExecutors;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Objectory;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Try;
 
 import sun.misc.Unsafe;
@@ -213,10 +212,10 @@ public class OffHeapCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Optional<V> get(K k) {
+    public V gett(K k) {
         final Wrapper<V> w = _pool.get(k);
 
-        return w == null ? Optional.<V> empty() : Optional.of(w.read());
+        return w == null ? null : w.read();
     }
 
     private static void copyFromMemory(final long startPtr, final byte[] bytes, int destOffset, int len) {

@@ -979,8 +979,8 @@ public final class N {
     }
 
     public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c,
-            final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super V, ? extends K, E> keyMapper) throws E {
+        N.checkArgNotNull(keyMapper);
 
         if (isNullOrEmpty(c)) {
             return new HashMap<>();
@@ -989,7 +989,7 @@ public final class N {
         final HashMap<K, V> result = new HashMap<>(N.initHashCapacity(c.size()));
 
         for (V v : c) {
-            result.put(keyExtractor.apply(v), v);
+            result.put(keyMapper.apply(v), v);
         }
 
         return result;
@@ -1013,8 +1013,8 @@ public final class N {
     }
 
     public static <K, V, E extends Exception> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c,
-            final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super V, ? extends K, E> keyMapper) throws E {
+        N.checkArgNotNull(keyMapper);
 
         if (isNullOrEmpty(c)) {
             return new LinkedHashMap<>();
@@ -1023,7 +1023,7 @@ public final class N {
         final LinkedHashMap<K, V> result = new LinkedHashMap<>(N.initHashCapacity(c.size()));
 
         for (V v : c) {
-            result.put(keyExtractor.apply(v), v);
+            result.put(keyMapper.apply(v), v);
         }
 
         return result;
@@ -17958,25 +17958,25 @@ public final class N {
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param a
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public static <T, E extends Exception> List<T> distinctBy(final T[] a, final Try.Function<? super T, ?, E> keyExtractor) throws E {
+    public static <T, E extends Exception> List<T> distinctBy(final T[] a, final Try.Function<? super T, ?, E> keyMapper) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
-        return distinctBy(a, 0, a.length, keyExtractor);
+        return distinctBy(a, 0, a.length, keyMapper);
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
@@ -17984,11 +17984,11 @@ public final class N {
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T, E extends Exception> List<T> distinctBy(final T[] a, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ?, E> keyExtractor) throws E {
+            final Try.Function<? super T, ?, E> keyMapper) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
 
         if (N.isNullOrEmpty(a)) {
@@ -17999,7 +17999,7 @@ public final class N {
         final Set<Object> set = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            if (set.add(hashKey(keyExtractor.apply(a[i])))) {
+            if (set.add(hashKey(keyMapper.apply(a[i])))) {
                 result.add(a[i]);
             }
         }
@@ -18008,25 +18008,25 @@ public final class N {
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param c
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final Try.Function<? super T, ?, E> keyExtractor) throws E {
+    public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final Try.Function<? super T, ?, E> keyMapper) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return distinctBy(c, 0, c.size(), keyExtractor);
+        return distinctBy(c, 0, c.size(), keyMapper);
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
@@ -18034,11 +18034,11 @@ public final class N {
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param keyExtractor don't change value of the input parameter.
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ?, E> keyExtractor) throws E {
+            final Try.Function<? super T, ?, E> keyMapper) throws E {
         checkFromToIndex(fromIndex, toIndex, size(c));
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -18055,7 +18055,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                if (set.add(hashKey(keyExtractor.apply(e)))) {
+                if (set.add(hashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
@@ -18069,7 +18069,7 @@ public final class N {
                     continue;
                 }
 
-                if (set.add(hashKey(keyExtractor.apply(e)))) {
+                if (set.add(hashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
@@ -28151,15 +28151,15 @@ public final class N {
     }
 
     /**
-     * Returns a {@code Nullable} with the value returned by {@code func.apply(seed)} or an empty {@code Nullable} if exception happens.
+     * Returns a {@code Nullable} with the value returned by {@code func.apply(init)} or an empty {@code Nullable} if exception happens.
      * 
-     * @param seed
+     * @param init
      * @param func
      * @return
      */
-    public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T seed, final Try.Function<T, R, E> func) {
+    public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T init, final Try.Function<T, R, E> func) {
         try {
-            return Nullable.of(func.apply(seed));
+            return Nullable.of(func.apply(init));
         } catch (Exception e) {
             return Nullable.<R> empty();
         }
@@ -28183,18 +28183,18 @@ public final class N {
     }
 
     /**
-     * Returns a {@code Nullable} with value returned by {@code func.apply(seed)} if {@code b} is {@code true}, 
+     * Returns a {@code Nullable} with value returned by {@code func.apply(init)} if {@code b} is {@code true}, 
      * otherwise returns an empty {@code Nullable} if {@code b} is false.
      * 
      * @param b
-     * @param seed
+     * @param init
      * @param func
      * @return
      * @throws E
      */
-    public static <T, R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final T seed, final Try.Function<T, R, E> func) throws E {
+    public static <T, R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final T init, final Try.Function<T, R, E> func) throws E {
         if (b) {
-            return Nullable.of(func.apply(seed));
+            return Nullable.of(func.apply(init));
         } else {
             return Nullable.empty();
         }
@@ -28224,21 +28224,21 @@ public final class N {
     /**
      * 
      * @param b
-     * @param seed
+     * @param init
      * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
      * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
      * @throws E1
      * @throws E2
      */
-    public static <T, E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final T seed, final Try.Consumer<T, E1> actionForTrue,
+    public static <T, E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final T init, final Try.Consumer<T, E1> actionForTrue,
             final Try.Consumer<T, E2> actionForFalse) throws E1, E2 {
         if (b) {
             if (actionForTrue != null) {
-                actionForTrue.accept(seed);
+                actionForTrue.accept(init);
             }
         } else {
             if (actionForFalse != null) {
-                actionForFalse.accept(seed);
+                actionForFalse.accept(init);
             }
         }
     }

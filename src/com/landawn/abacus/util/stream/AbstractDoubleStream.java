@@ -397,11 +397,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator) {
+    public DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator) {
         final DoubleIteratorEx iter = iteratorEx();
 
         return newStream(new DoubleIteratorEx() {
-            private double res = seed;
+            private double res = init;
 
             @Override
             public boolean hasNext() {
@@ -416,16 +416,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator, final boolean seedIncluded) {
-        if (seedIncluded == false) {
-            return scan(seed, accumulator);
+    public DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator, final boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
         }
 
         final DoubleIteratorEx iter = iteratorEx();
 
         return newStream(new DoubleIteratorEx() {
             private boolean isFirst = true;
-            private double res = seed;
+            private double res = init;
 
             @Override
             public boolean hasNext() {
@@ -436,7 +436,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public double nextDouble() {
                 if (isFirst) {
                     isFirst = false;
-                    return seed;
+                    return init;
                 }
 
                 return (res = accumulator.apply(res, iter.nextDouble()));
@@ -886,31 +886,31 @@ abstract class AbstractDoubleStream extends DoubleStream {
     //    }
 
     @Override
-    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper) {
+    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    public <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
+    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> keyMapper, Collector<Double, A, D> downstream) {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, downstream, mapFactory);
     }
 
     @Override

@@ -150,125 +150,125 @@ public abstract class Comparators {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return N.compare(keyExtractor.apply(a), keyExtractor.apply(b));
+                return N.compare(keyMapper.apply(a), keyMapper.apply(b));
             }
         };
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return N.compare(keyExtractor.apply(b), keyExtractor.apply(a));
+                return N.compare(keyMapper.apply(b), keyMapper.apply(a));
             }
         };
     }
 
-    public static <T, U> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor, final Comparator<? super U> keyComparator) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T, U> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyMapper, final Comparator<? super U> keyComparator) {
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(keyComparator);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return keyComparator.compare(keyExtractor.apply(a), keyExtractor.apply(b));
+                return keyComparator.compare(keyMapper.apply(a), keyMapper.apply(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingBoolean(final ToBooleanFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingBoolean(final ToBooleanFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Boolean.compare(keyExtractor.applyAsBoolean(a), keyExtractor.applyAsBoolean(b));
+                return Boolean.compare(keyMapper.applyAsBoolean(a), keyMapper.applyAsBoolean(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingChar(final ToCharFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingChar(final ToCharFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Character.compare(keyExtractor.applyAsChar(a), keyExtractor.applyAsChar(b));
+                return Character.compare(keyMapper.applyAsChar(a), keyMapper.applyAsChar(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingByte(final ToByteFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingByte(final ToByteFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Byte.compare(keyExtractor.applyAsByte(a), keyExtractor.applyAsByte(b));
+                return Byte.compare(keyMapper.applyAsByte(a), keyMapper.applyAsByte(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingShort(final ToShortFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingShort(final ToShortFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Short.compare(keyExtractor.applyAsShort(a), keyExtractor.applyAsShort(b));
+                return Short.compare(keyMapper.applyAsShort(a), keyMapper.applyAsShort(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingInt(final ToIntFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingInt(final ToIntFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Integer.compare(keyExtractor.applyAsInt(a), keyExtractor.applyAsInt(b));
+                return Integer.compare(keyMapper.applyAsInt(a), keyMapper.applyAsInt(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingLong(final ToLongFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingLong(final ToLongFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Long.compare(keyExtractor.applyAsLong(a), keyExtractor.applyAsLong(b));
+                return Long.compare(keyMapper.applyAsLong(a), keyMapper.applyAsLong(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingFloat(final ToFloatFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingFloat(final ToFloatFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Float.compare(keyExtractor.applyAsFloat(a), keyExtractor.applyAsFloat(b));
+                return Float.compare(keyMapper.applyAsFloat(a), keyMapper.applyAsFloat(b));
             }
         };
     }
 
-    public static <T> Comparator<T> comparingDouble(final ToDoubleFunction<? super T> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingDouble(final ToDoubleFunction<? super T> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return Double.compare(keyExtractor.applyAsDouble(a), keyExtractor.applyAsDouble(b));
+                return Double.compare(keyMapper.applyAsDouble(a), keyMapper.applyAsDouble(b));
             }
         };
     }
@@ -277,13 +277,13 @@ public abstract class Comparators {
         return COMPARING_IGNORE_CASE;
     }
 
-    public static <T> Comparator<T> comparingIgnoreCase(final Function<? super T, String> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <T> Comparator<T> comparingIgnoreCase(final Function<? super T, String> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return N.compareIgnoreCase(keyExtractor.apply(a), keyExtractor.apply(b));
+                return N.compareIgnoreCase(keyMapper.apply(a), keyMapper.apply(b));
             }
         };
     }

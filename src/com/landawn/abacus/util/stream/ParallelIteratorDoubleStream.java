@@ -86,6 +86,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream filter(final DoublePredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.filter(predicate);
         }
@@ -102,6 +104,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream takeWhile(final DoublePredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.takeWhile(predicate);
         }
@@ -118,6 +122,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream dropWhile(final DoublePredicate predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.dropWhile(predicate);
         }
@@ -134,6 +140,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream map(final DoubleUnaryOperator mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.map(mapper);
         }
@@ -150,6 +158,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public IntStream mapToInt(final DoubleToIntFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToInt(mapper);
         }
@@ -166,6 +176,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public LongStream mapToLong(final DoubleToLongFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToLong(mapper);
         }
@@ -182,6 +194,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public FloatStream mapToFloat(final DoubleToFloatFunction mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToFloat(mapper);
         }
@@ -198,6 +212,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToObj(mapper);
         }
@@ -212,6 +228,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream flatMap(final DoubleFunction<? extends DoubleStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorDoubleStream(sequential().flatMap(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -228,6 +246,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public IntStream flatMapToInt(final DoubleFunction<? extends IntStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -244,6 +264,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public LongStream flatMapToLong(final DoubleFunction<? extends LongStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -260,6 +282,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public FloatStream flatMapToFloat(final DoubleFunction<? extends FloatStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorFloatStream(sequential().flatMapToFloat(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -276,6 +300,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final DoubleFunction<? extends Stream<T>> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper), false, null, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -290,6 +316,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.peek(action);
         }
@@ -306,6 +334,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.forEach(action);
             return;
@@ -347,16 +377,18 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(final DoubleFunction<? extends K> keyExtractor, final DoubleFunction<? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends V> valueMapper,
             final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+            return super.toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
-        final Function<? super Double, ? extends K> keyExtractor2 = new Function<Double, K>() {
+        final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
             @Override
             public K apply(Double value) {
-                return keyExtractor.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
@@ -367,28 +399,32 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }
         };
 
-        return boxed().toMap(keyExtractor2, valueMapper2, mergeFunction, mapFactory);
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(classifier, downstream, mapFactory);
+            return super.toMap(keyMapper, downstream, mapFactory);
         }
 
-        final Function<? super Double, ? extends K> classifier2 = new Function<Double, K>() {
+        final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
             @Override
             public K apply(Double value) {
-                return classifier.apply(value);
+                return keyMapper.apply(value);
             }
         };
 
-        return boxed().toMap(classifier2, downstream, mapFactory);
+        return boxed().toMap(keyMapper2, downstream, mapFactory);
     }
 
     @Override
     public double reduce(final double identity, final DoubleBinaryOperator op) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(identity, op);
         }
@@ -450,6 +486,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(accumulator);
         }
@@ -524,6 +562,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final ObjDoubleConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
@@ -585,6 +625,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.anyMatch(predicate);
         }
@@ -632,6 +674,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.allMatch(predicate);
         }
@@ -679,6 +723,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.noneMatch(predicate);
         }
@@ -726,6 +772,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findFirst(predicate);
         }
@@ -780,6 +828,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findLast(predicate);
         }
@@ -832,6 +882,8 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
 
     @Override
     public <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findAny(predicate);
         }

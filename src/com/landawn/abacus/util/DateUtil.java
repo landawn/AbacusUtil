@@ -41,14 +41,14 @@ import com.landawn.abacus.exception.UncheckedIOException;
  * 
  * @author Haiyang Li
  */
-public final class DateUtil {
+public abstract class DateUtil {
 
     // ...
     public static final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone("UTC");
     /**
      * The system default time zone
      */
-    public static final TimeZone LOCAL_TIME_ZONE = Calendar.getInstance().getTimeZone();
+    public static final TimeZone LOCAL_TIME_ZONE = TimeZone.getDefault();
 
     /**
      * Date format.
@@ -221,7 +221,7 @@ public final class DateUtil {
         }
     }
 
-    private DateUtil() {
+    DateUtil() {
         // singleton
     }
 
@@ -600,6 +600,10 @@ public final class DateUtil {
         format(writer, date, null, null);
     }
 
+    public static void format(final Writer writer, final java.util.Date date, final String format) {
+        formatDate(writer, date, format, null);
+    }
+
     public static void format(final Writer writer, final java.util.Date date, final String format, final TimeZone timeZone) {
         formatDate(writer, date, format, timeZone);
     }
@@ -629,6 +633,10 @@ public final class DateUtil {
 
     public static void format(final Writer writer, final Calendar c) {
         format(writer, c, null, null);
+    }
+
+    public static void format(final Writer writer, final Calendar c, final String format) {
+        format(writer, c, format, null);
     }
 
     public static void format(final Writer writer, final Calendar c, final String format, final TimeZone timeZone) {
@@ -665,6 +673,10 @@ public final class DateUtil {
 
     public static void format(final Writer writer, final XMLGregorianCalendar c) {
         format(writer, c, null, null);
+    }
+
+    public static void format(final Writer writer, final XMLGregorianCalendar c, final String format) {
+        format(writer, c, format, null);
     }
 
     public static void format(final Writer writer, final XMLGregorianCalendar c, final String format, final TimeZone timeZone) {
@@ -1997,5 +2009,11 @@ public final class DateUtil {
          * Ceiling.
          */
         CEILING
+    }
+
+    public static class DateTimeUtil extends DateUtil {
+        private DateTimeUtil() {
+            // singleton.
+        }
     }
 }

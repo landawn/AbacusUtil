@@ -968,7 +968,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -978,7 +978,7 @@ class IteratorByteStream extends AbstractByteStream {
 
             while (elements.hasNext()) {
                 element = elements.nextByte();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -988,7 +988,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> keyMapper, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1003,7 +1003,7 @@ class IteratorByteStream extends AbstractByteStream {
 
             while (elements.hasNext()) {
                 element = elements.nextByte();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1365,6 +1365,15 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     ByteIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public ByteStream appendIfEmpty(final Supplier<ByteStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

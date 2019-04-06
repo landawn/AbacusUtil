@@ -165,14 +165,14 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     public static <T, K, X extends Exception> SetMultimap<K, T> from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyExtractor) throws X {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super T, ? extends K, X> keyMapper) throws X {
+        N.checkArgNotNull(keyMapper);
 
         final SetMultimap<K, T> multimap = N.newSetMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                multimap.put(keyExtractor.apply(e), e);
+                multimap.put(keyMapper.apply(e), e);
             }
         }
 
@@ -180,15 +180,15 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     public static <T, K, E, X extends Exception, X2 extends Exception> SetMultimap<K, E> from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyExtractor, final Try.Function<? super T, ? extends E, X2> valueExtractor) throws X, X2 {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super T, ? extends K, X> keyMapper, final Try.Function<? super T, ? extends E, X2> valueExtractor) throws X, X2 {
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
         final SetMultimap<K, E> multimap = N.newSetMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                multimap.put(keyExtractor.apply(e), valueExtractor.apply(e));
+                multimap.put(keyMapper.apply(e), valueExtractor.apply(e));
             }
         }
 
@@ -327,13 +327,13 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Deprecated
     public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>, X extends Exception> M from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyExtractor, final IntFunction<M> multimapSupplier) throws X {
+            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<M> multimapSupplier) throws X {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <T, K, E, V extends Collection<E>, M extends Multimap<K, E, V>, X extends Exception, X2 extends Exception> M from(
-            final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyExtractor,
+            final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyMapper,
             final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<M> multimapSupplier) throws X, X2 {
         throw new UnsupportedOperationException();
     }

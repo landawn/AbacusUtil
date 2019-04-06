@@ -201,9 +201,9 @@ public final class If {
     //        }
     //    }
     //
-    //    public <T, E extends Exception> void thenRun(final T seed, final Try.Consumer<? super T, E> action) throws E {
+    //    public <T, E extends Exception> void thenRun(final T init, final Try.Consumer<? super T, E> action) throws E {
     //        if (b) {
-    //            action.accept(seed);
+    //            action.accept(init);
     //        }
     //    }
     //
@@ -211,8 +211,8 @@ public final class If {
     //        return b ? Nullable.of(callable.call()) : Nullable.<T> empty();
     //    }
     //
-    //    public <T, R, E extends Exception> Nullable<R> thenCall(final T seed, final Try.Function<? super T, R, E> func) throws E {
-    //        return b ? Nullable.of(func.apply(seed)) : Nullable.<R> empty();
+    //    public <T, R, E extends Exception> Nullable<R> thenCall(final T init, final Try.Function<? super T, R, E> func) throws E {
+    //        return b ? Nullable.of(func.apply(init)) : Nullable.<R> empty();
     //    }
 
     public Or thenDoNothing() {
@@ -229,11 +229,11 @@ public final class If {
         return Or.of(b);
     }
 
-    public <U, E extends Exception> Or then(final U seed, final Try.Consumer<? super U, E> action) throws E {
+    public <U, E extends Exception> Or then(final U init, final Try.Consumer<? super U, E> action) throws E {
         N.checkArgNotNull(action);
 
         if (b) {
-            action.accept(seed);
+            action.accept(init);
         }
 
         return Or.of(b);
@@ -253,8 +253,8 @@ public final class If {
     //        return b ? Nullable.of(callable.call()) : Nullable.<T> empty();
     //    }
     //
-    //    public <T, R, E extends Exception> Nullable<R> then(final T seed, final Try.Function<? super T, R, E> func) throws E {
-    //        return b ? Nullable.of(func.apply(seed)) : Nullable.<R> empty();
+    //    public <T, R, E extends Exception> Nullable<R> then(final T init, final Try.Function<? super T, R, E> func) throws E {
+    //        return b ? Nullable.of(func.apply(init)) : Nullable.<R> empty();
     //    }
 
     public static final class Or {
@@ -283,11 +283,11 @@ public final class If {
             }
         }
 
-        public <U, E extends Exception> void orElse(final U seed, final Try.Consumer<? super U, E> action) throws E {
+        public <U, E extends Exception> void orElse(final U init, final Try.Consumer<? super U, E> action) throws E {
             N.checkArgNotNull(action);
 
             if (!b) {
-                action.accept(seed);
+                action.accept(init);
             }
         }
 
@@ -484,8 +484,8 @@ public final class If {
     //            return b ? Nullable.of(supplier.get()) : Nullable.<T> empty();
     //        }
     //
-    //        public <T, U, E extends Exception> Nullable<T> thenApply(final U seed, final Try.Function<? super U, T, E> func) throws E {
-    //            return b ? Nullable.of(func.apply(seed)) : Nullable.<T> empty();
+    //        public <T, U, E extends Exception> Nullable<T> thenApply(final U init, final Try.Function<? super U, T, E> func) throws E {
+    //            return b ? Nullable.of(func.apply(init)) : Nullable.<T> empty();
     //        }
     //
     //        public <T, E extends Exception> Or<T> then(final Try.Callable<T, E> callable) throws E {
@@ -494,10 +494,10 @@ public final class If {
     //            return b ? new TrueOr<>(callable.call()) : FALSE_OR;
     //        }
     //
-    //        public <T, U, E extends Exception> Or<T> then(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //        public <T, U, E extends Exception> Or<T> then(final U init, final Try.Function<? super U, T, E> func) throws E {
     //            N.checkArgNotNull(func);
     //
-    //            return b ? new TrueOr<>(func.apply(seed)) : FALSE_OR;
+    //            return b ? new TrueOr<>(func.apply(init)) : FALSE_OR;
     //        }
     //
     //        public static abstract class Or<T> {
@@ -506,7 +506,7 @@ public final class If {
     //
     //            public abstract <E extends Exception> T orElse(final Try.Callable<T, E> callable) throws E;
     //
-    //            public abstract <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
+    //            public abstract <U, E extends Exception> T orElse(final U init, final Try.Function<? super U, T, E> func) throws E;
     //
     //            public abstract <E extends Exception> T orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
     //        }
@@ -526,7 +526,7 @@ public final class If {
     //            }
     //
     //            @Override
-    //            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
+    //            public <U, E extends Exception> T orElse(final U init, final Try.Function<? super U, T, E> func) throws E {
     //                N.checkArgNotNull(func);
     //
     //                return result;
@@ -550,8 +550,8 @@ public final class If {
     //            }
     //
     //            @Override
-    //            public <U, E extends Exception> T orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
-    //                return func.apply(seed);
+    //            public <U, E extends Exception> T orElse(final U init, final Try.Function<? super U, T, E> func) throws E {
+    //                return func.apply(init);
     //            }
     //
     //            @Override

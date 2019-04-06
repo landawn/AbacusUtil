@@ -968,7 +968,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -978,7 +978,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             while (elements.hasNext()) {
                 element = elements.nextChar();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -988,7 +988,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> keyMapper, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1003,7 +1003,7 @@ class IteratorCharStream extends AbstractCharStream {
 
             while (elements.hasNext()) {
                 element = elements.nextChar();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1365,6 +1365,15 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     CharIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public CharStream appendIfEmpty(final Supplier<CharStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

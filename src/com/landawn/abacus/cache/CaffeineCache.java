@@ -18,7 +18,6 @@ import java.util.Set;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
 
 /**
  * TODO
@@ -39,12 +38,10 @@ public class CaffeineCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Optional<V> get(K k) {
+    public V gett(K k) {
         assertNotClosed();
 
-        final V result = cacheImpl.getIfPresent(k);
-
-        return result == null ? Optional.<V> empty() : Optional.of(result);
+        return cacheImpl.getIfPresent(k);
     }
 
     @Override

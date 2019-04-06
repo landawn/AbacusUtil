@@ -398,11 +398,11 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator) {
+    public FloatStream scan(final float init, final FloatBiFunction<Float> accumulator) {
         final FloatIteratorEx iter = iteratorEx();
 
         return newStream(new FloatIteratorEx() {
-            private float res = seed;
+            private float res = init;
 
             @Override
             public boolean hasNext() {
@@ -417,16 +417,16 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator, final boolean seedIncluded) {
-        if (seedIncluded == false) {
-            return scan(seed, accumulator);
+    public FloatStream scan(final float init, final FloatBiFunction<Float> accumulator, final boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
         }
 
         final FloatIteratorEx iter = iteratorEx();
 
         return newStream(new FloatIteratorEx() {
             private boolean isFirst = true;
-            private float res = seed;
+            private float res = init;
 
             @Override
             public boolean hasNext() {
@@ -437,7 +437,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public float nextFloat() {
                 if (isFirst) {
                     isFirst = false;
-                    return seed;
+                    return init;
                 }
 
                 return (res = accumulator.apply(res, iter.nextFloat()));
@@ -887,31 +887,31 @@ abstract class AbstractFloatStream extends FloatStream {
     //    }
 
     @Override
-    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper) {
+    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    public <K, V> Map<K, V> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
+    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> keyMapper, Collector<Float, A, D> downstream) {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, downstream, mapFactory);
     }
 
     @Override

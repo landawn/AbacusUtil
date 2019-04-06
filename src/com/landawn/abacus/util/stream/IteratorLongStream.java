@@ -1284,7 +1284,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1294,7 +1294,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             while (elements.hasNext()) {
                 element = elements.nextLong();
-                Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
             }
 
             return result;
@@ -1304,7 +1304,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1319,7 +1319,7 @@ class IteratorLongStream extends AbstractLongStream {
 
             while (elements.hasNext()) {
                 element = elements.nextLong();
-                key = checkArgNotNull(classifier.apply(element), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1731,6 +1731,15 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     LongIteratorEx iteratorEx() {
         return elements;
+    }
+
+    @Override
+    public LongStream appendIfEmpty(final Supplier<LongStream> supplier) {
+        if (elements.hasNext() == false) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
     }
 
     @Override

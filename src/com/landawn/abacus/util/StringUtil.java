@@ -96,6 +96,72 @@ public abstract class StringUtil {
         // Singleton. Utility class.
     }
 
+    public static boolean anyNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
+        return N.isNullOrEmpty(cs1) || N.isNullOrEmpty(cs2) || N.isNullOrEmpty(cs3);
+    }
+
+    @SafeVarargs
+    public static boolean anyNullOrEmpty(final CharSequence... css) {
+        if (N.isNullOrEmpty(css)) {
+            return false;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean anyNullOrEmpty(final Collection<? extends CharSequence> css) {
+        if (N.isNullOrEmpty(css)) {
+            return false;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean allNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
+        return N.isNullOrEmpty(cs1) && N.isNullOrEmpty(cs2) && N.isNullOrEmpty(cs3);
+    }
+
+    @SafeVarargs
+    public static boolean allNullOrEmpty(final CharSequence... css) {
+        if (N.isNullOrEmpty(css)) {
+            return true;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs) == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean allNullOrEmpty(final Collection<? extends CharSequence> css) {
+        if (N.isNullOrEmpty(css)) {
+            return true;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs) == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // Abbreviating
     // -----------------------------------------------------------------------
     /**

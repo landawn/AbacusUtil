@@ -1136,7 +1136,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
             Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1144,7 +1144,7 @@ class ArrayShortStream extends AbstractShortStream {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -1154,7 +1154,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> keyMapper, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -1167,7 +1167,7 @@ class ArrayShortStream extends AbstractShortStream {
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1644,13 +1644,24 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public ShortStream appendIfEmpty(final Supplier<ShortStream> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
+        }
+    }
+
+    @Override
     public ShortStream parallel(final int maxThreadNum, final Splitor splitor) {
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(), closeHandlers);
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), checkSplitor(splitor), asyncExecutor(),
+                closeHandlers);
     }
 
     @Override
     public ShortStream parallel(final int maxThreadNum, final Executor executor) {
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor), closeHandlers);
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, checkMaxThreadNum(maxThreadNum), splitor(), createAsyncExecutor(executor),
+                closeHandlers);
     }
 
     @Override

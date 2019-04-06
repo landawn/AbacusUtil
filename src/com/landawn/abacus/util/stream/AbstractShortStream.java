@@ -396,11 +396,11 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator) {
+    public ShortStream scan(final short init, final ShortBiFunction<Short> accumulator) {
         final ShortIteratorEx iter = iteratorEx();
 
         return newStream(new ShortIteratorEx() {
-            private short res = seed;
+            private short res = init;
 
             @Override
             public boolean hasNext() {
@@ -415,16 +415,16 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator, final boolean seedIncluded) {
-        if (seedIncluded == false) {
-            return scan(seed, accumulator);
+    public ShortStream scan(final short init, final ShortBiFunction<Short> accumulator, final boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
         }
 
         final ShortIteratorEx iter = iteratorEx();
 
         return newStream(new ShortIteratorEx() {
             private boolean isFirst = true;
-            private short res = seed;
+            private short res = init;
 
             @Override
             public boolean hasNext() {
@@ -435,7 +435,7 @@ abstract class AbstractShortStream extends ShortStream {
             public short nextShort() {
                 if (isFirst) {
                     isFirst = false;
-                    return seed;
+                    return init;
                 }
 
                 return (res = accumulator.apply(res, iter.nextShort()));
@@ -885,31 +885,31 @@ abstract class AbstractShortStream extends ShortStream {
     //    }
 
     @Override
-    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper) {
+    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    public <K, V> Map<K, V> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
         final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
+    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> keyMapper, Collector<Short, A, D> downstream) {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, downstream, mapFactory);
     }
 
     @Override

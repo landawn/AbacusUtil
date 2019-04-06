@@ -38,6 +38,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try;
@@ -2581,7 +2582,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
         assertNotClosed();
 
@@ -2589,7 +2590,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+                Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
             }
 
             return result;
@@ -2599,21 +2600,21 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
+            final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
             final Supplier<A> downstreamSupplier = downstream.supplier();
-            final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+            final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
             final Function<A, D> downstreamFinisher = downstream.finisher();
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                key = checkArgNotNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+                key = checkArgNotNull(keyMapper.apply(elements[i]), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -2621,7 +2622,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                downstreamAccumulator.accept(v, elements[i]);
+                downstreamAccumulator.accept(v, valueMapper.apply(elements[i]));
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -2640,15 +2641,165 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+            ObjIterator<? extends K> keyIter = null;
+            K k = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[i])) {
+                    keyIter = ks.iterator();
+
+                    while (keyIter.hasNext()) {
+                        k = keyIter.next();
+                        Collectors.merge(result, k, valueMapper.apply(k, elements[i]), mergeFunction);
+                    }
+                }
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, A, D, M extends Map<K, D>> M toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+            final Function<A, D> downstreamFinisher = downstream.finisher();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+
+            ObjIterator<? extends K> keyIter = null;
+            K k = null;
+            A v = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+
+                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[i])) {
+                    keyIter = ks.iterator();
+
+                    while (keyIter.hasNext()) {
+                        checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
+
+                        if ((v = intermediate.get(k)) == null) {
+                            if ((v = downstreamSupplier.get()) != null) {
+                                intermediate.put(k, v);
+                            }
+                        }
+
+                        downstreamAccumulator.accept(v, valueMapper.apply(k, elements[i]));
+                    }
+                }
+            }
+
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstreamFinisher.apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+            Collection<? extends K> ks = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                ks = flatKeyMapper.apply(elements[i]);
+
+                if (N.notNullOrEmpty(ks)) {
+                    for (K k : ks) {
+                        Collectors.merge(result, k, valueMapper.apply(k, elements[i]), mergeFunction);
+                    }
+                }
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, A, D, M extends Map<K, D>> M toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+            final Supplier<A> downstreamSupplier = downstream.supplier();
+            final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+            final Function<A, D> downstreamFinisher = downstream.finisher();
+            final Map<K, A> intermediate = (Map<K, A>) result;
+
+            Collection<? extends K> ks = null;
+            A v = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                ks = flatKeyMapper.apply(elements[i]);
+
+                if (N.notNullOrEmpty(ks)) {
+                    for (K k : ks) {
+                        checkArgNotNull(k, "element cannot be mapped to a null key");
+
+                        if ((v = intermediate.get(k)) == null) {
+                            if ((v = downstreamSupplier.get()) != null) {
+                                intermediate.put(k, v);
+                            }
+                        }
+
+                        downstreamAccumulator.accept(v, valueMapper.apply(k, elements[i]));
+                    }
+                }
+            }
+
+            final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+                @Override
+                public A apply(K k, A v) {
+                    return (A) downstreamFinisher.apply(v);
+                }
+            };
+
+            Collectors.replaceAll(intermediate, function);
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
 
             for (int i = fromIndex; i < toIndex; i++) {
-                result.put(keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]));
+                result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
             }
 
             return result;
@@ -3015,6 +3166,31 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <E extends Exception> boolean nMatch(final long atLeast, final long atMost, Try.Predicate<? super T, E> predicate) throws E {
+        checkArgNotNegative(atLeast, "atLeast");
+        checkArgNotNegative(atMost, "atMost");
+        checkArgument(atLeast <= atMost, "'atLeast' must be <= 'atMost'");
+
+        assertNotClosed();
+
+        long cnt = 0;
+
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (predicate.test(elements[i])) {
+                    if (++cnt > atMost) {
+                        return false;
+                    }
+                }
+            }
+        } finally {
+            close();
+        }
+
+        return cnt >= atLeast && cnt <= atMost;
+    }
+
+    @Override
     public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         assertNotClosed();
 
@@ -3045,6 +3221,20 @@ class ArrayStream<T> extends AbstractStream<T> {
             return (Optional<T>) Optional.empty();
         } finally {
             close();
+        }
+    }
+
+    @Override
+    public Stream<T> appendIfEmpty(Collection<? extends T> c) {
+        return fromIndex == toIndex ? append(c) : this;
+    }
+
+    @Override
+    public Stream<T> appendIfEmpty(final Supplier<Stream<T>> supplier) {
+        if (fromIndex == toIndex) {
+            return append(supplier.get());
+        } else {
+            return this;
         }
     }
 

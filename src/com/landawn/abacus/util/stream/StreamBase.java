@@ -609,6 +609,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     //    }
 
     @Override
+    public S slice(final long from, final long to) {
+        checkArgNotNegative(from, "from");
+        checkArgNotNegative(to, "to");
+        checkArgument(to >= from, "'to' can't be less than `from`");
+
+        return from == 0 ? limit(to) : skip(from).limit(to - from);
+    }
+
+    @Override
     public Stream<S> sliding(int windowSize) {
         return sliding(windowSize, 1);
     }

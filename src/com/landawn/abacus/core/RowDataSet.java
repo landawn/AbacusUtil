@@ -3590,8 +3590,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyExtractor) throws E {
-        return groupBy(columnName, 0, size(), keyExtractor);
+    public <K, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyMapper) throws E {
+        return groupBy(columnName, 0, size(), keyMapper);
     }
 
     @Override
@@ -3606,15 +3606,15 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, T, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName,
+    public <K, T, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
             String aggregateOnColumnName, final Collector<T, ?, ?> collector) throws E {
-        return groupBy(columnName, 0, size(), keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+        return groupBy(columnName, 0, size(), keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
     }
 
     @Override
-    public <K, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName,
+    public <K, E extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
             Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E {
-        return groupBy(columnName, 0, size(), keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+        return groupBy(columnName, 0, size(), keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
     }
 
     @Override
@@ -3644,9 +3644,9 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyExtractor,
+    public <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyMapper,
             String aggregateResultColumnName, String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnName, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, Collectors.toList());
+        final RowDataSet result = (RowDataSet) groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
@@ -3657,9 +3657,9 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyExtractor,
+    public <K, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, Try.Function<K, ?, E> keyMapper,
             String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnName, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, Collectors.toList());
+        final RowDataSet result = (RowDataSet) groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
@@ -3676,7 +3676,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <K, E extends Exception> DataSet groupBy(final String columnName, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<K, ?, E> keyExtractor) throws E {
+            final Try.Function<K, ?, E> keyMapper) throws E {
         final int columnIndexe = checkColumnName(columnName);
         checkRowIndex(fromRowIndex, toRowIndex);
 
@@ -3694,7 +3694,7 @@ public class RowDataSet implements DataSet, Cloneable {
             return new RowDataSet(newColumnNameList, newColumnList);
         }
 
-        final Try.Function<Object, ?, E> keyExtractor2 = (Try.Function<Object, ?, E>) keyExtractor;
+        final Try.Function<Object, ?, E> keyMapper2 = (Try.Function<Object, ?, E>) keyMapper;
         final Set<Object> keySet = new HashSet<>();
         final List<Object> keyColumn = newColumnList.get(0);
         Object key = null;
@@ -3702,7 +3702,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
         for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
             value = _columnList.get(columnIndexe).get(rowIndex);
-            key = getHashKey(keyExtractor2 == null ? value : keyExtractor2.apply(value));
+            key = getHashKey(keyMapper2 == null ? value : keyMapper2.apply(value));
 
             if (keySet.add(key)) {
                 keyColumn.add(value);
@@ -3725,7 +3725,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, T, E extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor,
+    public <K, T, E extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
             String aggregateResultColumnName, String aggregateOnColumnName, final Collector<T, ?, ?> collector) throws E {
         final int columnIndexe = checkColumnName(columnName);
         final int aggColumnIndex = checkColumnName(aggregateOnColumnName);
@@ -3750,7 +3750,7 @@ public class RowDataSet implements DataSet, Cloneable {
             return new RowDataSet(newColumnNameList, newColumnList);
         }
 
-        final Try.Function<Object, ?, E> keyExtractor2 = (Try.Function<Object, ?, E>) keyExtractor;
+        final Try.Function<Object, ?, E> keyMapper2 = (Try.Function<Object, ?, E>) keyMapper;
         final Map<Object, Integer> keyMap = new HashMap<>();
         final List<Object> keyColumn = newColumnList.get(0);
         final List<Object> aggColumn = newColumnList.get(1);
@@ -3765,7 +3765,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
         for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
             value = _columnList.get(columnIndexe).get(rowIndex);
-            key = getHashKey(keyExtractor2 == null ? value : keyExtractor2.apply(value));
+            key = getHashKey(keyMapper2 == null ? value : keyMapper2.apply(value));
 
             collectorRowIndex = keyMap.get(key);
 
@@ -3788,7 +3788,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, E extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor,
+    public <K, E extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
             String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E {
         final int columnIndexe = checkColumnName(columnName);
         final int[] aggColumnIndexes = checkColumnName(aggregateOnColumnNames);
@@ -3813,7 +3813,7 @@ public class RowDataSet implements DataSet, Cloneable {
             return new RowDataSet(newColumnNameList, newColumnList);
         }
 
-        final Try.Function<Object, ?, E> keyExtractor2 = (Try.Function<Object, ?, E>) keyExtractor;
+        final Try.Function<Object, ?, E> keyMapper2 = (Try.Function<Object, ?, E>) keyMapper;
         final Map<Object, Integer> keyMap = new HashMap<>();
         final List<Object> keyColumn = newColumnList.get(0);
         final List<Object> aggColumn = newColumnList.get(1);
@@ -3828,7 +3828,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
         for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
             value = _columnList.get(columnIndexe).get(rowIndex);
-            key = getHashKey(keyExtractor2 == null ? value : keyExtractor2.apply(value));
+            key = getHashKey(keyMapper2 == null ? value : keyMapper2.apply(value));
 
             collectorRowIndex = keyMap.get(key);
 
@@ -3885,9 +3885,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex,
-            Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func)
+            Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func)
             throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnName, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName,
+        final RowDataSet result = (RowDataSet) groupBy(columnName, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName,
                 Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
@@ -3900,9 +3900,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <K, E extends Exception, E2 extends Exception> DataSet groupBy(final String columnName, int fromRowIndex, int toRowIndex,
-            Try.Function<K, ?, E> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnName, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames,
+        final RowDataSet result = (RowDataSet) groupBy(columnName, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames,
                 Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
@@ -3919,8 +3919,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor) throws E {
-        return groupBy(columnNames, 0, size(), keyExtractor);
+    public <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper) throws E {
+        return groupBy(columnNames, 0, size(), keyMapper);
     }
 
     @Override
@@ -3936,15 +3936,15 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
+    public <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
             String aggregateResultColumnName, String aggregateOnColumnName, final Collector<T, ?, ?> collector) throws E {
-        return groupBy(columnNames, 0, size(), keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+        return groupBy(columnNames, 0, size(), keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
     }
 
     @Override
-    public <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
+    public <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
             String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E {
-        return groupBy(columnNames, 0, size(), keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+        return groupBy(columnNames, 0, size(), keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
     }
 
     @Override
@@ -3974,9 +3974,9 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
+    public <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
             String aggregateResultColumnName, String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, Collectors.toList());
+        final RowDataSet result = (RowDataSet) groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
@@ -3987,9 +3987,9 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor,
+    public <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
             String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, Collectors.toList());
+        final RowDataSet result = (RowDataSet) groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
         for (int i = 0, len = column.size(); i < len; i++) {
@@ -4006,7 +4006,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> DataSet groupBy(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor) throws E {
+            final Try.Function<? super Object[], ?, E> keyMapper) throws E {
         N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
 
@@ -4023,12 +4023,12 @@ public class RowDataSet implements DataSet, Cloneable {
         if (N.isNullOrEmpty(columnNames) || fromRowIndex == toRowIndex) {
             return new RowDataSet(newColumnNameList, newColumnList);
         } else if (columnNames.size() == 1) {
-            return this.groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyExtractor);
+            return this.groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyMapper);
         }
 
         // final List<Row> rowList = columnList2RowList(columnIndexes);
         final Set<Object> keySet = new HashSet<>();
-        final List<Object[]> keyList = keyExtractor == null ? null : new ArrayList<Object[]>();
+        final List<Object[]> keyList = keyMapper == null ? null : new ArrayList<Object[]>();
 
         Object[] keyRow = null;
 
@@ -4039,7 +4039,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 keyRow[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
             }
 
-            if (keyExtractor == null) {
+            if (keyMapper == null) {
                 if (keySet.add(Wrapper.of(keyRow))) {
                     for (int i = 0; i < columnCount; i++) {
                         newColumnList.get(i).add(keyRow[i]);
@@ -4048,7 +4048,7 @@ public class RowDataSet implements DataSet, Cloneable {
                     keyRow = null;
                 }
             } else {
-                if (keySet.add(getHashKey(keyExtractor.apply(keyRow)))) {
+                if (keySet.add(getHashKey(keyMapper.apply(keyRow)))) {
                     for (int i = 0; i < columnCount; i++) {
                         newColumnList.get(i).add(keyRow[i]);
                     }
@@ -4065,7 +4065,7 @@ public class RowDataSet implements DataSet, Cloneable {
             keyRow = null;
         }
 
-        if (keyExtractor == null) {
+        if (keyMapper == null) {
             @SuppressWarnings("rawtypes")
             final Set<Wrapper<Object[]>> tmp = (Set) keySet;
 
@@ -4095,7 +4095,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
+            final Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) throws E {
         N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
@@ -4124,12 +4124,12 @@ public class RowDataSet implements DataSet, Cloneable {
             newColumnList.get(0).add(this.<T> stream(aggregateOnColumnName).collect(collector));
             return new RowDataSet(newColumnNameList, newColumnList);
         } else if (columnNames.size() == 1) {
-            return groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+            return groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
         }
 
         // final List<Row> rowList = columnList2RowList(columnIndexes);
         final Map<Object, Integer> keyMap = new HashMap<>();
-        final List<Object[]> keyList = keyExtractor == null ? null : new ArrayList<Object[]>();
+        final List<Object[]> keyList = keyMapper == null ? null : new ArrayList<Object[]>();
         final Supplier<Object> supplier = (Supplier<Object>) collector.supplier();
         final BiConsumer<Object, Object> accumulator = (BiConsumer<Object, Object>) collector.accumulator();
         final Function<Object, Object> finisher = (Function<Object, Object>) collector.finisher();
@@ -4146,7 +4146,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 keyRow[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
             }
 
-            key = keyExtractor == null ? Wrapper.of(keyRow) : getHashKey(keyExtractor.apply(keyRow));
+            key = keyMapper == null ? Wrapper.of(keyRow) : getHashKey(keyMapper.apply(keyRow));
             collectorRowIndex = keyMap.get(key);
 
             if (collectorRowIndex == null) {
@@ -4158,7 +4158,7 @@ public class RowDataSet implements DataSet, Cloneable {
                     newColumnList.get(i).add(keyRow[i]);
                 }
 
-                if (keyExtractor != null) {
+                if (keyMapper != null) {
                     keyList.add(keyRow);
                 }
 
@@ -4178,7 +4178,7 @@ public class RowDataSet implements DataSet, Cloneable {
             keyRow = null;
         }
 
-        if (keyExtractor == null) {
+        if (keyMapper == null) {
             @SuppressWarnings("rawtypes")
             final Set<Wrapper<Object[]>> tmp = (Set) keyMap.keySet();
 
@@ -4196,7 +4196,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) throws E {
         N.checkArgNotNullOrEmpty(columnNames, "columnNames");
         checkRowIndex(fromRowIndex, toRowIndex);
@@ -4225,12 +4225,12 @@ public class RowDataSet implements DataSet, Cloneable {
             newColumnList.get(0).add(stream(aggregateOnColumnNames).collect(collector));
             return new RowDataSet(newColumnNameList, newColumnList);
         } else if (columnNames.size() == 1) {
-            return groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+            return groupBy(columnNames.iterator().next(), fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
         }
 
         // final List<Row> rowList = columnList2RowList(columnIndexes);
         final Map<Object, Integer> keyMap = new HashMap<>();
-        final List<Object[]> keyList = keyExtractor == null ? null : new ArrayList<Object[]>();
+        final List<Object[]> keyList = keyMapper == null ? null : new ArrayList<Object[]>();
         final Supplier<Object> supplier = (Supplier<Object>) collector.supplier();
         final BiConsumer<Object, Object> accumulator = (BiConsumer<Object, Object>) collector.accumulator();
         final Function<Object, Object> finisher = (Function<Object, Object>) collector.finisher();
@@ -4247,7 +4247,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 keyRow[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
             }
 
-            key = keyExtractor == null ? Wrapper.of(keyRow) : getHashKey(keyExtractor.apply(keyRow));
+            key = keyMapper == null ? Wrapper.of(keyRow) : getHashKey(keyMapper.apply(keyRow));
             collectorRowIndex = keyMap.get(key);
 
             if (collectorRowIndex == null) {
@@ -4259,7 +4259,7 @@ public class RowDataSet implements DataSet, Cloneable {
                     newColumnList.get(i).add(keyRow[i]);
                 }
 
-                if (keyExtractor != null) {
+                if (keyMapper != null) {
                     keyList.add(keyRow);
                 }
 
@@ -4284,7 +4284,7 @@ public class RowDataSet implements DataSet, Cloneable {
             keyRow = null;
         }
 
-        if (keyExtractor == null) {
+        if (keyMapper == null) {
             @SuppressWarnings("rawtypes")
             final Set<Wrapper<Object[]>> tmp = (Set) keyMap.keySet();
 
@@ -4330,9 +4330,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
             final Try.Function<Stream<T>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName,
+        final RowDataSet result = (RowDataSet) groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName,
                 Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
@@ -4345,9 +4345,9 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2 {
-        final RowDataSet result = (RowDataSet) groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames,
+        final RowDataSet result = (RowDataSet) groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames,
                 Collectors.toList());
         final List<Object> column = result._columnList.get(result.getColumnIndex(aggregateResultColumnName));
 
@@ -4369,14 +4369,14 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor) {
+    public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor);
+                        return groupBy(columnNames, keyMapper);
                     }
                 });
             }
@@ -4406,7 +4406,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
+    public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper,
             final String aggregateResultColumnName, final String aggregateOnColumnName, final Collector<T, ?, ?> collector) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4414,7 +4414,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
                     }
                 });
             }
@@ -4422,7 +4422,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
+    public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper,
             final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames, final Collector<? super Object[], ?, ?> collector) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4430,7 +4430,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
                     }
                 });
             }
@@ -4471,7 +4471,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Try.Function<Stream<T>, ?, E2> func) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4479,7 +4479,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, func);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, func);
                     }
                 });
             }
@@ -4488,7 +4488,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4496,7 +4496,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, func);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, func);
                     }
                 });
             }
@@ -4515,14 +4515,14 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor) {
+            final Try.Function<? super Object[], ?, E> keyMapper) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper);
                     }
                 });
             }
@@ -4553,7 +4553,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4561,7 +4561,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
                     }
                 });
             }
@@ -4570,7 +4570,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4578,7 +4578,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
                     }
                 });
             }
@@ -4619,7 +4619,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex,
-            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName,
+            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName,
             final String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4627,7 +4627,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, func);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName, func);
                     }
                 });
             }
@@ -4636,7 +4636,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(final Collection<String> columnNames, final int fromRowIndex,
-            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName,
+            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName,
             final Collection<String> aggregateOnColumnNames, final Try.Function<Stream<Object[]>, ?, E2> func) {
         return Stream.of(Iterables.rollup(columnNames)).reversed().map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4644,7 +4644,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, func);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, func);
                     }
                 });
             }
@@ -4662,14 +4662,14 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor) {
+    public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor);
+                        return groupBy(columnNames, keyMapper);
                     }
                 });
             }
@@ -4699,7 +4699,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T, E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
+    public <T, E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper,
             final String aggregateResultColumnName, final String aggregateOnColumnName, final Collector<T, ?, ?> collector) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4707,7 +4707,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
                     }
                 });
             }
@@ -4715,7 +4715,7 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor,
+    public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper,
             final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames, final Collector<? super Object[], ?, ?> collector) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4723,7 +4723,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
                     }
                 });
             }
@@ -4764,7 +4764,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(final Collection<String> columnNames,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Try.Function<Stream<T>, ?, E2> func) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4772,7 +4772,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, func);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, func);
                     }
                 });
             }
@@ -4781,7 +4781,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception, E2 extends Exception> Stream<DataSet> cube(final Collection<String> columnNames,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4789,7 +4789,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, func);
+                        return groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, func);
                     }
                 });
             }
@@ -4808,14 +4808,14 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor) {
+            final Try.Function<? super Object[], ?, E> keyMapper) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
             public DataSet apply(final Collection<String> columnNames) {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper);
                     }
                 });
             }
@@ -4846,7 +4846,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final String aggregateOnColumnName,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final String aggregateOnColumnName,
             final Collector<T, ?, ?> collector) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4854,7 +4854,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, collector);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName, collector);
                     }
                 });
             }
@@ -4863,7 +4863,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Collector<? super Object[], ?, ?> collector) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4871,7 +4871,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, collector);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, collector);
                     }
                 });
             }
@@ -4912,7 +4912,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final int fromRowIndex,
-            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName,
+            final int toRowIndex, final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName,
             final String aggregateOnColumnName, final Try.Function<Stream<T>, ?, E2> func) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4920,7 +4920,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnName, func);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnName, func);
                     }
                 });
             }
@@ -4929,7 +4929,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <E extends Exception, E2 extends Exception> Stream<DataSet> cube(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
+            final Try.Function<? super Object[], ?, E> keyMapper, final String aggregateResultColumnName, final Collection<String> aggregateOnColumnNames,
             final Try.Function<Stream<Object[]>, ?, E2> func) {
         return cubeSet(columnNames).map(new Function<Collection<String>, DataSet>() {
             @Override
@@ -4937,7 +4937,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 return Try.call(new Callable<DataSet>() {
                     @Override
                     public DataSet call() throws Exception {
-                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyExtractor, aggregateResultColumnName, aggregateOnColumnNames, func);
+                        return groupBy(columnNames, fromRowIndex, toRowIndex, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, func);
                     }
                 });
             }
@@ -5210,13 +5210,13 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, E extends Exception> DataSet distinctBy(final String columnName, final Try.Function<K, ?, E> keyExtractor) throws E {
-        return distinctBy(columnName, 0, size(), keyExtractor);
+    public <K, E extends Exception> DataSet distinctBy(final String columnName, final Try.Function<K, ?, E> keyMapper) throws E {
+        return distinctBy(columnName, 0, size(), keyMapper);
     }
 
     @Override
     public <K, E extends Exception> DataSet distinctBy(final String columnName, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<K, ?, E> keyExtractor) throws E {
+            final Try.Function<K, ?, E> keyMapper) throws E {
         final int columnIndex = checkColumnName(columnName);
         checkRowIndex(fromRowIndex, toRowIndex);
 
@@ -5232,14 +5232,14 @@ public class RowDataSet implements DataSet, Cloneable {
             return new RowDataSet(newColumnNameList, newColumnList);
         }
 
-        final Try.Function<Object, ?, E> keyExtractor2 = (Try.Function<Object, ?, E>) keyExtractor;
+        final Try.Function<Object, ?, E> keyMapper2 = (Try.Function<Object, ?, E>) keyMapper;
         final Set<Object> rowSet = new HashSet<>();
         Object key = null;
         Object value = null;
 
         for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
             value = _columnList.get(columnIndex).get(rowIndex);
-            key = getHashKey(keyExtractor2 == null ? value : keyExtractor2.apply(value));
+            key = getHashKey(keyMapper2 == null ? value : keyMapper2.apply(value));
 
             if (rowSet.add(key)) {
                 for (int j = 0; j < columnCount; j++) {
@@ -5252,14 +5252,14 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> DataSet distinctBy(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyExtractor) throws E {
-        return distinctBy(columnNames, 0, size(), keyExtractor);
+    public <E extends Exception> DataSet distinctBy(final Collection<String> columnNames, final Try.Function<? super Object[], ?, E> keyMapper) throws E {
+        return distinctBy(columnNames, 0, size(), keyMapper);
     }
 
     @Override
     public <E extends Exception> DataSet distinctBy(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
-            final Try.Function<? super Object[], ?, E> keyExtractor) throws E {
-        if (columnNames.size() == 1 && keyExtractor == null) {
+            final Try.Function<? super Object[], ?, E> keyMapper) throws E {
+        if (columnNames.size() == 1 && keyMapper == null) {
             return distinct(columnNames.iterator().next(), fromRowIndex, toRowIndex);
         }
 
@@ -5279,7 +5279,7 @@ public class RowDataSet implements DataSet, Cloneable {
         }
 
         final Set<Object> rowSet = new HashSet<>();
-        final List<Object[]> rowList = keyExtractor == null ? null : new ArrayList<Object[]>();
+        final List<Object[]> rowList = keyMapper == null ? null : new ArrayList<Object[]>();
         Object[] row = null;
 
         for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
@@ -5289,7 +5289,7 @@ public class RowDataSet implements DataSet, Cloneable {
                 row[i] = _columnList.get(columnIndexes[i]).get(rowIndex);
             }
 
-            if (keyExtractor == null) {
+            if (keyMapper == null) {
                 if (rowSet.add(Wrapper.of(row))) {
                     for (int j = 0; j < columnCount; j++) {
                         newColumnList.get(j).add(_columnList.get(j).get(rowIndex));
@@ -5298,7 +5298,7 @@ public class RowDataSet implements DataSet, Cloneable {
                     row = null;
                 }
             } else {
-                if (rowSet.add(getHashKey(keyExtractor.apply(row)))) {
+                if (rowSet.add(getHashKey(keyMapper.apply(row)))) {
                     for (int j = 0; j < columnCount; j++) {
                         newColumnList.get(j).add(_columnList.get(j).get(rowIndex));
                     }
@@ -5315,7 +5315,7 @@ public class RowDataSet implements DataSet, Cloneable {
             row = null;
         }
 
-        if (keyExtractor == null) {
+        if (keyMapper == null) {
             @SuppressWarnings("rawtypes")
             final Set<Wrapper<Object[]>> tmp = (Set) rowSet;
 
@@ -8170,34 +8170,6 @@ public class RowDataSet implements DataSet, Cloneable {
         return result;
     }
 
-    @Override
-    public List<DataSet> splitt(final int size) {
-        return splitt(_columnNameList, size);
-    }
-
-    @Override
-    public List<DataSet> splitt(final Collection<String> columnNames, final int size) {
-        return splitt(columnNames, 0, size(), size);
-    }
-
-    @Override
-    public List<DataSet> splitt(final int fromRowIndex, final int toRowIndex, final int size) {
-        return splitt(_columnNameList, fromRowIndex, toRowIndex, size);
-    }
-
-    @Override
-    public List<DataSet> splitt(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex, final int size) {
-        checkRowIndex(fromRowIndex, toRowIndex);
-
-        final List<DataSet> res = new ArrayList<>();
-
-        for (int i = fromRowIndex; i < toRowIndex; i += size) {
-            res.add(copy(columnNames, i, i <= toRowIndex - size ? i + size : toRowIndex));
-        }
-
-        return res;
-    }
-
     //    @Override
     //    public <T> List<List<T>> split(final Class<? extends T> rowClass, final int size) {
     //        return split(rowClass, _columnNameList, size);
@@ -8283,6 +8255,116 @@ public class RowDataSet implements DataSet, Cloneable {
                 return RowDataSet.this.copy(columnNames, from, to);
             }
         });
+    }
+
+    @Override
+    public List<DataSet> splitt(final int size) {
+        return splitt(_columnNameList, size);
+    }
+
+    @Override
+    public List<DataSet> splitt(final Collection<String> columnNames, final int size) {
+        return splitt(columnNames, 0, size(), size);
+    }
+
+    @Override
+    public List<DataSet> splitt(final int fromRowIndex, final int toRowIndex, final int size) {
+        return splitt(_columnNameList, fromRowIndex, toRowIndex, size);
+    }
+
+    @Override
+    public List<DataSet> splitt(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex, final int size) {
+        checkRowIndex(fromRowIndex, toRowIndex);
+
+        final List<DataSet> res = new ArrayList<>();
+
+        for (int i = fromRowIndex; i < toRowIndex; i += size) {
+            res.add(copy(columnNames, i, i <= toRowIndex - size ? i + size : toRowIndex));
+        }
+
+        return res;
+    }
+
+    //    @Override
+    //    public <T> List<List<T>> split(final Class<? extends T> rowClass, final int size) {
+    //        return split(rowClass, _columnNameList, size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(final Class<? extends T> rowClass, final Collection<String> columnNames, final int size) {
+    //        return split(rowClass, columnNames, 0, size(), size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(final Class<? extends T> rowClass, final int fromRowIndex, final int toRowIndex, final int size) {
+    //        return split(rowClass, _columnNameList, fromRowIndex, toRowIndex, size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(final Class<? extends T> rowClass, final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex,
+    //            final int size) {
+    //        checkRowIndex(fromRowIndex, toRowIndex);
+    //
+    //        final List<T> list = this.toList(rowClass, columnNames, fromRowIndex, toRowIndex);
+    //
+    //        return N.split(list, size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int size) {
+    //        return split(rowSupplier, _columnNameList, size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size) {
+    //        return split(rowSupplier, columnNames, 0, size(), size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size) {
+    //        return split(rowSupplier, _columnNameList, fromRowIndex, toRowIndex, size);
+    //    }
+    //
+    //    @Override
+    //    public <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size) {
+    //        checkRowIndex(fromRowIndex, toRowIndex);
+    //
+    //        final List<T> list = this.toList(rowSupplier, columnNames, fromRowIndex, toRowIndex);
+    //
+    //        return N.split(list, size);
+    //    }
+
+    @Override
+    public DataSet slice(Collection<String> columnNames) {
+        return slice(columnNames, 0, size());
+    }
+
+    @Override
+    public DataSet slice(int fromRowIndex, int toRowIndex) {
+        return slice(_columnNameList, fromRowIndex, toRowIndex);
+    }
+
+    @Override
+    public DataSet slice(Collection<String> columnNames, int fromRowIndex, int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, size());
+        DataSet ds = null;
+
+        if (N.isNullOrEmpty(columnNames)) {
+            ds = N.newEmptyDataSet();
+        } else {
+            final int[] columnIndexes = checkColumnName(columnNames);
+            final List<String> newColumnNames = new ArrayList<>(columnNames);
+            final List<List<Object>> newColumnList = new ArrayList<>(newColumnNames.size());
+
+            for (int columnIndex : columnIndexes) {
+                newColumnList.add(_columnList.get(columnIndex).subList(fromRowIndex, toRowIndex));
+            }
+
+            ds = new RowDataSet(newColumnNames, newColumnList, _properties);
+        }
+
+        ds.frozen();
+        return ds;
     }
 
     @Override

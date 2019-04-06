@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.u.Optional;
 
 /**
  * 
@@ -57,7 +56,7 @@ public class DistributedCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Optional<V> get(K k) {
+    public V gett(K k) {
         assertNotClosed();
 
         if ((failedCounter.get() > maxFailedNumForRetry) && ((System.currentTimeMillis() - lastFailedTime) < retryDelay)) {
@@ -80,7 +79,7 @@ public class DistributedCache<K, V> extends AbstractCache<K, V> {
             }
         }
 
-        return result == null ? Optional.<V> empty() : Optional.of(result);
+        return result;
     }
 
     @Override

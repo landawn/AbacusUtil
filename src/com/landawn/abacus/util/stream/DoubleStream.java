@@ -116,9 +116,9 @@ public abstract class DoubleStream
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -140,15 +140,15 @@ public abstract class DoubleStream
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code seed} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
-     * {@code acc(acc(seed, value1), value2)}, etc.
+     * to an initial element {@code init} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code init}, {@code acc(init, value1)},
+     * {@code acc(acc(init, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
      * <p>Example:
      * <pre>
-     * seed:10
+     * init:10
      * accumulator: (a, b) -&gt; a + b
      * stream: [1, 2, 3, 4, 5]
      * result: [11, 13, 16, 20, 25]
@@ -157,24 +157,24 @@ public abstract class DoubleStream
      * <br />
      * This method only run sequentially, even in parallel stream.
      *
-     * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
+     * @param init the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
      * It will be ignored if this stream is empty and won't be the first element of the returned stream.
      * 
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator);
+    public abstract DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator);
 
     /**
      * 
-     * @param seed
+     * @param init
      * @param accumulator
-     * @param seedIncluded
+     * @param initIncluded
      * @return
      */
     @SequentialOnly
-    public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator, final boolean seedIncluded);
+    public abstract DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -201,64 +201,64 @@ public abstract class DoubleStream
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper);
+    public abstract <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
             Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
+    public abstract <K, V> Map<K, V> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction);
 
     /**
      * 
-     * @param keyExtractor
+     * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends V> valueMapper,
+    public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
             BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    public abstract <K, A, D> Map<K, D> toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream);
+    public abstract <K, A, D> Map<K, D> toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream);
 
     /**
      * 
-     * @param classifier
+     * @param keyMapper
      * @param downstream
      * @param mapFactory
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory);
 
     public abstract DoubleMatrix toMatrix();
@@ -776,7 +776,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final double seed, final BooleanSupplier hasNext, final DoubleUnaryOperator f) {
+    public static DoubleStream iterate(final double init, final BooleanSupplier hasNext, final DoubleUnaryOperator f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -804,7 +804,7 @@ public abstract class DoubleStream
 
                 if (isFirst) {
                     isFirst = false;
-                    t = seed;
+                    t = init;
                 } else {
                     t = f.applyAsDouble(t);
                 }
@@ -816,12 +816,12 @@ public abstract class DoubleStream
 
     /**
      * 
-     * @param seed
-     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param init
+     * @param hasNext test if has next by hasNext.test(init) for first time and hasNext.test(f.apply(previous)) for remaining.
      * @param f
      * @return
      */
-    public static DoubleStream iterate(final double seed, final DoublePredicate hasNext, final DoubleUnaryOperator f) {
+    public static DoubleStream iterate(final double init, final DoublePredicate hasNext, final DoubleUnaryOperator f) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(f);
 
@@ -837,7 +837,7 @@ public abstract class DoubleStream
                 if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
-                        hasNextVal = hasNext.test(cur = seed);
+                        hasNextVal = hasNext.test(cur = init);
                     } else {
                         hasNextVal = hasNext.test(cur = f.applyAsDouble(t));
                     }
@@ -863,7 +863,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final double seed, final DoubleUnaryOperator f) {
+    public static DoubleStream iterate(final double init, final DoubleUnaryOperator f) {
         N.checkArgNotNull(f);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
@@ -879,7 +879,7 @@ public abstract class DoubleStream
             public double nextDouble() {
                 if (isFirst) {
                     isFirst = false;
-                    t = seed;
+                    t = init;
                 } else {
                     t = f.applyAsDouble(t);
                 }

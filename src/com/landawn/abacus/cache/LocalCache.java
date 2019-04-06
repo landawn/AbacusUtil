@@ -19,7 +19,6 @@ import java.util.Set;
 import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
 import com.landawn.abacus.pool.PoolableWrapper;
-import com.landawn.abacus.util.u.Optional;
 
 /**
  * 
@@ -41,10 +40,10 @@ public class LocalCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    public Optional<V> get(K key) {
+    public V gett(K key) {
         final PoolableWrapper<V> w = pool.get(key);
 
-        return w == null ? Optional.<V> empty() : Optional.of(w.value());
+        return w == null ? null : w.value();
     }
 
     @Override

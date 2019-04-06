@@ -866,13 +866,13 @@ public final class Fn extends Comparators {
         return IDENTITY;
     }
 
-    public static <K, T> Function<T, Keyed<K, T>> keyed(final Function<? super T, K> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <K, T> Function<T, Keyed<K, T>> keyed(final Function<? super T, K> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Function<T, Keyed<K, T>>() {
             @Override
             public Keyed<K, T> apply(T t) {
-                return Keyed.of(keyExtractor.apply(t), t);
+                return Keyed.of(keyMapper.apply(t), t);
             }
         };
     }
@@ -966,13 +966,13 @@ public final class Fn extends Comparators {
         };
     }
 
-    public static <K, T> Function<T, Map.Entry<K, T>> entry(final Function<? super T, K> keyExtractor) {
-        N.checkArgNotNull(keyExtractor);
+    public static <K, T> Function<T, Map.Entry<K, T>> entry(final Function<? super T, K> keyMapper) {
+        N.checkArgNotNull(keyMapper);
 
         return new Function<T, Map.Entry<K, T>>() {
             @Override
             public Entry<K, T> apply(T t) {
-                return new SimpleImmutableEntry<>(keyExtractor.apply(t), t);
+                return new SimpleImmutableEntry<>(keyMapper.apply(t), t);
             }
         };
     }
@@ -3043,6 +3043,7 @@ public final class Fn extends Comparators {
                             N.checkArgNotNull(duration, "duration");
                             N.checkArgPositive(duration.toMillis(), "duration");
                             N.checkArgPositive(incrementInMillis, "incrementInMillis");
+                            N.checkArgNotNull(startTime, "startTime");
                             N.checkArgNotNull(collectionSupplier, "collectionSupplier");
 
                             iter = s.iterator();
@@ -3213,6 +3214,7 @@ public final class Fn extends Comparators {
                             N.checkArgNotNull(duration, "duration");
                             N.checkArgPositive(duration.toMillis(), "duration");
                             N.checkArgPositive(incrementInMillis, "incrementInMillis");
+                            N.checkArgNotNull(startTime, "startTime");
                             N.checkArgNotNull(collector, "collector");
 
                             durationInMillis = duration.toMillis();
@@ -3230,6 +3232,256 @@ public final class Fn extends Comparators {
 
                             fromTime = startTime.getAsLong() - incrementInMillis;
                             endTime = fromTime + durationInMillis;
+                        }
+                    }
+                };
+
+                return Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        s.close();
+                    }
+                });
+            }
+        };
+    }
+
+    /**
+     * Split this stream by the specified duration.
+     * 
+     * <pre>
+     * <code>
+     * Stream<Timed<MyObject>> s = ...;
+     * s.__(Fn.window(Duration.ofMinutes(3), () - System.currentTimeMillis()))...// Do your stuffs with Stream<Stream<Timed<T>>>;
+     * </code>
+     * </pre>
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @return
+     */
+    public static <T> Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>> window(final int maxWindowSize, final Duration maxDuration,
+            final LongSupplier startTime) {
+        final Function<Stream<Timed<T>>, Stream<List<Timed<T>>>> mapper = window(maxWindowSize, maxDuration, startTime, Suppliers.<Timed<T>> ofList());
+
+        return new Function<Stream<Timed<T>>, Stream<Stream<Timed<T>>>>() {
+            @Override
+            public Stream<Stream<Timed<T>>> apply(Stream<Timed<T>> t) {
+                return mapper.apply(t).map(new Function<List<Timed<T>>, Stream<Timed<T>>>() {
+                    @Override
+                    public Stream<Timed<T>> apply(List<Timed<T>> t) {
+                        return Stream.of(t);
+                    }
+                });
+            }
+        };
+    }
+
+    /**
+     * Split this stream at where {@code maxWindowSize} or {@code maxDuration} reaches first.
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @param collectionSupplier
+     * @return
+     * @see #window(Duration, long, LongSupplier, Supplier)
+     */
+    public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final int maxWindowSize, final Duration maxDuration,
+            final LongSupplier startTime, final Supplier<C> collectionSupplier) {
+        return new Function<Stream<Timed<T>>, Stream<C>>() {
+            @Override
+            public Stream<C> apply(final Stream<Timed<T>> s) {
+                final ObjIterator<C> iter = new ObjIteratorEx<C>() {
+                    private long maxDurationInMillis;
+
+                    private ObjIterator<Timed<T>> iter;
+                    private Timed<T> next = null;
+
+                    private long fromTime;
+                    private long endTime;
+
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (initialized == false) {
+                            init();
+                        }
+
+                        while ((next == null || next.timestamp() < endTime) && iter.hasNext()) {
+                            next = iter.next();
+                        }
+
+                        return next != null && next.timestamp() >= endTime;
+                    }
+
+                    @Override
+                    public C next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        fromTime = endTime;
+                        endTime = fromTime + maxDurationInMillis;
+                        int cnt = 0;
+                        final C result = collectionSupplier.get();
+
+                        if (next != null && next.timestamp() < endTime) {
+                            result.add(next);
+                            next = null;
+                            cnt++;
+                        }
+
+                        if (next == null) {
+                            while (cnt < maxWindowSize && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() < endTime) {
+                                    result.add(next);
+                                    next = null;
+                                    cnt++;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+
+                        endTime = N.min(endTime, next == null ? System.currentTimeMillis() : next.timestamp());
+
+                        return result;
+                    }
+
+                    private void init() {
+                        if (initialized == false) {
+                            initialized = true;
+
+                            N.checkArgNotNull(maxDuration, "maxDuration");
+                            N.checkArgPositive(maxDuration.toMillis(), "maxDuration");
+                            N.checkArgPositive(maxWindowSize, "maxWindowSize");
+                            N.checkArgNotNull(startTime, "startTime");
+                            N.checkArgNotNull(collectionSupplier, "collectionSupplier");
+
+                            iter = s.iterator();
+
+                            maxDurationInMillis = maxDuration.toMillis();
+
+                            fromTime = startTime.getAsLong() - maxDurationInMillis;
+                            endTime = fromTime + maxDurationInMillis;
+                        }
+                    }
+                };
+
+                return Stream.of(iter).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        s.close();
+                    }
+                });
+            }
+        };
+    }
+
+    /**
+     * Split this stream at where {@code maxWindowSize} or {@code maxDuration} reaches first.
+     * 
+     * @param maxWindowSize
+     * @param maxDuration
+     * @param startTime
+     * @param collector
+     * @return
+     * @see #window(Duration, long, LongSupplier, Collector)
+     */
+    public static <T, A, R> Function<Stream<Timed<T>>, Stream<R>> window(final int maxWindowSize, final Duration maxDuration, final LongSupplier startTime,
+            final Collector<? super Timed<T>, A, R> collector) {
+        return new Function<Stream<Timed<T>>, Stream<R>>() {
+            @Override
+            public Stream<R> apply(final Stream<Timed<T>> s) {
+                final ObjIterator<R> iter = new ObjIteratorEx<R>() {
+                    private long maxDurationInMillis;
+
+                    private Supplier<A> supplier;
+                    private BiConsumer<A, ? super Timed<T>> accumulator;
+                    private Function<A, R> finisher;
+
+                    private ObjIterator<Timed<T>> iter;
+                    private Timed<T> next = null;
+
+                    private long fromTime;
+                    private long endTime;
+
+                    private boolean initialized = false;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (initialized == false) {
+                            init();
+                        }
+
+                        while ((next == null || next.timestamp() < endTime) && iter.hasNext()) {
+                            next = iter.next();
+                        }
+
+                        return next != null && next.timestamp() >= endTime;
+                    }
+
+                    @Override
+                    public R next() {
+                        if (hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        fromTime = endTime;
+                        endTime = fromTime + maxDurationInMillis;
+                        int cnt = 0;
+                        final A container = supplier.get();
+
+                        if (next != null && next.timestamp() < endTime) {
+                            accumulator.accept(container, next);
+                            next = null;
+                            cnt++;
+                        }
+
+                        if (next == null) {
+                            while (cnt < maxWindowSize && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next.timestamp() < endTime) {
+                                    accumulator.accept(container, next);
+                                    next = null;
+                                    cnt++;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+
+                        endTime = N.min(endTime, next == null ? System.currentTimeMillis() : next.timestamp());
+
+                        return finisher.apply(container);
+                    }
+
+                    private void init() {
+                        if (initialized == false) {
+                            initialized = true;
+
+                            N.checkArgNotNull(maxDuration, "maxDuration");
+                            N.checkArgPositive(maxDuration.toMillis(), "maxDuration");
+                            N.checkArgPositive(maxWindowSize, "maxWindowSize");
+                            N.checkArgNotNull(startTime, "startTime");
+                            N.checkArgNotNull(collector, "collector");
+
+                            supplier = collector.supplier();
+                            accumulator = collector.accumulator();
+                            finisher = collector.finisher();
+
+                            iter = s.iterator();
+
+                            maxDurationInMillis = maxDuration.toMillis();
+
+                            fromTime = startTime.getAsLong() - maxDurationInMillis;
+                            endTime = fromTime + maxDurationInMillis;
                         }
                     }
                 };
@@ -5058,6 +5310,7 @@ public final class Fn extends Comparators {
     }
 
     public static final class Functions {
+
         private Functions() {
             // singleton.
         }

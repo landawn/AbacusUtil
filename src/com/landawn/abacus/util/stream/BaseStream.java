@@ -29,8 +29,8 @@ import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -341,10 +341,13 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     S reverseSorted();
 
     @SequentialOnly
+    S prepend(S stream);
+
+    @SequentialOnly
     S append(S s);
 
     @SequentialOnly
-    S prepend(S stream);
+    S appendIfEmpty(Supplier<S> suppliers);
 
     //    /**
     //     * <br />
@@ -394,6 +397,16 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      */
     @SequentialOnly
     S limit(long maxSize);
+
+    /**
+     * Same as: {@code stream.skip(from).limit(to - from)}.
+     * 
+     * @param from
+     * @param to
+     * @return
+     */
+    @SequentialOnly
+    S slice(long from, long to);
 
     @SequentialOnly
     S step(long step);

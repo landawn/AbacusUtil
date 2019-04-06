@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
@@ -40,6 +41,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
@@ -86,6 +88,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.filter(predicate);
         }
@@ -136,6 +140,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.takeWhile(predicate);
         }
@@ -186,6 +192,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.dropWhile(predicate);
         }
@@ -257,6 +265,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.map(mapper);
         }
@@ -398,6 +408,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
@@ -472,6 +484,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
@@ -626,6 +640,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToChar(mapper);
         }
@@ -667,6 +683,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToByte(mapper);
         }
@@ -708,6 +726,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToShort(mapper);
         }
@@ -749,6 +769,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToInt(mapper);
         }
@@ -790,6 +812,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToLong(mapper);
         }
@@ -831,6 +855,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToFloat(mapper);
         }
@@ -872,6 +898,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.mapToDouble(mapper);
         }
@@ -913,6 +941,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().flatMap(mapper), false, null, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1000,6 +1030,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().flatMapToChar(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1087,6 +1119,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorByteStream(sequential().flatMapToByte(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1174,6 +1208,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorShortStream(sequential().flatMapToShort(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1261,6 +1297,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1348,6 +1386,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1435,6 +1475,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorFloatStream(sequential().flatMapToFloat(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1522,6 +1564,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper), false, maxThreadNum, splitor, asyncExecutor, null);
         }
@@ -1609,6 +1653,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.peek(action);
         }
@@ -1651,6 +1697,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.forEach(action);
             return;
@@ -1693,6 +1741,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.forEachPair(action, increment);
             return;
@@ -1764,6 +1814,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.forEachTriple(action, increment);
             return;
@@ -1856,16 +1908,18 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends V> valueMapper,
+    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
             final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(keyExtractor, valueMapper, mapFactory);
+            return super.toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
-        // return collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
+        // return collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
 
         //    final M res = mapFactory.get();
-        //    res.putAll(collect(Collectors.toConcurrentMap(keyExtractor, valueMapper, mergeFunction)));
+        //    res.putAll(collect(Collectors.toConcurrentMap(keyMapper, valueMapper, mergeFunction)));
         //    return res;
 
         final List<ContinuableFuture<M>> futureList = new ArrayList<>(maxThreadNum);
@@ -1889,7 +1943,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
 
-                            Collectors.merge(map, keyExtractor.apply(next), valueMapper.apply(next), mergeFunction);
+                            Collectors.merge(map, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
                         }
                     } catch (Exception e) {
                         setError(eHolder, e);
@@ -1929,20 +1983,22 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
+            final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMap(classifier, downstream, mapFactory);
+            return super.toMap(keyMapper, valueMapper, downstream, mapFactory);
         }
 
-        // return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+        // return collect(Collectors.groupingBy(keyMapper, downstream, mapFactory));
 
         //    final M res = mapFactory.get();
-        //    res.putAll(collect(Collectors.groupingByConcurrent(classifier, downstream)));
+        //    res.putAll(collect(Collectors.groupingByConcurrent(keyMapper, downstream)));
         //    return res;
 
         final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
         final BinaryOperator<A> downstreamCombiner = downstream.combiner();
         final Function<A, D> downstreamFinisher = downstream.finisher();
 
@@ -1970,7 +2026,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
 
-                            key = checkArgNotNull(classifier.apply(next), "element cannot be mapped to a null key");
+                            key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
                             value = map.get(key);
 
                             if (value == null) {
@@ -1978,7 +2034,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 map.put(key, value);
                             }
 
-                            downstreamAccumulator.accept(value, next);
+                            downstreamAccumulator.accept(value, valueMapper.apply(next));
                         }
                     } catch (Exception e) {
                         setError(eHolder, e);
@@ -2036,16 +2092,241 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
-            return super.toMultimap(keyExtractor, valueMapper, mapFactory);
+            return super.toMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
-        // return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
+        // return collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
 
         //    final M res = mapFactory.get();
-        //    final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyExtractor, Collectors.mapping(valueMapper, Collectors.<U> toList())));
+        //    res.putAll(collect(Collectors.toConcurrentMap(keyMapper, valueMapper, mergeFunction)));
+        //    return res;
+
+        final List<ContinuableFuture<M>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Callable<M>() {
+
+                @Override
+                public M call() {
+                    M map = mapFactory.get();
+                    ObjIterator<? extends K> keyIter = null;
+                    T next = null;
+                    K key = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    next = elements.next();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
+                                keyIter = ks.iterator();
+
+                                while (keyIter.hasNext()) {
+                                    key = keyIter.next();
+                                    Collectors.merge(map, key, valueMapper.apply(key, next), mergeFunction);
+                                }
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e);
+                    }
+
+                    return map;
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            close();
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        M res = null;
+
+        try {
+            for (ContinuableFuture<M> future : futureList) {
+                if (res == null) {
+                    res = future.get();
+                } else {
+                    final M m = future.get();
+
+                    for (Map.Entry<K, V> entry : m.entrySet()) {
+                        Collectors.merge(res, entry.getKey(), entry.getValue(), mergeFunction);
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        } finally {
+            close();
+        }
+
+        return res;
+    }
+
+    @Override
+    public <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        if (maxThreadNum <= 1) {
+            return super.toMap(flatKeyMapper, valueMapper, downstream, mapFactory);
+        }
+
+        // return collect(Collectors.groupingBy(keyMapper, downstream, mapFactory));
+
+        //    final M res = mapFactory.get();
+        //    res.putAll(collect(Collectors.groupingByConcurrent(keyMapper, downstream)));
+        //    return res;
+
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+        final Function<A, D> downstreamFinisher = downstream.finisher();
+
+        final List<ContinuableFuture<Map<K, A>>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
+
+                @Override
+                public Map<K, A> call() {
+                    @SuppressWarnings("rawtypes")
+                    Map<K, A> map = (Map) mapFactory.get();
+                    ObjIterator<? extends K> keyIter = null;
+                    K key = null;
+                    A value = null;
+                    T next = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    next = elements.next();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
+                                keyIter = ks.iterator();
+
+                                while (keyIter.hasNext()) {
+                                    key = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
+                                    value = map.get(key);
+
+                                    if (value == null) {
+                                        value = downstreamSupplier.get();
+                                        map.put(key, value);
+                                    }
+
+                                    downstreamAccumulator.accept(value, valueMapper.apply(key, next));
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e);
+                    }
+
+                    return map;
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            close();
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        Map<K, A> intermediate = null;
+
+        try {
+            for (ContinuableFuture<Map<K, A>> future : futureList) {
+                if (intermediate == null) {
+                    intermediate = future.get();
+                } else {
+                    final Map<K, A> m = future.get();
+                    K key = null;
+
+                    for (Map.Entry<K, A> entry : m.entrySet()) {
+                        key = entry.getKey();
+
+                        if (intermediate.containsKey(key)) {
+                            intermediate.put(key, downstreamCombiner.apply(intermediate.get(key), m.get(key)));
+                        } else {
+                            intermediate.put(key, m.get(key));
+                        }
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        } finally {
+            close();
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstreamFinisher.apply(v);
+            }
+
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return (M) intermediate;
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        return toMap(new Function<T, Stream<K>>() {
+            @Override
+            public Stream<K> apply(T t) {
+                return Stream.of(flatKeyMapper.apply(t));
+            }
+        }, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, V, A, D, M extends Map<K, D>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
+        return toMap(new Function<T, Stream<K>>() {
+            @Override
+            public Stream<K> apply(T t) {
+                return Stream.of(flatKeyMapper.apply(t));
+            }
+        }, valueMapper, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+        assertNotClosed();
+
+        if (maxThreadNum <= 1) {
+            return super.toMultimap(keyMapper, valueMapper, mapFactory);
+        }
+
+        // return collect(Collectors.toMultimap(keyMapper, valueMapper, mapFactory));
+
+        //    final M res = mapFactory.get();
+        //    final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyMapper, Collectors.mapping(valueMapper, Collectors.<U> toList())));
         //
         //    for (Map.Entry<K, List<U>> entry : tmp.entrySet()) {
         //        res.putAll(entry.getKey(), entry.getValue());
@@ -2074,7 +2355,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 }
                             }
 
-                            map.put(keyExtractor.apply(next), valueMapper.apply(next));
+                            map.put(keyMapper.apply(next), valueMapper.apply(next));
                         }
                     } catch (Exception e) {
                         setError(eHolder, e);
@@ -2099,7 +2380,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 } else {
                     final M m = future.get();
 
-                    for (Map.Entry<K, V> entry : m.entrySet()) {
+                    for (Map.Entry<K, C> entry : m.entrySet()) {
                         res.putAll(entry.getKey(), entry.getValue());
                     }
                 }
@@ -2115,7 +2396,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <A, D> Map<Boolean, D> partitionTo(final Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
-        final Function<T, Boolean> keyExtractor = new Function<T, Boolean>() {
+        final Function<T, Boolean> keyMapper = new Function<T, Boolean>() {
             @Override
             public Boolean apply(T t) {
                 return predicate.test(t);
@@ -2123,7 +2404,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         };
 
         final Supplier<Map<Boolean, D>> mapFactory = Fn.Suppliers.ofMap();
-        final Map<Boolean, D> map = toMap(keyExtractor, downstream, mapFactory);
+        final Map<Boolean, D> map = toMap(keyMapper, downstream, mapFactory);
 
         if (map.containsKey(Boolean.TRUE) == false) {
             map.put(Boolean.TRUE, downstream.finisher().apply(downstream.supplier().get()));
@@ -2136,6 +2417,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public T reduce(final T identity, final BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(identity, accumulator);
         }
@@ -2197,6 +2480,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Optional<T> reduce(final BinaryOperator<T> accumulator) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.reduce(accumulator);
         }
@@ -2262,6 +2547,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator, final BiConsumer<R, R> combiner) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.collect(supplier, accumulator, combiner);
         }
@@ -2323,6 +2610,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R, A> R collect(final Collector<? super T, A, R> collector) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return sequential().collect(collector);
         }
@@ -2465,6 +2754,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.anyMatch(predicate);
         }
@@ -2512,6 +2803,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.allMatch(predicate);
         }
@@ -2559,6 +2852,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.noneMatch(predicate);
         }
@@ -2605,7 +2900,63 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
+    public <E extends Exception> boolean nMatch(final long atLeast, final long atMost, final Try.Predicate<? super T, E> predicate) throws E {
+        checkArgNotNegative(atLeast, "atLeast");
+        checkArgNotNegative(atMost, "atMost");
+        checkArgument(atLeast <= atMost, "'atLeast' must be <= 'atMost'");
+
+        assertNotClosed();
+
+        if (maxThreadNum <= 1) {
+            return super.nMatch(atLeast, atMost, predicate);
+        }
+
+        final List<ContinuableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final AtomicLong cnt = new AtomicLong(0);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Try.Runnable<RuntimeException>() {
+                @Override
+                public void run() {
+                    T next = null;
+
+                    try {
+                        while (cnt.get() <= atMost && eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    next = elements.next();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            if (predicate.test(next)) {
+                                if (cnt.incrementAndGet() > atMost) {
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        try {
+            complette(futureList, eHolder, (E) null);
+        } finally {
+            close();
+        }
+
+        return cnt.get() >= atLeast && cnt.get() <= atMost;
+    }
+
+    @Override
     public <E extends Exception> Optional<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findFirst(predicate);
         }
@@ -2660,6 +3011,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findLast(predicate);
         }
@@ -2712,6 +3065,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <E extends Exception> Optional<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.findAny(predicate);
         }
@@ -2764,6 +3119,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> intersection(final Function<? super T, ?> mapper, final Collection<?> c) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             super.intersection(mapper, c);
         }
@@ -2784,6 +3141,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> difference(final Function<? super T, ?> mapper, final Collection<?> c) {
+        assertNotClosed();
+
         if (maxThreadNum <= 1) {
             return super.intersection(mapper, c);
         }

@@ -130,20 +130,20 @@ public final class Try<T extends AutoCloseable> {
     //     * @param cmd
     //     * @throws RuntimeException if some error happens
     //     */
-    //    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd) {
+    //    public static <U> void run(final U init, final Try.Consumer<? super U, ? extends Exception> cmd) {
     //        try {
-    //            cmd.accept(seed);
+    //            cmd.accept(init);
     //        } catch (Exception e) {
     //            throw N.toRuntimeException(e);
     //        }
     //    }
     //
-    //    public static <U> void run(final U seed, final Try.Consumer<? super U, ? extends Exception> cmd,
+    //    public static <U> void run(final U init, final Try.Consumer<? super U, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
     //        N.checkArgNotNull(actionOnError);
     //
     //        try {
-    //            cmd.accept(seed);
+    //            cmd.accept(init);
     //        } catch (Exception e) {
     //            actionOnError.accept(e);
     //        }
@@ -239,14 +239,14 @@ public final class Try<T extends AutoCloseable> {
     }
 
     //    /**
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @return
     //     * @throws RuntimeException if some error happens
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd) {
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd) {
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            throw N.toRuntimeException(e);
     //        }
@@ -254,17 +254,17 @@ public final class Try<T extends AutoCloseable> {
     //
     //    /**
     //     * 
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @param actionOnError
     //     * @return
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
     //        N.checkArgNotNull(actionOnError);
     //
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            return actionOnError.apply(e);
     //        }
@@ -272,17 +272,17 @@ public final class Try<T extends AutoCloseable> {
     //
     //    /**
     //     * 
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @param supplier
     //     * @return
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Supplier<R> supplier) {
     //        N.checkArgNotNull(supplier);
     //
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            return supplier.get();
     //        }
@@ -290,14 +290,14 @@ public final class Try<T extends AutoCloseable> {
     //
     //    /**
     //     * 
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @param defaultValue
     //     * @return
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd, final R defaultValue) {
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd, final R defaultValue) {
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            return defaultValue;
     //        }
@@ -305,20 +305,20 @@ public final class Try<T extends AutoCloseable> {
     //
     //    /**
     //     * 
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @param predicate
     //     * @param supplier
     //     * @return the value returned <code>Supplier.get()</code> if some error happens and <code>predicate</code> return true.
     //     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final com.landawn.abacus.util.function.Supplier<R> supplier) {
     //        N.checkArgNotNull(predicate);
     //        N.checkArgNotNull(supplier);
     //
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            if (predicate.test(e)) {
     //                return supplier.get();
@@ -330,19 +330,19 @@ public final class Try<T extends AutoCloseable> {
     //
     //    /**
     //     * 
-    //     * @param seed
+    //     * @param init
     //     * @param cmd
     //     * @param predicate
     //     * @param defaultValue
     //     * @return the <code>defaultValue()</code> if some error happens and <code>predicate</code> return true.
     //     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
     //     */
-    //    public static <U, R> R call(final U seed, final Try.Function<? super U, R, ? extends Exception> cmd,
+    //    public static <U, R> R call(final U init, final Try.Function<? super U, R, ? extends Exception> cmd,
     //            final com.landawn.abacus.util.function.Predicate<? super Exception> predicate, final R defaultValue) {
     //        N.checkArgNotNull(predicate);
     //
     //        try {
-    //            return cmd.apply(seed);
+    //            return cmd.apply(init);
     //        } catch (Exception e) {
     //            if (predicate.test(e)) {
     //                return defaultValue;

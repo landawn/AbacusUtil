@@ -48,8 +48,8 @@ public final class Maps {
         // Utility class.
     }
 
-    public static <T, K, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor) throws E {
-        N.checkArgNotNull(keyExtractor);
+    public static <T, K, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyMapper) throws E {
+        N.checkArgNotNull(keyMapper);
 
         if (N.isNullOrEmpty(c)) {
             return new HashMap<K, T>();
@@ -58,15 +58,15 @@ public final class Maps {
         final Map<K, T> result = new HashMap<>(N.initHashCapacity(c.size()));
 
         for (T e : c) {
-            result.put(keyExtractor.apply(e), e);
+            result.put(keyMapper.apply(e), e);
         }
 
         return result;
     }
 
-    public static <T, K, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor)
+    public static <T, K, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyMapper)
             throws E {
-        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(keyMapper);
 
         if (N.isNullOrEmpty(c)) {
             return new LinkedHashMap<K, T>();
@@ -75,15 +75,15 @@ public final class Maps {
         final Map<K, T> result = new LinkedHashMap<>(N.initHashCapacity(c.size()));
 
         for (T e : c) {
-            result.put(keyExtractor.apply(e), e);
+            result.put(keyMapper.apply(e), e);
         }
 
         return result;
     }
 
     public static <T, K, V, E extends Exception, E2 extends Exception> Map<K, V> newMap(Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
-        N.checkArgNotNull(keyExtractor);
+            final Try.Function<? super T, ? extends K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -93,16 +93,16 @@ public final class Maps {
         final Map<K, V> result = new HashMap<>(N.initHashCapacity(c.size()));
 
         for (T e : c) {
-            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
+            result.put(keyMapper.apply(e), valueExtractor.apply(e));
         }
 
         return result;
     }
 
     public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M newMap(Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor,
+            final Try.Function<? super T, ? extends K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor,
             final IntFunction<M> mapSupplier) throws E, E2 {
-        N.checkArgNotNull(keyExtractor);
+        N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -112,7 +112,7 @@ public final class Maps {
         final M result = mapSupplier.apply(c.size());
 
         for (T e : c) {
-            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
+            result.put(keyMapper.apply(e), valueExtractor.apply(e));
         }
 
         return result;
