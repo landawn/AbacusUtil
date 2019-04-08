@@ -31,7 +31,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -1209,12 +1209,12 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public List<Float> toList() {
-        return toCollection(Fn.Suppliers.<Float> ofList());
+        return toCollection(Suppliers.<Float> ofList());
     }
 
     @Override
     public Set<Float> toSet() {
-        return toCollection(Fn.Suppliers.<Float> ofSet());
+        return toCollection(Suppliers.<Float> ofSet());
     }
 
     @Override
@@ -1236,7 +1236,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Multiset<Float> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Float> ofMultiset());
+        return toMultiset(Suppliers.<Float> ofMultiset());
     }
 
     @Override
@@ -1258,7 +1258,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public LongMultiset<Float> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Float> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Float> ofLongMultiset());
     }
 
     @Override
@@ -1280,16 +1280,16 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            float element = 0;
+            float next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextFloat();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextFloat();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -1300,7 +1300,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1310,11 +1310,11 @@ class IteratorFloatStream extends AbstractFloatStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            float element = 0;
+            float next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextFloat();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextFloat();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1322,7 +1322,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1379,7 +1379,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

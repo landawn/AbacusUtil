@@ -238,7 +238,7 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -260,7 +260,7 @@ public abstract class CharStream
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -280,7 +280,7 @@ public abstract class CharStream
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> keyMapper, final Collector<Character, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract CharMatrix toMatrix();
 
@@ -412,7 +412,7 @@ public abstract class CharStream
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -420,7 +420,7 @@ public abstract class CharStream
      * @param accumulator
      * @return
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(final Try.CharConsumer<E> action) throws E;
 

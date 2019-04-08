@@ -27,7 +27,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -1019,12 +1019,12 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public List<Short> toList() {
-        return toCollection(Fn.Suppliers.<Short> ofList());
+        return toCollection(Suppliers.<Short> ofList());
     }
 
     @Override
     public Set<Short> toSet() {
-        return toCollection(Fn.Suppliers.<Short> ofSet());
+        return toCollection(Suppliers.<Short> ofSet());
     }
 
     @Override
@@ -1046,7 +1046,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Short> ofMultiset());
+        return toMultiset(Suppliers.<Short> ofMultiset());
     }
 
     @Override
@@ -1068,7 +1068,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Short> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Short> ofLongMultiset());
     }
 
     @Override
@@ -1090,16 +1090,16 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            short element = 0;
+            short next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextShort();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextShort();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -1110,7 +1110,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> keyMapper, final Collector<Short, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1120,11 +1120,11 @@ class IteratorShortStream extends AbstractShortStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            short element = 0;
+            short next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextShort();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextShort();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1132,7 +1132,7 @@ class IteratorShortStream extends AbstractShortStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1189,7 +1189,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

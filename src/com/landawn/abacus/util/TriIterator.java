@@ -102,7 +102,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
                 N.checkArgNotNull(action);
 
                 while (hasNext.getAsBoolean()) {
@@ -113,7 +113,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+            public <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {
@@ -169,7 +169,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
                 N.checkArgNotNull(action);
 
                 while (cursor.value() < toIndex) {
@@ -180,7 +180,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+            public <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {
@@ -244,7 +244,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
                 N.checkArgNotNull(action);
 
                 while (iterA.hasNext() && iterB.hasNext() && iterC.hasNext()) {
@@ -253,7 +253,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+            public <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {
@@ -298,7 +298,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
                 N.checkArgNotNull(action);
 
                 while (iter1.hasNext() || iter2.hasNext() || iter3.hasNext()) {
@@ -308,7 +308,7 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
             }
 
             @Override
-            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+            public <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {
@@ -359,6 +359,8 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
         return TriIterator.generate(hasNext, output);
     }
 
+    public abstract <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E;
+
     /**
      * It's preferred to call <code>forEachRemaining(Try.TriConsumer)</code> to avoid the create the unnecessary <code>Triple</code> Objects.
      * 
@@ -370,11 +372,9 @@ public abstract class TriIterator<A, B, C> extends ImmutableIterator<Triple<A, B
         super.forEachRemaining(action);
     }
 
-    public abstract <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E;
+    public abstract <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper);
 
-    public abstract <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper);
-
-    public <R> Stream<R> stream(final TriFunction<A, B, C, R> mapper) {
+    public <R> Stream<R> stream(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
         N.checkArgNotNull(mapper);
 
         return Stream.of(map(mapper));

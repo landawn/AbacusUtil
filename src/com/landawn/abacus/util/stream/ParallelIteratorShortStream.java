@@ -302,7 +302,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends V> valueMapper,
-            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -328,7 +328,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> keyMapper, final Collector<Short, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -485,7 +485,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public <R> R collect(final Supplier<R> supplier, final ObjShortConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final ObjShortConsumer<? super R> accumulator, final BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {

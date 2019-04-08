@@ -31,6 +31,7 @@ import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.DuplicatedResultException;
+import com.landawn.abacus.util.Fn.BiFunctions;
 import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -608,12 +609,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         long cnt = 0;
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                if (filter.test(e)) {
-                    if (++cnt > atMost) {
-                        return false;
-                    }
+        for (T e : coll) {
+            if (filter.test(e)) {
+                if (++cnt > atMost) {
+                    return false;
                 }
             }
         }
@@ -637,11 +636,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.filter(coll, filter, max);
     }
 
-    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, IntFunction<C> supplier) throws E {
+    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, IntFunction<? extends C> supplier) throws E {
         return N.filter(coll, filter, supplier);
     }
 
-    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, final int max, IntFunction<C> supplier) throws E {
+    public <C extends Collection<T>, E extends Exception> C filter(Try.Predicate<? super T, E> filter, final int max, IntFunction<? extends C> supplier)
+            throws E {
         return N.filter(coll, filter, max, supplier);
     }
 
@@ -1097,10 +1097,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(mapper);
         N.checkArgNotNull(func);
 
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<R>();
-        }
-
         final List<R> result = new ArrayList<R>(N.max(9, coll.size()));
 
         for (T e : coll) {
@@ -1162,10 +1158,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         final List<R> result = new ArrayList<>();
 
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         for (T e : coll) {
             if (filter.test(e)) {
                 result.add(mapper.apply(e));
@@ -1191,10 +1183,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(mapper);
 
         final List<R> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
 
         Collection<? extends R> c = null;
 
@@ -1227,12 +1215,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(filter);
 
         final List<R> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         R r = null;
+
         for (T e : coll) {
             r = mapper.apply(e);
 
@@ -1260,11 +1244,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(filter);
 
         final List<R> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         Collection<? extends R> c = null;
 
         for (T e : coll) {
@@ -1297,11 +1276,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(filter);
         N.checkArgNotNull(action);
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                if (filter.test(e)) {
-                    action.accept(e);
-                }
+        for (T e : coll) {
+            if (filter.test(e)) {
+                action.accept(e);
             }
         }
     }
@@ -1321,10 +1298,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(mapper);
         N.checkArgNotNull(action);
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                action.accept(mapper.apply(e));
-            }
+        for (T e : coll) {
+            action.accept(mapper.apply(e));
         }
     }
 
@@ -1345,14 +1320,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         Collection<? extends R> c = null;
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                c = mapper.apply(e);
+        for (T e : coll) {
+            c = mapper.apply(e);
 
-                if (N.notNullOrEmpty(c)) {
-                    for (R r : c) {
-                        action.accept(r);
-                    }
+            if (N.notNullOrEmpty(c)) {
+                for (R r : c) {
+                    action.accept(r);
                 }
             }
         }
@@ -1382,11 +1355,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(mergeFunction);
 
         final List<T> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         final Iterator<T> iter = iterator();
         boolean hasNext = false;
         T next = null;
@@ -1409,16 +1377,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, E extends Exception, E2 extends Exception> List<R> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible, final R init,
-            final Try.BiFunction<R, ? super T, R, E2> op) throws E, E2 {
+            final Try.BiFunction<? super R, ? super T, R, E2> op) throws E, E2 {
         N.checkArgNotNull(collapsible);
         N.checkArgNotNull(op);
 
         final List<R> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         final Iterator<T> iter = iterator();
         boolean hasNext = false;
         T next = null;
@@ -1441,16 +1404,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <C extends Collection<T>, E extends Exception> List<C> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible,
-            final Supplier<C> collectionSupplier) throws E {
+            final Supplier<? extends C> collectionSupplier) throws E {
         N.checkArgNotNull(collapsible);
         N.checkArgNotNull(collectionSupplier);
 
         final List<C> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         final Iterator<T> iter = iterator();
         boolean hasNext = false;
         T next = null;
@@ -1497,11 +1455,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(collector);
 
         final List<R> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
         final Function<A, R> finisher = collector.finisher();
@@ -1551,11 +1504,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.checkArgNotNull(accumulator);
 
         final List<T> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         final Iterator<T> iter = iterator();
         T next = null;
 
@@ -1612,10 +1560,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         if (initIncluded) {
             result.add(init);
-        }
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
         }
 
         final Iterator<T> iter = iterator();
@@ -1707,22 +1651,20 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <R, E extends Exception> R collect(final Supplier<R> supplier, final Try.BiConsumer<R, ? super T, E> accumulator) throws E {
+    public <R, E extends Exception> R collect(final Supplier<R> supplier, final Try.BiConsumer<? super R, ? super T, E> accumulator) throws E {
         N.checkArgNotNull(supplier);
         N.checkArgNotNull(accumulator);
 
         final R result = supplier.get();
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                accumulator.accept(result, e);
-            }
+        for (T e : coll) {
+            accumulator.accept(result, e);
         }
 
         return result;
     }
 
-    public <A, R, E extends Exception, E2 extends Exception> R collect(final Supplier<A> supplier, final Try.BiConsumer<A, ? super T, E> accumulator,
+    public <A, R, E extends Exception, E2 extends Exception> R collect(final Supplier<A> supplier, final Try.BiConsumer<? super A, ? super T, E> accumulator,
             final Try.Function<A, R, E2> finisher) throws E, E2 {
         N.checkArgNotNull(supplier);
         N.checkArgNotNull(accumulator);
@@ -1730,10 +1672,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         final A result = supplier.get();
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                accumulator.accept(result, e);
-            }
+        for (T e : coll) {
+            accumulator.accept(result, e);
         }
 
         return finisher.apply(result);
@@ -1745,10 +1685,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
         final A result = collector.supplier().get();
 
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                accumulator.accept(result, e);
-            }
+        for (T e : coll) {
+            accumulator.accept(result, e);
         }
 
         return collector.finisher().apply(result);
@@ -1834,11 +1772,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public List<Indexed<T>> indexed() {
         final List<Indexed<T>> result = new ArrayList<>(size());
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
         int idx = 0;
 
         for (T e : coll) {
@@ -1888,13 +1821,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return split(predicate, Suppliers.<T> ofList());
     }
 
-    public <U, C extends Collection<T>, E extends Exception> List<C> split(final Try.Predicate<? super T, E> predicate, final Supplier<C> supplier) throws E {
+    public <U, C extends Collection<T>, E extends Exception> List<C> split(final Try.Predicate<? super T, E> predicate, final Supplier<? extends C> supplier)
+            throws E {
         N.checkArgNotNull(predicate);
         N.checkArgNotNull(supplier);
-
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
 
         final List<C> res = new ArrayList<>();
         final Iterator<T> elements = iterator();
@@ -1965,14 +1895,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     @Deprecated
     public <U, C extends Collection<T>, E extends Exception, E2 extends Exception> List<C> split(final U flag,
-            final Try.BiPredicate<? super T, ? super U, E> predicate, final Try.Consumer<? super U, E2> flagUpdate, final Supplier<C> supplier) throws E, E2 {
+            final Try.BiPredicate<? super T, ? super U, E> predicate, final Try.Consumer<? super U, E2> flagUpdate, final Supplier<? extends C> supplier)
+            throws E, E2 {
         N.checkArgNotNull(predicate);
         N.checkArgNotNull(flagUpdate);
         N.checkArgNotNull(supplier);
-
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
 
         final List<C> res = new ArrayList<>();
         final Iterator<T> elements = iterator();
@@ -2059,23 +1986,21 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final List<T> left = new ArrayList<>();
         final List<T> right = new ArrayList<>();
 
-        if (N.notNullOrEmpty(coll)) {
-            final Iterator<T> iter = iterator();
-            T next = (T) N.NULL_MASK;
+        final Iterator<T> iter = iterator();
+        T next = (T) N.NULL_MASK;
 
-            while (iter.hasNext() && predicate.test((next = iter.next()))) {
-                left.add(next);
+        while (iter.hasNext() && predicate.test((next = iter.next()))) {
+            left.add(next);
 
-                next = (T) N.NULL_MASK;
-            }
+            next = (T) N.NULL_MASK;
+        }
 
-            if (next != N.NULL_MASK) {
-                right.add(next);
-            }
+        if (next != N.NULL_MASK) {
+            right.add(next);
+        }
 
-            while (iter.hasNext()) {
-                right.add(iter.next());
-            }
+        while (iter.hasNext()) {
+            right.add(iter.next());
         }
 
         return Pair.of(left, right);
@@ -2087,10 +2012,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public List<List<T>> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
-
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
 
         final Iterator<T> iter = coll.iterator();
         final List<List<T>> result = new ArrayList<>(coll.size() <= windowSize ? 1 : (1 + (coll.size() - windowSize)) / increment);
@@ -2239,7 +2160,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.Function<? super T, ? extends K, E> keyMapper,
-            Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
+            Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<? extends M> mapFactory) throws E, E2 {
         return toMap(keyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
@@ -2250,11 +2171,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(
             Try.Function<? super T, ? extends K, E> keyMapper, Try.Function<? super T, ? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction,
-            IntFunction<M> mapFactory) throws E, E2, E3 {
+            IntFunction<? extends M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.apply(size());
 
         for (T e : coll) {
-            Fn.merge(result, keyMapper.apply(e), valueMapper.apply(e), mergeFunction);
+            Maps.merge(result, keyMapper.apply(e), valueMapper.apply(e), mergeFunction);
         }
 
         return result;
@@ -2265,7 +2186,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.Function<? super T, ? extends K, E> keyMapper,
-            final Collector<? super T, A, D> downstream, final IntFunction<M> mapFactory) throws E {
+            final Collector<? super T, A, D> downstream, final IntFunction<? extends M> mapFactory) throws E {
         return toMap(keyMapper, FN.<T, RuntimeException> identity(), downstream, mapFactory);
     }
 
@@ -2275,7 +2196,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <K, V, A, D, M extends Map<K, D>, E extends Exception, E2 extends Exception> M toMap(final Try.Function<? super T, ? extends K, E> keyMapper,
-            Try.Function<? super T, ? extends V, E2> valueMapper, final Collector<? super V, A, D> downstream, final IntFunction<M> mapFactory) throws E, E2 {
+            Try.Function<? super T, ? extends V, E2> valueMapper, final Collector<? super V, A, D> downstream, final IntFunction<? extends M> mapFactory)
+            throws E, E2 {
         final M result = mapFactory.apply(size());
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
@@ -2307,26 +2229,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> flatToMap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
             Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper) throws E, E2 {
-        return toMap(flatKeyMapper, valueMapper, Factory.<K, V> ofMap());
+        return flatToMap(flatKeyMapper, valueMapper, Factory.<K, V> ofMap());
     }
 
-    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M flatToMap(
             Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
-            IntFunction<M> mapFactory) throws E, E2 {
-        return toMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
+            IntFunction<? extends M> mapFactory) throws E, E2 {
+        return flatToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
-    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> flatToMap(
             Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
             Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
-        return toMap(flatKeyMapper, valueMapper, mergeFunction, Factory.<K, V> ofMap());
+        return flatToMap(flatKeyMapper, valueMapper, mergeFunction, Factory.<K, V> ofMap());
     }
 
-    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M flatToMap(
             Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
-            Try.BinaryOperator<V, E3> mergeFunction, IntFunction<M> mapFactory) throws E, E2, E3 {
+            Try.BinaryOperator<V, E3> mergeFunction, IntFunction<? extends M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.apply(size());
         Collection<? extends K> keys = null;
 
@@ -2335,7 +2257,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
             if (N.notNullOrEmpty(keys)) {
                 for (K k : keys) {
-                    Fn.merge(result, k, valueMapper.apply(k, e), mergeFunction);
+                    Maps.merge(result, k, valueMapper.apply(k, e), mergeFunction);
                 }
             }
         }
@@ -2343,14 +2265,25 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, V, A, D, E extends Exception, E2 extends Exception> Map<K, D> toMap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
-            Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper, Collector<? super V, A, D> downstream) throws E, E2 {
-        return toMap(flatKeyMapper, valueMapper, downstream, Factory.<K, D> ofMap());
+    public <K, A, D, E extends Exception> Map<K, D> flatToMap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
+            Collector<? super T, A, D> downstream) throws E {
+        return flatToMap(flatKeyMapper, downstream, Factory.<K, D> ofMap());
     }
 
-    public <K, V, A, D, M extends Map<K, D>, E extends Exception, E2 extends Exception> M toMap(
+    public <K, A, D, M extends Map<K, D>, E extends Exception> Map<K, D> flatToMap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
+            Collector<? super T, A, D> downstream, final IntFunction<? extends M> mapFactory) throws E {
+        return flatToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    }
+
+    public <K, V, A, D, E extends Exception, E2 extends Exception> Map<K, D> flatToMap(
             Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
-            final Collector<? super V, A, D> downstream, final IntFunction<M> mapFactory) throws E, E2 {
+            Collector<? super V, A, D> downstream) throws E, E2 {
+        return flatToMap(flatKeyMapper, valueMapper, downstream, Factory.<K, D> ofMap());
+    }
+
+    public <K, V, A, D, M extends Map<K, D>, E extends Exception, E2 extends Exception> M flatToMap(
+            Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
+            final Collector<? super V, A, D> downstream, final IntFunction<? extends M> mapFactory) throws E, E2 {
         final M result = mapFactory.apply(size());
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
@@ -2393,7 +2326,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return groupTo(keyMapper, Factory.<K, List<T>> ofMap());
     }
 
-    public <K, M extends Map<K, List<T>>, E extends Exception> M groupTo(Try.Function<? super T, ? extends K, E> keyMapper, IntFunction<M> mapFactory)
+    public <K, M extends Map<K, List<T>>, E extends Exception> M groupTo(Try.Function<? super T, ? extends K, E> keyMapper, IntFunction<? extends M> mapFactory)
             throws E {
         final M result = mapFactory.apply(size());
         K key = null;
@@ -2420,7 +2353,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <K, V, M extends Map<K, List<V>>, E extends Exception, E2 extends Exception> M groupTo(Try.Function<? super T, ? extends K, E> keyMapper,
-            Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
+            Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<? extends M> mapFactory) throws E, E2 {
         final M result = mapFactory.apply(size());
         K key = null;
         List<V> values = null;
@@ -2445,27 +2378,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <K, M extends Map<K, List<T>>, E extends Exception> M flatGroupTo(final Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
-            final IntFunction<M> mapFactory) throws E {
-        N.checkArgNotNull(flatKeyMapper, "flatKeyMapper");
-        N.checkArgNotNull(mapFactory, "mapFactory");
-
+            final IntFunction<? extends M> mapFactory) throws E {
         final M result = mapFactory.apply(size());
         Collection<? extends K> keys = null;
-        List<T> vals = null;
+        List<T> values = null;
 
         for (T e : coll) {
             keys = flatKeyMapper.apply(e);
 
             if (N.notNullOrEmpty(keys)) {
                 for (K k : keys) {
-                    vals = result.get(k);
+                    values = result.get(k);
 
-                    if (vals == null) {
-                        vals = new ArrayList<>();
-                        result.put(k, vals);
+                    if (values == null) {
+                        values = new ArrayList<>();
+                        result.put(k, values);
                     }
 
-                    vals.add(e);
+                    values.add(e);
                 }
             }
         }
@@ -2481,28 +2411,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public <K, V, M extends Map<K, List<V>>, E extends Exception, E2 extends Exception> M flatGroupTo(
             final Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper,
-            final Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper, final IntFunction<M> mapFactory) throws E, E2 {
-        N.checkArgNotNull(flatKeyMapper, "flatKeyMapper");
-        N.checkArgNotNull(valueMapper, "valueMapper");
-        N.checkArgNotNull(mapFactory, "mapFactory");
-
+            final Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper, final IntFunction<? extends M> mapFactory) throws E, E2 {
         final M result = mapFactory.apply(size());
         Collection<? extends K> keys = null;
-        List<V> vals = null;
+        List<V> values = null;
 
         for (T e : coll) {
             keys = flatKeyMapper.apply(e);
 
             if (N.notNullOrEmpty(keys)) {
                 for (K k : keys) {
-                    vals = result.get(k);
+                    values = result.get(k);
 
-                    if (vals == null) {
-                        vals = new ArrayList<>();
-                        result.put(k, vals);
+                    if (values == null) {
+                        values = new ArrayList<>();
+                        result.put(k, values);
                     }
 
-                    vals.add(valueMapper.apply(k, e));
+                    values.add(valueMapper.apply(k, e));
                 }
             }
         }
@@ -2516,26 +2442,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public <K, E extends Exception> ListMultimap<K, T> toMultimap(Try.Function<? super T, ? extends K, E> keyMapper) throws E {
-        final ListMultimap<K, T> result = N.newListMultimap();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
-        for (T e : coll) {
-            result.put(keyMapper.apply(e), e);
-        }
-
-        return result;
+        return toMultimap(keyMapper, Factory.<K, T> ofListMultimap());
     }
 
     public <K, V extends Collection<T>, M extends Multimap<K, T, V>, E extends Exception> M toMultimap(Try.Function<? super T, ? extends K, E> keyMapper,
-            IntFunction<M> mapFactory) throws E {
+            IntFunction<? extends M> mapFactory) throws E {
         final M result = mapFactory.apply(size());
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
 
         for (T e : coll) {
             result.put(keyMapper.apply(e), e);
@@ -2552,11 +2464,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <K, V, E extends Exception, E2 extends Exception> ListMultimap<K, V> toMultimap(Try.Function<? super T, ? extends K, E> keyMapper,
             Try.Function<? super T, ? extends V, E2> valueMapper) throws E, E2 {
-        final ListMultimap<K, V> result = N.newListMultimap();
+        return toMultimap(keyMapper, valueMapper, Factory.<K, V> ofListMultimap());
+    }
 
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>, E extends Exception, E2 extends Exception> M toMultimap(
+            Try.Function<? super T, ? extends K, E> keyMapper, Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<? extends M> mapFactory)
+            throws E, E2 {
+        final M result = mapFactory.apply(size());
 
         for (T e : coll) {
             result.put(keyMapper.apply(e), valueMapper.apply(e));
@@ -2565,16 +2479,60 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>, E extends Exception, E2 extends Exception> M toMultimap(
-            Try.Function<? super T, ? extends K, E> keyMapper, Try.Function<? super T, ? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
-        final M result = mapFactory.apply(size());
+    /**
+     * 
+     * @param flatKeyMapper
+     * @return
+     */
+    public <K, E extends Exception> ListMultimap<K, T> flatToMultimap(Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper) throws E {
+        return flatToMultimap(flatKeyMapper, Factory.<K, T> ofListMultimap());
+    }
 
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>, E extends Exception> M flatToMultimap(
+            Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, IntFunction<? extends M> mapFactory) throws E {
+        final M result = mapFactory.apply(size());
+        Collection<? extends K> ks = null;
 
         for (T e : coll) {
-            result.put(keyMapper.apply(e), valueMapper.apply(e));
+            ks = flatKeyMapper.apply(e);
+
+            if (N.notNullOrEmpty(ks)) {
+                for (K k : ks) {
+                    result.put(k, e);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param flatKeyMapper
+     * @param valueMapper
+     * @return
+     */
+    public <K, V, E extends Exception, E2 extends Exception> ListMultimap<K, V> flatToMultimap(
+            Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper)
+            throws E, E2 {
+        return flatToMultimap(flatKeyMapper, valueMapper, Factory.<K, V> ofListMultimap());
+    }
+
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>, E extends Exception, E2 extends Exception> M flatToMultimap(
+            Try.Function<? super T, ? extends Collection<? extends K>, E> flatKeyMapper, Try.BiFunction<? super K, ? super T, ? extends V, E2> valueMapper,
+            IntFunction<? extends M> mapFactory) throws E, E2 {
+        final M result = mapFactory.apply(size());
+
+        Collection<? extends K> ks = null;
+
+        for (T e : coll) {
+            ks = flatKeyMapper.apply(e);
+
+            if (N.notNullOrEmpty(ks)) {
+                for (K k : ks) {
+                    result.put(k, valueMapper.apply(k, e));
+                }
+            }
         }
 
         return result;

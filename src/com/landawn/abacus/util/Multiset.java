@@ -1084,7 +1084,7 @@ public final class Multiset<T> implements Iterable<T> {
         return result;
     }
 
-    public <M extends Map<T, Integer>> M toMap(final IntFunction<M> supplier) {
+    public <M extends Map<T, Integer>> M toMap(final IntFunction<? extends M> supplier) {
         final M result = supplier.apply(size());
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {

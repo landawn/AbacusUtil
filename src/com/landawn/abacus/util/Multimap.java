@@ -117,7 +117,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from(final Map<? extends K, ? extends E> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         final M multimap = multimapSupplier.apply(map == null ? 0 : map.size());
 
         if (N.notNullOrEmpty(map)) {
@@ -128,7 +128,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M fromm(final Map<? extends K, ? extends Collection<? extends E>> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         final M multimap = multimapSupplier.apply(map == null ? 0 : map.size());
 
         if (N.notNullOrEmpty(map)) {
@@ -141,7 +141,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>, X extends Exception> M from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<M> multimapSupplier) throws X {
+            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<? extends M> multimapSupplier) throws X {
         final M multimap = multimapSupplier.apply(c == null ? 0 : c.size());
 
         if (N.notNullOrEmpty(c)) {
@@ -155,7 +155,7 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     public static <T, K, E, V extends Collection<E>, M extends Multimap<K, E, V>, X extends Exception, X2 extends Exception> M from(
             final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyMapper,
-            final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<M> multimapSupplier) throws X, X2 {
+            final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<? extends M> multimapSupplier) throws X, X2 {
         final M multimap = multimapSupplier.apply(c == null ? 0 : c.size());
 
         if (N.notNullOrEmpty(c)) {
@@ -175,7 +175,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @see ListMultimap#invertFrom(Map)
      * @see SetMultimap#invertFrom(Map)
      */
-    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<M> multimapSupplier) {
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<? extends M> multimapSupplier) {
         final M multimap = multimapSupplier.apply(map == null ? 0 : map.size());
 
         if (N.notNullOrEmpty(map)) {
@@ -196,7 +196,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @see SetMultimap#flatInvertFrom(Map)
      */
     public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         final M multimap = multimapSupplier.apply(map == null ? 0 : map.size());
 
         if (N.notNullOrEmpty(map)) {
@@ -220,7 +220,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public static <K, E, V extends Collection<E>, VV extends Collection<K>, M extends Multimap<E, K, VV>> M invertFrom(final Multimap<K, E, V> multimap,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         final M res = multimapSupplier.apply(multimap == null ? 0 : multimap.size());
 
         if (N.notNullOrEmpty(multimap)) {
@@ -239,7 +239,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
-            final Map<? extends K, ? extends E> b, final IntFunction<M> multimapSupplier) {
+            final Map<? extends K, ? extends E> b, final IntFunction<? extends M> multimapSupplier) {
         final M res = multimapSupplier.apply((a == null ? 0 : a.size()) + (b == null ? 0 : b.size()));
 
         res.putAll(a);
@@ -249,7 +249,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
-            final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final IntFunction<M> multimapSupplier) {
+            final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final IntFunction<? extends M> multimapSupplier) {
         final M res = multimapSupplier.apply((a == null ? 0 : a.size()) + (b == null ? 0 : b.size()) + (c == null ? 0 : c.size()));
 
         res.putAll(a);
@@ -1333,7 +1333,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    public <M extends Map<K, V>> M toMap(final IntFunction<M> supplier) {
+    public <M extends Map<K, V>> M toMap(final IntFunction<? extends M> supplier) {
         final M map = supplier.apply(size());
         map.putAll(valueMap);
         return map;

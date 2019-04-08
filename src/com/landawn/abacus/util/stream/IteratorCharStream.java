@@ -26,7 +26,7 @@ import java.util.concurrent.Executor;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -898,12 +898,12 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public List<Character> toList() {
-        return toCollection(Fn.Suppliers.<Character> ofList());
+        return toCollection(Suppliers.<Character> ofList());
     }
 
     @Override
     public Set<Character> toSet() {
-        return toCollection(Fn.Suppliers.<Character> ofSet());
+        return toCollection(Suppliers.<Character> ofSet());
     }
 
     @Override
@@ -925,7 +925,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Character> ofMultiset());
+        return toMultiset(Suppliers.<Character> ofMultiset());
     }
 
     @Override
@@ -947,7 +947,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Character> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Character> ofLongMultiset());
     }
 
     @Override
@@ -969,16 +969,16 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            char element = 0;
+            char next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextChar();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextChar();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -989,7 +989,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> keyMapper, final Collector<Character, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -999,11 +999,11 @@ class IteratorCharStream extends AbstractCharStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            char element = 0;
+            char next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextChar();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextChar();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1011,7 +1011,7 @@ class IteratorCharStream extends AbstractCharStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1068,7 +1068,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

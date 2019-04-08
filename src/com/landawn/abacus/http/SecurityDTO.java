@@ -20,7 +20,6 @@ import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
 import com.landawn.abacus.util.ByteArrayOutputStream;
 import com.landawn.abacus.util.Charsets;
-import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.WSSecurityUtil;
@@ -142,7 +141,7 @@ public abstract class SecurityDTO implements Serializable {
                 throw new IllegalArgumentException("Unsupported Message encryption way: " + msgEncryption);
         }
 
-        final String created = String.valueOf(DateUtil.currentMillis());
+        final String created = String.valueOf(System.currentTimeMillis());
 
         setUserName(userName);
         setPassword(WSSecurityUtil.doPasswordDigest(nonce, created.getBytes(Charsets.UTF_8), password));
@@ -155,7 +154,7 @@ public abstract class SecurityDTO implements Serializable {
     }
 
     public boolean decrypt(final String userName, final byte[] password, final MessageEncryption msgEncryption) {
-        long now = DateUtil.currentMillis();
+        long now = System.currentTimeMillis();
         long ceratedTime = Long.valueOf(getCreated());
 
         if (((now - ceratedTime) > (3 * 60 * 1000)) || !getUserName().equals(userName)) {

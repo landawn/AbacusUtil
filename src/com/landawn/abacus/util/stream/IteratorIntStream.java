@@ -35,7 +35,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
@@ -1503,12 +1503,12 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public List<Integer> toList() {
-        return toCollection(Fn.Suppliers.<Integer> ofList());
+        return toCollection(Suppliers.<Integer> ofList());
     }
 
     @Override
     public Set<Integer> toSet() {
-        return toCollection(Fn.Suppliers.<Integer> ofSet());
+        return toCollection(Suppliers.<Integer> ofSet());
     }
 
     @Override
@@ -1530,7 +1530,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public Multiset<Integer> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Integer> ofMultiset());
+        return toMultiset(Suppliers.<Integer> ofMultiset());
     }
 
     @Override
@@ -1552,7 +1552,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public LongMultiset<Integer> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Integer> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Integer> ofLongMultiset());
     }
 
     @Override
@@ -1574,16 +1574,16 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            int element = 0;
+            int next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextInt();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextInt();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -1594,7 +1594,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1604,11 +1604,11 @@ class IteratorIntStream extends AbstractIntStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            int element = 0;
+            int next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextInt();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextInt();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1616,7 +1616,7 @@ class IteratorIntStream extends AbstractIntStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1673,7 +1673,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjIntConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

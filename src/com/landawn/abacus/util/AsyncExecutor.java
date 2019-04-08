@@ -305,11 +305,11 @@ public class AsyncExecutor {
 
             @Override
             public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final long beginTime = DateUtil.currentMillis();
+                final long beginTime = System.currentTimeMillis();
 
                 final ContinuableFuture<T> resFuture = scheduledFuture.get(timeout, unit);
 
-                final long remainingTimeout = unit.toMillis(timeout) - (DateUtil.currentMillis() - beginTime);
+                final long remainingTimeout = unit.toMillis(timeout) - (System.currentTimeMillis() - beginTime);
 
                 return resFuture == null ? null : (remainingTimeout > 0 ? resFuture.get(remainingTimeout, TimeUnit.MILLISECONDS) : resFuture.get());
             }

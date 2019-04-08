@@ -19,7 +19,6 @@ import java.io.Serializable;
 import com.landawn.abacus.LockMode;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.MemcachedLock;
 import com.landawn.abacus.util.N;
 
@@ -97,7 +96,7 @@ public class MemcachedXLock<T> extends AbstractXLock<T> {
             } else {
                 N.sleep(1);
             }
-        } while ((endTime - DateUtil.currentMillis()) > 0);
+        } while ((endTime - System.currentTimeMillis()) > 0);
 
         return null;
 

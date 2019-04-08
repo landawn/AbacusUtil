@@ -823,16 +823,16 @@ public final class N {
 
         switch (res / 64) {
             case 0:
+            case 1:
                 return res;
 
-            case 1:
             case 2:
             case 3:
             case 4:
-                return 64;
+                return 128;
 
             default:
-                return 128;
+                return 256;
         }
     }
 
@@ -978,8 +978,8 @@ public final class N {
         return N.isNullOrEmpty(m) ? new HashMap<K, V>() : new HashMap<K, V>(m);
     }
 
-    public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c,
-            final Try.Function<? super V, ? extends K, E> keyMapper) throws E {
+    public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c, final Try.Function<? super V, ? extends K, E> keyMapper)
+            throws E {
         N.checkArgNotNull(keyMapper);
 
         if (isNullOrEmpty(c)) {
@@ -4536,6 +4536,72 @@ public final class N {
 
         for (T e : c) {
             if (e != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean anyNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
+        return N.isNullOrEmpty(cs1) || N.isNullOrEmpty(cs2) || N.isNullOrEmpty(cs3);
+    }
+
+    @SafeVarargs
+    public static boolean anyNullOrEmpty(final CharSequence... css) {
+        if (N.isNullOrEmpty(css)) {
+            return false;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean anyNullOrEmpty(final Collection<? extends CharSequence> css) {
+        if (N.isNullOrEmpty(css)) {
+            return false;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean allNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
+        return N.isNullOrEmpty(cs1) && N.isNullOrEmpty(cs2) && N.isNullOrEmpty(cs3);
+    }
+
+    @SafeVarargs
+    public static boolean allNullOrEmpty(final CharSequence... css) {
+        if (N.isNullOrEmpty(css)) {
+            return true;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs) == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean allNullOrEmpty(final Collection<? extends CharSequence> css) {
+        if (N.isNullOrEmpty(css)) {
+            return true;
+        }
+
+        for (CharSequence cs : css) {
+            if (N.isNullOrEmpty(cs) == false) {
                 return false;
             }
         }
@@ -9712,7 +9778,7 @@ public final class N {
             } else if (Number.class.isAssignableFrom(parameterClass)) {
                 propValue = type.valueOf(String.valueOf(RAND.nextInt()));
             } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(DateUtil.currentMillis()));
+                propValue = type.valueOf(String.valueOf(System.currentTimeMillis()));
             } else if (N.isEntity(parameterClass)) {
                 propValue = fill(parameterClass);
             } else {
@@ -9747,9 +9813,7 @@ public final class N {
      * @param entityClass entity class with getter/setter methods
      * @param count
      * @return
-     * @deprecated
      */
-    @Deprecated
     public static <T> List<T> fill(Class<T> entityClass, int count) {
         if (N.isEntity(entityClass) == false) {
             throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
@@ -13095,12 +13159,13 @@ public final class N {
         }
     }
 
-    public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final T a, Try.ObjIntConsumer<T, E> action) throws E {
+    public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final T a, Try.ObjIntConsumer<? super T, E> action)
+            throws E {
         forEach(startInclusive, endExclusive, 1, a, action);
     }
 
     public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final int step, final T a,
-            Try.ObjIntConsumer<T, E> action) throws E {
+            Try.ObjIntConsumer<? super T, E> action) throws E {
         N.checkArgument(step != 0, "The input parameter 'step' can not be zero");
 
         if (endExclusive == startInclusive || endExclusive > startInclusive != step > 0) {
@@ -15281,7 +15346,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final Try.Function<? super T, ? extends R, E> func,
-            final IntFunction<C> supplier) throws E {
+            final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -15304,7 +15369,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
         N.checkArgNotNull(func);
 
@@ -15322,7 +15387,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
@@ -15345,7 +15410,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
@@ -15483,7 +15548,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a,
-            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -15506,7 +15571,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final T[] a, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
         N.checkArgNotNull(func);
 
@@ -15527,7 +15592,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
@@ -15550,7 +15615,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends Collection<? extends R>, E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
@@ -15594,7 +15659,7 @@ public final class N {
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
             final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2) throws E, E2 {
 
-        return flatMap(a, func, func2, Fn.Factory.<R> ofList());
+        return flatMap(a, func, func2, Factory.<R> ofList());
     }
 
     /**
@@ -15611,7 +15676,7 @@ public final class N {
      */
     public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final T[] a,
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
-            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<? extends C> supplier) throws E, E2 {
         N.checkArgNotNull(func);
         N.checkArgNotNull(func2);
 
@@ -15642,7 +15707,7 @@ public final class N {
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
             final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2) throws E, E2 {
 
-        return flatMap(c, func, func2, Fn.Factory.<R> ofList());
+        return flatMap(c, func, func2, Factory.<R> ofList());
     }
 
     /**
@@ -15659,7 +15724,7 @@ public final class N {
      */
     public static <T, T2, R, C extends Collection<R>, E extends Exception, E2 extends Exception> C flatMap(final Collection<? extends T> c,
             final Try.Function<? super T, ? extends Collection<? extends T2>, E> func,
-            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<C> supplier) throws E, E2 {
+            final Try.Function<? super T2, ? extends Collection<? extends R>, E2> func2, final IntFunction<? extends C> supplier) throws E, E2 {
         N.checkArgNotNull(func);
         N.checkArgNotNull(func2);
 
@@ -15788,7 +15853,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final Try.Function<? super T, ? extends R[], E> func,
-            final IntFunction<C> supplier) throws E {
+            final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(a)) {
@@ -15811,7 +15876,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final T[] a, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, len(a));
         N.checkArgNotNull(func);
 
@@ -15832,7 +15897,7 @@ public final class N {
     }
 
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<? extends C> supplier) throws E {
         N.checkArgNotNull(func);
 
         if (N.isNullOrEmpty(c)) {
@@ -15855,7 +15920,7 @@ public final class N {
      * @return
      */
     public static <T, R, C extends Collection<R>, E extends Exception> C flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<C> supplier) throws E {
+            final Try.Function<? super T, ? extends R[], E> func, final IntFunction<? extends C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, size(c));
         N.checkArgNotNull(func);
 
@@ -19916,7 +19981,7 @@ public final class N {
         return concat(c, Factory.<T> ofList());
     }
 
-    public static <T, C extends Collection<T>> C concat(final Collection<? extends Collection<? extends T>> c, final IntFunction<C> supplier) {
+    public static <T, C extends Collection<T>> C concat(final Collection<? extends Collection<? extends T>> c, final IntFunction<? extends C> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -28157,7 +28222,7 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T init, final Try.Function<T, R, E> func) {
+    public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T init, final Try.Function<? super T, R, E> func) {
         try {
             return Nullable.of(func.apply(init));
         } catch (Exception e) {
@@ -28192,7 +28257,7 @@ public final class N {
      * @return
      * @throws E
      */
-    public static <T, R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final T init, final Try.Function<T, R, E> func) throws E {
+    public static <T, R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final T init, final Try.Function<? super T, R, E> func) throws E {
         if (b) {
             return Nullable.of(func.apply(init));
         } else {
@@ -28230,8 +28295,8 @@ public final class N {
      * @throws E1
      * @throws E2
      */
-    public static <T, E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final T init, final Try.Consumer<T, E1> actionForTrue,
-            final Try.Consumer<T, E2> actionForFalse) throws E1, E2 {
+    public static <T, E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final T init, final Try.Consumer<? super T, E1> actionForTrue,
+            final Try.Consumer<? super T, E2> actionForFalse) throws E1, E2 {
         if (b) {
             if (actionForTrue != null) {
                 actionForTrue.accept(init);

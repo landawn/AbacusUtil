@@ -216,7 +216,7 @@ public abstract class FloatStream
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper,
-            Supplier<M> mapFactory);
+            Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -238,7 +238,7 @@ public abstract class FloatStream
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -258,7 +258,7 @@ public abstract class FloatStream
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract FloatMatrix toMatrix();
 
@@ -266,9 +266,9 @@ public abstract class FloatStream
 
     public abstract OptionalFloat reduce(FloatBinaryOperator op);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E;
 

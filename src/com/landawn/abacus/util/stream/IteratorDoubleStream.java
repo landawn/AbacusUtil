@@ -35,7 +35,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -1213,12 +1213,12 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public List<Double> toList() {
-        return toCollection(Fn.Suppliers.<Double> ofList());
+        return toCollection(Suppliers.<Double> ofList());
     }
 
     @Override
     public Set<Double> toSet() {
-        return toCollection(Fn.Suppliers.<Double> ofSet());
+        return toCollection(Suppliers.<Double> ofSet());
     }
 
     @Override
@@ -1240,7 +1240,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Multiset<Double> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Double> ofMultiset());
+        return toMultiset(Suppliers.<Double> ofMultiset());
     }
 
     @Override
@@ -1262,7 +1262,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongMultiset<Double> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Double> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Double> ofLongMultiset());
     }
 
     @Override
@@ -1283,17 +1283,17 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            double element = 0;
+            double next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextDouble();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextDouble();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -1304,7 +1304,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1314,11 +1314,11 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            double element = 0;
+            double next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextDouble();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextDouble();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1326,7 +1326,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1383,7 +1383,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

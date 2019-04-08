@@ -1697,7 +1697,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<? extends C> collectionSupplier) {
         checkArgPositive(size, "size");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
@@ -1865,7 +1865,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> split(final Predicate<? super T> predicate, final Supplier<? extends C> collectionSupplier) {
         checkArgNotNull(predicate, "predicate");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
@@ -2117,7 +2117,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, final int increment, final IntFunction<? extends C> collectionSupplier) {
         checkArgument(windowSize > 0 && increment > 0, "windowSize=%s and increment=%s must be bigger than 0", windowSize, increment);
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
@@ -2368,12 +2368,66 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
+    public <E extends Exception, E2 extends Exception> void forEach(final Try.Consumer<? super T, E> action, final Try.Runnable<E2> onComplete) throws E, E2 {
         assertNotClosed();
 
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elements[i]);
+            }
+
+            onComplete.run();
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <U, E extends Exception, E2 extends Exception> void forEach(final Try.Function<? super T, ? extends Collection<U>, E> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        assertNotClosed();
+
+        Collection<U> c = null;
+
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                c = flatMapper.apply(elements[i]);
+
+                if (N.notNullOrEmpty(c)) {
+                    for (U u : c) {
+                        action.accept(elements[i], u);
+                    }
+                }
+            }
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        assertNotClosed();
+
+        Collection<T2> c2 = null;
+        Collection<T3> c3 = null;
+
+        try {
+            for (int i = fromIndex; i < toIndex; i++) {
+                c2 = flatMapper.apply(elements[i]);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (T2 t2 : c2) {
+                        c3 = flatMapper2.apply(t2);
+
+                        if (N.notNullOrEmpty(c3)) {
+                            for (T3 t3 : c3) {
+                                action.accept(elements[i], t2, t3);
+                            }
+                        }
+                    }
+                }
             }
         } finally {
             close();
@@ -2583,7 +2637,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2601,7 +2655,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <K, V, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
-            final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
+            final Collector<? super V, A, D> downstream, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2641,8 +2695,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M flatToMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2668,8 +2722,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, V, A, D, M extends Map<K, D>> M toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<M> mapFactory) {
+    public <K, V, A, D, M extends Map<K, D>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2689,7 +2743,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                     keyIter = ks.iterator();
 
                     while (keyIter.hasNext()) {
-                        checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
+                        k = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
 
                         if ((v = intermediate.get(k)) == null) {
                             if ((v = downstreamSupplier.get()) != null) {
@@ -2718,8 +2772,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2743,8 +2797,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, V, A, D, M extends Map<K, D>> M toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<M> mapFactory) {
+    public <K, V, A, D, M extends Map<K, D>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2792,7 +2846,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -2800,6 +2854,60 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             for (int i = fromIndex; i < toIndex; i++) {
                 result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M flatToMultimap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Supplier<? extends M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+            ObjIterator<? extends K> keyIter = null;
+            K k = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[i])) {
+                    keyIter = ks.iterator();
+
+                    while (keyIter.hasNext()) {
+                        k = keyIter.next();
+                        result.put(k, valueMapper.apply(k, elements[i]));
+                    }
+                }
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
+    public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M flattToMultimap(
+            final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, final BiFunction<? super K, ? super T, ? extends V> valueMapper,
+            final Supplier<? extends M> mapFactory) {
+        assertNotClosed();
+
+        try {
+            final M result = mapFactory.get();
+
+            Collection<? extends K> ks = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                ks = flatKeyMapper.apply(elements[i]);
+
+                if (N.notNullOrEmpty(ks)) {
+                    for (K k : ks) {
+                        result.put(k, valueMapper.apply(k, elements[i]));
+                    }
+                }
             }
 
             return result;
@@ -2888,7 +2996,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, BiConsumer<? super R, ? super T> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

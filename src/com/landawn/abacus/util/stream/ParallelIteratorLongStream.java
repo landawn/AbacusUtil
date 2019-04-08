@@ -378,7 +378,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends V> valueMapper,
-            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -404,7 +404,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -561,7 +561,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public <R> R collect(final Supplier<R> supplier, final ObjLongConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final ObjLongConsumer<? super R> accumulator, final BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {

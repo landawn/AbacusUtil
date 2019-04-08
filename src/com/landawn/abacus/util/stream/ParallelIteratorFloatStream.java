@@ -378,7 +378,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends V> valueMapper,
-            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -404,7 +404,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -561,7 +561,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public <R> R collect(final Supplier<R> supplier, final ObjFloatConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final ObjFloatConsumer<? super R> accumulator, final BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {

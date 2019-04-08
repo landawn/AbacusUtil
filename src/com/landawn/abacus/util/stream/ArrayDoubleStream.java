@@ -1364,7 +1364,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1382,7 +1382,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1500,7 +1500,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

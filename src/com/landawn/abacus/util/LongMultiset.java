@@ -1116,7 +1116,7 @@ public final class LongMultiset<T> implements Iterable<T> {
         return result;
     }
 
-    public <M extends Map<T, Long>> M toMap(final IntFunction<M> supplier) {
+    public <M extends Map<T, Long>> M toMap(final IntFunction<? extends M> supplier) {
         final M result = supplier.apply(size());
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {

@@ -28,6 +28,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multiset;
@@ -880,30 +881,22 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, Suppliers.<K, V> ofMap());
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    public <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return toMap(keyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
     @Override
     public <K, V> Map<K, V> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> keyMapper, Collector<Character, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, downstream, mapFactory);
+        return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
     @Override
@@ -1054,7 +1047,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
+    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<? super R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
 
         return collect(supplier, accumulator, combiner);

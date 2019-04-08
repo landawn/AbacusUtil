@@ -7701,7 +7701,7 @@ public class SQLExecutor implements Closeable {
          * @return
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -7733,7 +7733,7 @@ public class SQLExecutor implements Closeable {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
                 final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -7750,7 +7750,7 @@ public class SQLExecutor implements Closeable {
                     final M result = supplier.get();
 
                     while (count-- > 0 && rs.next()) {
-                        Fn.merge(result, keyExtractor.apply(rs), valueExtractor.apply(rs), mergeFunction);
+                        Maps.merge(result, keyExtractor.apply(rs), valueExtractor.apply(rs), mergeFunction);
                     }
 
                     return result;
@@ -7779,7 +7779,7 @@ public class SQLExecutor implements Closeable {
          * @return
          */
         public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7842,7 +7842,7 @@ public class SQLExecutor implements Closeable {
          * @return
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -7874,7 +7874,7 @@ public class SQLExecutor implements Closeable {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -7892,7 +7892,7 @@ public class SQLExecutor implements Closeable {
                     final M result = supplier.get();
 
                     while (count-- > 0 && rs.next()) {
-                        Fn.merge(result, keyExtractor.apply(rs, columnLabels), valueExtractor.apply(rs, columnLabels), mergeFunction);
+                        Maps.merge(result, keyExtractor.apply(rs, columnLabels), valueExtractor.apply(rs, columnLabels), mergeFunction);
                     }
 
                     return result;
@@ -7922,7 +7922,7 @@ public class SQLExecutor implements Closeable {
          */
         public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7973,7 +7973,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");
@@ -8013,7 +8013,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");

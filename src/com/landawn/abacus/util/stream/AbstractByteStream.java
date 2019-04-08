@@ -28,6 +28,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multiset;
@@ -875,30 +876,22 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, Suppliers.<K, V> ofMap());
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return toMap(keyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
     @Override
     public <K, V> Map<K, V> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> keyMapper, Collector<Byte, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(keyMapper, downstream, mapFactory);
+        return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
     @Override
@@ -1049,7 +1042,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator) {
+    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<? super R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
 
         return collect(supplier, accumulator, combiner);

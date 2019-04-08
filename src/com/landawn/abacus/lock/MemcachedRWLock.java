@@ -17,7 +17,6 @@ package com.landawn.abacus.lock;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.MemcachedLock;
 import com.landawn.abacus.util.N;
 
@@ -93,7 +92,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
     public void lockWriteOn(T target, long timeout) {
         checkTargetObject(target);
 
-        final long endTime = DateUtil.currentMillis() + timeout;
+        final long endTime = System.currentTimeMillis() + timeout;
 
         final String key = generateKey(keyPrefix, target);
 
@@ -122,7 +121,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
                                 logger.warn("Failed to retrive with key(" + readKey + ")", e);
                             }
                         }
-                    } while (endTime - DateUtil.currentMillis() > 0);
+                    } while (endTime - System.currentTimeMillis() > 0);
 
                     if (isOK) {
                         isOK = false;
@@ -152,7 +151,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
                                 logger.warn("Failed to retrive with key(" + writeKey + ")", e);
                             }
                         }
-                    } while (endTime - DateUtil.currentMillis() > 0);
+                    } while (endTime - System.currentTimeMillis() > 0);
 
                     if (isOK) {
                         isOK = false;
@@ -176,7 +175,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
 
                 return;
             }
-        } while (endTime - DateUtil.currentMillis() > 0);
+        } while (endTime - System.currentTimeMillis() > 0);
 
         throw new AbacusException("Failed to lock the target object: " + N.toString(target) + " with key: " + key);
     }
@@ -201,7 +200,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
     public void lockReadOn(T target, long timeout) {
         checkTargetObject(target);
 
-        final long endTime = DateUtil.currentMillis() + timeout;
+        final long endTime = System.currentTimeMillis() + timeout;
 
         final String key = generateKey(keyPrefix, target);
 
@@ -230,7 +229,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
                                 logger.warn("Failed to retrive with key(" + writeKey + ")", e);
                             }
                         }
-                    } while (endTime - DateUtil.currentMillis() > 0);
+                    } while (endTime - System.currentTimeMillis() > 0);
 
                     if (isOK) {
                         isOK = false;
@@ -250,7 +249,7 @@ public class MemcachedRWLock<T> extends AbstractRWLock<T> {
 
                 return;
             }
-        } while (endTime - DateUtil.currentMillis() > 0);
+        } while (endTime - System.currentTimeMillis() > 0);
 
         throw new AbacusException("Failed to lock the target object: " + N.toString(target) + " with key: " + key);
 

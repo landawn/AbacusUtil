@@ -101,7 +101,7 @@ public final class Maps {
 
     public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M newMap(Collection<? extends T> c,
             final Try.Function<? super T, ? extends K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor,
-            final IntFunction<M> mapSupplier) throws E, E2 {
+            final IntFunction<? extends M> mapSupplier) throws E, E2 {
         N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
@@ -1867,11 +1867,11 @@ public final class Maps {
         return flatten(map, Suppliers.<String, Object> ofMap());
     }
 
-    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, Supplier<M> mapSupplier) {
+    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, Supplier<? extends M> mapSupplier) {
         return flatten(map, ".", mapSupplier);
     }
 
-    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, String delimiter, Supplier<M> mapSupplier) {
+    public static <M extends Map<String, Object>> M flatten(Map<String, Object> map, String delimiter, Supplier<? extends M> mapSupplier) {
         final M result = mapSupplier.get();
 
         flatten(map, null, delimiter, result);
@@ -1907,11 +1907,11 @@ public final class Maps {
         return unflatten(map, Suppliers.<String, Object> ofMap());
     }
 
-    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, Supplier<M> mapSupplier) {
+    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, Supplier<? extends M> mapSupplier) {
         return unflatten(map, ".", mapSupplier);
     }
 
-    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, String delimiter, Supplier<M> mapSupplier) {
+    public static <M extends Map<String, Object>> M unflatten(Map<String, Object> map, String delimiter, Supplier<? extends M> mapSupplier) {
         final M result = mapSupplier.get();
         final Splitter keySplitter = Splitter.with(delimiter);
 
@@ -1970,26 +1970,24 @@ public final class Maps {
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
         N.checkArgNotNull(function);
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            K k;
-            V v;
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
 
-            // ise thrown from function is not a cme.
-            v = function.apply(k, v);
-
-            try {
-                entry.setValue(v);
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
+        try {
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                entry.setValue(function.apply(entry.getKey(), entry.getValue()));
             }
+        } catch (IllegalStateException ise) {
+            throw new ConcurrentModificationException(ise);
+        }
+    }
+
+    static <K, V, E extends Exception> void merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction)
+            throws E {
+        final V oldValue = map.get(key);
+
+        if (oldValue == null && map.containsKey(key) == false) {
+            map.put(key, value);
+        } else {
+            map.put(key, remappingFunction.apply(oldValue, value));
         }
     }
 }

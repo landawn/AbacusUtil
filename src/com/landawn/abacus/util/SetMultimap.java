@@ -315,55 +315,55 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from(final Map<? extends K, ? extends E> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M fromm(final Map<? extends K, ? extends Collection<? extends E>> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>, X extends Exception> M from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<M> multimapSupplier) throws X {
+            final Try.Function<? super T, ? extends K, X> keyMapper, final IntFunction<? extends M> multimapSupplier) throws X {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <T, K, E, V extends Collection<E>, M extends Multimap<K, E, V>, X extends Exception, X2 extends Exception> M from(
             final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyMapper,
-            final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<M> multimapSupplier) throws X, X2 {
+            final Try.Function<? super T, ? extends E, X2> valueExtractor, final IntFunction<? extends M> multimapSupplier) throws X, X2 {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
-    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<M> multimapSupplier) {
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <K, E, V extends Collection<E>, VV extends Collection<K>, M extends Multimap<E, K, VV>> M invertFrom(final Multimap<K, E, V> multimap,
-            final IntFunction<M> multimapSupplier) {
+            final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
-            final Map<? extends K, ? extends E> b, final IntFunction<M> multimapSupplier) {
+            final Map<? extends K, ? extends E> b, final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
-            final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final IntFunction<M> multimapSupplier) {
+            final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 

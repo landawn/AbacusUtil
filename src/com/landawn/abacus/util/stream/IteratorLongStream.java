@@ -33,7 +33,7 @@ import java.util.stream.StreamSupport;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
@@ -1214,12 +1214,12 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public List<Long> toList() {
-        return toCollection(Fn.Suppliers.<Long> ofList());
+        return toCollection(Suppliers.<Long> ofList());
     }
 
     @Override
     public Set<Long> toSet() {
-        return toCollection(Fn.Suppliers.<Long> ofSet());
+        return toCollection(Suppliers.<Long> ofSet());
     }
 
     @Override
@@ -1241,7 +1241,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Long> ofMultiset());
+        return toMultiset(Suppliers.<Long> ofMultiset());
     }
 
     @Override
@@ -1263,7 +1263,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Long> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Long> ofLongMultiset());
     }
 
     @Override
@@ -1285,16 +1285,16 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            long element = 0;
+            long next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextLong();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextLong();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -1305,7 +1305,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1315,11 +1315,11 @@ class IteratorLongStream extends AbstractLongStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            long element = 0;
+            long next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextLong();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextLong();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1327,7 +1327,7 @@ class IteratorLongStream extends AbstractLongStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1384,7 +1384,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
 
+import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.function.IntFunction;
 
@@ -255,7 +256,7 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     }
 
     public List<B> toList(final int fromIndex, final int toIndex) {
-        return toCollection(fromIndex, toIndex, Fn.Factory.<B> ofList());
+        return toCollection(fromIndex, toIndex, Factory.<B> ofList());
     }
 
     public Set<B> toSet() {
@@ -263,7 +264,7 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     }
 
     public Set<B> toSet(final int fromIndex, final int toIndex) {
-        return toCollection(fromIndex, toIndex, Fn.Factory.<B> ofSet());
+        return toCollection(fromIndex, toIndex, Factory.<B> ofSet());
     }
 
     public <C extends Collection<B>> C toCollection(final IntFunction<? extends C> supplier) {
@@ -307,19 +308,19 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
     }
 
     protected <T> IntFunction<List<T>> createListSupplier() {
-        return Fn.Factory.ofList();
+        return Factory.ofList();
     }
 
     protected <T> IntFunction<Set<T>> createSetSupplier() {
-        return Fn.Factory.ofSet();
+        return Factory.ofSet();
     }
 
     protected <K, V> IntFunction<Map<K, V>> createMapSupplier() {
-        return Fn.Factory.ofMap();
+        return Factory.ofMap();
     }
 
     protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
-        return Fn.Factory.ofMultiset();
+        return Factory.ofMultiset();
     }
 
     protected boolean needToSet(int lenA, int lenB) {

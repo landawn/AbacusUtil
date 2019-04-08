@@ -49,6 +49,7 @@ import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.BiFunctions;
+import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
@@ -518,12 +519,12 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
-        return split(size, Fn.Factory.<T> ofList());
+        return split(size, Factory.<T> ofList());
     }
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
-        return split(size, Fn.Factory.<T> ofSet());
+        return split(size, Factory.<T> ofSet());
     }
 
     @Override
@@ -658,7 +659,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         checkArgNotNull(collector, "collector");
 
         final Supplier<A> supplier = collector.supplier();
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final BiConsumer<? super A, ? super T> accumulator = collector.accumulator();
         final Function<A, R> finisher = collector.finisher();
 
         final IteratorEx<T> iter = iteratorEx();
@@ -749,11 +750,11 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        return sliding(windowSize, increment, Fn.Factory.<T> ofList());
+        return sliding(windowSize, increment, Factory.<T> ofList());
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, IntFunction<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> sliding(final int windowSize, IntFunction<? extends C> collectionSupplier) {
         return sliding(windowSize, 1, collectionSupplier);
     }
 
@@ -790,12 +791,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> window(final Duration duration, final Supplier<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final Supplier<? extends C> collectionSupplier) {
         return window(duration, sysTimeGetter, collectionSupplier);
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> window(final Duration duration, final LongSupplier startTime, final Supplier<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final LongSupplier startTime, final Supplier<? extends C> collectionSupplier) {
         checkArgNotNull(duration, "duration");
         checkArgPositive(duration.toMillis(), "duration");
 
@@ -836,13 +837,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final Supplier<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final Supplier<? extends C> collectionSupplier) {
         return window(duration, incrementInMillis, sysTimeGetter, collectionSupplier);
     }
 
     @Override
     public <C extends Collection<T>> Stream<C> window(final Duration duration, final long incrementInMillis, final LongSupplier startTime,
-            final Supplier<C> collectionSupplier) {
+            final Supplier<? extends C> collectionSupplier) {
         checkArgNotNull(duration, "duration");
         checkArgPositive(duration.toMillis(), "duration");
         checkArgPositive(incrementInMillis, "incrementInMillis");
@@ -1179,13 +1180,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> window(final int maxWindowSize, final Duration maxDuration, final Supplier<C> collectionSupplier) {
+    public <C extends Collection<T>> Stream<C> window(final int maxWindowSize, final Duration maxDuration, final Supplier<? extends C> collectionSupplier) {
         return window(maxWindowSize, maxDuration, sysTimeGetter, collectionSupplier);
     }
 
     @Override
     public <C extends Collection<T>> Stream<C> window(final int maxWindowSize, final Duration maxDuration, final LongSupplier startTime,
-            final Supplier<C> collectionSupplier) {
+            final Supplier<? extends C> collectionSupplier) {
         checkArgPositive(maxWindowSize, "maxWindowSize");
         checkArgNotNull(maxDuration, "maxDuration");
         checkArgPositive(maxDuration.toMillis(), "maxDuration");
@@ -1381,7 +1382,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<C> supplier) {
+    public <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<? extends C> supplier) {
         return newStream(new ObjIteratorEx<C>() {
             private final ObjIteratorEx<T> iter = iteratorEx();
             private boolean hasNext = false;
@@ -1475,7 +1476,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
+    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
+            final BiConsumer<? super R, ? super T> accumulator) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
         return newStream(new ObjIteratorEx<R>() {
@@ -1653,7 +1655,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> keyMapper) {
-        return groupBy(keyMapper, Fn.<T> identity());
+        return groupBy(keyMapper, Suppliers.<K, List<T>> ofMap());
     }
 
     @Override
@@ -1663,7 +1665,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V> Stream<Entry<K, List<V>>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
-        return groupBy(keyMapper, valueMapper, Collectors.<V> toList());
+        return groupBy(keyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
     }
 
     @Override
@@ -1808,7 +1810,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             private void init() {
                 if (iter == null) {
-                    iter = AbstractStream.this.toMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
+                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
                 }
             }
         }, false, null);
@@ -1841,7 +1843,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             private void init() {
                 if (iter == null) {
-                    iter = AbstractStream.this.toMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
                 }
             }
         }, false, null);
@@ -1909,7 +1911,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             private void init() {
                 if (iter == null) {
-                    iter = AbstractStream.this.toMapp(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
+                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
                 }
             }
         }, false, null);
@@ -1942,7 +1944,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             private void init() {
                 if (iter == null) {
-                    iter = AbstractStream.this.toMapp(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
                 }
             }
         }, false, null);
@@ -1990,7 +1992,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> EntryStream<K, List<T>> groupByToEntry(Function<? super T, ? extends K> keyMapper) {
-        return groupByToEntry(keyMapper, Fn.<T> identity());
+        return groupByToEntry(keyMapper, Suppliers.<K, List<T>> ofMap());
     }
 
     @Override
@@ -2051,7 +2053,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         return toMap(keyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
@@ -2073,55 +2075,78 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> keyMapper, final Collector<? super T, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         return toMap(keyMapper, Fn.<T> identity(), downstream, mapFactory);
     }
 
     @Override
-    public <K, V> Map<K, V> toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return toMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, BiFunction<? super K, ? super T, ? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction) {
-        return toMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
-        return toMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D> Map<K, D> toMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return toMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, V> Map<K, V> toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
             BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return toMapp(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
+        return flatToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
     }
 
     @Override
-    public <K, V> Map<K, V> toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
             BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return toMapp(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+        return flatToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
-        return toMapp(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
+    public <K, V, M extends Map<K, V>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return flatToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
-        return toMap(new Function<T, Stream<K>>() {
+    public <K, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
+        return flatToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    }
+
+    @Override
+    public <K, A, D, M extends Map<K, D>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream,
+            Supplier<? extends M> mapFactory) {
+        return flatToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    }
+
+    @Override
+    public <K, V, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
+        return flatToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
+        return flattToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    }
+
+    @Override
+    public <K, A, D, M extends Map<K, D>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            Collector<? super T, A, D> downstream, Supplier<? extends M> mapFactory) {
+        return flattToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    }
+
+    @Override
+    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+        return flattToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
+    }
+
+    @Override
+    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+        return flattToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return flattToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
+    }
+
+    @Override
+    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
+        return flatToMap(new Function<T, Stream<K>>() {
             @Override
             public Stream<K> apply(T t) {
                 return Stream.of(flatKeyMapper.apply(t));
@@ -2130,15 +2155,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V, A, D> Map<K, D> toMapp(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    public <K, V, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
             BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return toMapp(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+        return flattToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
     }
 
     @Override
-    public <K, V, A, D, M extends Map<K, D>> M toMapp(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
-        return toMap(new Function<T, Stream<K>>() {
+    public <K, V, A, D, M extends Map<K, D>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+            final Supplier<? extends M> mapFactory) {
+        return flatToMap(new Function<T, Stream<K>>() {
             @Override
             public Stream<K> apply(T t) {
                 return Stream.of(flatKeyMapper.apply(t));
@@ -2152,7 +2178,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, M extends Map<K, List<T>>> M groupTo(Function<? super T, ? extends K> keyMapper, Supplier<M> mapFactory) {
+    public <K, M extends Map<K, List<T>>> M groupTo(Function<? super T, ? extends K> keyMapper, Supplier<? extends M> mapFactory) {
         return toMap(keyMapper, Collectors.<T> toList(), mapFactory);
     }
 
@@ -2163,7 +2189,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V, M extends Map<K, List<V>>> M groupTo(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         return toMap(keyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
     }
 
@@ -2173,10 +2199,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, M extends Map<K, List<T>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Supplier<M> mapFactory) {
-        BiFunction<K, T, T> valueMapper = BiFunctions.returnSecond();
-
-        return flatGroupTo(flatKeyMapper, valueMapper, mapFactory);
+    public <K, M extends Map<K, List<T>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Supplier<? extends M> mapFactory) {
+        return flatGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
     }
 
     @Override
@@ -2187,8 +2211,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V, M extends Map<K, List<V>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
-        return toMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return flatToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
     }
 
     @Override
@@ -2197,10 +2221,9 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, M extends Map<K, List<T>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, Supplier<M> mapFactory) {
-        BiFunction<K, T, T> valueMapper = BiFunctions.returnSecond();
-
-        return flattGroupTo(flatKeyMapper, valueMapper, mapFactory);
+    public <K, M extends Map<K, List<T>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            Supplier<? extends M> mapFactory) {
+        return flattGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
     }
 
     @Override
@@ -2211,15 +2234,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, V, M extends Map<K, List<V>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
-        return toMapp(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+        return flattToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
     }
 
     @Override
     public Map<Boolean, List<T>> partitionTo(Predicate<? super T> predicate) {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-
-        return partitionTo(predicate, downstream);
+        return partitionTo(predicate, Collectors.<T> toList());
     }
 
     @Override
@@ -2229,17 +2250,52 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyMapper) {
-        return toMultimap(keyMapper, Fn.<T> identity());
+        return toMultimap(keyMapper, Suppliers.<K, T> ofListMultimap());
     }
 
     @Override
-    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<M> mapFactory) {
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyMapper,
+            Supplier<? extends M> mapFactory) {
         return toMultimap(keyMapper, Fn.<T> identity(), mapFactory);
     }
 
     @Override
     public <K, V> ListMultimap<K, V> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
         return toMultimap(keyMapper, valueMapper, Suppliers.<K, V> ofListMultimap());
+    }
+
+    @Override
+    public <K> ListMultimap<K, T> flatToMultimap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper) {
+        return flatToMultimap(flatKeyMapper, Suppliers.<K, T> ofListMultimap());
+    }
+
+    @Override
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M flatToMultimap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            Supplier<? extends M> mapFactory) {
+        return flatToMultimap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    }
+
+    @Override
+    public <K, V> ListMultimap<K, V> flatToMultimap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+        return flatToMultimap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofListMultimap());
+    }
+
+    @Override
+    public <K> ListMultimap<K, T> flattToMultimap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper) {
+        return flattToMultimap(flatKeyMapper, Suppliers.<K, T> ofListMultimap());
+    }
+
+    @Override
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M flattToMultimap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            Supplier<? extends M> mapFactory) {
+        return flattToMultimap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    }
+
+    @Override
+    public <K, V> ListMultimap<K, V> flattToMultimap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+        return flattToMultimap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofListMultimap());
     }
 
     @Override
@@ -3493,7 +3549,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
+    public <R> R collect(Supplier<R> supplier, BiConsumer<? super R, ? super T> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
 
         return collect(supplier, accumulator, combiner);
@@ -3505,12 +3561,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> func) {
+    public <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<? super R, RR> func) {
         return func.apply(collect(downstream));
     }
 
     @Override
-    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, java.util.function.Function<R, RR> func) {
+    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, java.util.function.Function<? super R, RR> func) {
         return func.apply(collect(downstream));
     }
 
@@ -3598,10 +3654,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <E extends Exception, E2 extends Exception> void forEach(Try.Consumer<? super T, E> action, Try.Runnable<E2> onComplete) throws E, E2 {
-        forEach(action);
-
-        onComplete.run();
+    public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
+        forEach(action, Fn.emptyAction());
     }
 
     @Override

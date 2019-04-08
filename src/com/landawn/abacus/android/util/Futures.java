@@ -259,7 +259,7 @@ public final class Futures {
     }
 
     public static <T1, T2, R, E extends Exception> ContinuableFuture<R> combine(final Future<? extends T1> cf1, final Future<? extends T2> cf2,
-            final Try.BiFunction<? super T1, ? super T2, ? extends R, E> action) {
+            final Try.BiFunction<? super T1, ? super T2, R, E> action) {
         return allOf(Arrays.asList(cf1, cf2)).thenApply(new Try.Function<List<Object>, R, E>() {
             @Override
             public R apply(List<Object> t) throws E {
@@ -269,7 +269,7 @@ public final class Futures {
     }
 
     public static <T1, T2, T3, R, E extends Exception> ContinuableFuture<R> combine(final Future<? extends T1> cf1, final Future<? extends T2> cf2,
-            final Future<? extends T3> cf3, final TriFunction<? super T1, ? super T2, ? super T3, ? extends R, E> action) {
+            final Future<? extends T3> cf3, final TriFunction<? super T1, ? super T2, ? super T3, R, E> action) {
         return allOf(Arrays.asList(cf1, cf2, cf3)).thenApply(new Try.Function<List<Object>, R, E>() {
             @Override
             public R apply(List<Object> t) throws E {
@@ -279,12 +279,12 @@ public final class Futures {
     }
 
     public static <T, R, E extends Exception> ContinuableFuture<R> combine(final Collection<? extends Future<? extends T>> cfs,
-            final Try.Function<List<T>, ? extends R, E> action) {
+            final Try.Function<? super List<T>, R, E> action) {
         final ContinuableFuture<List<T>> f = allOf(cfs);
         return f.thenApply(action);
     }
 
-    //    public static <T, R, E extends Exception> Future<R> combine(final List<? extends Future<? extends T>> cfs, final Try.Function<List<T>, ? extends R, E> action) {
+    //    public static <T, R, E extends Exception> Future<R> combine(final List<? extends Future<? extends T>> cfs, final Try.Function<List<T>, R, E> action) {
     //        final Future<List<T>> future = allOf(cfs);
     //        return future.thenApply(action);
     //    }

@@ -27,7 +27,6 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.util.ContinuableFuture;
-import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedLong;
@@ -218,7 +217,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -240,7 +239,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -260,7 +259,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract LongMatrix toMatrix();
 
@@ -268,7 +267,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract OptionalLong reduce(LongBinaryOperator op);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -276,7 +275,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param accumulator
      * @return
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E;
 
@@ -1146,7 +1145,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream interval(final long delay, final long interval, final TimeUnit unit) {
         return of(new LongIteratorEx() {
             private final long intervalInMillis = unit.toMillis(interval);
-            private long nextTime = DateUtil.currentMillis() + unit.toMillis(delay);
+            private long nextTime = System.currentTimeMillis() + unit.toMillis(delay);
             private long val = 0;
 
             @Override
@@ -1156,7 +1155,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public long nextLong() {
-                long now = DateUtil.currentMillis();
+                long now = System.currentTimeMillis();
 
                 if (now < nextTime) {
                     N.sleep(nextTime - now);

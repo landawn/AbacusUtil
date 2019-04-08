@@ -492,7 +492,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(final IntFunction<? extends K> keyMapper, final IntFunction<? extends V> valueMapper,
-            final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+            final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -518,7 +518,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {
@@ -675,7 +675,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public <R> R collect(final Supplier<R> supplier, final ObjIntConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final ObjIntConsumer<? super R> accumulator, final BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         if (maxThreadNum <= 1) {

@@ -71,7 +71,7 @@ public final class Synchronized<T> {
      * @param predicate
      * @return
      */
-    public static <T, E extends Exception> boolean test(final T mutex, final Try.Predicate<T, E> predicate) throws E {
+    public static <T, E extends Exception> boolean test(final T mutex, final Try.Predicate<? super T, E> predicate) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(predicate);
 
@@ -86,7 +86,7 @@ public final class Synchronized<T> {
      * @param predicate
      * @return
      */
-    public static <T, U, E extends Exception> boolean test(final T mutex, final U u, final Try.BiPredicate<T, U, E> predicate) throws E {
+    public static <T, U, E extends Exception> boolean test(final T mutex, final U u, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(predicate);
 
@@ -101,7 +101,7 @@ public final class Synchronized<T> {
      * @param consumer
      * @return
      */
-    public static <T, E extends Exception> void accept(final T mutex, final Try.Consumer<T, E> consumer) throws E {
+    public static <T, E extends Exception> void accept(final T mutex, final Try.Consumer<? super T, E> consumer) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(consumer);
 
@@ -116,7 +116,7 @@ public final class Synchronized<T> {
      * @param consumer
      * @return
      */
-    public static <T, U, E extends Exception> void accept(final T mutex, final U u, final Try.BiConsumer<T, U, E> consumer) throws E {
+    public static <T, U, E extends Exception> void accept(final T mutex, final U u, final Try.BiConsumer<? super T, ? super U, E> consumer) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(consumer);
 
@@ -131,7 +131,7 @@ public final class Synchronized<T> {
      * @param funciton
      * @return
      */
-    public static <T, R, E extends Exception> R apply(final T mutex, final Try.Function<T, R, E> funciton) throws E {
+    public static <T, R, E extends Exception> R apply(final T mutex, final Try.Function<? super T, R, E> funciton) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(funciton);
 
@@ -146,7 +146,7 @@ public final class Synchronized<T> {
      * @param funciton
      * @return
      */
-    public static <T, U, R, E extends Exception> R apply(final T mutex, final U u, final Try.BiFunction<T, U, R, E> funciton) throws E {
+    public static <T, U, R, E extends Exception> R apply(final T mutex, final U u, final Try.BiFunction<? super T, ? super U, R, E> funciton) throws E {
         N.checkArgNotNull(mutex);
         N.checkArgNotNull(funciton);
 

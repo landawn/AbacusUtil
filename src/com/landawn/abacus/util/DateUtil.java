@@ -94,14 +94,6 @@ public abstract class DateUtil {
             }, { Calendar.MONTH, SEMI_MONTH }, { Calendar.YEAR }, { Calendar.ERA } };
 
     /**
-     * @see System#currentTimeMillis()
-     * @return
-     */
-    public static long currentMillis() {
-        return System.currentTimeMillis();
-    }
-
-    /**
      * A new instance of <code>java.sql.Time</code> returned is based on the
      * current time in the default time zone with the default locale.
      *

@@ -187,7 +187,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -209,7 +209,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -229,7 +229,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> keyMapper, final Collector<Byte, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract ByteMatrix toMatrix();
 
@@ -255,7 +255,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param combiner
      * @return
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -263,7 +263,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param accumulator
      * @return
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(Try.ByteConsumer<E> action) throws E;
 

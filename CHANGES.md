@@ -14,6 +14,8 @@
 
 * Add `Stream/Seq.flatGroupTo/flatGroupBy/nMatch`.
 
+* Add `Collectors.streaming(...)`.
+
 * Improvements and bug fix.
 
 

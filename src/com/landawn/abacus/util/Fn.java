@@ -550,23 +550,21 @@ public final class Fn extends Comparators {
      */
     public static <T> Supplier<T> memoize(final Supplier<T> supplier) {
         return new Supplier<T>() {
-            private volatile T instance = (T) NONE;
+            private volatile boolean initialized = false;
+            private T instance = null;
 
             @Override
             public T get() {
-                T result = instance;
-
-                if (result == NONE) {
+                if (initialized == false) {
                     synchronized (this) {
-                        if (instance == NONE) {
+                        if (initialized == false) {
                             instance = supplier.get();
                         }
 
-                        result = instance;
                     }
                 }
 
-                return result;
+                return instance;
             }
         };
     }
@@ -621,7 +619,7 @@ public final class Fn extends Comparators {
      * @return
      * @see {@code Stream.split/sliding};
      */
-    public static <T, C extends Collection<T>> Supplier<C> reuse(final Supplier<C> supplier) {
+    public static <T, C extends Collection<T>> Supplier<? extends C> reuse(final Supplier<? extends C> supplier) {
         return new Supplier<C>() {
             private C c;
 
@@ -647,7 +645,7 @@ public final class Fn extends Comparators {
      * @return
      * @see {@code Stream.split/sliding};
      */
-    public static <T, C extends Collection<T>> IntFunction<C> reuse(final IntFunction<C> supplier) {
+    public static <T, C extends Collection<T>> IntFunction<? extends C> reuse(final IntFunction<? extends C> supplier) {
         return new IntFunction<C>() {
             private C c;
 
@@ -2836,7 +2834,7 @@ public final class Fn extends Comparators {
      * @return
      */
     public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final LongSupplier startTime,
-            final Supplier<C> collectionSupplier) {
+            final Supplier<? extends C> collectionSupplier) {
         return window(duration, duration.toMillis(), startTime, collectionSupplier);
     }
 
@@ -2914,7 +2912,7 @@ public final class Fn extends Comparators {
      * @see #window(Duration, LongSupplier)
      */
     public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final Duration duration, final long incrementInMillis,
-            final LongSupplier startTime, final Supplier<C> collectionSupplier) {
+            final LongSupplier startTime, final Supplier<? extends C> collectionSupplier) {
         return new Function<Stream<Timed<T>>, Stream<C>>() {
             @Override
             public Stream<C> apply(final Stream<Timed<T>> s) {
@@ -3289,7 +3287,7 @@ public final class Fn extends Comparators {
      * @see #window(Duration, long, LongSupplier, Supplier)
      */
     public static <T, C extends Collection<Timed<T>>> Function<Stream<Timed<T>>, Stream<C>> window(final int maxWindowSize, final Duration maxDuration,
-            final LongSupplier startTime, final Supplier<C> collectionSupplier) {
+            final LongSupplier startTime, final Supplier<? extends C> collectionSupplier) {
         return new Function<Stream<Timed<T>>, Stream<C>>() {
             @Override
             public Stream<C> apply(final Stream<Timed<T>> s) {
@@ -3561,17 +3559,6 @@ public final class Fn extends Comparators {
     @Deprecated
     static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
         return BiConsumers.<K, V, M> ofPutAll();
-    }
-
-    static <K, V, E extends Exception> void merge(Map<K, V> map, K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction)
-            throws E {
-        final V oldValue = map.get(key);
-
-        if (oldValue == null && map.containsKey(key) == false) {
-            map.put(key, value);
-        } else {
-            map.put(key, remappingFunction.apply(oldValue, value));
-        }
     }
 
     public static class Factory {
@@ -4111,7 +4098,7 @@ public final class Fn extends Comparators {
         }
 
         @Deprecated
-        public static <T, C extends Collection<T>> IntFunction<C> single(final IntFunction<C> supplier) {
+        public static <T, C extends Collection<T>> IntFunction<? extends C> single(final IntFunction<? extends C> supplier) {
             return new IntFunction<C>() {
                 private C c = null;
 
@@ -4719,7 +4706,7 @@ public final class Fn extends Comparators {
         }
 
         @Deprecated
-        public static <T, C extends Collection<T>> Supplier<C> single(final Supplier<C> supplier) {
+        public static <T, C extends Collection<T>> Supplier<? extends C> single(final Supplier<? extends C> supplier) {
             return new Supplier<C>() {
                 private C c = null;
 

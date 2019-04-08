@@ -217,7 +217,7 @@ public abstract class DoubleStream
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
-            Supplier<M> mapFactory);
+            Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -239,7 +239,7 @@ public abstract class DoubleStream
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -259,7 +259,7 @@ public abstract class DoubleStream
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract DoubleMatrix toMatrix();
 
@@ -267,9 +267,9 @@ public abstract class DoubleStream
 
     public abstract OptionalDouble reduce(DoubleBinaryOperator op);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E;
 

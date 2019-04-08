@@ -26,7 +26,7 @@ import java.util.concurrent.Executor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -898,12 +898,12 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public List<Byte> toList() {
-        return toCollection(Fn.Suppliers.<Byte> ofList());
+        return toCollection(Suppliers.<Byte> ofList());
     }
 
     @Override
     public Set<Byte> toSet() {
-        return toCollection(Fn.Suppliers.<Byte> ofSet());
+        return toCollection(Suppliers.<Byte> ofSet());
     }
 
     @Override
@@ -925,7 +925,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
-        return toMultiset(Fn.Suppliers.<Byte> ofMultiset());
+        return toMultiset(Suppliers.<Byte> ofMultiset());
     }
 
     @Override
@@ -947,7 +947,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
-        return toLongMultiset(Fn.Suppliers.<Byte> ofLongMultiset());
+        return toLongMultiset(Suppliers.<Byte> ofLongMultiset());
     }
 
     @Override
@@ -969,16 +969,16 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
-            Supplier<M> mapFactory) {
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
             final M result = mapFactory.get();
-            byte element = 0;
+            byte next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextByte();
-                Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+                next = elements.nextByte();
+                Collectors.merge(result, keyMapper.apply(next), valueMapper.apply(next), mergeFunction);
             }
 
             return result;
@@ -989,7 +989,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> keyMapper, final Collector<Byte, A, D> downstream,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -999,11 +999,11 @@ class IteratorByteStream extends AbstractByteStream {
             final Map<K, A> intermediate = (Map<K, A>) result;
             K key = null;
             A v = null;
-            byte element = 0;
+            byte next = 0;
 
             while (elements.hasNext()) {
-                element = elements.nextByte();
-                key = checkArgNotNull(keyMapper.apply(element), "element cannot be mapped to a null key");
+                next = elements.nextByte();
+                key = checkArgNotNull(keyMapper.apply(next), "element cannot be mapped to a null key");
 
                 if ((v = intermediate.get(key)) == null) {
                     if ((v = downstreamSupplier.get()) != null) {
@@ -1011,7 +1011,7 @@ class IteratorByteStream extends AbstractByteStream {
                     }
                 }
 
-                downstreamAccumulator.accept(v, element);
+                downstreamAccumulator.accept(v, next);
             }
 
             final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
@@ -1068,7 +1068,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjByteConsumer<? super R> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 
         try {

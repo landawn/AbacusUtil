@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +68,32 @@ public abstract class StringUtil {
      */
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(?: |\\u00A0|\\s|[\\s&&[^ ]])\\s*");
 
+    private static final Map<Object, Splitter> splitterPool = new HashMap<>();
+    private static final Map<Object, Splitter> trimSplitterPool = new HashMap<>();
+    private static final Map<Object, Splitter> preserveSplitterPool = new HashMap<>();
+    private static final Map<Object, Splitter> trimPreserveSplitterPool = new HashMap<>();
+
+    static {
+        final List<String> delimiters = N.asList(" ", "  ", "   ", "\t", "\n", "\r", ",", ", ", ";", "; ", ":", ": ", " : ", "-", " - ", "_", " _ ", "#", "##",
+                " # ", "=", "==", " = ", "|", " | ", "||", " || ", "&", "&&", "@", "@@", "$", "$$", "*", "**", "+", "++");
+
+        for (String delimiter : delimiters) {
+            splitterPool.put(delimiter, Splitter.with(delimiter).omitEmptyStrings(true));
+            trimSplitterPool.put(delimiter, Splitter.with(delimiter).omitEmptyStrings(true).trim(true));
+            preserveSplitterPool.put(delimiter, Splitter.with(delimiter));
+            trimPreserveSplitterPool.put(delimiter, Splitter.with(delimiter).trim(true));
+
+            if (delimiter.length() == 1) {
+                char delimiterChar = delimiter.charAt(0);
+
+                splitterPool.put(delimiterChar, Splitter.with(delimiterChar).omitEmptyStrings(true));
+                trimSplitterPool.put(delimiterChar, Splitter.with(delimiterChar).omitEmptyStrings(true).trim(true));
+                preserveSplitterPool.put(delimiterChar, Splitter.with(delimiterChar));
+                trimPreserveSplitterPool.put(delimiterChar, Splitter.with(delimiterChar).trim(true));
+            }
+        }
+    }
+
     static final Field strValueField;
     static volatile boolean isStringCharsGettable = true;
     static final Constructor<String> sharedStringConstructor;
@@ -94,72 +121,6 @@ public abstract class StringUtil {
 
     private StringUtil() {
         // Singleton. Utility class.
-    }
-
-    public static boolean anyNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
-        return N.isNullOrEmpty(cs1) || N.isNullOrEmpty(cs2) || N.isNullOrEmpty(cs3);
-    }
-
-    @SafeVarargs
-    public static boolean anyNullOrEmpty(final CharSequence... css) {
-        if (N.isNullOrEmpty(css)) {
-            return false;
-        }
-
-        for (CharSequence cs : css) {
-            if (N.isNullOrEmpty(cs)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean anyNullOrEmpty(final Collection<? extends CharSequence> css) {
-        if (N.isNullOrEmpty(css)) {
-            return false;
-        }
-
-        for (CharSequence cs : css) {
-            if (N.isNullOrEmpty(cs)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean allNullOrEmpty(final CharSequence cs1, final CharSequence cs2, final CharSequence cs3) {
-        return N.isNullOrEmpty(cs1) && N.isNullOrEmpty(cs2) && N.isNullOrEmpty(cs3);
-    }
-
-    @SafeVarargs
-    public static boolean allNullOrEmpty(final CharSequence... css) {
-        if (N.isNullOrEmpty(css)) {
-            return true;
-        }
-
-        for (CharSequence cs : css) {
-            if (N.isNullOrEmpty(cs) == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean allNullOrEmpty(final Collection<? extends CharSequence> css) {
-        if (N.isNullOrEmpty(css)) {
-            return true;
-        }
-
-        for (CharSequence cs : css) {
-            if (N.isNullOrEmpty(cs) == false) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     // Abbreviating
@@ -1445,11 +1406,11 @@ public abstract class StringUtil {
      * @param str
      * @param delimiter
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] split(final String str, final char delimiter) {
-        return Splitter.with(delimiter).omitEmptyStrings(true).splitToArray(str);
+        final Splitter splitter = splitterPool.get(delimiter);
+
+        return (splitter == null ? Splitter.with(delimiter).omitEmptyStrings(true) : splitter).splitToArray(str);
     }
 
     /**
@@ -1458,11 +1419,14 @@ public abstract class StringUtil {
      * @param delimiter
      * @param trim
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] split(final String str, final char delimiter, final boolean trim) {
-        return Splitter.with(delimiter).omitEmptyStrings(true).trim(trim).splitToArray(str);
+        if (trim) {
+            final Splitter splitter = trimSplitterPool.get(delimiter);
+            return (splitter == null ? Splitter.with(delimiter).omitEmptyStrings(true).trim(trim) : splitter).splitToArray(str);
+        } else {
+            return split(str, delimiter);
+        }
     }
 
     /**
@@ -1470,11 +1434,11 @@ public abstract class StringUtil {
      * @param str
      * @param delimiter
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] split(final String str, final String delimiter) {
-        return Splitter.with(delimiter).omitEmptyStrings(true).splitToArray(str);
+        final Splitter splitter = splitterPool.get(delimiter);
+
+        return (splitter == null ? Splitter.with(delimiter).omitEmptyStrings(true) : splitter).splitToArray(str);
     }
 
     /**
@@ -1483,11 +1447,14 @@ public abstract class StringUtil {
      * @param delimiter
      * @param trim
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] split(final String str, final String delimiter, final boolean trim) {
-        return Splitter.with(delimiter).omitEmptyStrings(true).trim(trim).splitToArray(str);
+        if (trim) {
+            final Splitter splitter = trimSplitterPool.get(delimiter);
+            return (splitter == null ? Splitter.with(delimiter).omitEmptyStrings(true).trim(trim) : splitter).splitToArray(str);
+        } else {
+            return split(str, delimiter);
+        }
     }
 
     /**
@@ -1522,11 +1489,11 @@ public abstract class StringUtil {
      * @param str
      * @param delimiter
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final char delimiter) {
-        return Splitter.with(delimiter).splitToArray(str);
+        final Splitter splitter = preserveSplitterPool.get(delimiter);
+
+        return (splitter == null ? Splitter.with(delimiter) : splitter).splitToArray(str);
     }
 
     /**
@@ -1535,11 +1502,14 @@ public abstract class StringUtil {
      * @param delimiter
      * @param trim
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final char delimiter, boolean trim) {
-        return Splitter.with(delimiter).trim(trim).splitToArray(str);
+        if (trim) {
+            final Splitter splitter = trimPreserveSplitterPool.get(delimiter);
+            return (splitter == null ? Splitter.with(delimiter).trim(trim) : splitter).splitToArray(str);
+        } else {
+            return splitPreserveAllTokens(str, delimiter);
+        }
     }
 
     /**
@@ -1547,11 +1517,11 @@ public abstract class StringUtil {
      * @param str
      * @param delimiter
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter) {
-        return Splitter.with(delimiter).splitToArray(str);
+        final Splitter splitter = preserveSplitterPool.get(delimiter);
+
+        return (splitter == null ? Splitter.with(delimiter) : splitter).splitToArray(str);
     }
 
     /**
@@ -1560,11 +1530,14 @@ public abstract class StringUtil {
      * @param delimiter
      * @param trim
      * @return
-     * @deprecated {@code Splitter} is recommended.
      */
-    @Deprecated
     public static String[] splitPreserveAllTokens(final String str, final String delimiter, boolean trim) {
-        return Splitter.with(delimiter).trim(trim).splitToArray(str);
+        if (trim) {
+            final Splitter splitter = trimPreserveSplitterPool.get(delimiter);
+            return (splitter == null ? Splitter.with(delimiter).trim(trim) : splitter).splitToArray(str);
+        } else {
+            return splitPreserveAllTokens(str, delimiter);
+        }
     }
 
     /**

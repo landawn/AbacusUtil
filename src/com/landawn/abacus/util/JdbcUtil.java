@@ -2670,12 +2670,13 @@ public final class JdbcUtil {
     }
 
     public static <T, E extends Exception> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL,
-            final Try.Function<T, Object[], E> func) throws UncheckedSQLException, E {
+            final Try.Function<? super T, Object[], E> func) throws UncheckedSQLException, E {
         return importData(iter, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, func);
     }
 
     public static <T, E extends Exception> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval, final Try.Function<T, Object[], E> func) throws UncheckedSQLException, E {
+            final String insertSQL, final int batchSize, final int batchInterval, final Try.Function<? super T, Object[], E> func)
+            throws UncheckedSQLException, E {
         PreparedStatement stmt = null;
 
         try {
@@ -2689,8 +2690,8 @@ public final class JdbcUtil {
         }
     }
 
-    public static <T, E extends Exception> long importData(final Iterator<T> iter, final PreparedStatement stmt, final Try.Function<T, Object[], E> func)
-            throws E {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, final PreparedStatement stmt,
+            final Try.Function<? super T, Object[], E> func) throws E {
         return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, func);
     }
 
@@ -2708,7 +2709,7 @@ public final class JdbcUtil {
      * @throws UncheckedSQLException
      */
     public static <T, E extends Exception> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final Try.Function<T, Object[], E> func) throws UncheckedSQLException, E {
+            final int batchSize, final int batchInterval, final Try.Function<? super T, Object[], E> func) throws UncheckedSQLException, E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -6799,7 +6800,7 @@ public final class JdbcUtil {
          * @return
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -6831,7 +6832,7 @@ public final class JdbcUtil {
          */
         public static <K, V, M extends Map<K, V>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
                 final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -6843,7 +6844,7 @@ public final class JdbcUtil {
                     final M result = supplier.get();
 
                     while (rs.next()) {
-                        Fn.merge(result, keyExtractor.apply(rs), valueExtractor.apply(rs), mergeFunction);
+                        Maps.merge(result, keyExtractor.apply(rs), valueExtractor.apply(rs), mergeFunction);
                     }
 
                     return result;
@@ -6872,7 +6873,7 @@ public final class JdbcUtil {
          * @return
          */
         public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -6919,7 +6920,7 @@ public final class JdbcUtil {
 
         public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M, RuntimeException> groupTo(
                 final Try.Function<ResultSet, K, SQLException> keyExtractor, final Try.Function<ResultSet, V, SQLException> valueExtractor,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");
@@ -6973,7 +6974,7 @@ public final class JdbcUtil {
          */
         public static <K, V, M extends Map<K, V>> BiResultExtractor<M, RuntimeException> toMap(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -7006,7 +7007,7 @@ public final class JdbcUtil {
         public static <K, V, M extends Map<K, V>> BiResultExtractor<M, RuntimeException> toMap(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -7018,7 +7019,7 @@ public final class JdbcUtil {
                     final M result = supplier.get();
 
                     while (rs.next()) {
-                        Fn.merge(result, keyExtractor.apply(rs, columnLabels), valueExtractor.apply(rs, columnLabels), mergeFunction);
+                        Maps.merge(result, keyExtractor.apply(rs, columnLabels), valueExtractor.apply(rs, columnLabels), mergeFunction);
                     }
 
                     return result;
@@ -7050,7 +7051,7 @@ public final class JdbcUtil {
         public static <K, V, A, D, M extends Map<K, D>> BiResultExtractor<M, RuntimeException> toMap(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
                 final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
-                final Supplier<M> supplier) {
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7098,7 +7099,7 @@ public final class JdbcUtil {
 
         public static <K, V, M extends Map<K, List<V>>> BiResultExtractor<M, RuntimeException> groupTo(
                 final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<M> supplier) {
+                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");

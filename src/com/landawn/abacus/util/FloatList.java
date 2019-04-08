@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Try.Function;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
@@ -1407,13 +1408,11 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
 
     public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.FloatFunction<? extends K, E> keyMapper,
             Try.FloatFunction<? extends V, E2> valueMapper) throws E, E2 {
-        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
-
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyMapper, valueMapper, Factory.<K, V> ofMap());
     }
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.FloatFunction<? extends K, E> keyMapper,
-            Try.FloatFunction<? extends V, E2> valueMapper, IntFunction<M> mapFactory) throws E, E2 {
+            Try.FloatFunction<? extends V, E2> valueMapper, IntFunction<? extends M> mapFactory) throws E, E2 {
         final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
@@ -1421,30 +1420,26 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
 
     public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.FloatFunction<? extends K, E> keyMapper,
             Try.FloatFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
-        final IntFunction<Map<K, V>> mapFactory = Fn.Factory.ofMap();
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, Factory.<K, V> ofMap());
     }
 
     public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.FloatFunction<? extends K, E> keyMapper,
-            Try.FloatFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, IntFunction<M> mapFactory) throws E, E2, E3 {
+            Try.FloatFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, IntFunction<? extends M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.apply(size);
 
         for (int i = 0; i < size; i++) {
-            Fn.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+            Maps.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
         }
 
         return result;
     }
 
     public <K, A, D, E extends Exception> Map<K, D> toMap(Try.FloatFunction<? extends K, E> keyMapper, Collector<Float, A, D> downstream) throws E {
-        final IntFunction<Map<K, D>> mapFactory = Fn.Factory.ofMap();
-
-        return toMap(keyMapper, downstream, mapFactory);
+        return toMap(keyMapper, downstream, Factory.<K, D> ofMap());
     }
 
     public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.FloatFunction<? extends K, E> keyMapper,
-            final Collector<Float, A, D> downstream, final IntFunction<M> mapFactory) throws E {
+            final Collector<Float, A, D> downstream, final IntFunction<? extends M> mapFactory) throws E {
         final M result = mapFactory.apply(size);
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();

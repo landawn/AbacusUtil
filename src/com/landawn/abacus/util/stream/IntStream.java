@@ -233,7 +233,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -255,7 +255,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<M> mapFactory);
+            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -275,7 +275,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
-            final Supplier<M> mapFactory);
+            final Supplier<? extends M> mapFactory);
 
     public abstract IntMatrix toMatrix();
 
@@ -283,7 +283,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract OptionalInt reduce(IntBinaryOperator op);
 
-    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<? super R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -291,7 +291,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param accumulator
      * @return
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator);
+    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<? super R> accumulator);
 
     public abstract <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E;
 

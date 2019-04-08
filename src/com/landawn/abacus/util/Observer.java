@@ -213,7 +213,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 synchronized (holder) {
-                    final long now = DateUtil.currentMillis();
+                    final long now = System.currentTimeMillis();
 
                     if (holder.value() == N.NULL_MASK || now - lastScheduledTime > intervalDurationInMillis * INTERVAL_FACTOR) {
                         holder.setValue(param);
@@ -232,7 +232,7 @@ public abstract class Observer<T> {
                     scheduler.schedule(new Runnable() {
                         @Override
                         public void run() {
-                            final long pastIntervalInMills = DateUtil.currentMillis() - prevTimestamp;
+                            final long pastIntervalInMills = System.currentTimeMillis() - prevTimestamp;
 
                             if (pastIntervalInMills >= intervalDurationInMillis) {
                                 Object lastParam = null;
@@ -251,7 +251,7 @@ public abstract class Observer<T> {
                         }
                     }, delay, unit);
 
-                    lastScheduledTime = DateUtil.currentMillis();
+                    lastScheduledTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     holder.setValue(N.NULL_MASK);
 
@@ -298,7 +298,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 synchronized (holder) {
-                    final long now = DateUtil.currentMillis();
+                    final long now = System.currentTimeMillis();
 
                     if (holder.value() == N.NULL_MASK || now - lastScheduledTime > intervalDurationInMillis * INTERVAL_FACTOR) {
                         holder.setValue(param);
@@ -369,7 +369,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 synchronized (holder) {
-                    final long now = DateUtil.currentMillis();
+                    final long now = System.currentTimeMillis();
 
                     if (holder.value() == N.NULL_MASK || now - lastScheduledTime > intervalDurationInMillis * INTERVAL_FACTOR) {
                         holder.setValue(param);
@@ -435,13 +435,13 @@ public abstract class Observer<T> {
         }
 
         dispatcher.append(new Dispatcher<Object>() {
-            private final long startTime = DateUtil.currentMillis();
+            private final long startTime = System.currentTimeMillis();
             private boolean isDelayed = false;
 
             @Override
             public void onNext(final Object param) {
                 if (isDelayed == false) {
-                    N.sleep(unit.toMillis(delay) - (DateUtil.currentMillis() - startTime));
+                    N.sleep(unit.toMillis(delay) - (System.currentTimeMillis() - startTime));
                     isDelayed = true;
                 }
 
@@ -461,12 +461,12 @@ public abstract class Observer<T> {
      */
     public Observer<Timed<T>> timeInterval() {
         dispatcher.append(new Dispatcher<Object>() {
-            private long startTime = DateUtil.currentMillis();
+            private long startTime = System.currentTimeMillis();
 
             @Override
             public synchronized void onNext(final Object param) {
                 if (downDispatcher != null) {
-                    long now = DateUtil.currentMillis();
+                    long now = System.currentTimeMillis();
                     long interval = now - startTime;
                     startTime = now;
 
@@ -488,7 +488,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 if (downDispatcher != null) {
-                    downDispatcher.onNext(Timed.of(param, DateUtil.currentMillis()));
+                    downDispatcher.onNext(Timed.of(param, System.currentTimeMillis()));
                 }
             }
         });
@@ -712,7 +712,7 @@ public abstract class Observer<T> {
         N.checkArgument(count > 0, "count can't be 0 or negative");
 
         dispatcher.append(new Dispatcher<Object>() {
-            private final long startTime = DateUtil.currentMillis();
+            private final long startTime = System.currentTimeMillis();
             private final long interval = timespan + timeskip;
             private final List<T> queue = new ArrayList<>();
 
@@ -736,7 +736,7 @@ public abstract class Observer<T> {
 
             @Override
             public void onNext(final Object param) {
-                if ((DateUtil.currentMillis() - startTime) % interval <= timespan) {
+                if ((System.currentTimeMillis() - startTime) % interval <= timespan) {
                     List<T> list = null;
 
                     synchronized (queue) {
@@ -769,13 +769,13 @@ public abstract class Observer<T> {
     public abstract void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete);
 
     void cancelScheduledFutures() {
-        final long startTime = DateUtil.currentMillis();
+        final long startTime = System.currentTimeMillis();
 
         if (N.notNullOrEmpty(scheduledFutures)) {
             for (Map.Entry<ScheduledFuture<?>, Long> entry : scheduledFutures.entrySet()) {
                 final long delay = entry.getValue();
 
-                N.sleep(delay - (DateUtil.currentMillis() - startTime)
+                N.sleep(delay - (System.currentTimeMillis() - startTime)
                         + delay /* Extending another delay just want to make sure last schedule can be completed before the schedule task is cancelled*/);
 
                 entry.getKey().cancel(false);

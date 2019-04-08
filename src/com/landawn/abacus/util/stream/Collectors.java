@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -33,8 +34,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collector.Characteristics;
 
 import com.landawn.abacus.DataSet;
@@ -46,6 +51,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatList;
@@ -88,6 +94,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
@@ -946,16 +953,18 @@ public class Collectors {
         private final Function<A, R> finisher;
         private final Set<Characteristics> characteristics;
 
-        CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Set<Characteristics> characteristics) {
+        CollectorImpl(final Supplier<? extends A> supplier, final BiConsumer<? super A, ? super T> accumulator, final BinaryOperator<A> combiner,
+                final Set<Characteristics> characteristics) {
             this(supplier, accumulator, combiner, (Function<A, R>) IDENTITY_FINISHER, characteristics);
         }
 
-        CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher,
-                Set<Characteristics> characteristics) {
-            this.supplier = supplier;
-            this.accumulator = accumulator;
+        @SuppressWarnings("rawtypes")
+        CollectorImpl(final Supplier<? extends A> supplier, final BiConsumer<? super A, ? super T> accumulator, final BinaryOperator<A> combiner,
+                final Function<? super A, ? extends R> finisher, final Set<Characteristics> characteristics) {
+            this.supplier = (Supplier) supplier;
+            this.accumulator = (BiConsumer) accumulator;
             this.combiner = combiner;
-            this.finisher = finisher;
+            this.finisher = (Function) finisher;
             this.characteristics = characteristics == null ? N.<Characteristics> emptySet() : characteristics;
         }
 
@@ -989,7 +998,7 @@ public class Collectors {
         final BiConsumer<C, T> accumulator = BiConsumers.ofAdd();
         final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAllToBigger();
 
-        return new CollectorImpl<>((Supplier<C>) collectionFactory, accumulator, combiner, CH_ID);
+        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, List<T>> toList() {
@@ -1079,7 +1088,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>((Supplier<C>) collectionFactory, accumulator, combiner, CH_ID);
+        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, List<T>> toList(final int atMostSize) {
@@ -1133,7 +1142,7 @@ public class Collectors {
     }
 
     public static <T> Collector<T, ?, Object[]> toArray() {
-        return toArray(Fn.Suppliers.ofEmptyObjectArray());
+        return toArray(Suppliers.ofEmptyObjectArray());
     }
 
     public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
@@ -1642,9 +1651,7 @@ public class Collectors {
     }
 
     public static <T, U> Collector<T, ?, List<U>> mapping(Function<? super T, ? extends U> mapper) {
-        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
-
-        return Collectors.mapping(mapper, downstream);
+        return Collectors.mapping(mapper, Collectors.<U> toList());
     }
 
     public static <T, U, A, R> Collector<T, ?, R> mapping(final Function<? super T, ? extends U> mapper, final Collector<? super U, A, R> downstream) {
@@ -1661,9 +1668,7 @@ public class Collectors {
     }
 
     public static <T, U> Collector<T, ?, List<U>> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper) {
-        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
-
-        return flatMapping(mapper, downstream);
+        return flatMapping(mapper, Collectors.<U> toList());
     }
 
     public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
@@ -1687,9 +1692,7 @@ public class Collectors {
     }
 
     public static <T, U> Collector<T, ?, List<U>> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper) {
-        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
-
-        return flattMapping(mapper, downstream);
+        return flattMapping(mapper, Collectors.<U> toList());
     }
 
     public static <T, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends U>> mapper,
@@ -1712,16 +1715,14 @@ public class Collectors {
         return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
     }
 
-    public static <T, T2, T3> Collector<T, ?, List<T3>> flatMapping(final Function<? super T, ? extends Stream<? extends T2>> flatMapper,
-            final BiFunction<? super T, ? super T2, ? extends T3> mapper) {
-        final Collector<? super T3, ?, List<T3>> downstream = Collectors.toList();
-
-        return flatMapping(flatMapper, mapper, downstream);
+    public static <T, T2, U> Collector<T, ?, List<U>> flatMapping(final Function<? super T, ? extends Stream<? extends T2>> flatMapper,
+            final BiFunction<? super T, ? super T2, ? extends U> mapper) {
+        return flatMapping(flatMapper, mapper, Collectors.<U> toList());
     }
 
-    public static <T, T2, T3, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends T2>> flatMapper,
-            final BiFunction<? super T, ? super T2, ? extends T3> mapper, final Collector<? super T3, A, R> downstream) {
-        final BiConsumer<A, ? super T3> downstreamAccumulator = downstream.accumulator();
+    public static <T, T2, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends T2>> flatMapper,
+            final BiFunction<? super T, ? super T2, ? extends U> mapper, final Collector<? super U, A, R> downstream) {
+        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
 
         final BiConsumer<A, T> accumulator = new BiConsumer<A, T>() {
             @Override
@@ -1739,16 +1740,14 @@ public class Collectors {
         return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
     }
 
-    public static <T, T2, T3> Collector<T, ?, List<T3>> flattMapping(final Function<? super T, ? extends Collection<? extends T2>> flatMapper,
-            final BiFunction<? super T, ? super T2, ? extends T3> mapper) {
-        final Collector<? super T3, ?, List<T3>> downstream = Collectors.toList();
-
-        return flattMapping(flatMapper, mapper, downstream);
+    public static <T, T2, U> Collector<T, ?, List<U>> flattMapping(final Function<? super T, ? extends Collection<? extends T2>> flatMapper,
+            final BiFunction<? super T, ? super T2, ? extends U> mapper) {
+        return flattMapping(flatMapper, mapper, Collectors.<U> toList());
     }
 
-    public static <T, T2, T3, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends T2>> flatMapper,
-            final BiFunction<? super T, ? super T2, ? extends T3> mapper, final Collector<? super T3, A, R> downstream) {
-        final BiConsumer<A, ? super T3> downstreamAccumulator = downstream.accumulator();
+    public static <T, T2, U, A, R> Collector<T, ?, R> flattMapping(final Function<? super T, ? extends Collection<? extends T2>> flatMapper,
+            final BiFunction<? super T, ? super T2, ? extends U> mapper, final Collector<? super U, A, R> downstream) {
+        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
 
         final BiConsumer<A, T> accumulator = new BiConsumer<A, T>() {
             @Override
@@ -1776,7 +1775,7 @@ public class Collectors {
      * @throws UnsupportedOperationException operated by multiple threads
      */
     public static <T, C extends Collection<T>, A, R> Collector<T, ?, R> collapsing(final BiPredicate<? super T, ? super T> collapsible,
-            final Supplier<C> collectionSupplier, final Collector<? super C, A, R> downstream) {
+            final Supplier<? extends C> collectionSupplier, final Collector<? super C, A, R> downstream) {
         final BinaryOperator<A> combiner = createNoCombiner("The 'collapsing' Collector only can be used in sequential stream");
 
         final BiConsumer<A, ? super C> downstreamAccumulator = downstream.accumulator();
@@ -1940,7 +1939,7 @@ public class Collectors {
      * @throws UnsupportedOperationException operated by multiple threads
      */
     public static <T, R1, A, R> Collector<T, ?, R> collapsing(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R1> upstreamSupplier,
-            final BiConsumer<R1, ? super T> upstreamAccumulator, final Collector<? super R1, A, R> downstream) {
+            final BiConsumer<? super R1, ? super T> upstreamAccumulator, final Collector<? super R1, A, R> downstream) {
         final BinaryOperator<A> combiner = createNoCombiner("The 'collapsing' Collector only can be used in sequential stream");
 
         final BiConsumer<A, ? super R1> downstreamAccumulator = downstream.accumulator();
@@ -3595,7 +3594,7 @@ public class Collectors {
     }
 
     public static <T, K, M extends Map<K, List<T>>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> keyMapper,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 
         return groupingBy(keyMapper, downstream, mapFactory);
@@ -3609,7 +3608,7 @@ public class Collectors {
     }
 
     public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> keyMapper,
-            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+            final Collector<? super T, A, D> downstream, final Supplier<? extends M> mapFactory) {
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
 
@@ -3663,7 +3662,7 @@ public class Collectors {
     }
 
     public static <T, K, M extends ConcurrentMap<K, List<T>>> Collector<T, ?, M> groupingByConcurrent(final Function<? super T, ? extends K> keyMapper,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 
         return groupingByConcurrent(keyMapper, downstream, mapFactory);
@@ -3677,7 +3676,7 @@ public class Collectors {
     }
 
     public static <T, K, A, D, M extends ConcurrentMap<K, D>> Collector<T, ?, M> groupingByConcurrent(final Function<? super T, ? extends K> keyMapper,
-            Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+            Collector<? super T, A, D> downstream, final Supplier<? extends M> mapFactory) {
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
 
@@ -3793,14 +3792,15 @@ public class Collectors {
         return toMap(keyMapper, valueMapper, mergeFunction);
     }
 
-    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<? extends M> mapFactory) {
         final Function<Map.Entry<K, V>, ? extends K> keyMapper = Fn.<K, V> key();
         final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
 
         return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction,
+            final Supplier<? extends M> mapFactory) {
         final Function<Map.Entry<K, V>, ? extends K> keyMapper = Fn.<K, V> key();
         final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
 
@@ -3821,14 +3821,14 @@ public class Collectors {
     }
 
     public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, final Supplier<? extends M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     public static <T, K, V, M extends Map<K, V>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
             public void accept(M map, T element) {
@@ -3861,7 +3861,7 @@ public class Collectors {
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyMapper,
-            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+            final Collector<? super T, A, D> downstream, final Supplier<? extends M> mapFactory) {
         return groupingBy(keyMapper, downstream, mapFactory);
     }
 
@@ -3888,7 +3888,7 @@ public class Collectors {
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
     public static <T, K, V, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream, final Supplier<? extends M> mapFactory) {
         return groupingBy(keyMapper, mapping(valueMapper, downstream), mapFactory);
     }
 
@@ -3963,7 +3963,7 @@ public class Collectors {
     }
 
     public static <T, K, V, M extends ConcurrentMap<K, V>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
         final BinaryOperator<V> mergeFunction = Fn.throwingMerger();
 
         return toConcurrentMap(keyMapper, valueMapper, mergeFunction, mapFactory);
@@ -3977,7 +3977,7 @@ public class Collectors {
     }
 
     public static <T, K, V, M extends ConcurrentMap<K, V>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<M> mapFactory) {
+            final Function<? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
 
         final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
@@ -4026,7 +4026,7 @@ public class Collectors {
 
     @SuppressWarnings("rawtypes")
     public static <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> Collector<Map.Entry<? extends K, ? extends V>, ?, M> toMultimap(
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyMapper = (Function) Fn.key();
         final Function<Map.Entry<? extends K, ? extends V>, ? extends V> valueMapper = (Function) Fn.value();
 
@@ -4040,7 +4040,7 @@ public class Collectors {
     }
 
     public static <T, K, C extends Collection<T>, M extends Multimap<K, T, C>> Collector<T, ?, M> toMultimap(final Function<? super T, ? extends K> keyMapper,
-            final Supplier<M> mapFactory) {
+            final Supplier<? extends M> mapFactory) {
         final Function<? super T, ? extends T> valueMapper = Fn.identity();
 
         return toMultimap(keyMapper, valueMapper, mapFactory);
@@ -4054,7 +4054,7 @@ public class Collectors {
     }
 
     public static <T, K, V, C extends Collection<V>, M extends Multimap<K, V, C>> Collector<T, ?, M> toMultimap(
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper, final Supplier<? extends M> mapFactory) {
         final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
             public void accept(M map, T element) {
@@ -4744,8 +4744,12 @@ public class Collectors {
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
         N.checkArgNotNull(function);
 
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            entry.setValue(function.apply(entry.getKey(), entry.getValue()));
+        try {
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                entry.setValue(function.apply(entry.getKey(), entry.getValue()));
+            }
+        } catch (IllegalStateException ise) {
+            throw new ConcurrentModificationException(ise);
         }
     }
 
@@ -4828,6 +4832,149 @@ public class Collectors {
                 return m1;
             }
         };
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static final Supplier<BlockingQueue> queueSupplier = new Supplier<BlockingQueue>() {
+        @Override
+        public BlockingQueue get() {
+            return new ArrayBlockingQueue(64);
+        }
+    };
+
+    /**
+     * Note: Generally it's much slower than other {@code Collectors}.
+     * 
+     * @param streamingCollector
+     * @return
+     * @see Stream#observe(BlockingQueue, Predicate, long)
+     * @see Stream#asyncCall(Try.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R> Collector<T, ?, R> streaming(final Function<? super Stream<T>, R> streamingCollector) {
+        return streaming((Supplier) queueSupplier, streamingCollector);
+    }
+
+    /**
+     * Note: Generally it's much slower than other {@code Collectors}.
+     * 
+     * @param supplier
+     * @param streamingCollector
+     * @return
+     * @see Stream#observe(BlockingQueue, Predicate, long)
+     * @see Stream#asyncCall(Try.Function)
+     */
+    public static <T, R> Collector<T, ?, R> streaming(final Supplier<? extends BlockingQueue<T>> queueSupplier,
+            final Function<? super Stream<T>, R> streamingCollector) {
+        final Function<Stream<T>, ContinuableFuture<R>> streamingCollector2 = new Function<Stream<T>, ContinuableFuture<R>>() {
+            @Override
+            public ContinuableFuture<R> apply(Stream<T> t) {
+                return t.asyncCall(streamingCollector);
+            }
+        };
+
+        return streaming(queueSupplier, streamingCollector2, 10);
+    }
+
+    /**
+     * Note: Generally it's much slower than other {@code Collectors}.
+     * 
+     * @param maxWaitIntervalInMillis
+     * @param supplier
+     * @param streamingCollector
+     * @return
+     * @see Stream#observe(BlockingQueue, Predicate, long)
+     * @see Stream#asyncCall(Try.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R> Collector<T, ?, R> streaming(final Supplier<? extends BlockingQueue<T>> queueSupplier,
+            final Function<? super Stream<T>, ContinuableFuture<R>> streamingCollector, final long maxWaitIntervalInMillis) {
+        final T NULL = (T) NONE;
+
+        final Supplier<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>> supplier = new Supplier<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>>() {
+            @Override
+            public Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> get() {
+                return Tuple.of((BlockingQueue<T>) queueSupplier.get(), MutableBoolean.of(true), MutableBoolean.of(false), new Holder<ContinuableFuture<R>>()); // _1 = queue, _2 = hasMore, _3 = isComplete, _4=future.
+            }
+        };
+
+        final BiConsumer<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>, T> accumulator = new BiConsumer<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>, T>() {
+            @Override
+            public void accept(Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> xxx, T t) {
+                if (xxx._4.value() == null) {
+                    initStream(xxx, streamingCollector, maxWaitIntervalInMillis, NULL);
+                }
+
+                t = t == null ? NULL : t;
+
+                if (xxx._3.isFalse() && xxx._1.offer(t) == false) {
+                    try {
+                        while (xxx._3.isFalse() && xxx._1.offer(t, maxWaitIntervalInMillis, TimeUnit.MILLISECONDS) == false) {
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>> combiner = new BinaryOperator<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>>() {
+            @Override
+            public Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> apply(
+                    Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> t,
+                    Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> u) {
+                throw new UnsupportedOperationException("Should not happen");
+            }
+        };
+
+        final Function<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>, R> finisher = new Function<Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>>, R>() {
+            @Override
+            public R apply(Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> xxx) {
+                if (xxx._4.value() == null) {
+                    initStream(xxx, streamingCollector, maxWaitIntervalInMillis, NULL);
+                }
+
+                xxx._2.setFalse();
+
+                try {
+                    return xxx._4.value().get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        return new CollectorImpl(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
+    }
+
+    private static <T, R> void initStream(final Tuple4<BlockingQueue<T>, MutableBoolean, MutableBoolean, Holder<ContinuableFuture<R>>> tp,
+            final Function<? super Stream<T>, ContinuableFuture<R>> streamingCollector, final long maxWaitIntervalInMillis, final T NULL) {
+        synchronized (tp) {
+            if (tp._4.value() == null) {
+                final BooleanSupplier hasMore = new BooleanSupplier() {
+                    @Override
+                    public boolean getAsBoolean() {
+                        return tp._2.value();
+                    }
+                };
+
+                tp._4.setValue(streamingCollector.apply(Stream.observe(tp._1, hasMore, maxWaitIntervalInMillis).map(new Function<T, T>() {
+                    @Override
+                    public T apply(T t) {
+                        return t == NULL ? null : t;
+                    }
+                }).onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        tp._3.setTrue();
+
+                        while (tp._1.size() > 0) {
+                            tp._1.clear();
+                        }
+                    }
+                })));
+            }
+        }
     }
 
     static <K, V> void merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {

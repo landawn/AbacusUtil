@@ -1131,7 +1131,7 @@ public interface DataSet {
      * @param supplier
      * @return
      */
-    <K, V, M extends Map<K, V>> M toMap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
+    <K, V, M extends Map<K, V>> M toMap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier);
 
     /**
      *
@@ -1164,7 +1164,7 @@ public interface DataSet {
      * @return
      */
     <K, V, M extends Map<K, V>> M toMap(Class<? extends V> rowClass, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
-            int toRowIndex, IntFunction<M> supplier);
+            int toRowIndex, IntFunction<? extends M> supplier);
 
     /**
      *
@@ -1197,7 +1197,7 @@ public interface DataSet {
      * @return
      */
     <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends V> rowSupplier, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
-            int toRowIndex, IntFunction<M> supplier);
+            int toRowIndex, IntFunction<? extends M> supplier);
 
     /**
      *
@@ -1227,7 +1227,7 @@ public interface DataSet {
      * @return
      */
     <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex,
-            IntFunction<M> supplier);
+            IntFunction<? extends M> supplier);
 
     /**
      *
@@ -1261,7 +1261,7 @@ public interface DataSet {
      * @return
      */
     <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(Class<? extends E> rowClass, String keyColumnName,
-            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier);
 
     /**
      *
@@ -1295,7 +1295,7 @@ public interface DataSet {
      * @return
      */
     <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
-            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier);
 
     //    /**
     //     *
@@ -2043,8 +2043,8 @@ public interface DataSet {
      * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper) throws E;
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper)
+            throws E;
 
     /**
      *
@@ -2391,8 +2391,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
+    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName,
+            String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
 
     /**
      * 
@@ -2541,9 +2541,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector)
-            throws E;
+    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
 
     /**
      * 
@@ -2619,8 +2618,8 @@ public interface DataSet {
      * @return
      */
     <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E2> func) throws E, E2;
+            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func)
+            throws E, E2;
 
     /**
      * 
@@ -3006,8 +3005,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      * 
@@ -3158,9 +3157,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      * 
@@ -3813,7 +3811,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> int sumInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> int sumInt(String columnName, Try.ToIntFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3823,7 +3821,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * @param columnName
@@ -3846,7 +3844,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> long sumLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> long sumLong(String columnName, Try.ToLongFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3856,7 +3854,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * @param columnName
@@ -3879,7 +3877,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3889,7 +3887,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * @param columnName
@@ -3912,7 +3910,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3922,7 +3920,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * @param columnName
@@ -3945,7 +3943,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3955,7 +3953,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * @param columnName
@@ -3996,7 +3994,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -4006,7 +4004,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper) throws E;
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.

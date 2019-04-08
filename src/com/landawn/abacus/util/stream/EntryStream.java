@@ -1064,7 +1064,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     @SequentialOnly
-    public <M extends Map<K, V>> M toMap(final Supplier<M> mapFactory) {
+    public <M extends Map<K, V>> M toMap(final Supplier<? extends M> mapFactory) {
         if (isParallel()) {
             return s.sequential().toMap(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
         } else {
@@ -1079,7 +1079,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      */
     @SequentialOnly
-    public <M extends Map<K, V>> M toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+    public <M extends Map<K, V>> M toMap(final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
         if (isParallel()) {
             return s.sequential().toMap(Fn.<K, V> key(), Fn.<K, V> value(), mergeFunction, mapFactory);
         } else {
@@ -1110,7 +1110,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @ParallelSupported
     public <KK, VV, M extends Map<KK, VV>> M toMap(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<? extends M> mapFactory) {
         return s.toMap(keyMapper, valueMapper, mapFactory);
     }
 
@@ -1139,7 +1139,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @ParallelSupported
     public <KK, VV, M extends Map<KK, VV>> M toMap(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<M> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<? extends M> mapFactory) {
         return s.toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
@@ -1163,7 +1163,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function, Collector)
      */
     @ParallelSupported
-    public <A, D, M extends Map<K, D>> M toMap(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<M> mapFactory) {
+    public <A, D, M extends Map<K, D>> M toMap(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<? extends M> mapFactory) {
         return s.toMap(Fn.<K, V> key(), downstream, mapFactory);
     }
 
@@ -1190,7 +1190,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @ParallelSupported
     public <KK, A, D, M extends Map<KK, D>> M toMap(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
-            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<M> mapFactory) {
+            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<? extends M> mapFactory) {
         return s.toMap(keyMapper, downstream, mapFactory);
     }
 
@@ -1222,7 +1222,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#groupingBy(Function, Supplier)
      */
     @SequentialOnly
-    public <M extends Map<K, List<V>>> M groupTo(final Supplier<M> mapFactory) {
+    public <M extends Map<K, List<V>>> M groupTo(final Supplier<? extends M> mapFactory) {
         if (isParallel()) {
             return s.sequential().groupTo(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
         } else {
@@ -1246,7 +1246,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @ParallelSupported
     public <KK, VV, M extends Map<KK, List<VV>>> M groupTo(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<? extends M> mapFactory) {
         return s.groupTo(keyMapper, valueMapper, mapFactory);
     }
 
@@ -1278,7 +1278,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     @SequentialOnly
-    public <C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Supplier<M> mapFactory) {
+    public <C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Supplier<? extends M> mapFactory) {
         if (isParallel()) {
             return s.sequential().toMultimap(Fn.<K, V> key(), Fn.<K, V> value(), mapFactory);
         } else {
@@ -1309,7 +1309,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @ParallelSupported
     public <KK, VV, C extends Collection<VV>, M extends Multimap<KK, VV, C>> M toMultimap(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<? extends M> mapFactory) {
         return s.toMultimap(keyMapper, valueMapper, mapFactory);
     }
 
@@ -1324,12 +1324,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator, final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<? super R, ? super Map.Entry<K, V>> accumulator,
+            final BiConsumer<R, R> combiner) {
         return s.collect(supplier, accumulator, combiner);
     }
 
     @ParallelSupported
-    public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator) {
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<? super R, ? super Map.Entry<K, V>> accumulator) {
         return s.collect(supplier, accumulator);
     }
 
@@ -1344,13 +1345,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <R, A, RR> RR collectAndThen(final Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<R, RR> finisher) {
+    public <R, A, RR> RR collectAndThen(final Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<? super R, RR> finisher) {
         return s.collectAndThen(downstream, finisher);
     }
 
     @ParallelSupported
     public <R, A, RR> RR collectAndThen(final java.util.stream.Collector<? super Map.Entry<K, V>, A, R> downstream,
-            final java.util.function.Function<R, RR> finisher) {
+            final java.util.function.Function<? super R, RR> finisher) {
         return s.collectAndThen(downstream, finisher);
     }
 

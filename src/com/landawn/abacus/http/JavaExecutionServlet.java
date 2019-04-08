@@ -36,7 +36,6 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.RemoteExecutionRequest;
@@ -97,7 +96,7 @@ public class JavaExecutionServlet extends AbstractHttpServlet {
 
     protected void execute(final HttpServletRequest request, final HttpServletResponse response) {
         final ContentFormat contentFormat = getContentFormat(request);
-        final long startTime = DateUtil.currentMillis();
+        final long startTime = System.currentTimeMillis();
         final RemoteExecutionResponse remoteResponse = new RemoteExecutionResponse();
 
         RemoteExecutionRequest remoteRequest = null;
@@ -121,7 +120,8 @@ public class JavaExecutionServlet extends AbstractHttpServlet {
             }
 
             if (remoteResponse.getErrorCode() == null) {
-                final String requestId = N.isNullOrEmpty(remoteRequest.getRequestId()) ? String.valueOf(DateUtil.currentMillis()) : remoteRequest.getRequestId();
+                final String requestId = N.isNullOrEmpty(remoteRequest.getRequestId()) ? String.valueOf(System.currentTimeMillis())
+                        : remoteRequest.getRequestId();
                 // remoteRequest.getRunMode() // TODO
                 // remoteRequest.getSchedule() // TODO
 
@@ -156,7 +156,7 @@ public class JavaExecutionServlet extends AbstractHttpServlet {
 
         // remoteResponse.setRequestHost(remoteRequest.getRequestHost());
         // remoteResponse.setRequestTime(remoteRequest.getRequestTime());
-        remoteResponse.setResponseTime(DateUtil.currentMillis());
+        remoteResponse.setResponseTime(System.currentTimeMillis());
         remoteResponse.setExecutionTime(remoteResponse.getResponseTime() - startTime);
         remoteResponse.setExecutionHost(IOUtil.HOST_NAME);
 

@@ -444,15 +444,15 @@ public final class Splitter {
         return output;
     }
 
-    public <C extends Collection<String>> C split(final CharSequence source, final Supplier<C> supplier) {
+    public <C extends Collection<String>> C split(final CharSequence source, final Supplier<? extends C> supplier) {
         return split(supplier.get(), source);
     }
 
-    public <T, C extends Collection<T>> C split(Class<T> targetType, final CharSequence source, final Supplier<C> supplier) {
+    public <T, C extends Collection<T>> C split(Class<T> targetType, final CharSequence source, final Supplier<? extends C> supplier) {
         return split(supplier.get(), targetType, source);
     }
 
-    public <T, C extends Collection<T>> C split(Type<T> targetType, final CharSequence source, final Supplier<C> supplier) {
+    public <T, C extends Collection<T>> C split(Type<T> targetType, final CharSequence source, final Supplier<? extends C> supplier) {
         return split(supplier.get(), targetType, source);
     }
 
@@ -700,15 +700,15 @@ public final class Splitter {
             return output;
         }
 
-        public <M extends Map<String, String>> M split(final CharSequence source, final Supplier<M> supplier) {
+        public <M extends Map<String, String>> M split(final CharSequence source, final Supplier<? extends M> supplier) {
             return split(supplier.get(), source);
         }
 
-        public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source, final Supplier<M> supplier) {
+        public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source, final Supplier<? extends M> supplier) {
             return split(supplier.get(), keyType, valueType, source);
         }
 
-        public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source, final Supplier<M> supplier) {
+        public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source, final Supplier<? extends M> supplier) {
             return split(supplier.get(), keyType, valueType, source);
         }
 

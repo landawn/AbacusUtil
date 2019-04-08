@@ -212,8 +212,8 @@ public final class Iterators {
     }
 
     public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(final Iterator<? extends T> iter,
-            final Try.Function<? super T, K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier)
-            throws E, E2 {
+            final Try.Function<? super T, K, E> keyMapper, final Try.Function<? super T, ? extends V, E2> valueExtractor,
+            final Supplier<? extends M> mapSupplier) throws E, E2 {
         N.checkArgNotNull(keyMapper);
         N.checkArgNotNull(valueExtractor);
 
@@ -1299,14 +1299,14 @@ public final class Iterators {
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<A, B, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.BiConsumer<? super A, ? super B, E> action) throws E {
                 while (hasNext()) {
                     cur.forEachRemaining(action);
                 }
             }
 
             @Override
-            public <R> ObjIterator<R> map(final BiFunction<A, B, R> mapper) {
+            public <R> ObjIterator<R> map(final BiFunction<? super A, ? super B, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {
@@ -1369,14 +1369,14 @@ public final class Iterators {
             }
 
             @Override
-            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<A, B, C, E> action) throws E {
+            public <E extends Exception> void forEachRemaining(final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
                 while (hasNext()) {
                     cur.forEachRemaining(action);
                 }
             }
 
             @Override
-            public <R> ObjIterator<R> map(final TriFunction<A, B, C, R> mapper) {
+            public <R> ObjIterator<R> map(final TriFunction<? super A, ? super B, ? super C, R> mapper) {
                 N.checkArgNotNull(mapper);
 
                 return new ObjIterator<R>() {

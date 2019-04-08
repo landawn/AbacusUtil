@@ -2131,7 +2131,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex, IntFunction<M> supplier) {
+    public <K, V, M extends Map<K, V>> M toMap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex,
+            IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int keyColumnIndex = checkColumnName(keyColumnName);
@@ -2165,7 +2166,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("deprecation")
     @Override
     public <K, V, M extends Map<K, V>> M toMap(Class<? extends V> rowClass, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
-            int toRowIndex, IntFunction<M> supplier) {
+            int toRowIndex, IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int keyColumnIndex = checkColumnName(keyColumnName);
@@ -2270,7 +2271,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("deprecation")
     @Override
     public <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends V> rowSupplier, String keyColumnName, Collection<String> valueColumnNames,
-            int fromRowIndex, int toRowIndex, IntFunction<M> supplier) {
+            int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int keyColumnIndex = checkColumnName(keyColumnName);
@@ -2363,7 +2364,7 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex,
-            int toRowIndex, IntFunction<M> supplier) {
+            int toRowIndex, IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final M resultMap = supplier.apply(toRowIndex - fromRowIndex);
@@ -2397,7 +2398,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("deprecation")
     @Override
     public <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(Class<? extends E> rowClass, String keyColumnName,
-            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier) {
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int keyColumnIndex = checkColumnName(keyColumnName);
@@ -2503,7 +2504,7 @@ public class RowDataSet implements DataSet, Cloneable {
     @SuppressWarnings("deprecation")
     @Override
     public <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
-            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier) {
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier) {
         checkRowIndex(fromRowIndex, toRowIndex);
 
         final int keyColumnIndex = checkColumnName(keyColumnName);
@@ -6233,12 +6234,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> int sumInt(final String columnName, Try.ToIntFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> int sumInt(final String columnName, Try.ToIntFunction<? super T, E> mapper) throws E {
     //        return sumInt(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> int sumInt(final String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> int sumInt(final String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper) throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
     //
@@ -6262,12 +6263,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> long sumLong(final String columnName, Try.ToLongFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> long sumLong(final String columnName, Try.ToLongFunction<? super T, E> mapper) throws E {
     //        return sumLong(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> long sumLong(final String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> long sumLong(final String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper) throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
     //
@@ -6291,12 +6292,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> double sumDouble(final String columnName, Try.ToDoubleFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> double sumDouble(final String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E {
     //        return sumDouble(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> double sumDouble(final String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> double sumDouble(final String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper) throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
     //
@@ -6320,12 +6321,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageInt(final String columnName, Try.ToIntFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> OptionalDouble averageInt(final String columnName, Try.ToIntFunction<? super T, E> mapper) throws E {
     //        return averageInt(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageInt(final String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper)
+    //    public <T, E extends Exception> OptionalDouble averageInt(final String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper)
     //            throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
@@ -6350,12 +6351,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageLong(final String columnName, Try.ToLongFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> OptionalDouble averageLong(final String columnName, Try.ToLongFunction<? super T, E> mapper) throws E {
     //        return averageLong(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageLong(final String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper)
+    //    public <T, E extends Exception> OptionalDouble averageLong(final String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper)
     //            throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
@@ -6380,12 +6381,12 @@ public class RowDataSet implements DataSet, Cloneable {
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageDouble(final String columnName, Try.ToDoubleFunction<T, E> mapper) throws E {
+    //    public <T, E extends Exception> OptionalDouble averageDouble(final String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E {
     //        return averageDouble(columnName, 0, size(), mapper);
     //    }
     //
     //    @Override
-    //    public <T, E extends Exception> OptionalDouble averageDouble(final String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper)
+    //    public <T, E extends Exception> OptionalDouble averageDouble(final String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper)
     //            throws E {
     //        final int columnIndex = checkColumnName(columnName);
     //        checkRowIndex(fromRowIndex, toRowIndex);
