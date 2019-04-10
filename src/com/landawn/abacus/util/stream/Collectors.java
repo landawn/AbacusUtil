@@ -2347,6 +2347,16 @@ public class Collectors {
     }
 
     /**
+     * 
+     * @param comparator
+     * @return
+     * @see Collectors#minMax(Comparator, BiFunction)
+     */
+    public static <T, R> Collector<T, ?, Optional<Pair<T, T>>> minMax(final Comparator<? super T> comparator) {
+        return minMax(comparator, Fn.<T, T> pair());
+    }
+
+    /**
      * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
      * <br />
      * 
@@ -2390,110 +2400,18 @@ public class Collectors {
      * <br />
      * 
      * Returns a {@code Collector} which finds all the elements which are equal
-     * to each other and bigger than any other element according to the
-     * specified {@link Comparator}. The found elements are reduced using the
-     * specified downstream {@code Collector}.
+     * to each other and bigger than any other element according to the natural
+     * order. The found elements are collected to {@link List}.
      *
      * @param <T> the type of the input elements
-     * @param <A> the intermediate accumulation type of the downstream collector
-     * @param <D> the result type of the downstream reduction
-     * @param comparator a {@code Comparator} to compare the elements
-     * @param downstream a {@code Collector} implementing the downstream
-     *        reduction
-     * @return a {@code Collector} which finds all the maximal elements.
+     * @return a {@code Collector} which finds all the maximal elements and
+     *         collects them to the {@code List}.
      * @see #maxAll(Comparator)
      * @see #maxAll(Collector)
-     * @see #maxAll()
      */
-    public static <T, A, D> Collector<T, ?, D> maxAll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream) {
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
-        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
-        final MutableBoolean isCollection = MutableBoolean.of(false);
-
-        final Supplier<Pair<A, T>> supplier = new Supplier<Pair<A, T>>() {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Pair<A, T> get() {
-                final A c = downstreamSupplier.get();
-
-                if (c instanceof Collection && ((Collection) c).size() == 0) {
-                    try {
-                        ((Collection) c).clear();
-
-                        isCollection.setTrue();
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                }
-
-                return Pair.of(c, (T) none());
-            }
-        };
-
-        final BiConsumer<Pair<A, T>, T> accumulator = new BiConsumer<Pair<A, T>, T>() {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public void accept(Pair<A, T> t, T u) {
-                if (t.right == NONE) {
-                    downstreamAccumulator.accept(t.left, u);
-                    t.right = u;
-                } else {
-                    final int cmp = comparator.compare(u, t.right);
-
-                    if (cmp > 0) {
-                        if (isCollection.isTrue()) {
-                            ((Collection) t.left).clear();
-                        } else {
-                            t.left = downstreamSupplier.get();
-                        }
-
-                        t.right = u;
-                    }
-
-                    if (cmp >= 0) {
-                        downstreamAccumulator.accept(t.left, u);
-                    }
-                }
-            }
-        };
-
-        final BinaryOperator<Pair<A, T>> combiner = new BinaryOperator<Pair<A, T>>() {
-            @Override
-            public Pair<A, T> apply(Pair<A, T> t, Pair<A, T> u) {
-                if (u.right == NONE) {
-                    return t;
-                } else if (t.right == NONE) {
-                    return u;
-                }
-
-                final int cmp = comparator.compare(t.right, u.right);
-
-                if (cmp > 0) {
-                    return t;
-                } else if (cmp < 0) {
-                    return u;
-                }
-
-                t.left = downstreamCombiner.apply(t.left, u.left);
-
-                return t;
-            }
-        };
-
-        final Function<Pair<A, T>, D> finisher = new Function<Pair<A, T>, D>() {
-            @Override
-            public D apply(Pair<A, T> t) {
-                return downstream.finisher().apply(t.left);
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T> T none() {
-        return (T) NONE;
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> maxAll() {
+        return maxAll(Fn.naturalOrder());
     }
 
     /**
@@ -2523,76 +2441,146 @@ public class Collectors {
      * @return
      */
     public static <T> Collector<T, ?, List<T>> maxAll(final Comparator<? super T> comparator, final int atMostSize) {
-        final Supplier<Pair<List<T>, T>> supplier = new Supplier<Pair<List<T>, T>>() {
+        final Supplier<Pair<T, List<T>>> supplier = new Supplier<Pair<T, List<T>>>() {
             @Override
-            public Pair<List<T>, T> get() {
+            public Pair<T, List<T>> get() {
                 final List<T> list = new ArrayList<T>(Math.min(16, atMostSize));
-                return Pair.of(list, (T) NONE);
+                return Pair.of((T) NONE, list);
             }
         };
 
-        final BiConsumer<Pair<List<T>, T>, T> accumulator = new BiConsumer<Pair<List<T>, T>, T>() {
+        final BiConsumer<Pair<T, List<T>>, T> accumulator = new BiConsumer<Pair<T, List<T>>, T>() {
             @Override
-            public void accept(Pair<List<T>, T> acc, T t) {
-                if (acc.right == NONE) {
-                    if (acc.left.size() < atMostSize) {
-                        acc.left.add(t);
+            public void accept(Pair<T, List<T>> a, T t) {
+                if (a.left == NONE) {
+                    a.left = t;
+
+                    if (a.right.size() < atMostSize) {
+                        a.right.add(t);
                     }
-                    acc.right = t;
                 } else {
-                    int cmp = comparator.compare(t, acc.right);
+                    int cmp = comparator.compare(t, a.left);
 
                     if (cmp > 0) {
-                        acc.left.clear();
-                        acc.right = t;
+                        a.left = t;
+                        a.right.clear();
                     }
 
                     if (cmp >= 0) {
-                        if (acc.left.size() < atMostSize) {
-                            acc.left.add(t);
+                        if (a.right.size() < atMostSize) {
+                            a.right.add(t);
                         }
                     }
                 }
             }
         };
 
-        final BinaryOperator<Pair<List<T>, T>> combiner = new BinaryOperator<Pair<List<T>, T>>() {
+        final BinaryOperator<Pair<T, List<T>>> combiner = new BinaryOperator<Pair<T, List<T>>>() {
             @Override
-            public Pair<List<T>, T> apply(Pair<List<T>, T> acc1, Pair<List<T>, T> acc2) {
-                if (acc2.right == NONE) {
-                    return acc1;
-                } else if (acc1.right == NONE) {
-                    return acc2;
+            public Pair<T, List<T>> apply(Pair<T, List<T>> a, Pair<T, List<T>> b) {
+                if (b.left == NONE) {
+                    return a;
+                } else if (a.left == NONE) {
+                    return b;
                 }
 
-                int cmp = comparator.compare(acc1.right, acc2.right);
+                int cmp = comparator.compare(a.left, b.left);
 
                 if (cmp > 0) {
-                    return acc1;
+                    return a;
                 } else if (cmp < 0) {
-                    return acc2;
+                    return b;
                 }
 
-                if (acc1.left.size() < atMostSize) {
-                    if (acc2.left.size() <= atMostSize - acc1.left.size()) {
-                        acc1.left.addAll(acc2.left);
+                if (a.right.size() < atMostSize) {
+                    if (b.right.size() <= atMostSize - a.right.size()) {
+                        a.right.addAll(b.right);
                     } else {
-                        acc1.left.addAll(acc2.left.subList(0, atMostSize - acc1.left.size()));
+                        a.right.addAll(b.right.subList(0, atMostSize - a.right.size()));
                     }
                 }
 
-                return acc1;
+                return a;
             }
         };
 
-        final Function<Pair<List<T>, T>, List<T>> finisher = new Function<Pair<List<T>, T>, List<T>>() {
+        final Function<Pair<T, List<T>>, List<T>> finisher = new Function<Pair<T, List<T>>, List<T>>() {
             @Override
-            public List<T> apply(Pair<List<T>, T> acc) {
-                return acc.left;
+            public List<T> apply(Pair<T, List<T>> a) {
+                return a.right;
             }
         };
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllLargestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the largest object {@code n} times.
+     *  
+     * @param areAllLargestSame
+     * @return
+     * @see Collectors#maxAll(Comparator, int, boolean)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> maxAll(final boolean areAllLargestSame) {
+        return maxAll(Integer.MAX_VALUE, areAllLargestSame);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllLargestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the largest object {@code n} times.
+     * 
+     * @param atMostSize
+     * @param areAllLargestSame
+     * @return
+     * @see Collectors#maxAll(Comparator, int, boolean)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> maxAll(final int atMostSize, final boolean areAllLargestSame) {
+        return maxAll(Fn.naturalOrder(), atMostSize, areAllLargestSame);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllLargestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the largest object {@code n} times.
+     *  
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code map}:
+     * <pre> 
+     * <code>
+     * if (areAllLargestSame) {
+     *     final Function<Pair<Optional<T>, Integer>, List<T>> finisher = new Function<Pair<Optional<T>, Integer>, List<T>>() {
+     *        @Override
+     *        public List<T> apply(Pair<Optional<T>, Integer> t) {
+     *            int n = N.min(atMostSize, t.right.intValue());
+     *            return n == 0 ? new ArrayList<T>() : N.repeat(t.left.get(), n);
+     *        }
+     *     };
+     *
+     *     return maxAlll(comparator, countingInt(), finisher);
+     * } else {
+     *     return maxAll(comparator, atMostSize);
+     * }
+     * </code>
+     * </pre>
+     * @param atMostSize
+     * @param areAllLargestSame
+     * @return
+     */
+    public static <T> Collector<T, ?, List<T>> maxAll(final Comparator<? super T> comparator, final int atMostSize, final boolean areAllLargestSame) {
+        N.checkArgPositive(atMostSize, "atMostSize");
+
+        if (areAllLargestSame) {
+            final Function<Pair<Optional<T>, Integer>, List<T>> finisher = new Function<Pair<Optional<T>, Integer>, List<T>>() {
+                @Override
+                public List<T> apply(Pair<Optional<T>, Integer> t) {
+                    int n = N.min(atMostSize, t.right.intValue());
+                    return n == 0 ? new ArrayList<T>() : N.repeat(t.left.get(), n);
+                }
+            };
+
+            return maxAlll(comparator, countingInt(), finisher);
+        } else {
+            return maxAll(comparator, atMostSize);
+        }
     }
 
     /**
@@ -2624,26 +2612,7 @@ public class Collectors {
      * <br />
      * 
      * Returns a {@code Collector} which finds all the elements which are equal
-     * to each other and bigger than any other element according to the natural
-     * order. The found elements are collected to {@link List}.
-     *
-     * @param <T> the type of the input elements
-     * @return a {@code Collector} which finds all the maximal elements and
-     *         collects them to the {@code List}.
-     * @see #maxAll(Comparator)
-     * @see #maxAll(Collector)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T extends Comparable> Collector<T, ?, List<T>> maxAll() {
-        return maxAll(Fn.naturalOrder());
-    }
-
-    /**
-     * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
-     * <br />
-     * 
-     * Returns a {@code Collector} which finds all the elements which are equal
-     * to each other and smaller than any other element according to the
+     * to each other and bigger than any other element according to the
      * specified {@link Comparator}. The found elements are reduced using the
      * specified downstream {@code Collector}.
      *
@@ -2653,13 +2622,241 @@ public class Collectors {
      * @param comparator a {@code Comparator} to compare the elements
      * @param downstream a {@code Collector} implementing the downstream
      *        reduction
-     * @return a {@code Collector} which finds all the minimal elements.
+     * @return a {@code Collector} which finds all the maximal elements.
+     * @see #maxAll(Comparator)
+     * @see #maxAll(Collector)
+     * @see #maxAll()
+     */
+    public static <T, A, D> Collector<T, ?, D> maxAll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream) {
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+        final MutableBoolean isCollection = MutableBoolean.of(false);
+        final MutableBoolean isMap = MutableBoolean.of(false);
+
+        final Supplier<Pair<T, A>> supplier = new Supplier<Pair<T, A>>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Pair<T, A> get() {
+                final A container = downstreamSupplier.get();
+
+                if (container instanceof Collection && ((Collection) container).size() == 0) {
+                    try {
+                        ((Collection) container).clear();
+
+                        isCollection.setTrue();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                } else if (container instanceof Map && ((Map) container).size() == 0) {
+                    try {
+                        ((Map) container).clear();
+
+                        isMap.setTrue();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+
+                return Pair.of((T) none(), container);
+            }
+        };
+
+        final BiConsumer<Pair<T, A>, T> accumulator = new BiConsumer<Pair<T, A>, T>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public void accept(Pair<T, A> a, T t) {
+                if (a.left == NONE) {
+                    a.left = t;
+                    downstreamAccumulator.accept(a.right, t);
+                } else {
+                    final int cmp = comparator.compare(t, a.left);
+
+                    if (cmp > 0) {
+                        if (isCollection.isTrue()) {
+                            ((Collection) a.right).clear();
+                        } else if (isMap.isTrue()) {
+                            ((Map) a.right).clear();
+                        } else {
+                            a.right = downstreamSupplier.get();
+                        }
+
+                        a.left = t;
+                    }
+
+                    if (cmp >= 0) {
+                        downstreamAccumulator.accept(a.right, t);
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<T, A>> combiner = new BinaryOperator<Pair<T, A>>() {
+            @Override
+            public Pair<T, A> apply(Pair<T, A> a, Pair<T, A> b) {
+                if (b.left == NONE) {
+                    return a;
+                } else if (a.left == NONE) {
+                    return b;
+                }
+
+                final int cmp = comparator.compare(a.left, b.left);
+
+                if (cmp > 0) {
+                    return a;
+                } else if (cmp < 0) {
+                    return b;
+                }
+
+                a.right = downstreamCombiner.apply(a.right, b.right);
+
+                return a;
+            }
+        };
+
+        final Function<Pair<T, A>, D> finisher = new Function<Pair<T, A>, D>() {
+            @Override
+            public D apply(Pair<T, A> t) {
+                return downstream.finisher().apply(t.right);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED_NOID);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> T none() {
+        return (T) NONE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable, A, D> Collector<T, ?, Pair<Optional<T>, D>> maxAlll(Collector<T, A, D> downstream) {
+        return maxAlll(Fn.naturalOrder(), downstream);
+    }
+
+    public static <T, A, D> Collector<T, ?, Pair<Optional<T>, D>> maxAlll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream) {
+        return maxAlll(comparator, downstream, Fn.<Pair<Optional<T>, D>> identity());
+    }
+
+    public static <T, A, D, R> Collector<T, ?, R> maxAlll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream,
+            final Function<Pair<Optional<T>, D>, R> finisher) {
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+        final MutableBoolean isCollection = MutableBoolean.of(false);
+        final MutableBoolean isMap = MutableBoolean.of(false);
+
+        final Supplier<Pair<T, A>> supplier = new Supplier<Pair<T, A>>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Pair<T, A> get() {
+                final A container = downstreamSupplier.get();
+
+                if (container instanceof Collection && ((Collection) container).size() == 0) {
+                    try {
+                        ((Collection) container).clear();
+
+                        isCollection.setTrue();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                } else if (container instanceof Map && ((Map) container).size() == 0) {
+                    try {
+                        ((Map) container).clear();
+
+                        isMap.setTrue();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+
+                return Pair.of((T) none(), container);
+            }
+        };
+
+        final BiConsumer<Pair<T, A>, T> accumulator = new BiConsumer<Pair<T, A>, T>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public void accept(Pair<T, A> a, T t) {
+                if (a.left == NONE) {
+                    a.left = t;
+                    downstreamAccumulator.accept(a.right, t);
+                } else {
+                    final int cmp = comparator.compare(t, a.left);
+
+                    if (cmp > 0) {
+                        if (isCollection.isTrue()) {
+                            ((Collection) a.right).clear();
+                        } else if (isMap.isTrue()) {
+                            ((Map) a.right).clear();
+                        } else {
+                            a.right = downstreamSupplier.get();
+                        }
+
+                        a.left = t;
+                    }
+
+                    if (cmp >= 0) {
+                        downstreamAccumulator.accept(a.right, t);
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<T, A>> combiner = new BinaryOperator<Pair<T, A>>() {
+            @Override
+            public Pair<T, A> apply(Pair<T, A> a, Pair<T, A> b) {
+                if (b.left == NONE) {
+                    return a;
+                } else if (a.left == NONE) {
+                    return b;
+                }
+
+                final int cmp = comparator.compare(a.left, b.left);
+
+                if (cmp > 0) {
+                    return a;
+                } else if (cmp < 0) {
+                    return b;
+                } else {
+                    a.right = downstreamCombiner.apply(a.right, b.right);
+                    return a;
+                }
+            }
+        };
+
+        final Function<Pair<T, A>, R> finalFinisher = new Function<Pair<T, A>, R>() {
+            @Override
+            public R apply(Pair<T, A> a) {
+                @SuppressWarnings("rawtypes")
+                final Pair<Optional<T>, D> result = (Pair) a;
+                result.setLeft(a.left == NONE ? Optional.<T> empty() : Optional.of(a.left));
+                result.setRight(downstream.finisher().apply(a.right));
+
+                return finisher.apply(result);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finalFinisher, CH_UNORDERED_NOID);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex under Apache License v2 and may be modified.
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and smaller than any other element according to the natural
+     * order. The found elements are collected to {@link List}.
+     *
+     * @param <T> the type of the input elements
+     * @return a {@code Collector} which finds all the minimal elements and
+     *         collects them to the {@code List}.
      * @see #minAll(Comparator)
      * @see #minAll(Collector)
-     * @see #minAll()
      */
-    public static <T, A, D> Collector<T, ?, D> minAll(Comparator<? super T> comparator, Collector<T, A, D> downstream) {
-        return maxAll(Fn.reversedOrder(comparator), downstream);
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> minAll() {
+        return minAll(Fn.naturalOrder());
     }
 
     /**
@@ -2679,7 +2876,7 @@ public class Collectors {
      * @see #minAll()
      */
     public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator) {
-        return maxAll(Fn.reversedOrder(comparator));
+        return minAll(comparator, Integer.MAX_VALUE);
     }
 
     /**
@@ -2690,6 +2887,44 @@ public class Collectors {
      */
     public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator, int atMostSize) {
         return maxAll(Fn.reversedOrder(comparator), atMostSize);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllSmallestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the smallest object {@code n} times.
+     *  
+     * @param areAllSmallestSame
+     * @return
+     * @see Collectors#maxAll(Comparator, int, boolean)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> minAll(final boolean areAllSmallestSame) {
+        return minAll(Integer.MAX_VALUE, areAllSmallestSame);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllSmallestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the smallest object {@code n} times.
+     *  
+     * @param atMostSize
+     * @param areAllSmallestSame
+     * @return
+     * @see Collectors#maxAll(Comparator, int, boolean)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> minAll(final int atMostSize, final boolean areAllSmallestSame) {
+        return minAll(Fn.naturalOrder(), atMostSize, areAllSmallestSame);
+    }
+
+    /**
+     * Use occurrences to save the count of largest objects if {@code areAllSmallestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the smallest object {@code n} times.
+     *  
+     * @param comparator
+     * @param atMostSize
+     * @param areAllSmallestSame
+     * @return
+     * @see Collectors#maxAll(Comparator, int, boolean)
+     */
+    public static <T> Collector<T, ?, List<T>> minAll(final Comparator<? super T> comparator, final int atMostSize, final boolean areAllSmallestSame) {
+        return maxAll(Fn.reversedOrder(comparator), atMostSize, areAllSmallestSame);
     }
 
     /**
@@ -2721,18 +2956,37 @@ public class Collectors {
      * <br />
      * 
      * Returns a {@code Collector} which finds all the elements which are equal
-     * to each other and smaller than any other element according to the natural
-     * order. The found elements are collected to {@link List}.
+     * to each other and smaller than any other element according to the
+     * specified {@link Comparator}. The found elements are reduced using the
+     * specified downstream {@code Collector}.
      *
      * @param <T> the type of the input elements
-     * @return a {@code Collector} which finds all the minimal elements and
-     *         collects them to the {@code List}.
+     * @param <A> the intermediate accumulation type of the downstream collector
+     * @param <D> the result type of the downstream reduction
+     * @param comparator a {@code Comparator} to compare the elements
+     * @param downstream a {@code Collector} implementing the downstream
+     *        reduction
+     * @return a {@code Collector} which finds all the minimal elements.
      * @see #minAll(Comparator)
      * @see #minAll(Collector)
+     * @see #minAll()
      */
+    public static <T, A, D> Collector<T, ?, D> minAll(Comparator<? super T> comparator, Collector<T, A, D> downstream) {
+        return maxAll(Fn.reversedOrder(comparator), downstream);
+    }
+
     @SuppressWarnings("rawtypes")
-    public static <T extends Comparable> Collector<T, ?, List<T>> minAll() {
-        return minAll(Fn.naturalOrder());
+    public static <T extends Comparable, A, D> Collector<T, ?, Pair<Optional<T>, D>> minAlll(Collector<T, A, D> downstream) {
+        return minAlll(Fn.naturalOrder(), downstream);
+    }
+
+    public static <T, A, D> Collector<T, ?, Pair<Optional<T>, D>> minAlll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream) {
+        return minAlll(comparator, downstream, Fn.<Pair<Optional<T>, D>> identity());
+    }
+
+    public static <T, A, D, R> Collector<T, ?, R> minAlll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream,
+            final Function<Pair<Optional<T>, D>, R> finisher) {
+        return maxAlll(Fn.reversedOrder(comparator), downstream, finisher);
     }
 
     public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
@@ -4858,6 +5112,20 @@ public class Collectors {
     /**
      * Note: Generally it's much slower than other {@code Collectors}.
      * 
+     * @param maxWaitIntervalInMillis
+     * @param streamingCollector
+     * @return
+     * @see Stream#observe(BlockingQueue, Predicate, long)
+     * @see Stream#asyncCall(Try.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R> Collector<T, ?, R> streaming(final long maxWaitIntervalInMillis, final Function<? super Stream<T>, R> streamingCollector) {
+        return streaming(maxWaitIntervalInMillis, (Supplier) queueSupplier, streamingCollector);
+    }
+
+    /**
+     * Note: Generally it's much slower than other {@code Collectors}.
+     * 
      * @param supplier
      * @param streamingCollector
      * @return
@@ -4866,14 +5134,7 @@ public class Collectors {
      */
     public static <T, R> Collector<T, ?, R> streaming(final Supplier<? extends BlockingQueue<T>> queueSupplier,
             final Function<? super Stream<T>, R> streamingCollector) {
-        final Function<Stream<T>, ContinuableFuture<R>> streamingCollector2 = new Function<Stream<T>, ContinuableFuture<R>>() {
-            @Override
-            public ContinuableFuture<R> apply(Stream<T> t) {
-                return t.asyncCall(streamingCollector);
-            }
-        };
-
-        return streaming(queueSupplier, streamingCollector2, 10);
+        return streaming(10, queueSupplier, streamingCollector);
     }
 
     /**
@@ -4882,6 +5143,28 @@ public class Collectors {
      * @param maxWaitIntervalInMillis
      * @param supplier
      * @param streamingCollector
+     * @return
+     * @see Stream#observe(BlockingQueue, Predicate, long)
+     * @see Stream#asyncCall(Try.Function)
+     */
+    public static <T, R> Collector<T, ?, R> streaming(final long maxWaitIntervalInMillis, final Supplier<? extends BlockingQueue<T>> queueSupplier,
+            final Function<? super Stream<T>, R> streamingCollector) {
+        final Function<Stream<T>, ContinuableFuture<R>> streamingCollector2 = new Function<Stream<T>, ContinuableFuture<R>>() {
+            @Override
+            public ContinuableFuture<R> apply(Stream<T> t) {
+                return t.asyncCall(streamingCollector);
+            }
+        };
+
+        return streaming(queueSupplier, streamingCollector2, maxWaitIntervalInMillis);
+    }
+
+    /**
+     * Note: Generally it's much slower than other {@code Collectors}.
+     * 
+     * @param supplier
+     * @param streamingCollector
+     * @param maxWaitIntervalInMillis
      * @return
      * @see Stream#observe(BlockingQueue, Predicate, long)
      * @see Stream#asyncCall(Try.Function)

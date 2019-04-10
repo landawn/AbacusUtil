@@ -1,3 +1,12 @@
+### 1.5.12
+
+* Add `Fn.applyIfNotNullOrDefault/applyIfNotNullOrGet`.
+
+* Add `Collectors.maxAlll/minAlll`.
+
+* Improvements and bug fix.
+
+
 ### 1.5.11
 
 * Add `Stream/Fn.window(maxWindowSize, maxDuration, ...)`.

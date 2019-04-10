@@ -1678,6 +1678,184 @@ public final class Fn extends Comparators {
         };
     }
 
+    public static <A, B, R> Function<A, R> applyIfNotNullOrDefault(final Function<A, B> mapperA, final Function<B, R> mapperB, final R defaultValue) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return defaultValue;
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return defaultValue;
+                } else {
+                    return mapperB.apply(b);
+                }
+            }
+        };
+    }
+
+    public static <A, B, C, R> Function<A, R> applyIfNotNullOrDefault(final Function<A, B> mapperA, final Function<B, C> mapperB, final Function<C, R> mapperC,
+            final R defaultValue) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+        N.checkArgNotNull(mapperC);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return defaultValue;
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return defaultValue;
+                }
+
+                final C c = mapperB.apply(b);
+
+                if (c == null) {
+                    return defaultValue;
+                } else {
+                    return mapperC.apply(c);
+                }
+            }
+        };
+    }
+
+    public static <A, B, C, D, R> Function<A, R> applyIfNotNullOrDefault(final Function<A, B> mapperA, final Function<B, C> mapperB,
+            final Function<C, D> mapperC, final Function<D, R> mapperD, final R defaultValue) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+        N.checkArgNotNull(mapperC);
+        N.checkArgNotNull(mapperD);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return defaultValue;
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return defaultValue;
+                }
+
+                final C c = mapperB.apply(b);
+
+                if (c == null) {
+                    return defaultValue;
+                }
+
+                final D d = mapperC.apply(c);
+
+                if (d == null) {
+                    return defaultValue;
+                } else {
+                    return mapperD.apply(d);
+                }
+            }
+        };
+    }
+
+    public static <A, B, R> Function<A, R> applyIfNotNullOrGet(final Function<A, B> mapperA, final Function<B, R> mapperB, final Supplier<R> supplier) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return supplier.get();
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return supplier.get();
+                } else {
+                    return mapperB.apply(b);
+                }
+            }
+        };
+    }
+
+    public static <A, B, C, R> Function<A, R> applyIfNotNullOrGet(final Function<A, B> mapperA, final Function<B, C> mapperB, final Function<C, R> mapperC,
+            final Supplier<R> supplier) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+        N.checkArgNotNull(mapperC);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return supplier.get();
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return supplier.get();
+                }
+
+                final C c = mapperB.apply(b);
+
+                if (c == null) {
+                    return supplier.get();
+                } else {
+                    return mapperC.apply(c);
+                }
+            }
+        };
+    }
+
+    public static <A, B, C, D, R> Function<A, R> applyIfNotNullOrGet(final Function<A, B> mapperA, final Function<B, C> mapperB, final Function<C, D> mapperC,
+            final Function<D, R> mapperD, final Supplier<R> supplier) {
+        N.checkArgNotNull(mapperA);
+        N.checkArgNotNull(mapperB);
+        N.checkArgNotNull(mapperC);
+        N.checkArgNotNull(mapperD);
+
+        return new Function<A, R>() {
+            @Override
+            public R apply(A a) {
+                if (a == null) {
+                    return supplier.get();
+                }
+
+                final B b = mapperA.apply(a);
+
+                if (b == null) {
+                    return supplier.get();
+                }
+
+                final C c = mapperB.apply(b);
+
+                if (c == null) {
+                    return supplier.get();
+                }
+
+                final D d = mapperC.apply(c);
+
+                if (d == null) {
+                    return supplier.get();
+                } else {
+                    return mapperD.apply(d);
+                }
+            }
+        };
+    }
+
     public static <K, V, KK> Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapKey(final Function<? super K, KK> func) {
         N.checkArgNotNull(func);
 
@@ -2339,14 +2517,14 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <A, T, U, E extends Exception> BiPredicate<T, U> pp(final A a, final Try.TriPredicate<A, T, U, E> biPredicate) {
-        N.checkArgNotNull(biPredicate);
+    public static <A, T, U, E extends Exception> BiPredicate<T, U> pp(final A a, final Try.TriPredicate<A, T, U, E> triPredicate) {
+        N.checkArgNotNull(triPredicate);
 
         return new BiPredicate<T, U>() {
             @Override
             public boolean test(T t, U u) {
                 try {
-                    return biPredicate.test(a, t, u);
+                    return triPredicate.test(a, t, u);
                 } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
@@ -2435,14 +2613,14 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <A, T, U, E extends Exception> BiConsumer<T, U> cc(final A a, final Try.TriConsumer<A, T, U, E> biConsumer) {
-        N.checkArgNotNull(biConsumer);
+    public static <A, T, U, E extends Exception> BiConsumer<T, U> cc(final A a, final Try.TriConsumer<A, T, U, E> triConsumer) {
+        N.checkArgNotNull(triConsumer);
 
         return new BiConsumer<T, U>() {
             @Override
             public void accept(T t, U u) {
                 try {
-                    biConsumer.accept(a, t, u);
+                    triConsumer.accept(a, t, u);
                 } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
@@ -2531,14 +2709,14 @@ public final class Fn extends Comparators {
     }
 
     @Beta
-    public static <A, T, U, R, E extends Exception> BiFunction<T, U, R> ff(final A a, final Try.TriFunction<A, T, U, R, E> biFunction) {
-        N.checkArgNotNull(biFunction);
+    public static <A, T, U, R, E extends Exception> BiFunction<T, U, R> ff(final A a, final Try.TriFunction<A, T, U, R, E> triFunction) {
+        N.checkArgNotNull(triFunction);
 
         return new BiFunction<T, U, R>() {
             @Override
             public R apply(T t, U u) {
                 try {
-                    return biFunction.apply(a, t, u);
+                    return triFunction.apply(a, t, u);
                 } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
@@ -7001,6 +7179,223 @@ public final class Fn extends Comparators {
 
         public static <T, E extends Exception> Try.Function<T, T, E> identity() {
             return Fn.IDENTITY;
+        }
+
+        public static <E extends Exception> Try.Runnable<E> emptyAction() {
+            return (Try.Runnable<E>) Fn.EMPTY_ACTION;
+        }
+
+        public static <T, E extends Exception> Try.Consumer<T, E> doNothing() {
+            return Fn.DO_NOTHING;
+        }
+
+        public static <T, E extends Exception> Try.Consumer<T, E> sleep(final long millis) {
+            return new Try.Consumer<T, E>() {
+                @Override
+                public void accept(T t) {
+                    N.sleep(millis);
+                }
+            };
+        }
+
+        public static <T, E extends Exception> Try.Consumer<T, E> sleepUninterruptibly(final long millis) {
+            return new Try.Consumer<T, E>() {
+                @Override
+                public void accept(T t) throws E {
+                    N.sleepUninterruptibly(millis);
+                }
+            };
+        }
+
+        //    public static <T extends AutoCloseable, E extends Exception> Try.Consumer<T, E> close() {
+        //        return (Try.Consumer<T, E>) Fn.CLOSE;
+        //    }
+
+        public static <T extends AutoCloseable, E extends Exception> Try.Consumer<T, E> closeQuietly() {
+            return (Try.Consumer<T, E>) Fn.CLOSE_QUIETLY;
+        }
+
+        public static <T, E extends Exception> Try.Consumer<T, E> println() {
+            return Fn.PRINTLN;
+        }
+
+        public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> println(final String separator) {
+            return cc(Fn.<T, U> println(separator));
+        }
+
+        @Beta
+        public static <T, E extends Exception> Try.Predicate<T, E> pp(final Predicate<T> predicate) {
+            N.checkArgNotNull(predicate);
+
+            return (Try.Predicate<T, E>) predicate;
+        }
+
+        @Beta
+        public static <A, T, E extends Exception> Try.Predicate<T, E> pp(final A a, final BiPredicate<A, T> biPredicate) {
+            N.checkArgNotNull(biPredicate);
+
+            return new Try.Predicate<T, E>() {
+                @Override
+                public boolean test(T t) {
+                    return biPredicate.test(a, t);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, T, E extends Exception> Try.Predicate<T, E> pp(final A a, final B b, final TriPredicate<A, B, T> triPredicate) {
+            N.checkArgNotNull(triPredicate);
+
+            return new Try.Predicate<T, E>() {
+                @Override
+                public boolean test(T t) {
+                    return triPredicate.test(a, b, t);
+                }
+            };
+        }
+
+        @Beta
+        public static <T, U, E extends Exception> Try.BiPredicate<T, U, E> pp(final BiPredicate<T, U> biPredicate) {
+            N.checkArgNotNull(biPredicate);
+
+            return (Try.BiPredicate<T, U, E>) biPredicate;
+        }
+
+        @Beta
+        public static <A, T, U, E extends Exception> Try.BiPredicate<T, U, E> pp(final A a, final TriPredicate<A, T, U> triPredicate) {
+            N.checkArgNotNull(triPredicate);
+
+            return new Try.BiPredicate<T, U, E>() {
+                @Override
+                public boolean test(T t, U u) {
+                    return triPredicate.test(a, t, u);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, C, E extends Exception> Try.TriPredicate<A, B, C, E> pp(final TriPredicate<A, B, C> triPredicate) {
+            N.checkArgNotNull(triPredicate);
+
+            return (Try.TriPredicate<A, B, C, E>) triPredicate;
+        }
+
+        @Beta
+        public static <T, E extends Exception> Try.Consumer<T, E> cc(final Consumer<T> consumer) {
+            N.checkArgNotNull(consumer);
+
+            return (Try.Consumer<T, E>) consumer;
+        }
+
+        @Beta
+        public static <A, T, E extends Exception> Try.Consumer<T, E> cc(final A a, final BiConsumer<A, T> biConsumer) {
+            N.checkArgNotNull(biConsumer);
+
+            return new Try.Consumer<T, E>() {
+                @Override
+                public void accept(T t) {
+                    biConsumer.accept(a, t);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, T, E extends Exception> Try.Consumer<T, E> cc(final A a, final B b, final TriConsumer<A, B, T> triConsumer) {
+            N.checkArgNotNull(triConsumer);
+
+            return new Try.Consumer<T, E>() {
+                @Override
+                public void accept(T t) {
+                    triConsumer.accept(a, b, t);
+                }
+            };
+        }
+
+        @Beta
+        public static <T, U, E extends Exception> Try.BiConsumer<T, U, E> cc(final BiConsumer<T, U> biConsumer) {
+            N.checkArgNotNull(biConsumer);
+
+            return (Try.BiConsumer<T, U, E>) biConsumer;
+        }
+
+        @Beta
+        public static <A, T, U, E extends Exception> Try.BiConsumer<T, U, E> cc(final A a, final TriConsumer<A, T, U> triConsumer) {
+            N.checkArgNotNull(triConsumer);
+
+            return new Try.BiConsumer<T, U, E>() {
+                @Override
+                public void accept(T t, U u) {
+                    triConsumer.accept(a, t, u);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, C, E extends Exception> Try.TriConsumer<A, B, C, E> cc(final TriConsumer<A, B, C> triConsumer) {
+            N.checkArgNotNull(triConsumer);
+
+            return (Try.TriConsumer<A, B, C, E>) triConsumer;
+        }
+
+        @Beta
+        public static <T, R, E extends Exception> Try.Function<T, R, E> ff(final Function<T, R> function) {
+            N.checkArgNotNull(function);
+
+            return (Try.Function<T, R, E>) function;
+        }
+
+        @Beta
+        public static <A, T, R, E extends Exception> Try.Function<T, R, E> ff(final A a, final BiFunction<A, T, R> biFunction) {
+            N.checkArgNotNull(biFunction);
+
+            return new Try.Function<T, R, E>() {
+                @Override
+                public R apply(T t) {
+                    return biFunction.apply(a, t);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, T, R, E extends Exception> Try.Function<T, R, E> ff(final A a, final B b, final TriFunction<A, B, T, R> triFunction) {
+            N.checkArgNotNull(triFunction);
+
+            return new Try.Function<T, R, E>() {
+                @Override
+                public R apply(T t) {
+                    try {
+                        return triFunction.apply(a, b, t);
+                    } catch (Exception e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
+            };
+        }
+
+        @Beta
+        public static <T, U, R, E extends Exception> Try.BiFunction<T, U, R, E> ff(final BiFunction<T, U, R> biFunction) {
+            N.checkArgNotNull(biFunction);
+
+            return (Try.BiFunction<T, U, R, E>) biFunction;
+        }
+
+        @Beta
+        public static <A, T, U, R, E extends Exception> Try.BiFunction<T, U, R, E> ff(final A a, final TriFunction<A, T, U, R> triFunction) {
+            N.checkArgNotNull(triFunction);
+
+            return new Try.BiFunction<T, U, R, E>() {
+                @Override
+                public R apply(T t, U u) {
+                    return triFunction.apply(a, t, u);
+                }
+            };
+        }
+
+        @Beta
+        public static <A, B, C, R, E extends Exception> Try.TriFunction<A, B, C, R, E> ff(final TriFunction<A, B, C, R> triFunction) {
+            N.checkArgNotNull(triFunction);
+
+            return (Try.TriFunction<A, B, C, R, E>) triFunction;
         }
 
         public static <T, E extends Exception> Try.BinaryOperator<T, E> throwingMerger() {
