@@ -44,7 +44,7 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
     @Override
     Set<Characteristics> characteristics();
 
-    public static <T, A, R> Collector<T, A, R> of(java.util.stream.Collector<T, A, R> collector) {
+    public static <T, A, R> Collector<T, A, R> from(java.util.stream.Collector<T, A, R> collector) {
         N.checkArgNotNull(collector);
 
         final Supplier<A> supplier = () -> collector.supplier().get();
@@ -53,6 +53,17 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
         final Function<A, R> finisher = t -> collector.finisher().apply(t);
 
         return new Collectors.CollectorImpl<>(supplier, accumulator, combiner, finisher, collector.characteristics());
+    }
+
+    /**
+     * 
+     * @param collector
+     * @return
+     * @deprecated replaced by {@link #from(java.util.stream.Collector)}
+     */
+    @Deprecated
+    public static <T, A, R> Collector<T, A, R> of(java.util.stream.Collector<T, A, R> collector) {
+        return from(collector);
     }
 
     @SafeVarargs

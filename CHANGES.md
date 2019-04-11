@@ -4,6 +4,8 @@
 
 * Add `Collectors.maxAlll/minAlll`.
 
+* Remove `Stream.flatGroupBy/flatToMap/flatGroupTo`.
+
 * Improvements and bug fix.
 
 

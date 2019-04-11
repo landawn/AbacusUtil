@@ -3000,322 +3000,322 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         return (M) intermediate;
     }
 
-    @Override
-    public <K, V, M extends Map<K, V>> M flatToMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
-        assertNotClosed();
-
-        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return super.flatToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory);
-        }
-
-        // return collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
-
-        //    final M res = mapFactory.get();
-        //    res.putAll(collect(Collectors.toConcurrentMap(keyMapper, valueMapper, mergeFunction)));
-        //    return res;
-
-        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<ContinuableFuture<M>> futureList = new ArrayList<>(threadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-
-        if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
-
-            for (int i = 0; i < threadNum; i++) {
-                final int sliceIndex = i;
-
-                futureList.add(asyncExecutor.execute(new Callable<M>() {
-                    @Override
-                    public M call() {
-                        int cursor = fromIndex + sliceIndex * sliceSize;
-                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-
-                        M map = mapFactory.get();
-                        ObjIterator<? extends K> keyIter = null;
-                        K key = null;
-
-                        try {
-                            while (cursor < to && eHolder.value() == null) {
-                                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[cursor])) {
-                                    keyIter = ks.iterator();
-
-                                    while (keyIter.hasNext()) {
-                                        key = keyIter.next();
-                                        Collectors.merge(map, key, valueMapper.apply(key, elements[cursor]), mergeFunction);
-                                    }
-                                }
-
-                                cursor++;
-                            }
-                        } catch (Exception e) {
-                            setError(eHolder, e);
-                        }
-
-                        return map;
-                    }
-                }));
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<M>() {
-
-                    @Override
-                    public M call() {
-                        M map = mapFactory.get();
-                        ObjIterator<? extends K> keyIter = null;
-                        T next = null;
-                        K key = null;
-
-                        try {
-                            while (eHolder.value() == null) {
-                                synchronized (elements) {
-                                    if (cursor.intValue() < toIndex) {
-                                        next = elements[cursor.getAndIncrement()];
-                                    } else {
-                                        break;
-                                    }
-                                }
-
-                                try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
-                                    keyIter = ks.iterator();
-
-                                    while (keyIter.hasNext()) {
-                                        key = keyIter.next();
-                                        Collectors.merge(map, key, valueMapper.apply(key, next), mergeFunction);
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            setError(eHolder, e);
-                        }
-
-                        return map;
-                    }
-                }));
-            }
-        }
-
-        if (eHolder.value() != null) {
-            close();
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        M res = null;
-
-        try {
-            for (ContinuableFuture<M> future : futureList) {
-                if (res == null) {
-                    res = future.get();
-                } else {
-                    final M m = future.get();
-
-                    for (Map.Entry<K, V> entry : m.entrySet()) {
-                        Collectors.merge(res, entry.getKey(), entry.getValue(), mergeFunction);
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        } finally {
-            close();
-        }
-
-        return res;
-    }
-
-    @Override
-    public <K, V, A, D, M extends Map<K, D>> M flatToMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
-            final Supplier<? extends M> mapFactory) {
-        assertNotClosed();
-
-        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return super.flatToMap(flatKeyMapper, valueMapper, downstream, mapFactory);
-        }
-
-        // return collect(Collectors.groupingBy(keyMapper, downstream, mapFactory));
-
-        //    final M res = mapFactory.get();
-        //    res.putAll(collect(Collectors.groupingByConcurrent(keyMapper, downstream)));
-        //    return res;
-
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
-        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
-        final Function<A, D> downstreamFinisher = downstream.finisher();
-
-        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
-        final List<ContinuableFuture<Map<K, A>>> futureList = new ArrayList<>(threadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-
-        if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
-
-            for (int i = 0; i < threadNum; i++) {
-                final int sliceIndex = i;
-
-                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
-                    @Override
-                    public Map<K, A> call() {
-                        int cursor = fromIndex + sliceIndex * sliceSize;
-                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-
-                        @SuppressWarnings("rawtypes")
-                        Map<K, A> map = (Map) mapFactory.get();
-
-                        ObjIterator<? extends K> keyIter = null;
-                        K key = null;
-                        A value = null;
-
-                        try {
-                            while (cursor < to && eHolder.value() == null) {
-                                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[cursor])) {
-                                    keyIter = ks.iterator();
-
-                                    while (keyIter.hasNext()) {
-                                        key = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
-                                        value = map.get(key);
-
-                                        if (value == null) {
-                                            value = downstreamSupplier.get();
-                                            map.put(key, value);
-                                        }
-
-                                        downstreamAccumulator.accept(value, valueMapper.apply(key, elements[cursor]));
-                                    }
-                                }
-
-                                cursor++;
-                            }
-                        } catch (Exception e) {
-                            setError(eHolder, e);
-                        }
-
-                        return map;
-                    }
-                }));
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < threadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
-
-                    @Override
-                    public Map<K, A> call() {
-                        @SuppressWarnings("rawtypes")
-                        Map<K, A> map = (Map) mapFactory.get();
-
-                        ObjIterator<? extends K> keyIter = null;
-                        K key = null;
-                        A value = null;
-                        T next = null;
-
-                        try {
-                            while (eHolder.value() == null) {
-                                synchronized (elements) {
-                                    if (cursor.intValue() < toIndex) {
-                                        next = elements[cursor.getAndIncrement()];
-                                    } else {
-                                        break;
-                                    }
-                                }
-
-                                try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
-                                    keyIter = ks.iterator();
-
-                                    while (keyIter.hasNext()) {
-                                        key = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
-                                        value = map.get(key);
-
-                                        if (value == null) {
-                                            value = downstreamSupplier.get();
-                                            map.put(key, value);
-                                        }
-
-                                        downstreamAccumulator.accept(value, valueMapper.apply(key, next));
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            setError(eHolder, e);
-                        }
-
-                        return map;
-                    }
-                }));
-            }
-        }
-
-        if (eHolder.value() != null) {
-            close();
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        Map<K, A> intermediate = null;
-
-        try {
-            for (ContinuableFuture<Map<K, A>> future : futureList) {
-                if (intermediate == null) {
-                    intermediate = future.get();
-                } else {
-                    final Map<K, A> m = future.get();
-                    K key = null;
-
-                    for (Map.Entry<K, A> entry : m.entrySet()) {
-                        key = entry.getKey();
-
-                        if (intermediate.containsKey(key)) {
-                            intermediate.put(key, downstreamCombiner.apply(intermediate.get(key), m.get(key)));
-                        } else {
-                            intermediate.put(key, m.get(key));
-                        }
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw N.toRuntimeException(e);
-        } finally {
-            close();
-        }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstreamFinisher.apply(v);
-            }
-        };
-
-        Collectors.replaceAll(intermediate, function);
-
-        return (M) intermediate;
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
-        return flatToMap(new Function<T, Stream<K>>() {
-            @Override
-            public Stream<K> apply(T t) {
-                return Stream.of(flatKeyMapper.apply(t));
-            }
-        }, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D, M extends Map<K, D>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
-            final Supplier<? extends M> mapFactory) {
-        return flatToMap(new Function<T, Stream<K>>() {
-            @Override
-            public Stream<K> apply(T t) {
-                return Stream.of(flatKeyMapper.apply(t));
-            }
-        }, valueMapper, downstream, mapFactory);
-    }
+    //    @Override
+    //    public <K, V, M extends Map<K, V>> M flatToMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
+    //        assertNotClosed();
+    //
+    //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+    //            return super.flatToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory);
+    //        }
+    //
+    //        // return collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
+    //
+    //        //    final M res = mapFactory.get();
+    //        //    res.putAll(collect(Collectors.toConcurrentMap(keyMapper, valueMapper, mergeFunction)));
+    //        //    return res;
+    //
+    //        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+    //        final List<ContinuableFuture<M>> futureList = new ArrayList<>(threadNum);
+    //        final Holder<Throwable> eHolder = new Holder<>();
+    //
+    //        if (splitor == Splitor.ARRAY) {
+    //            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                final int sliceIndex = i;
+    //
+    //                futureList.add(asyncExecutor.execute(new Callable<M>() {
+    //                    @Override
+    //                    public M call() {
+    //                        int cursor = fromIndex + sliceIndex * sliceSize;
+    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+    //
+    //                        M map = mapFactory.get();
+    //                        ObjIterator<? extends K> keyIter = null;
+    //                        K key = null;
+    //
+    //                        try {
+    //                            while (cursor < to && eHolder.value() == null) {
+    //                                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[cursor])) {
+    //                                    keyIter = ks.iterator();
+    //
+    //                                    while (keyIter.hasNext()) {
+    //                                        key = keyIter.next();
+    //                                        Collectors.merge(map, key, valueMapper.apply(key, elements[cursor]), mergeFunction);
+    //                                    }
+    //                                }
+    //
+    //                                cursor++;
+    //                            }
+    //                        } catch (Exception e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //
+    //                        return map;
+    //                    }
+    //                }));
+    //            }
+    //        } else {
+    //            final MutableInt cursor = MutableInt.of(fromIndex);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                futureList.add(asyncExecutor.execute(new Callable<M>() {
+    //
+    //                    @Override
+    //                    public M call() {
+    //                        M map = mapFactory.get();
+    //                        ObjIterator<? extends K> keyIter = null;
+    //                        T next = null;
+    //                        K key = null;
+    //
+    //                        try {
+    //                            while (eHolder.value() == null) {
+    //                                synchronized (elements) {
+    //                                    if (cursor.intValue() < toIndex) {
+    //                                        next = elements[cursor.getAndIncrement()];
+    //                                    } else {
+    //                                        break;
+    //                                    }
+    //                                }
+    //
+    //                                try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
+    //                                    keyIter = ks.iterator();
+    //
+    //                                    while (keyIter.hasNext()) {
+    //                                        key = keyIter.next();
+    //                                        Collectors.merge(map, key, valueMapper.apply(key, next), mergeFunction);
+    //                                    }
+    //                                }
+    //                            }
+    //                        } catch (Exception e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //
+    //                        return map;
+    //                    }
+    //                }));
+    //            }
+    //        }
+    //
+    //        if (eHolder.value() != null) {
+    //            close();
+    //            throw N.toRuntimeException(eHolder.value());
+    //        }
+    //
+    //        M res = null;
+    //
+    //        try {
+    //            for (ContinuableFuture<M> future : futureList) {
+    //                if (res == null) {
+    //                    res = future.get();
+    //                } else {
+    //                    final M m = future.get();
+    //
+    //                    for (Map.Entry<K, V> entry : m.entrySet()) {
+    //                        Collectors.merge(res, entry.getKey(), entry.getValue(), mergeFunction);
+    //                    }
+    //                }
+    //            }
+    //        } catch (InterruptedException | ExecutionException e) {
+    //            throw N.toRuntimeException(e);
+    //        } finally {
+    //            close();
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D, M extends Map<K, D>> M flatToMap(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+    //            final Supplier<? extends M> mapFactory) {
+    //        assertNotClosed();
+    //
+    //        if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
+    //            return super.flatToMap(flatKeyMapper, valueMapper, downstream, mapFactory);
+    //        }
+    //
+    //        // return collect(Collectors.groupingBy(keyMapper, downstream, mapFactory));
+    //
+    //        //    final M res = mapFactory.get();
+    //        //    res.putAll(collect(Collectors.groupingByConcurrent(keyMapper, downstream)));
+    //        //    return res;
+    //
+    //        final Supplier<A> downstreamSupplier = downstream.supplier();
+    //        final BiConsumer<A, ? super V> downstreamAccumulator = downstream.accumulator();
+    //        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+    //        final Function<A, D> downstreamFinisher = downstream.finisher();
+    //
+    //        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+    //        final List<ContinuableFuture<Map<K, A>>> futureList = new ArrayList<>(threadNum);
+    //        final Holder<Throwable> eHolder = new Holder<>();
+    //
+    //        if (splitor == Splitor.ARRAY) {
+    //            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                final int sliceIndex = i;
+    //
+    //                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
+    //                    @Override
+    //                    public Map<K, A> call() {
+    //                        int cursor = fromIndex + sliceIndex * sliceSize;
+    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+    //
+    //                        @SuppressWarnings("rawtypes")
+    //                        Map<K, A> map = (Map) mapFactory.get();
+    //
+    //                        ObjIterator<? extends K> keyIter = null;
+    //                        K key = null;
+    //                        A value = null;
+    //
+    //                        try {
+    //                            while (cursor < to && eHolder.value() == null) {
+    //                                try (Stream<? extends K> ks = flatKeyMapper.apply(elements[cursor])) {
+    //                                    keyIter = ks.iterator();
+    //
+    //                                    while (keyIter.hasNext()) {
+    //                                        key = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
+    //                                        value = map.get(key);
+    //
+    //                                        if (value == null) {
+    //                                            value = downstreamSupplier.get();
+    //                                            map.put(key, value);
+    //                                        }
+    //
+    //                                        downstreamAccumulator.accept(value, valueMapper.apply(key, elements[cursor]));
+    //                                    }
+    //                                }
+    //
+    //                                cursor++;
+    //                            }
+    //                        } catch (Exception e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //
+    //                        return map;
+    //                    }
+    //                }));
+    //            }
+    //        } else {
+    //            final MutableInt cursor = MutableInt.of(fromIndex);
+    //
+    //            for (int i = 0; i < threadNum; i++) {
+    //                futureList.add(asyncExecutor.execute(new Callable<Map<K, A>>() {
+    //
+    //                    @Override
+    //                    public Map<K, A> call() {
+    //                        @SuppressWarnings("rawtypes")
+    //                        Map<K, A> map = (Map) mapFactory.get();
+    //
+    //                        ObjIterator<? extends K> keyIter = null;
+    //                        K key = null;
+    //                        A value = null;
+    //                        T next = null;
+    //
+    //                        try {
+    //                            while (eHolder.value() == null) {
+    //                                synchronized (elements) {
+    //                                    if (cursor.intValue() < toIndex) {
+    //                                        next = elements[cursor.getAndIncrement()];
+    //                                    } else {
+    //                                        break;
+    //                                    }
+    //                                }
+    //
+    //                                try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
+    //                                    keyIter = ks.iterator();
+    //
+    //                                    while (keyIter.hasNext()) {
+    //                                        key = checkArgNotNull(keyIter.next(), "element cannot be mapped to a null key");
+    //                                        value = map.get(key);
+    //
+    //                                        if (value == null) {
+    //                                            value = downstreamSupplier.get();
+    //                                            map.put(key, value);
+    //                                        }
+    //
+    //                                        downstreamAccumulator.accept(value, valueMapper.apply(key, next));
+    //                                    }
+    //                                }
+    //                            }
+    //                        } catch (Exception e) {
+    //                            setError(eHolder, e);
+    //                        }
+    //
+    //                        return map;
+    //                    }
+    //                }));
+    //            }
+    //        }
+    //
+    //        if (eHolder.value() != null) {
+    //            close();
+    //            throw N.toRuntimeException(eHolder.value());
+    //        }
+    //
+    //        Map<K, A> intermediate = null;
+    //
+    //        try {
+    //            for (ContinuableFuture<Map<K, A>> future : futureList) {
+    //                if (intermediate == null) {
+    //                    intermediate = future.get();
+    //                } else {
+    //                    final Map<K, A> m = future.get();
+    //                    K key = null;
+    //
+    //                    for (Map.Entry<K, A> entry : m.entrySet()) {
+    //                        key = entry.getKey();
+    //
+    //                        if (intermediate.containsKey(key)) {
+    //                            intermediate.put(key, downstreamCombiner.apply(intermediate.get(key), m.get(key)));
+    //                        } else {
+    //                            intermediate.put(key, m.get(key));
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        } catch (InterruptedException | ExecutionException e) {
+    //            throw N.toRuntimeException(e);
+    //        } finally {
+    //            close();
+    //        }
+    //
+    //        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+    //            @Override
+    //            public A apply(K k, A v) {
+    //                return (A) downstreamFinisher.apply(v);
+    //            }
+    //        };
+    //
+    //        Collectors.replaceAll(intermediate, function);
+    //
+    //        return (M) intermediate;
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
+    //        return flatToMap(new Function<T, Stream<K>>() {
+    //            @Override
+    //            public Stream<K> apply(T t) {
+    //                return Stream.of(flatKeyMapper.apply(t));
+    //            }
+    //        }, valueMapper, mergeFunction, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D, M extends Map<K, D>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+    //            final Supplier<? extends M> mapFactory) {
+    //        return flatToMap(new Function<T, Stream<K>>() {
+    //            @Override
+    //            public Stream<K> apply(T t) {
+    //                return Stream.of(flatKeyMapper.apply(t));
+    //            }
+    //        }, valueMapper, downstream, mapFactory);
+    //    }
 
     @Override
     public <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Function<? super T, ? extends K> keyMapper,

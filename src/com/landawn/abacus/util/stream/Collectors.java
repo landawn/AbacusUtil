@@ -2092,7 +2092,7 @@ public class Collectors {
         N.checkArgNotNull(downstream);
         N.checkArgNotNull(finisher);
 
-        return collectingAndThen(Collector.of(downstream), r -> finisher.apply(r));
+        return collectingAndThen(Collector.from(downstream), r -> finisher.apply(r));
     }
 
     public static <T, A, R> Collector<T, ?, R> distinct(final Collector<? super T, A, R> downstream) {

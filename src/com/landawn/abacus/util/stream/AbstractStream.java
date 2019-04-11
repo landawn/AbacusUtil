@@ -1749,206 +1749,206 @@ abstract class AbstractStream<T> extends Stream<T> {
         }, false, null);
     }
 
-    @Override
-    public <K> Stream<Entry<K, List<T>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper) {
-        return flatGroupBy(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
-    }
-
-    @Override
-    public <K> Stream<Entry<K, List<T>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            Supplier<? extends Map<K, List<T>>> mapFactory) {
-        return flatGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flatGroupBy(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory) {
-        return flatGroupBy(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
-        return flatGroupBy(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream,
-            Supplier<? extends Map<K, D>> mapFactory) {
-        return flatGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return flatGroupBy(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, V, A, D> Stream<Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
-            final Supplier<? extends Map<K, D>> mapFactory) {
-        return newStream(new ObjIteratorEx<Entry<K, D>>() {
-            private Iterator<Entry<K, D>> iter = null;
-
-            @Override
-            public boolean hasNext() {
-                init();
-                return iter.hasNext();
-            }
-
-            @Override
-            public Entry<K, D> next() {
-                init();
-                return iter.next();
-            }
-
-            private void init() {
-                if (iter == null) {
-                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
-                }
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, V>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return flatGroupBy(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, V>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
-            final Supplier<? extends Map<K, V>> mapFactory) {
-        return newStream(new ObjIteratorEx<Entry<K, V>>() {
-            private Iterator<Entry<K, V>> iter = null;
-
-            @Override
-            public boolean hasNext() {
-                init();
-                return iter.hasNext();
-            }
-
-            @Override
-            public Entry<K, V> next() {
-                init();
-                return iter.next();
-            }
-
-            private void init() {
-                if (iter == null) {
-                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
-                }
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <K> Stream<Entry<K, List<T>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper) {
-        return flattGroupBy(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
-    }
-
-    @Override
-    public <K> Stream<Entry<K, List<T>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            Supplier<? extends Map<K, List<T>>> mapFactory) {
-        return flattGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flattGroupBy(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory) {
-        return flattGroupBy(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            Collector<? super T, A, D> downstream) {
-        return flattGroupBy(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            Collector<? super T, A, D> downstream, Supplier<? extends Map<K, D>> mapFactory) {
-        return flattGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return flattGroupBy(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, V, A, D> Stream<Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
-            final Supplier<? extends Map<K, D>> mapFactory) {
-        return newStream(new ObjIteratorEx<Entry<K, D>>() {
-            private Iterator<Entry<K, D>> iter = null;
-
-            @Override
-            public boolean hasNext() {
-                init();
-                return iter.hasNext();
-            }
-
-            @Override
-            public Entry<K, D> next() {
-                init();
-                return iter.next();
-            }
-
-            private void init() {
-                if (iter == null) {
-                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
-                }
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, V>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return flattGroupBy(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V> Stream<Entry<K, V>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
-            final Supplier<? extends Map<K, V>> mapFactory) {
-        return newStream(new ObjIteratorEx<Entry<K, V>>() {
-            private Iterator<Entry<K, V>> iter = null;
-
-            @Override
-            public boolean hasNext() {
-                init();
-                return iter.hasNext();
-            }
-
-            @Override
-            public Entry<K, V> next() {
-                init();
-                return iter.next();
-            }
-
-            private void init() {
-                if (iter == null) {
-                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
-                }
-            }
-        }, false, null);
-    }
+    //    @Override
+    //    public <K> Stream<Entry<K, List<T>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper) {
+    //        return flatGroupBy(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K> Stream<Entry<K, List<T>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            Supplier<? extends Map<K, List<T>>> mapFactory) {
+    //        return flatGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flatGroupBy(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, List<V>>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory) {
+    //        return flatGroupBy(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
+    //        return flatGroupBy(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream,
+    //            Supplier<? extends Map<K, D>> mapFactory) {
+    //        return flatGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Stream<Entry<K, D>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
+    //        return flatGroupBy(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Stream<Entry<K, D>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+    //            final Supplier<? extends Map<K, D>> mapFactory) {
+    //        return newStream(new ObjIteratorEx<Entry<K, D>>() {
+    //            private Iterator<Entry<K, D>> iter = null;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                init();
+    //                return iter.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Entry<K, D> next() {
+    //                init();
+    //                return iter.next();
+    //            }
+    //
+    //            private void init() {
+    //                if (iter == null) {
+    //                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
+    //                }
+    //            }
+    //        }, false, null);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, V>> flatGroupBy(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    //        return flatGroupBy(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, V>> flatGroupBy(final Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
+    //            final Supplier<? extends Map<K, V>> mapFactory) {
+    //        return newStream(new ObjIteratorEx<Entry<K, V>>() {
+    //            private Iterator<Entry<K, V>> iter = null;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                init();
+    //                return iter.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Entry<K, V> next() {
+    //                init();
+    //                return iter.next();
+    //            }
+    //
+    //            private void init() {
+    //                if (iter == null) {
+    //                    iter = AbstractStream.this.flatToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+    //                }
+    //            }
+    //        }, false, null);
+    //    }
+    //
+    //    @Override
+    //    public <K> Stream<Entry<K, List<T>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper) {
+    //        return flattGroupBy(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K> Stream<Entry<K, List<T>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            Supplier<? extends Map<K, List<T>>> mapFactory) {
+    //        return flattGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flattGroupBy(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, List<V>>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends Map<K, List<V>>> mapFactory) {
+    //        return flattGroupBy(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            Collector<? super T, A, D> downstream) {
+    //        return flattGroupBy(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            Collector<? super T, A, D> downstream, Supplier<? extends Map<K, D>> mapFactory) {
+    //        return flattGroupBy(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Stream<Entry<K, D>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
+    //        return flattGroupBy(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Stream<Entry<K, D>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+    //            final Supplier<? extends Map<K, D>> mapFactory) {
+    //        return newStream(new ObjIteratorEx<Entry<K, D>>() {
+    //            private Iterator<Entry<K, D>> iter = null;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                init();
+    //                return iter.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Entry<K, D> next() {
+    //                init();
+    //                return iter.next();
+    //            }
+    //
+    //            private void init() {
+    //                if (iter == null) {
+    //                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
+    //                }
+    //            }
+    //        }, false, null);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, V>> flattGroupBy(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    //        return flattGroupBy(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Stream<Entry<K, V>> flattGroupBy(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction,
+    //            final Supplier<? extends Map<K, V>> mapFactory) {
+    //        return newStream(new ObjIteratorEx<Entry<K, V>>() {
+    //            private Iterator<Entry<K, V>> iter = null;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                init();
+    //                return iter.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Entry<K, V> next() {
+    //                init();
+    //                return iter.next();
+    //            }
+    //
+    //            private void init() {
+    //                if (iter == null) {
+    //                    iter = AbstractStream.this.flattToMap(flatKeyMapper, valueMapper, mergeFunction, mapFactory).entrySet().iterator();
+    //                }
+    //            }
+    //        }, false, null);
+    //    }
 
     @Override
     public Stream<Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate) {
@@ -2079,98 +2079,98 @@ abstract class AbstractStream<T> extends Stream<T> {
         return toMap(keyMapper, Fn.<T> identity(), downstream, mapFactory);
     }
 
-    @Override
-    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flatToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return flatToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
-        return flatToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
-        return flatToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, A, D, M extends Map<K, D>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream,
-            Supplier<? extends M> mapFactory) {
-        return flatToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return flatToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
-        return flattToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, A, D, M extends Map<K, D>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            Collector<? super T, A, D> downstream, Supplier<? extends M> mapFactory) {
-        return flattToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flattToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
-        return flattToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
-        return flattToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
-    }
-
-    @Override
-    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
-        return flatToMap(new Function<T, Stream<K>>() {
-            @Override
-            public Stream<K> apply(T t) {
-                return Stream.of(flatKeyMapper.apply(t));
-            }
-        }, valueMapper, mergeFunction, mapFactory);
-    }
-
-    @Override
-    public <K, V, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
-        return flattToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public <K, V, A, D, M extends Map<K, D>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
-            final Supplier<? extends M> mapFactory) {
-        return flatToMap(new Function<T, Stream<K>>() {
-            @Override
-            public Stream<K> apply(T t) {
-                return Stream.of(flatKeyMapper.apply(t));
-            }
-        }, valueMapper, downstream, mapFactory);
-    }
+    //    @Override
+    //    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flatToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Map<K, V> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    //        return flatToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, V>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+    //        return flatToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
+    //        return flatToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D, M extends Map<K, D>> M flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream,
+    //            Supplier<? extends M> mapFactory) {
+    //        return flatToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Map<K, D> flatToMap(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
+    //        return flatToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, Collector<? super T, A, D> downstream) {
+    //        return flattToMap(flatKeyMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, A, D, M extends Map<K, D>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            Collector<? super T, A, D> downstream, Supplier<? extends M> mapFactory) {
+    //        return flattToMap(flatKeyMapper, BiFunctions.<K, T> returnSecond(), downstream, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flattToMap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Map<K, V> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, BinaryOperator<V> mergeFunction) {
+    //        return flattToMap(flatKeyMapper, valueMapper, mergeFunction, Suppliers.<K, V> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, V>> M flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+    //        return flattToMap(flatKeyMapper, valueMapper, Fn.<V> throwingMerger(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, V>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final BinaryOperator<V> mergeFunction, final Supplier<? extends M> mapFactory) {
+    //        return flatToMap(new Function<T, Stream<K>>() {
+    //            @Override
+    //            public Stream<K> apply(T t) {
+    //                return Stream.of(flatKeyMapper.apply(t));
+    //            }
+    //        }, valueMapper, mergeFunction, mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D> Map<K, D> flattToMap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Collector<? super V, A, D> downstream) {
+    //        return flattToMap(flatKeyMapper, valueMapper, downstream, Suppliers.<K, D> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, A, D, M extends Map<K, D>> M flattToMap(final Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            final BiFunction<? super K, ? super T, ? extends V> valueMapper, final Collector<? super V, A, D> downstream,
+    //            final Supplier<? extends M> mapFactory) {
+    //        return flatToMap(new Function<T, Stream<K>>() {
+    //            @Override
+    //            public Stream<K> apply(T t) {
+    //                return Stream.of(flatKeyMapper.apply(t));
+    //            }
+    //        }, valueMapper, downstream, mapFactory);
+    //    }
 
     @Override
     public <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> keyMapper) {
@@ -2193,50 +2193,50 @@ abstract class AbstractStream<T> extends Stream<T> {
         return toMap(keyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
     }
 
-    @Override
-    public <K> Map<K, List<T>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper) {
-        return flatGroupTo(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
-    }
-
-    @Override
-    public <K, M extends Map<K, List<T>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Supplier<? extends M> mapFactory) {
-        return flatGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, List<V>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flatGroupTo(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
-    }
-
-    @Override
-    public <K, V, M extends Map<K, List<V>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
-        return flatToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
-    }
-
-    @Override
-    public <K> Map<K, List<T>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper) {
-        return flattGroupTo(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
-    }
-
-    @Override
-    public <K, M extends Map<K, List<T>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            Supplier<? extends M> mapFactory) {
-        return flattGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
-    }
-
-    @Override
-    public <K, V> Map<K, List<V>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
-        return flattGroupTo(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
-    }
-
-    @Override
-    public <K, V, M extends Map<K, List<V>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
-            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
-        return flattToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
-    }
+    //    @Override
+    //    public <K> Map<K, List<T>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper) {
+    //        return flatGroupTo(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, M extends Map<K, List<T>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper, Supplier<? extends M> mapFactory) {
+    //        return flatGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Map<K, List<V>> flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flatGroupTo(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, List<V>>> M flatGroupTo(Function<? super T, ? extends Stream<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+    //        return flatToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K> Map<K, List<T>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper) {
+    //        return flattGroupTo(flatKeyMapper, Suppliers.<K, List<T>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, M extends Map<K, List<T>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            Supplier<? extends M> mapFactory) {
+    //        return flattGroupTo(flatKeyMapper, BiFunctions.<K, T> returnSecond(), mapFactory);
+    //    }
+    //
+    //    @Override
+    //    public <K, V> Map<K, List<V>> flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper) {
+    //        return flattGroupTo(flatKeyMapper, valueMapper, Suppliers.<K, List<V>> ofMap());
+    //    }
+    //
+    //    @Override
+    //    public <K, V, M extends Map<K, List<V>>> M flattGroupTo(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
+    //            BiFunction<? super K, ? super T, ? extends V> valueMapper, Supplier<? extends M> mapFactory) {
+    //        return flattToMap(flatKeyMapper, valueMapper, Collectors.<V> toList(), mapFactory);
+    //    }
 
     @Override
     public Map<Boolean, List<T>> partitionTo(Predicate<? super T> predicate) {
@@ -3557,7 +3557,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) {
-        return collect(Collector.of(collector));
+        return collect(Collector.from(collector));
     }
 
     @Override
@@ -3779,28 +3779,53 @@ abstract class AbstractStream<T> extends Stream<T> {
         return mapToEntry(mapper);
     }
 
-    //    @Override
-    //    public <V> EntryStream<T, V> flatMapToEntryER(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
-    //        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
-    //
-    //        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
-    //            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
-    //
-    //            @Override
-    //            public Stream<Map.Entry<T, V>> apply(final T t) {
-    //                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
-    //                    @Override
-    //                    public Entry<T, V> apply(V v) {
-    //                        entry.set(t, v);
-    //
-    //                        return entry;
-    //                    }
-    //                };
-    //
-    //                return Stream.of(flatValueMapper.apply(t)).map(entryMapper);
-    //            }
-    //        };
-    //
-    //        return flatMapToEntry(flatEntryMapper);
-    //    }
+    @Override
+    public <V> EntryStream<T, V> flatMapToEntryER(final Function<? super T, ? extends Stream<? extends V>> flatValueMapper) {
+        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
+
+        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
+            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
+
+            @Override
+            public Stream<Map.Entry<T, V>> apply(final T t) {
+                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
+                    @Override
+                    public Entry<T, V> apply(V v) {
+                        entry.set(t, v);
+
+                        return entry;
+                    }
+                };
+
+                return flatValueMapper.apply(t).map(entryMapper);
+            }
+        };
+
+        return flatMapToEntry(flatEntryMapper);
+    }
+
+    @Override
+    public <V> EntryStream<T, V> flattMapToEntryER(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
+        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
+
+        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
+            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
+
+            @Override
+            public Stream<Map.Entry<T, V>> apply(final T t) {
+                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
+                    @Override
+                    public Entry<T, V> apply(V v) {
+                        entry.set(t, v);
+
+                        return entry;
+                    }
+                };
+
+                return Stream.of(flatValueMapper.apply(t)).map(entryMapper);
+            }
+        };
+
+        return flatMapToEntry(flatEntryMapper);
+    }
 }
