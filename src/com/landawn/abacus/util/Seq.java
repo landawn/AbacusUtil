@@ -1873,10 +1873,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param flagUpdate
      * @return
      * @throws E
-     * @throws E2
-     * @deprecated
+     * @throws E2 
      */
-    @Deprecated
     public <U, E extends Exception, E2 extends Exception> List<List<T>> split(final U flag, final Try.BiPredicate<? super T, ? super U, E> predicate,
             final Try.Consumer<? super U, E2> flagUpdate) throws E, E2 {
         return split(flag, predicate, flagUpdate, Suppliers.<T> ofList());
@@ -1890,10 +1888,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param supplier
      * @return
      * @throws E
-     * @throws E2
-     * @deprecated
+     * @throws E2 
      */
-    @Deprecated
     public <U, C extends Collection<T>, E extends Exception, E2 extends Exception> List<C> split(final U flag,
             final Try.BiPredicate<? super T, ? super U, E> predicate, final Try.Consumer<? super U, E2> flagUpdate, final Supplier<? extends C> supplier)
             throws E, E2 {

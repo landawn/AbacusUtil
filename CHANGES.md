@@ -1,3 +1,10 @@
+### 1.6.0
+
+* Remove `Collectors.collapsing/dominators/distinct/distinctBy` because they won't work.
+
+* Improvements and bug fix.
+
+
 ### 1.5.12
 
 * Add `Fn.applyIfNotNullOrDefault/applyIfNotNullOrGet`.
