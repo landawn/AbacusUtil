@@ -2951,13 +2951,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     }
                 }
             }
+
+            return finisher.apply(container == NONE ? supplier.get() : container);
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         } finally {
             close();
         }
-
-        return finisher.apply(container == NONE ? supplier.get() : container);
     }
 
     @Override
@@ -3010,17 +3010,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         comparator = comparator == null ? NATURAL_COMPARATOR : comparator;
 
         return collect(Collectors.maxBy(comparator));
-    }
-
-    @Override
-    public long count() {
-        assertNotClosed();
-
-        try {
-            return elements.count();
-        } finally {
-            close();
-        }
     }
 
     @Override

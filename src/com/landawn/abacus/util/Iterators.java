@@ -1942,6 +1942,105 @@ public final class Iterators {
         return Nullable.of(first);
     }
 
+    public static <T> ObjIterator<T> filter(final Iterator<T> iter, final Predicate<? super T> filter) {
+        N.checkArgNotNull(filter, "filter");
+
+        if (iter == null) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private final T NONE = (T) N.NULL_MASK;
+            private T next = NONE;
+            private T tmp = null;
+
+            @Override
+            public boolean hasNext() {
+                if (next == NONE) {
+                    while (iter.hasNext()) {
+                        tmp = iter.next();
+
+                        if (filter.test(tmp)) {
+                            next = tmp;
+                            break;
+                        }
+                    }
+                }
+
+                return next != NONE;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                tmp = next;
+                next = NONE;
+                return tmp;
+            }
+        };
+    }
+
+    public static <T, U> ObjIterator<U> map(final Iterator<T> iter, final Function<? super T, U> mapper) {
+        N.checkArgNotNull(mapper, "mapper");
+
+        if (iter == null) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<U>() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public U next() {
+                return mapper.apply(iter.next());
+            }
+        };
+    }
+
+    public static <T, U> ObjIterator<U> flatMap(final Iterator<T> iter, final Function<? super T, ? extends Collection<? extends U>> mapper) {
+        N.checkArgNotNull(mapper, "mapper");
+
+        if (iter == null) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<U>() {
+            private Collection<? extends U> c = null;
+            private Iterator<? extends U> cur = null;
+
+            @Override
+            public boolean hasNext() {
+                if (cur == null || cur.hasNext() == false) {
+                    while (iter.hasNext()) {
+                        c = mapper.apply(iter.next());
+                        cur = c == null || c.size() == 0 ? null : c.iterator();
+
+                        if (cur != null && cur.hasNext()) {
+                            break;
+                        }
+                    }
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public U next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        };
+    }
+
     public static <T, U> ObjIterator<T> generate(final U init, final Predicate<? super U> hasNext, final Function<? super U, T> supplier) {
         N.checkArgNotNull(hasNext);
         N.checkArgNotNull(supplier);

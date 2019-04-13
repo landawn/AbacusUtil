@@ -212,7 +212,7 @@ public final class Splitter {
                                                 next = subStringFunc.subString(source, start, sourceLen);
                                                 start = (cursor = sourceLen + 1);
                                             } else {
-                                                next = source.subSequence(start, cursor).toString();
+                                                next = subStringFunc.subString(source, start, cursor);
                                                 start = (cursor += delimiter.length());
                                             }
 
@@ -704,11 +704,13 @@ public final class Splitter {
             return split(supplier.get(), source);
         }
 
-        public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source, final Supplier<? extends M> supplier) {
+        public <K, V, M extends Map<K, V>> M split(final Class<K> keyType, final Class<V> valueType, final CharSequence source,
+                final Supplier<? extends M> supplier) {
             return split(supplier.get(), keyType, valueType, source);
         }
 
-        public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source, final Supplier<? extends M> supplier) {
+        public <K, V, M extends Map<K, V>> M split(final Type<K> keyType, final Type<V> valueType, final CharSequence source,
+                final Supplier<? extends M> supplier) {
             return split(supplier.get(), keyType, valueType, source);
         }
 

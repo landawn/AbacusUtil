@@ -4093,13 +4093,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     }
                 }
             }
+
+            return finisher.apply(container == NONE ? supplier.get() : container);
         } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         } finally {
             close();
         }
-
-        return finisher.apply(container == NONE ? supplier.get() : container);
     }
 
     @Override

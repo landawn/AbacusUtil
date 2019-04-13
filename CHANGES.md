@@ -1,3 +1,10 @@
+### 1.6.1
+
+* Add `Iterators.filter/map/flatMap`.
+
+* Improvements and bug fix.
+
+
 ### 1.6.0
 
 * Remove `Collectors.collapsing/dominators/distinct/distinctBy` because they won't work.
