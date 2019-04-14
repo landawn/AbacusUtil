@@ -112,7 +112,7 @@ import com.landawn.abacus.util.function.TriFunction;
  * @see {@code java.util.stream.Collectors}
  * 
  */
-public class Collectors {
+public abstract class Collectors {
     static final Object NONE = new Object();
 
     @Deprecated
@@ -4837,9 +4837,9 @@ public class Collectors {
         }
     }
 
-    public static final class MoreCollectors extends Collectors {
-        private MoreCollectors() {
-            // singleton
+    public static abstract class MoreCollectors extends Collectors {
+        protected MoreCollectors() {
+            // for extention.
         }
     }
 }

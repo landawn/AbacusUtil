@@ -2475,6 +2475,10 @@ public abstract class Stream<T>
         return of(N.asArray(a));
     }
 
+    public static <T> Stream<T> ofNullable(T t) {
+        return t == null ? Stream.<T> empty() : of(t);
+    }
+
     @SafeVarargs
     public static <T> Stream<T> of(final T... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : of(a, 0, a.length);
@@ -2646,10 +2650,6 @@ public abstract class Stream<T>
                 stream.close();
             }
         });
-    }
-
-    public static <T> Stream<T> ofNullable(T t) {
-        return t == null ? Stream.<T> empty() : of(t);
     }
 
     public static Stream<Boolean> of(final boolean[] a) {

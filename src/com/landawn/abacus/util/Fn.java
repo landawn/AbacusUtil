@@ -143,7 +143,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @author haiyang li
  *
  */
-public final class Fn extends Comparators {
+public abstract class Fn extends Comparators {
 
     private static final Object NONE = new Object();
 
@@ -533,9 +533,9 @@ public final class Fn extends Comparators {
         }
     };
 
-    private Fn() {
+    protected Fn() {
         super();
-        // Singleton.
+        // for extention.
     }
 
     public static <T> T get(final Supplier<T> supplier) {
@@ -3739,7 +3739,7 @@ public final class Fn extends Comparators {
         return BiConsumers.<K, V, M> ofPutAll();
     }
 
-    public static class Factory {
+    public static abstract class Factory {
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
             @Override
             public boolean[] apply(int len) {
@@ -4033,8 +4033,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Factory() {
-            // singleton.
+        protected Factory() {
+            // for extention
         }
 
         public static IntFunction<boolean[]> ofBooleanArray() {
@@ -4294,13 +4294,13 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class IntFunctions extends Factory {
-        private IntFunctions() {
-            // singleton.
+    public static abstract class IntFunctions extends Factory {
+        protected IntFunctions() {
+            // for extention.
         }
     }
 
-    public static final class Suppliers {
+    public static abstract class Suppliers {
         private static final Supplier<String> UUID = new Supplier<String>() {
             @Override
             public String get() {
@@ -4616,8 +4616,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Suppliers() {
-            // singleton.
+        protected Suppliers() {
+            // for extention.
         }
 
         /**
@@ -4902,10 +4902,10 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Predicates {
+    public static abstract class Predicates {
 
-        private Predicates() {
-            // singleton.
+        protected Predicates() {
+            // for extention.
         }
 
         public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
@@ -5116,7 +5116,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class BiPredicates {
+    public static abstract class BiPredicates {
 
         @SuppressWarnings("rawtypes")
         private static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
@@ -5182,8 +5182,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private BiPredicates() {
-            // singleton.
+        protected BiPredicates() {
+            // for extention.
         }
 
         public static <T, U> BiPredicate<T, U> alwaysTrue() {
@@ -5208,7 +5208,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class TriPredicates {
+    public static abstract class TriPredicates {
 
         @SuppressWarnings("rawtypes")
         private static final TriPredicate ALWAYS_TRUE = new TriPredicate() {
@@ -5226,8 +5226,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private TriPredicates() {
-            // singleton.
+        protected TriPredicates() {
+            // for extention.
         }
 
         public static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {
@@ -5240,10 +5240,10 @@ public final class Fn extends Comparators {
 
     }
 
-    public static final class Consumers {
+    public static abstract class Consumers {
 
-        private Consumers() {
-            // singleton.
+        protected Consumers() {
+            // for extention.
         }
 
         /**
@@ -5277,7 +5277,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class BiConsumers {
+    public static abstract class BiConsumers {
 
         @SuppressWarnings("rawtypes")
         private static final BiConsumer DO_NOTHING = new BiConsumer() {
@@ -5366,8 +5366,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private BiConsumers() {
-            // singleton.
+        protected BiConsumers() {
+            // for extention.
         }
 
         public static <T, U> BiConsumer<T, U> doNothing() {
@@ -5451,9 +5451,9 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class TriConsumers {
-        private TriConsumers() {
-            // singleton.
+    public static abstract class TriConsumers {
+        protected TriConsumers() {
+            // for extention.
         }
 
         /**
@@ -5474,10 +5474,10 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Functions {
+    public static abstract class Functions {
 
-        private Functions() {
-            // singleton.
+        protected Functions() {
+            // for extention.
         }
 
         /**
@@ -5549,7 +5549,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class BiFunctions {
+    public static abstract class BiFunctions {
 
         private static final BiFunction<Object, Object, Object> RETURN_FIRST = new BiFunction<Object, Object, Object>() {
             @Override
@@ -5653,8 +5653,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private BiFunctions() {
-            // singleton.
+        protected BiFunctions() {
+            // for extention.
         }
 
         public static <T, U> BiFunction<T, U, T> returnFirst() {
@@ -5741,10 +5741,10 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class TriFunctions {
+    public static abstract class TriFunctions {
 
-        private TriFunctions() {
-            // singleton.
+        protected TriFunctions() {
+            // for extention.
         }
 
         /**
@@ -5764,7 +5764,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class BinaryOperators {
+    public static abstract class BinaryOperators {
 
         @SuppressWarnings("rawtypes")
         private static final BinaryOperator THROWING_MERGER = new BinaryOperator() {
@@ -5934,8 +5934,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private BinaryOperators() {
-            // singleton.
+        protected BinaryOperators() {
+            // for extention.
         }
 
         /**
@@ -6089,7 +6089,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class UnaryOperators {
+    public static abstract class UnaryOperators {
         @SuppressWarnings("rawtypes")
         private static final UnaryOperator IDENTITY = new UnaryOperator() {
             @Override
@@ -6098,8 +6098,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private UnaryOperators() {
-            // singleton.
+        protected UnaryOperators() {
+            // for extention.
         }
 
         public static <T> UnaryOperator<T> identity() {
@@ -6107,9 +6107,9 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Entries {
-        private Entries() {
-            // singleton.
+    public static abstract class Entries {
+        protected Entries() {
+            // for extention.
         }
 
         public static <K, V, T> Function<Map.Entry<K, V>, T> f(final BiFunction<? super K, ? super V, ? extends T> f) {
@@ -6226,7 +6226,7 @@ public final class Fn extends Comparators {
         }
     }
 
-    public static final class Pairs {
+    public static abstract class Pairs {
         @SuppressWarnings("rawtypes")
         private static final Function<Pair, List> PAIR_TO_LIST = new Function<Pair, List>() {
             @Override
@@ -6243,8 +6243,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Pairs() {
-            // Utility class.
+        protected Pairs() {
+            // for extention.
         }
 
         @SuppressWarnings("rawtypes")
@@ -6259,7 +6259,7 @@ public final class Fn extends Comparators {
 
     }
 
-    public static final class Triples {
+    public static abstract class Triples {
 
         @SuppressWarnings("rawtypes")
         private static final Function<Triple, List> TRIPLE_TO_LIST = new Function<Triple, List>() {
@@ -6277,8 +6277,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private Triples() {
-            // Utility class.
+        protected Triples() {
+            // for extention.
         }
 
         @SuppressWarnings("rawtypes")
@@ -6298,7 +6298,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnC {
+    public static abstract class FnC {
 
         private static final CharPredicate POSITIVE = new CharPredicate() {
             @Override
@@ -6356,8 +6356,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnC() {
-            // Utility class.
+        protected FnC() {
+            // for extention.
         }
 
         public static CharPredicate positve() {
@@ -6399,7 +6399,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnB {
+    public static abstract class FnB {
 
         private static final BytePredicate POSITIVE = new BytePredicate() {
             @Override
@@ -6457,8 +6457,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnB() {
-            // Utility class.
+        protected FnB() {
+            // for extention.
         }
 
         public static BytePredicate positve() {
@@ -6500,7 +6500,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnS {
+    public static abstract class FnS {
 
         private static final ShortPredicate POSITIVE = new ShortPredicate() {
             @Override
@@ -6558,8 +6558,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnS() {
-            // Utility class.
+        protected FnS() {
+            // for extention.
         }
 
         public static ShortPredicate positve() {
@@ -6601,7 +6601,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnI {
+    public static abstract class FnI {
 
         private static final IntPredicate POSITIVE = new IntPredicate() {
             @Override
@@ -6659,8 +6659,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnI() {
-            // Utility class.
+        protected FnI() {
+            // for extention.
         }
 
         public static IntPredicate positve() {
@@ -6702,7 +6702,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnL {
+    public static abstract class FnL {
 
         private static final LongPredicate POSITIVE = new LongPredicate() {
             @Override
@@ -6760,8 +6760,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnL() {
-            // Utility class.
+        protected FnL() {
+            // for extention.
         }
 
         public static LongPredicate positve() {
@@ -6803,7 +6803,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnF {
+    public static abstract class FnF {
 
         private static final FloatPredicate POSITIVE = new FloatPredicate() {
             @Override
@@ -6861,8 +6861,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnF() {
-            // Utility class.
+        protected FnF() {
+            // for extention.
         }
 
         public static FloatPredicate positve() {
@@ -6904,7 +6904,7 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FnD {
+    public static abstract class FnD {
 
         private static final DoublePredicate POSITIVE = new DoublePredicate() {
             @Override
@@ -6962,8 +6962,8 @@ public final class Fn extends Comparators {
             }
         };
 
-        private FnD() {
-            // Utility class.
+        protected FnD() {
+            // for extention.
         }
 
         public static DoublePredicate positve() {
@@ -7005,10 +7005,10 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class Fnn {
+    public static abstract class Fnn {
 
-        private Fnn() {
-            // utility class
+        protected Fnn() {
+            // for extention
         }
 
         public static ToByteFunction<Byte> unboxB() {
@@ -7172,9 +7172,9 @@ public final class Fn extends Comparators {
      * @author haiyangl
      *
      */
-    public static final class FN {
-        private FN() {
-            // singleton
+    public static abstract class FN {
+        protected FN() {
+            // for extention
         }
 
         public static <T, E extends Exception> Try.Function<T, T, E> identity() {
