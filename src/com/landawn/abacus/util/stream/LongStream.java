@@ -217,7 +217,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends V> valueMapper,
+            Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -480,7 +481,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             public long[] toArray() {
                 return iter == null ? stream.toArray() : super.toArray();
             }
-        }).onClose(new Runnable() {
+        }).__(s -> stream.isParallel() ? s.parallel() : s.sequential()).onClose(new Runnable() {
             @Override
             public void run() {
                 stream.close();

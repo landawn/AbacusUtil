@@ -2644,7 +2644,7 @@ public abstract class Stream<T>
                     }
                 }) : super.toArray(a);
             }
-        }).onClose(new Runnable() {
+        }).__(s -> stream.isParallel() ? s.parallel() : s.sequential()).onClose(new Runnable() {
             @Override
             public void run() {
                 stream.close();

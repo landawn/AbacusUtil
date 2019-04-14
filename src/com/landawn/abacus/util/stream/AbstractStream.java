@@ -1695,22 +1695,31 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, V, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper,
             final Collector<? super V, A, D> downstream, final Supplier<? extends Map<K, D>> mapFactory) {
         return newStream(new ObjIteratorEx<Entry<K, D>>() {
+            private boolean initialized = false;
             private Iterator<Entry<K, D>> iter = null;
 
             @Override
             public boolean hasNext() {
-                init();
+                if (initialized == false) {
+                    init();
+                }
+
                 return iter.hasNext();
             }
 
             @Override
             public Entry<K, D> next() {
-                init();
+                if (initialized == false) {
+                    init();
+                }
+
                 return iter.next();
             }
 
             private void init() {
-                if (iter == null) {
+                if (initialized == false) {
+                    initialized = true;
+
                     iter = AbstractStream.this.toMap(keyMapper, valueMapper, downstream, mapFactory).entrySet().iterator();
                 }
             }
@@ -3337,13 +3346,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             return combinations(len);
         } else {
             return newStream(new ObjIteratorEx<List<T>>() {
+                private boolean initialized = false;
                 private List<List<T>> list = null;
                 private int size = 0;
                 private int cursor = 0;
 
                 @Override
                 public boolean hasNext() {
-                    init();
+                    if (initialized == false) {
+                        init();
+                    }
+
                     return cursor < size;
                 }
 
@@ -3360,16 +3373,25 @@ abstract class AbstractStream<T> extends Stream<T> {
                 public void skip(long n) {
                     checkArgNotNegative(n, "n");
 
+                    if (initialized == false) {
+                        init();
+                    }
+
                     cursor = n <= size - cursor ? cursor + (int) n : size;
                 }
 
                 @Override
                 public long count() {
+                    if (initialized == false) {
+                        init();
+                    }
+
                     return size - cursor;
                 }
 
                 private void init() {
-                    if (list == null) {
+                    if (initialized == false) {
+                        initialized = true;
                         list = Iterables.cartesianProduct(N.repeat(AbstractStream.this.toList(), len));
                         size = list.size();
                     }
@@ -3402,13 +3424,17 @@ abstract class AbstractStream<T> extends Stream<T> {
         cList.addAll(cs);
 
         return newStream(new ObjIteratorEx<List<T>>() {
+            private boolean initialized = false;
             private List<List<T>> list = null;
             private int size = 0;
             private int cursor = 0;
 
             @Override
             public boolean hasNext() {
-                init();
+                if (initialized == false) {
+                    init();
+                }
+
                 return cursor < size;
             }
 
@@ -3425,16 +3451,25 @@ abstract class AbstractStream<T> extends Stream<T> {
             public void skip(long n) {
                 checkArgNotNegative(n, "n");
 
+                if (initialized == false) {
+                    init();
+                }
+
                 cursor = n <= size - cursor ? cursor + (int) n : size;
             }
 
             @Override
             public long count() {
+                if (initialized == false) {
+                    init();
+                }
+
                 return size - cursor;
             }
 
             private void init() {
-                if (list == null) {
+                if (initialized == false) {
+                    initialized = true;
                     list = Iterables.cartesianProduct(cList);
                     size = list.size();
                 }

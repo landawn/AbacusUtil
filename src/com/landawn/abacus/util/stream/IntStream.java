@@ -233,7 +233,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends V> valueMapper,
+            Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -483,7 +484,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             public int[] toArray() {
                 return iter == null ? stream.toArray() : super.toArray();
             }
-        }).onClose(new Runnable() {
+        }).__(s -> stream.isParallel() ? s.parallel() : s.sequential()).onClose(new Runnable() {
             @Override
             public void run() {
                 stream.close();
