@@ -2264,6 +2264,24 @@ public abstract class Stream<T>
     //    public abstract Stream<T> cached(IntFunction<T[]> generator);
 
     /**
+     * The Stream will be closed finally, no matter it's empty or not.
+     * 
+     * @param func
+     * @return
+     */
+    @Beta
+    public abstract <R, E extends Exception> Optional<R> applyIfNotEmpty(Try.Function<? super Stream<T>, R, E> func) throws E;
+
+    /**
+     * The Stream will be closed finally, no matter it's empty or not.
+     * 
+     * @param action
+     * 
+     */
+    @Beta
+    public abstract <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super Stream<T>, E> action) throws E;
+
+    /**
      * Returns a new Stream with elements from a temporary queue which is filled by reading the elements from this Stream asynchronously.
      * Default queue size is 64.
      * 
@@ -2429,8 +2447,8 @@ public abstract class Stream<T>
      * @deprecated
      */
     @Deprecated
-    @Beta
     @SequentialOnly
+    @Beta
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
     /**
@@ -3691,7 +3709,7 @@ public abstract class Stream<T>
                         @Override
                         public void close() {
                             if (closeReader) {
-                                IOUtil.closeAllQuietly(reader);
+                                IOUtil.closeQuietly(reader);
                             }
                         }
                     };

@@ -5198,92 +5198,40 @@ public final class N {
     }
 
     /**
-     * <br />
-     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
-     * <br />
      * 
-     * Checks if the {@code index} is within the bounds of the range from
-     * {@code 0} (inclusive) to {@code length} (exclusive).
-     *
-     * <p>The {@code index} is defined to be out-of-bounds if any of the
-     * following inequalities is true:
-     * <ul>
-     *  <li>{@code index < 0}</li>
-     *  <li>{@code index >= length}</li>
-     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
-     * </ul>
-     *
-     * @param index the index
-     * @param length the upper-bound (exclusive) of the range
-     * @return {@code index} if it is within bounds of the range
-     * @throws IndexOutOfBoundsException if the {@code index} is out-of-bounds
-     * @since 9
+     * @param index
+     * @param length
+     * @throws IndexOutOfBoundsException
      */
-    public static void checkIndex(final int index, final int length) {
+    public static void checkIndex(final int index, final int length) throws IndexOutOfBoundsException {
         if (index < 0 || index >= length) {
-            throw new IndexOutOfBoundsException(String.format("Index %d out-of-bounds for length %d", index, length));
+            throw new IndexOutOfBoundsException("Index " + index + " is out-of-bounds for length " + length);
         }
     }
 
     /**
-     * <br />
-     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
-     * <br />
      * 
-     * Checks if the sub-range from {@code fromIndex} (inclusive) to
-     * {@code toIndex} (exclusive) is within the bounds of range from {@code 0}
-     * (inclusive) to {@code length} (exclusive).
-     *
-     * <p>The sub-range is defined to be out-of-bounds if any of the following
-     * inequalities is true:
-     * <ul>
-     *  <li>{@code fromIndex < 0}</li>
-     *  <li>{@code fromIndex > toIndex}</li>
-     *  <li>{@code toIndex > length}</li>
-     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
-     * </ul>
-     *
-     * @param fromIndex the lower-bound (inclusive) of the sub-range
-     * @param toIndex the upper-bound (exclusive) of the sub-range
-     * @param length the upper-bound (exclusive) the range
-     * @return {@code fromIndex} if the sub-range is within bounds of the range
-     * @throws IndexOutOfBoundsException if the sub-range is out-of-bounds
-     * @since 9
+     * @param fromIndex
+     * @param toIndex
+     * @param length
+     * @throws IndexOutOfBoundsException
      */
-    public static void checkFromToIndex(final int fromIndex, final int toIndex, final int length) {
+    public static void checkFromToIndex(final int fromIndex, final int toIndex, final int length) throws IndexOutOfBoundsException {
         if (fromIndex < 0 || fromIndex > toIndex || toIndex > length) {
-            throw new IndexOutOfBoundsException(String.format("Range [%d, %d) out-of-bounds for length %d", fromIndex, toIndex, length));
+            throw new IndexOutOfBoundsException("Index range [" + fromIndex + ", " + toIndex + "] is out-of-bounds for length " + length);
         }
     }
 
     /**
-     * <br />
-     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
-     * <br />
      * 
-     * Checks if the sub-range from {@code fromIndex} (inclusive) to
-     * {@code fromIndex + size} (exclusive) is within the bounds of range from
-     * {@code 0} (inclusive) to {@code length} (exclusive).
-     *
-     * <p>The sub-range is defined to be out-of-bounds if any of the following
-     * inequalities is true:
-     * <ul>
-     *  <li>{@code fromIndex < 0}</li>
-     *  <li>{@code size < 0}</li>
-     *  <li>{@code fromIndex + size > length}, taking into account integer overflow</li>
-     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
-     * </ul>
-     *
-     * @param fromIndex the lower-bound (inclusive) of the sub-interval
-     * @param size the size of the sub-range
-     * @param length the upper-bound (exclusive) of the range
-     * @return {@code fromIndex} if the sub-range is within bounds of the range
-     * @throws IndexOutOfBoundsException if the sub-range is out-of-bounds
-     * @since 9
+     * @param fromIndex
+     * @param size
+     * @param length
+     * @throws IndexOutOfBoundsException
      */
-    public static void checkFromIndexSize(final int fromIndex, final int size, final int length) {
-        if ((length | fromIndex | size) < 0 || size > length - fromIndex) {
-            throw new IndexOutOfBoundsException(String.format("Range [%d, %<d + %d) out-of-bounds for length %d", fromIndex, size, length));
+    public static void checkFromIndexSize(final int fromIndex, final int size, final int length) throws IndexOutOfBoundsException {
+        if ((fromIndex < 0 || size < 0 || length < 0) || size > length - fromIndex) {
+            throw new IndexOutOfBoundsException("Start Index " + fromIndex + " with size " + size + " is out-of-bounds for length " + length);
         }
     }
 

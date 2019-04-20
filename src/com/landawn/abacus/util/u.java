@@ -2842,10 +2842,8 @@ public class u {
             return value;
         }
 
-        public H setValue(final T value) {
+        public void setValue(final T value) {
             this.value = value;
-
-            return (H) this;
         }
 
         public T getAndSet(final T value) {

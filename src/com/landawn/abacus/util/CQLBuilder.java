@@ -1207,14 +1207,22 @@ public abstract class CQLBuilder {
 
         init(true);
 
+        String cql = null;
+
         try {
-            return sb.toString();
+            cql = sb.toString();
         } finally {
             Objectory.recycle(sb);
             sb = null;
 
             activeStringBuilderCounter.decrementAndGet();
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(cql);
+        }
+
+        return cql;
     }
 
     public List<Object> parameters() {
@@ -1600,7 +1608,7 @@ public abstract class CQLBuilder {
 
     @Override
     public String toString() {
-        return sb.toString();
+        return cql();
     }
 
     private static void parseInsertEntity(final CQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {

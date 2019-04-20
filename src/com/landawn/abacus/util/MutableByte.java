@@ -84,10 +84,8 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      * 
      * @param value  the value to set
      */
-    public MutableByte setValue(final byte value) {
+    public void setValue(final byte value) {
         this.value = value;
-
-        return this;
     }
 
     public byte getAndSet(final byte value) {

@@ -84,10 +84,8 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * 
      * @param value  the value to set
      */
-    public MutableLong setValue(final long value) {
+    public void setValue(final long value) {
         this.value = value;
-
-        return this;
     }
 
     public long getAndSet(final long value) {

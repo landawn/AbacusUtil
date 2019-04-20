@@ -3346,6 +3346,34 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
     }
 
+    @Override
+    public <R, E extends Exception> Optional<R> applyIfNotEmpty(final Try.Function<? super Stream<T>, R, E> func) throws E {
+        try {
+            if (fromIndex < toIndex) {
+                return Optional.of(func.apply(this));
+            } else {
+                return Optional.empty();
+            }
+        } finally {
+            if (isClosed == false) {
+                close();
+            }
+        }
+    }
+
+    @Override
+    public <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super Stream<T>, E> action) throws E {
+        try {
+            if (fromIndex < toIndex) {
+                action.accept(this);
+            }
+        } finally {
+            if (isClosed == false) {
+                close();
+            }
+        }
+    }
+
     //    @Override
     //    public Stream<T> cached() {
     //        return this;

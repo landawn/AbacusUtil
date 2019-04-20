@@ -1519,7 +1519,6 @@ public class RowDataSet implements DataSet, Cloneable {
             columnIndexes = checkColumnName(columnNames);
         }
 
-        final Class<?> rowClass = output.getClass();
         final int columnCount = columnIndexes.length;
 
         if (rowType.isObjectArray()) {
@@ -1560,7 +1559,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
         } else {
             throw new IllegalArgumentException(
-                    "Unsupported row type: " + ClassUtil.getCanonicalClassName(rowClass) + ". Only Array, Collection, Map and entity class are supported");
+                    "Unsupported row type: " + rowType.clazz().getCanonicalName() + ". Only Array, Collection, Map and entity class are supported");
         }
     }
 
@@ -8460,6 +8459,96 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
+    public Stream<Object[]> stream(final boolean shareRowArray) {
+        return stream(0, size(), shareRowArray);
+    }
+
+    @Override
+    public Stream<Object[]> stream(final int fromRowIndex, final int toRowIndex, final boolean shareRowArray) {
+        return stream(this._columnNameList, fromRowIndex, toRowIndex, shareRowArray);
+    }
+
+    @Override
+    public Stream<Object[]> stream(final Collection<String> columnNames, final boolean shareRowArray) {
+        return stream(columnNames, 0, size(), shareRowArray);
+    }
+
+    @Override
+    public Stream<Object[]> stream(final Collection<String> columnNames, final int fromRowIndex, final int toRowIndex, final boolean shareRowArray) {
+        final int[] columnIndexes = this.checkColumnName(columnNames);
+        this.checkRowIndex(fromRowIndex, toRowIndex);
+        final int columnCount = columnNames.size();
+
+        return Stream.of(new ObjIteratorEx<Object[]>() {
+            private final Type<Object[]> rowType = N.typeOf(Object[].class);
+            private Object[] row = shareRowArray ? new Object[columnCount] : N.EMPTY_OBJECT_ARRAY;
+            private final int expectedModCount = modCount;
+            private int cursor = fromRowIndex;
+
+            @Override
+            public boolean hasNext() {
+                checkForComodification();
+
+                return cursor < toRowIndex;
+            }
+
+            @Override
+            public Object[] next() {
+                checkForComodification();
+
+                if (cursor >= toRowIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (!shareRowArray) {
+                    row = new Object[columnCount];
+                }
+
+                getRow(rowType, row, columnIndexes, columnNames, cursor);
+
+                cursor++;
+
+                return row;
+            }
+
+            @Override
+            public long count() {
+                checkForComodification();
+
+                return toRowIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                checkForComodification();
+
+                cursor = n > toRowIndex - cursor ? toRowIndex : (int) n + cursor;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                checkForComodification();
+
+                final List<Object[]> rows = RowDataSet.this.toList(Object[].class, columnNames, cursor, toRowIndex);
+
+                a = a.length >= rows.size() ? a : (A[]) N.newArray(a.getClass().getComponentType(), rows.size());
+
+                rows.toArray(a);
+
+                return a;
+            }
+
+            final void checkForComodification() {
+                if (modCount != expectedModCount) {
+                    throw new ConcurrentModificationException();
+                }
+            }
+        });
+    }
+
+    @Override
     public <T> Stream<T> stream(Class<? extends T> rowClass) {
         return stream(rowClass, 0, size());
     }
@@ -8600,8 +8689,8 @@ public class RowDataSet implements DataSet, Cloneable {
             final int toRowIndex) {
         // return Stream.of(toArray(rowClass, columnNames, fromRowIndex, toRowIndex));
 
-        this.checkRowIndex(fromRowIndex, toRowIndex);
         final int[] columnIndexes = this.checkColumnName(columnNames);
+        this.checkRowIndex(fromRowIndex, toRowIndex);
 
         final Class<?> rowClass = rowSupplier.apply(0).getClass();
         final Type<?> rowType = N.typeOf(rowClass);
@@ -8802,103 +8891,117 @@ public class RowDataSet implements DataSet, Cloneable {
 
     @Override
     public void println() throws UncheckedIOException {
-        println(new OutputStreamWriter(System.out));
+        println(_columnNameList, 0, size());
+    }
+
+    @Override
+    public void println(Collection<String> columnNames, int fromRowIndex, int toRowIndex) throws UncheckedIOException {
+        println(columnNames, fromRowIndex, toRowIndex, new OutputStreamWriter(System.out));
     }
 
     @Override
     public void println(Writer outputWriter) throws UncheckedIOException {
+        println(_columnNameList, 0, size(), outputWriter);
+    }
+
+    @Override
+    public void println(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Writer outputWriter) throws UncheckedIOException {
+        final int[] columnIndexes = N.isNullOrEmpty(columnNames) ? N.EMPTY_INT_ARRAY : checkColumnName(columnNames);
+        checkRowIndex(fromRowIndex, toRowIndex);
         N.checkArgNotNull(outputWriter, "outputWriter");
 
         boolean isBufferedWriter = outputWriter instanceof BufferedWriter || outputWriter instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? outputWriter : Objectory.createBufferedWriter(outputWriter);
+        final int rowLen = toRowIndex - fromRowIndex;
+        final int columnLen = columnIndexes.length;
 
         try {
-            if (_columnNameList.size() == 0) {
+            if (columnLen == 0) {
                 bw.write("---");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("| |");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("---");
             } else {
-                final int rowLen = size();
-                final int columnLen = _columnList.size();
+                final List<String> columnNameList = new ArrayList<>(columnNames);
                 final List<List<String>> strColumnList = new ArrayList<>(columnLen);
                 final int[] maxColumnLens = new int[columnLen];
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                for (int i = 0; i < columnLen; i++) {
+                    final List<Object> column = _columnList.get(columnIndexes[i]);
                     final List<String> strColumn = new ArrayList<>(rowLen);
-                    int maxLen = N.len(_columnNameList.get(columnIndex));
+                    int maxLen = N.len(columnNameList.get(i));
                     String str = null;
 
-                    for (Object e : _columnList.get(columnIndex)) {
-                        str = N.toString(e);
+                    for (int rowIndex = fromRowIndex; rowIndex < toRowIndex; rowIndex++) {
+                        str = N.toString(column.get(rowIndex));
                         maxLen = N.max(maxLen, N.len(str));
                         strColumn.add(str);
                     }
 
-                    maxColumnLens[columnIndex] = maxLen;
+                    maxColumnLens[i] = maxLen;
                     strColumnList.add(strColumn);
                 }
 
                 final char hch = '-';
                 final char hchDelta = 3;
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write("| ");
                     } else {
                         bw.write(" | ");
                     }
 
-                    bw.write(StringUtil.padEnd(_columnNameList.get(columnIndex), maxColumnLens[columnIndex]));
+                    bw.write(StringUtil.padEnd(columnNameList.get(i), maxColumnLens[i]));
                 }
 
                 bw.write(" |");
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
 
-                for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
+                for (int j = 0; j < rowLen; j++) {
                     bw.write(IOUtil.LINE_SEPARATOR);
 
-                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                        if (columnIndex == 0) {
+                    for (int i = 0; i < columnLen; i++) {
+                        if (i == 0) {
                             bw.write("| ");
                         } else {
                             bw.write(" | ");
                         }
 
-                        bw.write(StringUtil.padEnd(strColumnList.get(columnIndex).get(rowIndex), maxColumnLens[columnIndex]));
+                        bw.write(StringUtil.padEnd(strColumnList.get(i).get(j), maxColumnLens[i]));
                     }
 
                     bw.write(" |");
                 }
 
-                if (size() == 0) {
+                if (rowLen == 0) {
                     bw.write(IOUtil.LINE_SEPARATOR);
 
-                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                        if (columnIndex == 0) {
+                    for (int i = 0; i < columnLen; i++) {
+                        if (i == 0) {
                             bw.write("| ");
-                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex]));
+                            bw.write(StringUtil.padEnd("", maxColumnLens[i]));
                         } else {
-                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex] + 3));
+                            bw.write(StringUtil.padEnd("", maxColumnLens[i] + 3));
                         }
                     }
 
@@ -8907,12 +9010,12 @@ public class RowDataSet implements DataSet, Cloneable {
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
             }
 

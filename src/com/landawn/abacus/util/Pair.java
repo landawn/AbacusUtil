@@ -18,6 +18,7 @@ package com.landawn.abacus.util;
 
 import java.util.Map;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.stream.Stream;
@@ -59,10 +60,8 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
         return left;
     }
 
-    public Pair<L, R> setLeft(final L left) {
+    public void setLeft(final L left) {
         this.left = left;
-
-        return this;
     }
 
     /**
@@ -73,17 +72,13 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
         return right;
     }
 
-    public Pair<L, R> setRight(final R right) {
+    public void setRight(final R right) {
         this.right = right;
-
-        return this;
     }
 
-    public Pair<L, R> set(final L left, final R right) {
+    public void set(final L left, final R right) {
         this.left = left;
         this.right = right;
-
-        return this;
     }
 
     public L getAndSetLeft(L newLeft) {
@@ -221,9 +216,11 @@ public final class Pair<L, R> { // implements Map.Entry<L, R> {
     //    }
 
     /**
+     * Returns a new instance of Pair&lt;R, L&gt;.
      * 
      * @return a new instance of Pair&lt;R, L&gt;.
      */
+    @Beta
     public Pair<R, L> reversed() {
         return new Pair<>(this.right, this.left);
     }

@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.BiIterator;
 import com.landawn.abacus.util.ListMultimap;
@@ -4605,6 +4606,52 @@ public interface DataSet {
 
     /**
      *
+     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
+     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
+     * The default value is false.
+     * @return
+     */
+    @Beta
+    Stream<Object[]> stream(boolean shareRowArray);
+
+    /**
+     *
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
+     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
+     * The default value is false.
+     * @return
+     */
+    @Beta
+    Stream<Object[]> stream(int fromRowIndex, int toRowIndex, boolean shareRowArray);
+
+    /**
+     * 
+     * @param columnNames
+     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
+     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
+     * The default value is false.
+     * @return
+     */
+    @Beta
+    Stream<Object[]> stream(Collection<String> columnNames, boolean shareRowArray);
+
+    /**
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
+     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
+     * The default value is false.
+     * @return
+     */
+    @Beta
+    Stream<Object[]> stream(Collection<String> columnNames, int fromRowIndex, int toRowIndex, boolean shareRowArray);
+
+    /**
+     *
      * @param rowClass it can be Object[]/List/Set/Map/Entity
      * @return
      */
@@ -4746,5 +4793,9 @@ public interface DataSet {
 
     void println() throws UncheckedIOException;
 
+    void println(Collection<String> columnNames, int fromRowIndex, int toRowIndex) throws UncheckedIOException;
+
     void println(Writer outputWriter) throws UncheckedIOException;
+
+    void println(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Writer outputWriter) throws UncheckedIOException;
 }

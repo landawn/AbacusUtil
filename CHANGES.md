@@ -1,3 +1,12 @@
+### 1.6.2
+
+* Add `Stream.applyIfNotEmpty/map/acceptIfNotEmpty`.
+
+* Refactoring: Change the return of `Pair/Triple/MutableBoolan/.../MutableDouble.setXXX(...)` to `void`.
+
+* Improvements and bug fix.
+
+
 ### 1.6.1
 
 * Add `Iterators.filter/map/flatMap`.

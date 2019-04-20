@@ -76,10 +76,8 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
      * 
      * @param value  the value to set
      */
-    public MutableChar setValue(final char value) {
+    public void setValue(final char value) {
         this.value = value;
-
-        return this;
     }
 
     public char getAndSet(final char value) {

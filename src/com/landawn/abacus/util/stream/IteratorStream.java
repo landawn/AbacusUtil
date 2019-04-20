@@ -3298,6 +3298,34 @@ class IteratorStream<T> extends AbstractStream<T> {
         }
     }
 
+    @Override
+    public <R, E extends Exception> Optional<R> applyIfNotEmpty(final Try.Function<? super Stream<T>, R, E> func) throws E {
+        try {
+            if (elements.hasNext()) {
+                return Optional.of(func.apply(this));
+            } else {
+                return Optional.empty();
+            }
+        } finally {
+            if (isClosed == false) {
+                close();
+            }
+        }
+    }
+
+    @Override
+    public <E extends Exception> void acceptIfNotEmpty(Try.Consumer<? super Stream<T>, E> action) throws E {
+        try {
+            if (elements.hasNext()) {
+                action.accept(this);
+            }
+        } finally {
+            if (isClosed == false) {
+                close();
+            }
+        }
+    }
+
     /**
      * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
      * 

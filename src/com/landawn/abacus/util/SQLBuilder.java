@@ -1949,14 +1949,22 @@ public abstract class SQLBuilder {
 
         init(true);
 
+        String sql = null;
+
         try {
-            return sb.toString();
+            sql = sb.toString();
         } finally {
             Objectory.recycle(sb);
             sb = null;
 
             activeStringBuilderCounter.decrementAndGet();
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(sql);
+        }
+
+        return sql;
     }
 
     public List<Object> parameters() {
@@ -2396,7 +2404,7 @@ public abstract class SQLBuilder {
 
     @Override
     public String toString() {
-        return sb.toString();
+        return sql();
     }
 
     private static void parseInsertEntity(final SQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {

@@ -2209,43 +2209,76 @@ public final class Sheet<R, C, E> implements Cloneable {
     }
 
     public void println() throws UncheckedIOException {
-        println(new OutputStreamWriter(System.out));
+        println(this._rowKeySet, this._columnKeySet);
     }
 
-    public void println(Writer outputWriter) throws UncheckedIOException {
+    public void println(final Collection<R> rowKeySet, final Collection<C> columnKeySet) throws UncheckedIOException {
+        println(rowKeySet, columnKeySet, new OutputStreamWriter(System.out));
+    }
+
+    public void println(final Writer outputWriter) throws UncheckedIOException {
+        println(this._rowKeySet, this._columnKeySet, outputWriter);
+    }
+
+    public void println(final Collection<R> rowKeySet, final Collection<C> columnKeySet, final Writer outputWriter) throws UncheckedIOException {
+        if (N.notNullOrEmpty(rowKeySet) && this._rowKeySet.containsAll(rowKeySet) == false) {
+            throw new IllegalArgumentException(
+                    "Row keys: " + N.difference(rowKeySet, this._rowKeySet) + " are not included in this sheet row keys: " + this._rowKeySet);
+        }
+
+        if (N.notNullOrEmpty(columnKeySet) && this._columnKeySet.containsAll(columnKeySet) == false) {
+            throw new IllegalArgumentException(
+                    "Column keys: " + N.difference(columnKeySet, this._columnKeySet) + " are not included in this sheet Column keys: " + this._columnKeySet);
+        }
+
         N.checkArgNotNull(outputWriter, "outputWriter");
 
         boolean isBufferedWriter = outputWriter instanceof BufferedWriter || outputWriter instanceof java.io.BufferedWriter;
         final Writer bw = isBufferedWriter ? outputWriter : Objectory.createBufferedWriter(outputWriter);
 
         try {
-            if (rowLength() == 0 && columnLength() == 0) {
+            if (N.isNullOrEmpty(rowKeySet) && N.isNullOrEmpty(columnKeySet)) {
                 bw.write("---");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("| |");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("---");
             } else {
-                final int rowLen = rowLength();
-                final int columnLen = columnLength() + 1;
+                final int rowLen = rowKeySet.size();
+                final int columnLen = columnKeySet.size() + 1;
+
+                final int[] rowIndices = new int[rowLen];
+                int idx = 0;
+
+                for (R rowKey : rowKeySet) {
+                    rowIndices[idx++] = getRowIndex(rowKey);
+                }
+
+                final int[] columnIndices = new int[columnLen];
+                idx = 0;
+                columnIndices[idx++] = -1; // rowKey Column
+
+                for (C columnKey : columnKeySet) {
+                    columnIndices[idx++] = getColumnIndex(columnKey);
+                }
 
                 final List<String> columnNameList = new ArrayList<>(columnLen);
                 columnNameList.add(""); // add for row key column
 
-                for (C ck : _columnKeySet) {
+                for (C ck : columnKeySet) {
                     columnNameList.add(N.toString(ck));
                 }
 
                 final List<List<String>> strColumnList = new ArrayList<>(columnLen);
                 final int[] maxColumnLens = new int[columnLen];
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
+                for (int i = 0; i < columnLen; i++) {
                     final List<String> strColumn = new ArrayList<>(rowLen);
-                    int maxLen = N.len(columnNameList.get(columnIndex));
+                    int maxLen = N.len(columnNameList.get(i));
                     String str = null;
 
-                    if (columnIndex == 0) {
-                        for (R rk : _rowKeySet) {
+                    if (i == 0) {
+                        for (R rk : rowKeySet) {
                             str = N.toString(rk);
                             maxLen = N.max(maxLen, N.len(str));
                             strColumn.add(str);
@@ -2254,63 +2287,62 @@ public final class Sheet<R, C, E> implements Cloneable {
                         maxLen = N.max(maxLen, 4);
                         N.fill(strColumn, 0, rowLen, "null");
                     } else {
-                        for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
-                            str = N.toString(_columnList.get(columnIndex - 1).get(rowIndex));
+                        for (int rowIndex : rowIndices) {
+                            str = N.toString(_columnList.get(columnIndices[i]).get(rowIndex));
                             maxLen = N.max(maxLen, N.len(str));
-
                             strColumn.add(str);
                         }
                     }
 
-                    maxColumnLens[columnIndex] = maxLen;
+                    maxColumnLens[i] = maxLen;
                     strColumnList.add(strColumn);
                 }
 
                 final char hch = '-';
                 final char hchDelta = 3;
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write("| ");
                     } else {
                         bw.write(" | ");
                     }
 
-                    bw.write(StringUtil.padEnd(columnNameList.get(columnIndex), maxColumnLens[columnIndex]));
+                    bw.write(StringUtil.padEnd(columnNameList.get(i), maxColumnLens[i]));
                 }
 
                 bw.write(" |");
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
 
-                for (int rowIndex = 0; rowIndex < rowLen; rowIndex++) {
+                for (int j = 0; j < rowLen; j++) {
                     bw.write(IOUtil.LINE_SEPARATOR);
 
-                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                        if (columnIndex == 0) {
+                    for (int i = 0; i < columnLen; i++) {
+                        if (i == 0) {
                             bw.write("| ");
                         } else {
                             bw.write(" | ");
                         }
 
-                        bw.write(StringUtil.padEnd(strColumnList.get(columnIndex).get(rowIndex), maxColumnLens[columnIndex]));
+                        bw.write(StringUtil.padEnd(strColumnList.get(i).get(j), maxColumnLens[i]));
                     }
 
                     bw.write(" |");
@@ -2319,12 +2351,12 @@ public final class Sheet<R, C, E> implements Cloneable {
                 if (rowLen == 0) {
                     bw.write(IOUtil.LINE_SEPARATOR);
 
-                    for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                        if (columnIndex == 0) {
+                    for (int i = 0; i < columnLen; i++) {
+                        if (i == 0) {
                             bw.write("| ");
-                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex]));
+                            bw.write(StringUtil.padEnd("", maxColumnLens[i]));
                         } else {
-                            bw.write(StringUtil.padEnd("", maxColumnLens[columnIndex] + 3));
+                            bw.write(StringUtil.padEnd("", maxColumnLens[i] + 3));
                         }
                     }
 
@@ -2333,12 +2365,12 @@ public final class Sheet<R, C, E> implements Cloneable {
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
-                for (int columnIndex = 0; columnIndex < columnLen; columnIndex++) {
-                    if (columnIndex == 0) {
+                for (int i = 0; i < columnLen; i++) {
+                    if (i == 0) {
                         bw.write(hch);
                     }
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[columnIndex] + hchDelta));
+                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
             }
 

@@ -13,6 +13,9 @@
  */
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.logging.Logger;
+import com.landawn.abacus.logging.LoggerFactory;
+
 /**
  * Dynamic SQL builder. Must remember to call {@code build()} to generate target sql and release resources.
  * 
@@ -20,6 +23,8 @@ package com.landawn.abacus.util;
  *
  */
 public class DynamicSQLBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(DynamicSQLBuilder.class);
+
     private Select select = new Select(Objectory.createStringBuilder());
     private From from = new From(Objectory.createStringBuilder());
     private Where where;
@@ -187,6 +192,10 @@ public class DynamicSQLBuilder {
 
         select = null;
         from = null;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(sql);
+        }
 
         return sql;
     }

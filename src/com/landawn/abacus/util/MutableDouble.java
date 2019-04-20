@@ -84,10 +84,8 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * 
      * @param value  the value to set
      */
-    public MutableDouble setValue(final double value) {
+    public void setValue(final double value) {
         this.value = value;
-
-        return this;
     }
 
     public double getAndSet(final double value) {

@@ -87,10 +87,8 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
      * 
      * @param value  the value to set
      */
-    public MutableBoolean setValue(final boolean value) {
+    public void setValue(final boolean value) {
         this.value = value;
-
-        return this;
     }
 
     public boolean getAndSet(final boolean value) {

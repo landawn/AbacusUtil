@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.stream.Stream;
@@ -56,10 +57,8 @@ public final class Triple<L, M, R> {
         return left;
     }
 
-    public Triple<L, M, R> setLeft(final L left) {
+    public void setLeft(final L left) {
         this.left = left;
-
-        return this;
     }
 
     /**
@@ -70,10 +69,8 @@ public final class Triple<L, M, R> {
         return middle;
     }
 
-    public Triple<L, M, R> setMiddle(final M middle) {
+    public void setMiddle(final M middle) {
         this.middle = middle;
-
-        return this;
     }
 
     /**
@@ -84,18 +81,14 @@ public final class Triple<L, M, R> {
         return right;
     }
 
-    public Triple<L, M, R> setRight(final R right) {
+    public void setRight(final R right) {
         this.right = right;
-
-        return this;
     }
 
-    public Triple<L, M, R> set(final L left, final M middle, final R right) {
+    public void set(final L left, final M middle, final R right) {
         this.left = left;
         this.middle = middle;
         this.right = right;
-
-        return this;
     }
 
     public L getAndSetLeft(L newLeft) {
@@ -225,9 +218,11 @@ public final class Triple<L, M, R> {
     //    }
 
     /**
+     * Returns a new instance of Triple&lt;R, M, L&gt;.
      * 
      * @return a new instance of Triple&lt;R, M, L&gt;.
      */
+    @Beta
     public Triple<R, M, L> reversed() {
         return new Triple<>(this.right, this.middle, this.left);
     }
